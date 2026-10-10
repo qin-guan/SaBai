@@ -1,1 +1,4 @@
-<Solution />
+<Solution>
+  <Project Path="SaBai.AppHost/SaBai.AppHost.csproj" />
+  <Project Path="SaBai.ServiceDefaults/SaBai.ServiceDefaults.csproj" />
+</Solution>

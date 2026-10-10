@@ -13,6 +13,11 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\SaBai.AppHost\SaBai.AppHost.csproj" IsAspireProjectResource="false" />
+        <ProjectReference Include="..\SaBai.API\SaBai.API.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
         <Using Include="System.Net"/>
         <Using Include="Microsoft.Extensions.DependencyInjection"/>
         <Using Include="Aspire.Hosting.ApplicationModel"/>

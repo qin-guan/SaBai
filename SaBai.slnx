@@ -5,4 +5,5 @@
   <Project Path="SaBai.API/SaBai.API.csproj" />
   <Project Path="SaBai.AppHost/SaBai.AppHost.csproj" />
   <Project Path="SaBai.ServiceDefaults/SaBai.ServiceDefaults.csproj" />
+  <Project Path="SaBai.Tests/SaBai.Tests.csproj" />
 </Solution>

@@ -3,6 +3,7 @@ using FastEndpoints;
 using FastEndpoints.OpenApi;
 using FastEndpoints.Security;
 using QuestPDF.Infrastructure;
+using SaBai.API.FaceRecognition;
 using Scalar.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using SaBai.API.Auth;
@@ -60,6 +61,7 @@ builder.Services
 
 builder.AddNpgsqlDbContext<AppDbContext>(connectionName: "sabai");
 builder.AddQdrantClient("qdrant");
+builder.AddFaceRecognition();
 
 var app = builder.Build();
 

@@ -1,6 +1,56 @@
 @SaBai.API_HostAddress = http://localhost:5250
 
-GET {{SaBai.API_HostAddress}}/weatherforecast/
-Accept: application/json
+### Detect faces
+POST {{SaBai.API_HostAddress}}/faces/detect
+Content-Type: multipart/form-data; boundary=boundary
 
-###
+--boundary
+Content-Disposition: form-data; name="image"; filename="photo.jpg"
+Content-Type: image/jpeg
+
+< ./photo.jpg
+--boundary--
+
+### Enroll a face for a person
+POST {{SaBai.API_HostAddress}}/persons/alice/faces
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="image"; filename="alice.jpg"
+Content-Type: image/jpeg
+
+< ./alice.jpg
+--boundary--
+
+### Identify everyone in a photo
+POST {{SaBai.API_HostAddress}}/faces/identify?maxMatches=3
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="image"; filename="group.jpg"
+Content-Type: image/jpeg
+
+< ./group.jpg
+--boundary--
+
+### Verify two photos show the same person
+POST {{SaBai.API_HostAddress}}/faces/verify
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="first"; filename="a.jpg"
+Content-Type: image/jpeg
+
+< ./a.jpg
+--boundary
+Content-Disposition: form-data; name="second"; filename="b.jpg"
+Content-Type: image/jpeg
+
+< ./b.jpg
+--boundary--
+
+### List a person's faces
+GET {{SaBai.API_HostAddress}}/persons/alice/faces
+
+### Delete a person
+DELETE {{SaBai.API_HostAddress}}/persons/alice

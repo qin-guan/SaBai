@@ -1,4 +1,8 @@
 <Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="compose.yaml" />
+  </Folder>
+  <Project Path="SaBai.API/SaBai.API.csproj" />
   <Project Path="SaBai.AppHost/SaBai.AppHost.csproj" />
   <Project Path="SaBai.ServiceDefaults/SaBai.ServiceDefaults.csproj" />
 </Solution>

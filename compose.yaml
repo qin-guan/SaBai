@@ -1,0 +1,7 @@
+﻿services:
+  sabai.api:
+    image: sabai.api
+    build:
+      context: .
+      dockerfile: SaBai.API/Dockerfile
+

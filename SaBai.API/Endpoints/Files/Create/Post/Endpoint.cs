@@ -1,13 +1,15 @@
+using Amazon.S3;
+using Amazon.S3.Model;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using SaBai.API.Auth;
 using SaBai.API.Data;
 using SaBai.API.Domain;
+using SaBai.API.Storage;
 
 namespace SaBai.API.Endpoints.Files.Create.Post;
 
-public sealed class Endpoint(AppDbContext db, IOptions<StorageSettings> storage) : Endpoint<Request, List<Response>>
+public sealed class Endpoint(AppDbContext db, IAmazonS3 s3, RustFsSettings storage) : Endpoint<Request, List<Response>>
 {
     public override void Configure()
     {
@@ -15,7 +17,7 @@ public sealed class Endpoint(AppDbContext db, IOptions<StorageSettings> storage)
         AllowFileUploads();
         MaxRequestBodySize(ClinicalFile.MaxBytes * 8L);
         Roles(StaffRoles.Admin, StaffRoles.Member);
-        Summary(s => s.Summary = "Upload clinical files to local storage");
+        Summary(s => s.Summary = "Upload clinical files to RustFS");
     }
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
@@ -36,10 +38,7 @@ public sealed class Endpoint(AppDbContext db, IOptions<StorageSettings> storage)
             throw new BadRequestException("Number of files and descriptions must match.");
         }
 
-        var root = string.IsNullOrWhiteSpace(storage.Value.Root) ? "data/files" : storage.Value.Root;
-        Directory.CreateDirectory(root);
-
-        var written = new List<string>();
+        var uploadedKeys = new List<string>();
         var created = new List<ClinicalFile>();
         try
         {
@@ -62,15 +61,20 @@ public sealed class Endpoint(AppDbContext db, IOptions<StorageSettings> storage)
                     throw new BadRequestException("File is too large.");
                 }
 
-                var extension = Path.GetExtension(fileName);
-                var storedName = $"{Guid.NewGuid():N}{extension}";
-                var fullPath = Path.Combine(root, storedName);
-                await using (var stream = File.Create(fullPath))
+                var storedName = $"{Guid.NewGuid():N}{Path.GetExtension(fileName)}";
+                await using var stream = upload.OpenReadStream();
+                await s3.PutObjectAsync(new PutObjectRequest
                 {
-                    await upload.CopyToAsync(stream, ct);
-                }
+                    BucketName = storage.Bucket,
+                    Key = storedName,
+                    InputStream = stream,
+                    ContentType = string.IsNullOrWhiteSpace(upload.ContentType)
+                        ? "application/octet-stream"
+                        : upload.ContentType,
+                    AutoCloseStream = false,
+                }, ct);
+                uploadedKeys.Add(storedName);
 
-                written.Add(fullPath);
                 var file = new ClinicalFile
                 {
                     PatientId = patientId,
@@ -89,12 +93,13 @@ public sealed class Endpoint(AppDbContext db, IOptions<StorageSettings> storage)
         }
         catch
         {
-            foreach (var path in written)
+            foreach (var key in uploadedKeys)
             {
-                if (File.Exists(path))
+                await s3.DeleteObjectAsync(new DeleteObjectRequest
                 {
-                    File.Delete(path);
-                }
+                    BucketName = storage.Bucket,
+                    Key = key,
+                }, CancellationToken.None);
             }
 
             throw;
@@ -158,7 +163,7 @@ public sealed class Endpoint(AppDbContext db, IOptions<StorageSettings> storage)
         }
 
         IReadOnlyList<string> descriptions = rawDescriptions.Count > 0
-            ? rawDescriptions.Select(value => value ?? "").ToList()
+            ? [.. rawDescriptions.Select(value => value ?? "")]
             : req.Descriptions ?? [];
 
         return (patientId, files, descriptions);

@@ -30,10 +30,11 @@ public sealed record Response(
             consult.Remarks,
             consult.DoctorId,
             consult.Doctor.Nickname,
-            consult.Diagnoses
-                .OrderBy(x => x.Id)
-                .Select(x => new DiagnosisItem(x.Id, x.ConsultId, x.Details, x.Category))
-                .ToList());
+            [
+                .. consult.Diagnoses
+                    .OrderBy(x => x.Id)
+                    .Select(x => new DiagnosisItem(x.Id, x.ConsultId, x.Details, x.Category))
+            ]);
 }
 
 /// <summary>Diagnosis recorded on a consult.</summary>

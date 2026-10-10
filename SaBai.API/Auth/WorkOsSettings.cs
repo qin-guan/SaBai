@@ -24,9 +24,4 @@ public sealed class AuthSettings
     public int TokenLifetimeMinutes { get; set; } = 480;
 }
 
-public sealed class StorageSettings
-{
-    public const string SectionName = "Storage";
 
-    public string Root { get; set; } = "data/files";
-}

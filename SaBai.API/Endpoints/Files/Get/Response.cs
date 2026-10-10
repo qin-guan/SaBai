@@ -2,7 +2,7 @@ using SaBai.API.Domain;
 
 namespace SaBai.API.Endpoints.Files.Get;
 
-/// <summary>Clinical file metadata. Bytes stay on local disk.</summary>
+/// <summary>Clinical file metadata. Bytes are stored in the RustFS bucket.</summary>
 public sealed record Response(
     int Id,
     int PatientId,

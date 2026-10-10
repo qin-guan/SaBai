@@ -49,7 +49,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                 VillageCode = x.VillageCode != null ? x.VillageCode.Code : null,
             })
             .ToListAsync(ct);
-        var latest = await LatestVisitsAsync(rows.Select(x => x.Id).ToArray(), ct);
+        var latest = await LatestVisitsAsync([.. rows.Select(x => x.Id)], ct);
 
         var patients = rows
             .Select(x =>

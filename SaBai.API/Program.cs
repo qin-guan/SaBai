@@ -2,11 +2,15 @@ using System.Text.Json.Serialization;
 using FastEndpoints;
 using FastEndpoints.OpenApi;
 using FastEndpoints.Security;
+using QuestPDF.Infrastructure;
 using Scalar.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using SaBai.API.Auth;
 using SaBai.API.Data;
 using SaBai.API.Middleware;
+using SaBai.API.Storage;
+
+QuestPDF.Settings.License = LicenseType.Community;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,7 +25,8 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 
 builder.Services.Configure<WorkOsSettings>(builder.Configuration.GetSection(WorkOsSettings.SectionName));
 builder.Services.Configure<AuthSettings>(builder.Configuration.GetSection(AuthSettings.SectionName));
-builder.Services.Configure<StorageSettings>(builder.Configuration.GetSection(StorageSettings.SectionName));
+builder.Services.AddSingleton(sp => RustFsS3.Read(sp.GetRequiredService<IConfiguration>()));
+builder.Services.AddSingleton<Amazon.S3.IAmazonS3>(sp => RustFsS3.CreateClient(sp.GetRequiredService<RustFsSettings>()));
 
 var auth = builder.Configuration.GetSection(AuthSettings.SectionName).Get<AuthSettings>() ?? new AuthSettings();
 var workOs = builder.Configuration.GetSection(WorkOsSettings.SectionName).Get<WorkOsSettings>() ?? new WorkOsSettings();

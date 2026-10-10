@@ -40,7 +40,7 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<Response>
                 VillageColorHex = x.VillageCode != null ? x.VillageCode.ColorHex : null,
             })
             .ToListAsync(ct);
-        var latest = await LatestVisitsAsync(rows.Select(x => x.Id).ToArray(), ct);
+        var latest = await LatestVisitsAsync([.. rows.Select(x => x.Id)], ct);
 
         var patients = rows
             .Select(x =>

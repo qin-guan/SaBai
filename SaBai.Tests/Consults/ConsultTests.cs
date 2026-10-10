@@ -196,9 +196,10 @@ public sealed class ConsultTests(AppFixture fixture)
         var bytes = await pdf.Content.ReadAsByteArrayAsync();
 
         // Assert
+        var header = bytes.Length >= 4 ? Encoding.ASCII.GetString(bytes, 0, 4) : Encoding.ASCII.GetString(bytes);
         await Assert.That(pdf.StatusCode).IsEqualTo(HttpStatusCode.OK);
         await Assert.That(pdf.Content.Headers.ContentType?.MediaType).IsEqualTo("application/pdf");
-        await Assert.That(bytes.Length >= 5 && Encoding.ASCII.GetString(bytes, 0, 5) == "%PDF").IsTrue();
+        await Assert.That(header).IsEqualTo("%PDF");
     }
 
     private static async Task<int> CreateVisitAsync(HttpClient client)

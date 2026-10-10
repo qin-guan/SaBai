@@ -26,6 +26,6 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, List<Response>
             .ThenByDescending(x => x.Id)
             .ToListAsync(ct);
 
-        await Send.OkAsync(consults.Select(global::SaBai.API.Endpoints.Consults.ListByVisit.Get.Response.From).ToList(), ct);
+        await Send.OkAsync([.. consults.Select(global::SaBai.API.Endpoints.Consults.ListByVisit.Get.Response.From)], ct);
     }
 }

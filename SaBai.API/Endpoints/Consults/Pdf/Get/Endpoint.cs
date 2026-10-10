@@ -31,31 +31,24 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request>
         var displayId = Patient.FormatDisplayId(code, consult.Visit.Patient.Id);
         var bytes = PdfDocument.Create(new ConsultPdfContent(
             displayId,
+            consult.Visit.Patient.Name,
             consult.Doctor.Nickname,
             consult.PastMedicalHistory,
             consult.Consultation,
-            consult.Diagnoses
-                .OrderBy(x => x.Id)
-                .Select(x => new ConsultPdfDiagnosis(FormatCategory(x.Category), x.Details))
-                .ToList(),
+            [
+                .. consult.Diagnoses
+                    .OrderBy(x => x.Id)
+                    .Select(x => new ConsultPdfDiagnosis(FormatCategory(x.Category), x.Details))
+            ],
             consult.TreatmentPlan,
             consult.ReferredFor,
             consult.ReferralNotes,
             consult.Remarks));
 
-        await SendPdfAsync(bytes, consult.Id, displayId, ct);
-    }
-
-    private async Task SendPdfAsync(byte[] bytes, int consultId, string displayId, CancellationToken ct)
-    {
         var safeId = new string(displayId.Select(ch => char.IsAsciiLetterOrDigit(ch) ? ch : '_').ToArray());
-        var fileName = $"consultation{consultId}_report_{safeId}.pdf";
-        HttpContext.Response.StatusCode = StatusCodes.Status200OK;
-        HttpContext.Response.ContentType = "application/pdf";
+        var fileName = $"consultation{consult.Id}_report_{safeId}.pdf";
         HttpContext.Response.Headers.ContentDisposition = $"inline; filename=\"{fileName}\"";
-        HttpContext.Response.ContentLength = bytes.Length;
-        await HttpContext.Response.StartAsync(ct);
-        await HttpContext.Response.Body.WriteAsync(bytes, ct);
+        await Send.StreamAsync(new MemoryStream(bytes), fileName, bytes.Length, "application/pdf", cancellation: ct);
     }
 
     private static string FormatCategory(DiagnosisCategory? category)

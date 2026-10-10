@@ -65,7 +65,7 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
                 .Where(x => visitIds.Contains(x.Consult.VisitId))
                 .Select(x => new { x.Consult.VisitId, x.Category, x.Details })
                 .ToListAsync(ct);
-            diagnoses = loaded.Select(x => (x.VisitId, x.Category, x.Details)).ToList();
+            diagnoses = [.. loaded.Select(x => (x.VisitId, x.Category, x.Details))];
         }
 
         var grouped = usable

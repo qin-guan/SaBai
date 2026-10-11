@@ -1,49 +1,46 @@
 using Projects;
 
-// Tests pass this because the AppHost process Aspire starts does not inherit CI.
-var useFakeWorkOs = IsContinuousIntegration() || HasArg(args, "--use-fake-workos=true");
-if (useFakeWorkOs)
-{
-    // The GitHub runner has no trusted ASP.NET dev cert, so the HTTPS health check cannot connect.
-    Environment.SetEnvironmentVariable("ASPIRE_ALLOW_UNSECURED_TRANSPORT", "true");
-}
-
 var builder = DistributedApplication.CreateBuilder(args);
-useFakeWorkOs |= !builder.ExecutionContext.IsPublishMode && IsEnabled(builder.Configuration["WorkOS:UseFake"]);
-if (builder.ExecutionContext.IsPublishMode)
-{
-    useFakeWorkOs = false;
-}
 
-var qdrant = builder.AddQdrant("qdrant");
-var postgres = builder.AddPostgres("postgres").WithPgAdmin();
+var qdrant = builder.AddQdrant("qdrant").WithDataVolume();
+var postgres = builder.AddPostgres("postgres").WithDataVolume().WithPgAdmin();
 var db = postgres.AddDatabase("sabai");
 
 var rustFsAccessKey = builder.AddParameter("rustFsAccessKey", "rustfsadmin");
-var rustFsSecretKey = builder.AddParameter("rustFsSecretKey", "rustfsadmin");
-var rustFs = builder.AddRustFs("fs", rustFsAccessKey, rustFsSecretKey);
-var bucket = rustFs.AddBucket("sabai");
+var rustFsSecretKey = builder.AddParameter("rustFsSecretKey", "rustfsadmin", secret: true);
+var rustFs = builder.AddContainer("fs", "rustfs/rustfs", "latest")
+    .WithHttpEndpoint(targetPort: 9000, name: "s3")
+    .WithHttpEndpoint(targetPort: 9001, name: "console")
+    .WithEnvironment("RUSTFS_VOLUMES", "/data/rustfs0")
+    .WithEnvironment("RUSTFS_ADDRESS", "0.0.0.0:9000")
+    .WithEnvironment("RUSTFS_CONSOLE_ADDRESS", "0.0.0.0:9001")
+    .WithEnvironment("RUSTFS_CONSOLE_ENABLE", "true")
+    .WithEnvironment("RUSTFS_CORS_ALLOWED_ORIGINS", "*")
+    .WithEnvironment("RUSTFS_CONSOLE_CORS_ALLOWED_ORIGINS", "*")
+    .WithEnvironment("RUSTFS_ACCESS_KEY", rustFsAccessKey)
+    .WithEnvironment("RUSTFS_SECRET_KEY", rustFsSecretKey)
+    .WithEnvironment("RUSTFS_OBS_LOGGER_LEVEL", "info")
+    .WithVolume("fs-data", "/data")
+    .WithVolume("fs-logs", "/app/logs");
+var s3 = rustFs.GetEndpoint("s3");
 
-var api = (useFakeWorkOs
-        ? builder.AddProject<SaBai_API>("api", "http")
-        : builder.AddProject<SaBai_API>("api"))
+var api = builder.AddProject<SaBai_API>("api")
     .WithReference(qdrant)
     .WithReference(db)
-    .WithReference(bucket)
+    .WithReference(s3)
+    .WithEnvironment("ConnectionStrings__fs-sabai", ReferenceExpression.Create(
+        $"Endpoint={s3};AccessKey={rustFsAccessKey};SecretKey={rustFsSecretKey};Bucket=sabai"))
     .WaitFor(db)
-    .WaitFor(bucket)
+    .WaitFor(rustFs)
     .WithHttpHealthCheck("/health");
 
-if (useFakeWorkOs)
+var useFakeWorkOs = !builder.ExecutionContext.IsPublishMode
+    && builder.Configuration["WorkOS:UseFake"] is "true" or "1";
+api.WithEnvironment("WorkOS__UseFake", useFakeWorkOs ? "true" : "false");
+if (!useFakeWorkOs)
 {
-    api.WithEnvironment("WorkOS__UseFake", "true");
-}
-else
-{
-    var workOsClientId = builder.AddParameter("workOsClientId", "client_01M4K5B4J6E84RQ9DX81J49013");
-    var workOsApiKey = builder.AddParameter("workOsApiKey", secret: true);
-    api.WithEnvironment("WorkOS__ClientId", workOsClientId)
-        .WithEnvironment("WorkOS__ApiKey", workOsApiKey);
+    api.WithEnvironment("WorkOS__ClientId", builder.AddParameter("workOsClientId", "client_01M4K5B4J6E84RQ9DX81J49013"))
+        .WithEnvironment("WorkOS__ApiKey", builder.AddParameter("workOsApiKey", secret: true));
 }
 
 if (builder.ExecutionContext.IsPublishMode)
@@ -57,15 +54,3 @@ if (builder.ExecutionContext.IsPublishMode)
 }
 
 builder.Build().Run();
-
-static bool IsContinuousIntegration() =>
-    IsEnabled(Environment.GetEnvironmentVariable("CI"))
-    || IsEnabled(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"))
-    || IsEnabled(Environment.GetEnvironmentVariable("GITLAB_CI"))
-    || IsEnabled(Environment.GetEnvironmentVariable("TF_BUILD"));
-
-static bool HasArg(string[] args, string expected) =>
-    args.Any(arg => string.Equals(arg, expected, StringComparison.OrdinalIgnoreCase));
-
-static bool IsEnabled(string? value) =>
-    string.Equals(value, "true", StringComparison.OrdinalIgnoreCase) || value == "1";

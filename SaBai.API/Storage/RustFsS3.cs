@@ -48,6 +48,26 @@ public static class RustFsS3
         return new AmazonS3Client(new BasicAWSCredentials(settings.AccessKey, settings.SecretKey), config);
     }
 
+    public static async Task EnsureBucketAsync(IAmazonS3 s3, RustFsSettings settings, CancellationToken cancellationToken)
+    {
+        for (var attempt = 1; ; attempt++)
+        {
+            try
+            {
+                await s3.PutBucketAsync(settings.Bucket, cancellationToken);
+                return;
+            }
+            catch (AmazonS3Exception exception) when (exception.ErrorCode is "BucketAlreadyOwnedByYou" or "BucketAlreadyExists")
+            {
+                return;
+            }
+            catch (Exception) when (attempt < 10)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+            }
+        }
+    }
+
     private static string? Value(DbConnectionStringBuilder parsed, string key) =>
         parsed.TryGetValue(key, out var value) ? value?.ToString() : null;
 }

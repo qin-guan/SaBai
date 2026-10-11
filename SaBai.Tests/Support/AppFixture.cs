@@ -15,7 +15,7 @@ public class AppFixture : AspireFixture<Projects.SaBai_AppHost>
     protected override TimeSpan ResourceTimeout => TimeSpan.FromMinutes(4);
 
     protected override string[] Args =>
-        IsContinuousIntegration() ? ["--use-fake-workos=true"] : [];
+        IsContinuousIntegration() ? ["--WorkOS:UseFake=true"] : [];
 
     protected override IEnumerable<string> ResourcesToRemove() => ["postgres-pgadmin"];
 

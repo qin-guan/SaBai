@@ -1,18 +1,13 @@
 using Projects;
 
-// Tests pass this because the AppHost process Aspire starts does not inherit CI.
-var useFakeWorkOs = IsContinuousIntegration() || HasArg(args, "--use-fake-workos=true");
+var builder = DistributedApplication.CreateBuilder(args);
+
+var useFakeWorkOs = !builder.ExecutionContext.IsPublishMode
+    && IsEnabled(builder.Configuration["WorkOS:UseFake"]);
+
 if (useFakeWorkOs)
 {
-    // The GitHub runner has no trusted ASP.NET dev cert, so the HTTPS health check cannot connect.
     Environment.SetEnvironmentVariable("ASPIRE_ALLOW_UNSECURED_TRANSPORT", "true");
-}
-
-var builder = DistributedApplication.CreateBuilder(args);
-useFakeWorkOs |= !builder.ExecutionContext.IsPublishMode && IsEnabled(builder.Configuration["WorkOS:UseFake"]);
-if (builder.ExecutionContext.IsPublishMode)
-{
-    useFakeWorkOs = false;
 }
 
 var qdrant = builder.AddQdrant("qdrant");
@@ -24,9 +19,7 @@ var rustFsSecretKey = builder.AddParameter("rustFsSecretKey", "rustfsadmin");
 var rustFs = builder.AddRustFs("fs", rustFsAccessKey, rustFsSecretKey);
 var bucket = rustFs.AddBucket("sabai");
 
-var api = (useFakeWorkOs
-        ? builder.AddProject<SaBai_API>("api", "http")
-        : builder.AddProject<SaBai_API>("api"))
+var api = builder.AddProject<SaBai_API>("api", useFakeWorkOs ? "http" : "https")
     .WithReference(qdrant)
     .WithReference(db)
     .WithReference(bucket)
@@ -57,15 +50,7 @@ if (builder.ExecutionContext.IsPublishMode)
 }
 
 builder.Build().Run();
-
-static bool IsContinuousIntegration() =>
-    IsEnabled(Environment.GetEnvironmentVariable("CI"))
-    || IsEnabled(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"))
-    || IsEnabled(Environment.GetEnvironmentVariable("GITLAB_CI"))
-    || IsEnabled(Environment.GetEnvironmentVariable("TF_BUILD"));
-
-static bool HasArg(string[] args, string expected) =>
-    args.Any(arg => string.Equals(arg, expected, StringComparison.OrdinalIgnoreCase));
+return;
 
 static bool IsEnabled(string? value) =>
     string.Equals(value, "true", StringComparison.OrdinalIgnoreCase) || value == "1";

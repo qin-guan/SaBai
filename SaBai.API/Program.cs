@@ -30,6 +30,10 @@ builder.Services.AddSingleton<Amazon.S3.IAmazonS3>(sp => RustFsS3.CreateClient(s
 
 var auth = builder.Configuration.GetSection(AuthSettings.SectionName).Get<AuthSettings>() ?? new AuthSettings();
 var workOs = builder.Configuration.GetSection(WorkOsSettings.SectionName).Get<WorkOsSettings>() ?? new WorkOsSettings();
+if (IsContinuousIntegration())
+{
+    workOs.UseFake = true;
+}
 if (auth.JwtSigningKey.Length < 32)
 {
     throw new InvalidOperationException("Auth:JwtSigningKey must be at least 32 characters.");
@@ -95,3 +99,12 @@ app.UseFastEndpoints(config =>
 });
 
 app.Run();
+
+static bool IsContinuousIntegration() =>
+    IsEnabled(Environment.GetEnvironmentVariable("CI"))
+    || IsEnabled(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"))
+    || IsEnabled(Environment.GetEnvironmentVariable("GITLAB_CI"))
+    || IsEnabled(Environment.GetEnvironmentVariable("TF_BUILD"));
+
+static bool IsEnabled(string? value) =>
+    string.Equals(value, "true", StringComparison.OrdinalIgnoreCase) || value == "1";

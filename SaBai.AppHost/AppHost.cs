@@ -11,17 +11,25 @@ var rustFsSecretKey = builder.AddParameter("rustFsSecretKey", "rustfsadmin");
 var rustFs = builder.AddRustFs("fs", rustFsAccessKey, rustFsSecretKey);
 var bucket = rustFs.AddBucket("sabai");
 
-var workOsClientId = builder.AddParameter("workOsClientId", "client_01M4K5B4J6E84RQ9DX81J49013");
-var workOsApiKey = builder.AddParameter("workOsApiKey", secret: true);
 var api = builder.AddProject<SaBai_API>("api")
     .WithReference(qdrant)
     .WithReference(db)
     .WithReference(bucket)
     .WaitFor(db)
     .WaitFor(bucket)
-    .WithEnvironment("WorkOS__ClientId", workOsClientId)
-    .WithEnvironment("WorkOS__ApiKey", workOsApiKey)
     .WithHttpHealthCheck("/health");
+
+if (IsContinuousIntegration())
+{
+    api.WithEnvironment("WorkOS__UseFake", "true");
+}
+else
+{
+    var workOsClientId = builder.AddParameter("workOsClientId", "client_01M4K5B4J6E84RQ9DX81J49013");
+    var workOsApiKey = builder.AddParameter("workOsApiKey", secret: true);
+    api.WithEnvironment("WorkOS__ClientId", workOsClientId)
+        .WithEnvironment("WorkOS__ApiKey", workOsApiKey);
+}
 
 if (builder.ExecutionContext.IsPublishMode)
 {
@@ -34,3 +42,12 @@ if (builder.ExecutionContext.IsPublishMode)
 }
 
 builder.Build().Run();
+
+static bool IsContinuousIntegration() =>
+    IsEnabled(Environment.GetEnvironmentVariable("CI"))
+    || IsEnabled(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"))
+    || IsEnabled(Environment.GetEnvironmentVariable("GITLAB_CI"))
+    || IsEnabled(Environment.GetEnvironmentVariable("TF_BUILD"));
+
+static bool IsEnabled(string? value) =>
+    string.Equals(value, "true", StringComparison.OrdinalIgnoreCase) || value == "1";

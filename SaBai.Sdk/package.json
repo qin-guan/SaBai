@@ -2,6 +2,41 @@
   "name": "@sabai/sdk",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
+  "exports": {
+    "./clients": {
+      "types": "./dist/clients/index.d.mts",
+      "import": "./dist/clients/index.mjs"
+    },
+    "./handlers": {
+      "types": "./dist/handlers/index.d.mts",
+      "import": "./dist/handlers/index.mjs"
+    },
+    "./hooks": {
+      "types": "./dist/hooks/index.d.mts",
+      "import": "./dist/hooks/index.mjs"
+    },
+    "./mcp": {
+      "types": "./dist/mcp/index.d.mts",
+      "import": "./dist/mcp/index.mjs"
+    },
+    "./mocks": {
+      "types": "./dist/mocks/index.d.mts",
+      "import": "./dist/mocks/index.mjs"
+    },
+    "./types": {
+      "types": "./dist/types/index.d.mts",
+      "import": "./dist/types/index.mjs"
+    },
+    "./zod": {
+      "types": "./dist/zod/index.d.mts",
+      "import": "./dist/zod/index.mjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsdown"
   },

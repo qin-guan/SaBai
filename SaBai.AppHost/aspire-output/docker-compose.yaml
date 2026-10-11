@@ -1,0 +1,121 @@
+services:
+  compose-dashboard:
+    image: "mcr.microsoft.com/dotnet/nightly/aspire-dashboard:13.6"
+    ports:
+      - "18888"
+    expose:
+      - "18889"
+      - "18890"
+    networks:
+      - "aspire"
+    restart: "always"
+  qdrant:
+    image: "docker.io/qdrant/qdrant:v1.18.0"
+    environment:
+      QDRANT__SERVICE__API_KEY: "${QDRANT_KEY}"
+      QDRANT__SERVICE__ENABLE_STATIC_CONTENT: "0"
+    expose:
+      - "6334"
+      - "6333"
+    volumes:
+      - type: "volume"
+        target: "/qdrant/storage"
+        source: "sabai.apphost-993ba38cf5-qdrant-data"
+        read_only: false
+    networks:
+      - "aspire"
+  postgres:
+    image: "docker.io/library/postgres:18.3"
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: "scram-sha-256"
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+    expose:
+      - "5432"
+    volumes:
+      - type: "volume"
+        target: "/var/lib/postgresql"
+        source: "sabai.apphost-993ba38cf5-postgres-data"
+        read_only: false
+    networks:
+      - "aspire"
+  fs:
+    image: "rustfs/rustfs:latest"
+    environment:
+      RUSTFS_VOLUMES: "/data/rustfs0"
+      RUSTFS_ADDRESS: "0.0.0.0:9000"
+      RUSTFS_CONSOLE_ADDRESS: "0.0.0.0:9001"
+      RUSTFS_CONSOLE_ENABLE: "true"
+      RUSTFS_CORS_ALLOWED_ORIGINS: "*"
+      RUSTFS_CONSOLE_CORS_ALLOWED_ORIGINS: "*"
+      RUSTFS_ACCESS_KEY: "${RUSTFSACCESSKEY}"
+      RUSTFS_SECRET_KEY: "${RUSTFSSECRETKEY}"
+      RUSTFS_OBS_LOGGER_LEVEL: "info"
+    expose:
+      - "9000"
+      - "9001"
+    volumes:
+      - type: "volume"
+        target: "/data"
+        source: "fs-data"
+        read_only: false
+      - type: "volume"
+        target: "/app/logs"
+        source: "fs-logs"
+        read_only: false
+    networks:
+      - "aspire"
+  api:
+    image: "${API_IMAGE}"
+    environment:
+      OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      HTTP_PORTS: "${API_PORT}"
+      ConnectionStrings__qdrant: "Endpoint=http://qdrant:6334;Key=${QDRANT_KEY}"
+      QDRANT_GRPCHOST: "qdrant"
+      QDRANT_GRPCPORT: "6334"
+      QDRANT_HTTPHOST: "qdrant"
+      QDRANT_HTTPPORT: "6333"
+      QDRANT_APIKEY: "${QDRANT_KEY}"
+      QDRANT_URI: "http://qdrant:6334"
+      QDRANT_HTTPURI: "http://qdrant:6333"
+      ConnectionStrings__qdrant_http: "Endpoint=http://qdrant:6333;Key=${QDRANT_KEY}"
+      ConnectionStrings__sabai: "Host=postgres;Port=5432;Username=postgres;Password=${POSTGRES_PASSWORD};Database=sabai"
+      SABAI_HOST: "postgres"
+      SABAI_PORT: "5432"
+      SABAI_USERNAME: "postgres"
+      SABAI_PASSWORD: "${POSTGRES_PASSWORD}"
+      SABAI_URI: "postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/sabai"
+      SABAI_JDBCCONNECTIONSTRING: "jdbc:postgresql://postgres:5432/sabai"
+      SABAI_DATABASENAME: "sabai"
+      FS_S3: "http://fs:9000"
+      services__fs__s3__0: "http://fs:9000"
+      ConnectionStrings__fs-sabai: "Endpoint=http://fs:9000;AccessKey=${RUSTFSACCESSKEY};SecretKey=${RUSTFSSECRETKEY};Bucket=sabai"
+      WorkOS__UseFake: "false"
+      WorkOS__ClientId: "${WORKOSCLIENTID}"
+      WorkOS__ApiKey: "${WORKOSAPIKEY}"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://compose-dashboard:18889"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "api"
+    expose:
+      - "${API_PORT}"
+    depends_on:
+      postgres:
+        condition: "service_started"
+      fs:
+        condition: "service_started"
+    networks:
+      - "aspire"
+networks:
+  aspire:
+    driver: "bridge"
+volumes:
+  sabai.apphost-993ba38cf5-qdrant-data:
+    driver: "local"
+  sabai.apphost-993ba38cf5-postgres-data:
+    driver: "local"
+  fs-data:
+    driver: "local"
+  fs-logs:
+    driver: "local"

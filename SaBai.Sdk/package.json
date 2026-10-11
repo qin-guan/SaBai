@@ -39,7 +39,8 @@
   ],
   "scripts": {
     "generate": "kubb generate",
-    "build": "tsdown"
+    "build": "tsdown",
+    "postinstall": "tsdown"
   },
   "keywords": [],
   "author": "",

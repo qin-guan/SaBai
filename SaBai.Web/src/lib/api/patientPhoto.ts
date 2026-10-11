@@ -39,14 +39,14 @@ export function usePatientPhoto(
     staleTime: 5 * 60 * 1000,
     retry: false,
     queryFn: async () => {
-      const result = await saBaiAPIEndpointsPatientsPhotoGetEndpoint({
+      const result = (await saBaiAPIEndpointsPatientsPhotoGetEndpoint({
         ...apiConfig,
         path: { id: patientId },
         responseType: "blob",
         throwOnError: false,
-      });
+      })) as unknown as { status: number; data?: Blob | null };
       if (result.status !== 200) return null;
-      return (result.data as Blob | undefined) ?? null;
+      return result.data ?? null;
     },
   });
 

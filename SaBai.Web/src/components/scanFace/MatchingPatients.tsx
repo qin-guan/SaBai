@@ -37,6 +37,7 @@ export default function MatchingPatients({
       const result = await saBaiAPIEndpointsPatientsSearchByFacePostEndpoint({
         ...apiConfig,
         body: { image },
+        query: { maxMatches: 5 },
         throwOnError: true,
       }).unwrap();
       return result.matches;

@@ -4,5 +4,10 @@
 */
 
 import * as z from 'zod'
+import { saBaiAPIDomainBroadcastSeveritySchema } from './saBaiAPIDomainBroadcastSeveritySchema'
 
-export const saBaiAPIEndpointsBroadcastsCreatePostRequestSchema = z.null()
+export const saBaiAPIEndpointsBroadcastsCreatePostRequestSchema = z.object({
+  title: z.string().min(0).max(255),
+  body: z.string().min(1),
+  severity: saBaiAPIDomainBroadcastSeveritySchema.optional(),
+})

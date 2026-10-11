@@ -3,4 +3,49 @@
 * Do not edit manually.
 */
 
-export type SaBaiAPIEndpointsPatientsCreatePostRequest = null;
+import type { SaBaiAPIDomainGenderKey } from './SaBaiAPIDomainGender'
+import type { SaBaiAPIEndpointsPatientsCreatePostVitalsRequest } from './SaBaiAPIEndpointsPatientsCreatePostVitalsRequest'
+
+export type SaBaiAPIEndpointsPatientsCreatePostRequest = {
+    /**
+     * @minLength 0
+     * @maxLength 255
+     * @type string
+    */
+    name: string;
+    /**
+     * @minLength 0
+     * @maxLength 255
+     * @type string | undefined
+    */
+    identificationNumber?: string | null;
+    /**
+     * @minLength 0
+     * @maxLength 255
+     * @type string | undefined
+    */
+    contactNo?: string | null;
+    gender: (null | SaBaiAPIDomainGenderKey);
+    /**
+     * @description
+     * Format: `date-time`
+     * @type string
+    */
+    dateOfBirth: string;
+    /**
+     * @minLength 1
+     * @type string
+    */
+    drugAllergy: string;
+    hasPoorCard?: boolean;
+    hasBS2Card?: boolean;
+    hasSabaiCard?: boolean;
+    toGetReport?: boolean;
+    /**
+     * @description
+     * Format: `int32`
+     * @type integer | undefined
+    */
+    villageCodeId?: number;
+    vitals?: (null | SaBaiAPIEndpointsPatientsCreatePostVitalsRequest);
+};

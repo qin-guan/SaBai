@@ -1,0 +1,40 @@
+main:
+  - title: "Documentation"
+    url: /docs/
+  - title: "Features"
+    url: /features/
+# documentation links
+docs:
+  - title: "Getting Started"
+    children:
+      - title: "Developer Guide"
+        url: /docs/developer-guide/
+      - title: "Contributing to Documentation"
+        url: /docs/contributing-to-documentation/
+  - title: "Backend Code"
+    children:
+      - title: "API SDK & Authentication"
+        url: /docs/api-and-auth/
+
+features:
+  - title: "Features"
+    children:
+      - title: "Scan Face"
+        url: /features/scan-face/
+      - title: "Patients"
+        url: /features/patients/
+      - title: "Vitals"
+        url: /features/vitals/
+      - title: "Vision"
+        url: /features/vision/
+      - title: "Consults"
+        url: /features/consults/
+      - title: "Medication Stock"
+        url: /features/medication-stock/
+      - title: "Medication Brands"
+        url: /features/medication-brands/
+      - title: "Medication Active Ingredients"
+        url: /features/medication-active-ingredients/
+      - title: "Settings"
+        url: /features/settings/
+    

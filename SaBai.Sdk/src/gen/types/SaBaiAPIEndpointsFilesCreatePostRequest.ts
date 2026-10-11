@@ -11,5 +11,5 @@ export type SaBaiAPIEndpointsFilesCreatePostRequest = {
     */
     patientId?: number;
     files?: Blob[] | null;
-    descriptions?: null;
+    descriptions?: string[] | null;
 };

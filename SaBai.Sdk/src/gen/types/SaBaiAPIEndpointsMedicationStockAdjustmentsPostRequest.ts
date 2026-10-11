@@ -3,4 +3,12 @@
 * Do not edit manually.
 */
 
-export type SaBaiAPIEndpointsMedicationStockAdjustmentsPostRequest = null;
+export type SaBaiAPIEndpointsMedicationStockAdjustmentsPostRequest = {
+    /**
+     * @description
+     * Format: `int32`
+     * @type integer | undefined
+    */
+    quantityChange?: number;
+    remarks?: string | null;
+};

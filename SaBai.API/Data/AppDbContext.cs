@@ -71,6 +71,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.Property(x => x.IdentificationNumber).HasMaxLength(255);
             entity.Property(x => x.ContactNo).HasMaxLength(255);
             entity.Property(x => x.Gender).HasConversion<string>().HasMaxLength(16);
+            // Reuse the reserved columns so no migration is required; see Patient docs.
+            entity.Property(x => x.PhotoStoredFileName).HasColumnName("PatientImagePublicId");
+            entity.Property(x => x.LatestFaceId).HasColumnName("RekognitionFaceId");
             entity.HasIndex(x => x.Name);
             entity.HasIndex(x => x.IdentificationNumber);
             entity.HasOne(x => x.VillageCode)

@@ -5,4 +5,8 @@
 
 import * as z from 'zod'
 
-export const saBaiAPIEndpointsMedicationBrandsCreatePostRequestSchema = z.null()
+export const saBaiAPIEndpointsMedicationBrandsCreatePostRequestSchema = z.object({
+  name: z.string().min(0).max(255),
+  activeIngredientId: z.int32().gt(0).optional(),
+  remarks: z.string(),
+})

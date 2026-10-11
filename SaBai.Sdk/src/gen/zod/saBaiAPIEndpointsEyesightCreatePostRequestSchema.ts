@@ -5,4 +5,15 @@
 
 import * as z from 'zod'
 
-export const saBaiAPIEndpointsEyesightCreatePostRequestSchema = z.null()
+export const saBaiAPIEndpointsEyesightCreatePostRequestSchema = z.object({
+  visitId: z.int32().gt(0).optional(),
+  leftEyeDegree: z.string().nullish(),
+  rightEyeDegree: z.string().nullish(),
+  leftEyePinhole: z.string().nullish(),
+  rightEyePinhole: z.string().nullish(),
+  leftAstigmatism: z.string().nullish(),
+  rightAstigmatism: z.string().nullish(),
+  comments: z.string().nullish(),
+  leftPrescribedGlassesDegree: z.string().nullish(),
+  rightPrescribedGlassesDegree: z.string().nullish(),
+})

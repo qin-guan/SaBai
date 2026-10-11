@@ -28,11 +28,14 @@ public sealed class Patient
 
     public bool ToGetReport { get; set; }
 
-    /// <summary>Reserved for a future image store. Not populated while Cloudinary is out of scope.</summary>
-    public string? PatientImagePublicId { get; set; }
+    /// <summary>RustFS object key of the patient's profile photo, or null when none is set.
+    /// Mapped to the legacy <c>PatientImagePublicId</c> column.</summary>
+    public string? PhotoStoredFileName { get; set; }
 
-    /// <summary>Reserved for a future face index. Not populated while Rekognition is out of scope.</summary>
-    public string? RekognitionFaceId { get; set; }
+    /// <summary>Qdrant face id most recently enrolled for this patient, or null.
+    /// Used only as a "has a face" flag; all faces live in the face store.
+    /// Mapped to the legacy <c>RekognitionFaceId</c> column.</summary>
+    public string? LatestFaceId { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; }
 

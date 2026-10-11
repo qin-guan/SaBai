@@ -5,4 +5,9 @@
 
 import * as z from 'zod'
 
-export const saBaiAPIEndpointsMedicationIngredientsUpdatePutRequestSchema = z.null()
+export const saBaiAPIEndpointsMedicationIngredientsUpdatePutRequestSchema = z.object({
+  name: z.string().min(0).max(255),
+  unitOfMeasurement: z.string().min(0).max(255),
+  fallBelow: z.int32().gt(0).optional(),
+  remarks: z.string().nullish(),
+})

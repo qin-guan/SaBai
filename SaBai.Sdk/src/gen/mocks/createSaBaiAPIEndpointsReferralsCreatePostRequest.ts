@@ -3,6 +3,19 @@
 * Do not edit manually.
 */
 
-export function createSaBaiAPIEndpointsReferralsCreatePostRequest() {
-  return null
+import type { SaBaiAPIEndpointsReferralsCreatePostRequest } from '../types/SaBaiAPIEndpointsReferralsCreatePostRequest'
+import { fakerEN as faker } from '@faker-js/faker'
+
+export function createSaBaiAPIEndpointsReferralsCreatePostRequest<TData extends Partial<SaBaiAPIEndpointsReferralsCreatePostRequest> = object>(data?: TData)
+
+{
+  const defaultFakeData = {
+  consultId: faker.number.int(),
+  referredFor: faker.string.alpha({ length: 1 }),
+  referralNotes: faker.string.alpha(),
+}
+  return {
+    ...defaultFakeData,
+    ...(data || {}),
+  } as Omit<typeof defaultFakeData, keyof NoInfer<TData>> & NoInfer<TData>
 }

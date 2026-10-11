@@ -3,6 +3,13 @@
 * Do not edit manually.
 */
 
-export function createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsCreatePostDiagnosisInput() {
-  return null
+import type { SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsCreatePostDiagnosisInput } from '../types/SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsCreatePostDiagnosisInput'
+import { createSaBaiAPIEndpointsConsultsCreatePostDiagnosisInput } from './createSaBaiAPIEndpointsConsultsCreatePostDiagnosisInput'
+import { fakerEN as faker } from '@faker-js/faker'
+
+export function createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsCreatePostDiagnosisInput(data?: Partial<SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsCreatePostDiagnosisInput>): SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsCreatePostDiagnosisInput {
+  return [
+    ...faker.helpers.multiple(() => (createSaBaiAPIEndpointsConsultsCreatePostDiagnosisInput()), { count: 1 }),
+    ...(data || []).filter((item) => item !== undefined),
+  ] as SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsCreatePostDiagnosisInput
 }

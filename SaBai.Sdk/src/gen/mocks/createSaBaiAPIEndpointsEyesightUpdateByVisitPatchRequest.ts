@@ -3,6 +3,25 @@
 * Do not edit manually.
 */
 
-export function createSaBaiAPIEndpointsEyesightUpdateByVisitPatchRequest() {
-  return null
+import type { SaBaiAPIEndpointsEyesightUpdateByVisitPatchRequest } from '../types/SaBaiAPIEndpointsEyesightUpdateByVisitPatchRequest'
+import { fakerEN as faker } from '@faker-js/faker'
+
+export function createSaBaiAPIEndpointsEyesightUpdateByVisitPatchRequest<TData extends Partial<SaBaiAPIEndpointsEyesightUpdateByVisitPatchRequest> = object>(data?: TData)
+
+{
+  const defaultFakeData = {
+  leftEyeDegree: faker.string.alpha(),
+  rightEyeDegree: faker.string.alpha(),
+  leftEyePinhole: faker.string.alpha(),
+  rightEyePinhole: faker.string.alpha(),
+  leftAstigmatism: faker.string.alpha(),
+  rightAstigmatism: faker.string.alpha(),
+  comments: faker.string.alpha(),
+  leftPrescribedGlassesDegree: faker.string.alpha(),
+  rightPrescribedGlassesDegree: faker.string.alpha(),
+}
+  return {
+    ...defaultFakeData,
+    ...(data || {}),
+  } as Omit<typeof defaultFakeData, keyof NoInfer<TData>> & NoInfer<TData>
 }

@@ -3,4 +3,68 @@
 * Do not edit manually.
 */
 
-export type SaBaiAPIEndpointsVitalsUpdatePatchRequest = null;
+export type SaBaiAPIEndpointsVitalsUpdatePatchRequest = {
+    /**
+     * @description
+     * Format: `double`
+     * @type number | undefined
+    */
+    height?: number | null;
+    /**
+     * @description
+     * Format: `double`
+     * @type number | undefined
+    */
+    weight?: number | null;
+    /**
+     * @description
+     * Format: `double`
+     * @type number | undefined
+    */
+    temperature?: number | null;
+    /**
+     * @description
+     * Format: `int32`
+     * @type integer | undefined
+    */
+    systolic?: number | null;
+    /**
+     * @description
+     * Format: `int32`
+     * @type integer | undefined
+    */
+    diastolic?: number | null;
+    /**
+     * @description
+     * Format: `int32`
+     * @type integer | undefined
+    */
+    heartRate?: number | null;
+    /**
+     * @description
+     * Format: `double`
+     * @type number | undefined
+    */
+    hemocueCount?: number | null;
+    diabetesMellitus?: boolean | null;
+    urineTest?: string | null;
+    /**
+     * @description
+     * Format: `double`
+     * @type number | undefined
+    */
+    bloodGlucoseNonFasting?: number | null;
+    /**
+     * @description
+     * Format: `double`
+     * @type number | undefined
+    */
+    bloodGlucoseFasting?: number | null;
+    /**
+     * @description
+     * Format: `double`
+     * @type number | undefined
+    */
+    hba1c?: number | null;
+    others?: string | null;
+};

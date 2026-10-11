@@ -5,4 +5,17 @@
 
 import * as z from 'zod'
 
-export const saBaiAPIEndpointsPubertyCreatePostRequestSchema = z.null()
+export const saBaiAPIEndpointsPubertyCreatePostRequestSchema = z.object({
+  vitalsId: z.int32().gt(0).optional(),
+  pubarche: z.boolean().nullish(),
+  pubarcheAge: z.int32().nullish(),
+  thelarche: z.boolean().nullish(),
+  thelarcheAge: z.int32().nullish(),
+  menarche: z.boolean().nullish(),
+  menarcheAge: z.int32().nullish(),
+  voiceChange: z.boolean().nullish(),
+  voiceChangeAge: z.int32().nullish(),
+  testicularGrowth: z.boolean().nullish(),
+  testicularGrowthAge: z.int32().nullish(),
+  additionalNotes: z.string().nullish(),
+})

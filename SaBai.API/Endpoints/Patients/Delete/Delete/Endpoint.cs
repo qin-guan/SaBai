@@ -1,12 +1,21 @@
+using Amazon.S3;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 using SaBai.API.Auth;
 using SaBai.API.Data;
 using SaBai.API.Domain;
+using SaBai.API.FaceRecognition;
+using SaBai.API.Storage;
 
 namespace SaBai.API.Endpoints.Patients.Delete.Delete;
 
-public sealed class Endpoint(AppDbContext db) : Endpoint<Request>
+public sealed class Endpoint(
+    AppDbContext db,
+    IAmazonS3 s3,
+    RustFsSettings storage,
+    FaceStore store,
+    ILogger<Endpoint> logger)
+    : Endpoint<Request>
 {
     public override void Configure()
     {
@@ -21,6 +30,12 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request>
         if (await db.Visits.AnyAsync(x => x.PatientId == patient.Id, ct))
         {
             throw new ConflictException("Patient has visits and cannot be deleted.");
+        }
+
+        await PatientPhoto.DeleteObjectAsync(s3, storage, patient.PhotoStoredFileName, logger, ct);
+        if (patient.LatestFaceId is not null)
+        {
+            await store.DeletePersonAsync(PatientFaceIdentity.ForPatient(patient.Id), ct);
         }
 
         db.Patients.Remove(patient);

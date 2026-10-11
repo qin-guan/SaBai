@@ -3,4 +3,12 @@
 * Do not edit manually.
 */
 
-export type SaBaiAPIEndpointsFilesUpdatePatchRequest = null;
+export type SaBaiAPIEndpointsFilesUpdatePatchRequest = {
+    /**
+     * @minLength 0
+     * @maxLength 255
+     * @type string | undefined
+    */
+    fileName?: string | null;
+    description?: string | null;
+};

@@ -4,5 +4,10 @@
 */
 
 import * as z from 'zod'
+import { saBaiAPIDomainOrderStatusSchema } from './saBaiAPIDomainOrderStatusSchema'
 
-export const saBaiAPIEndpointsOrdersUpdatePatchRequestSchema = z.null()
+export const saBaiAPIEndpointsOrdersUpdatePatchRequestSchema = z.object({
+  status: z.union([z.null(), saBaiAPIDomainOrderStatusSchema]),
+  dosageInstructions: z.string().nullish(),
+  remarks: z.string().nullish(),
+})

@@ -38,6 +38,8 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<Response>
                 x.VillageCodeId,
                 VillageCode = x.VillageCode != null ? x.VillageCode.Code : null,
                 VillageColorHex = x.VillageCode != null ? x.VillageCode.ColorHex : null,
+                x.PhotoStoredFileName,
+                x.LatestFaceId,
             })
             .ToListAsync(ct);
         var latest = await LatestVisitsAsync([.. rows.Select(x => x.Id)], ct);
@@ -73,7 +75,9 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<Response>
                 Patient.FormatDisplayId(x.Row.VillageCode, x.Row.Id),
                 Patient.FormatFilterString(x.Row.VillageCode, x.Row.Id, x.Row.ContactNo, x.Row.Name),
                 x.Last?.Date,
-                x.Last?.Id))
+                x.Last?.Id,
+                x.Row.PhotoStoredFileName != null,
+                x.Row.LatestFaceId != null))
             .ToList();
 
         await Send.OkAsync(new Response(patients), ct);

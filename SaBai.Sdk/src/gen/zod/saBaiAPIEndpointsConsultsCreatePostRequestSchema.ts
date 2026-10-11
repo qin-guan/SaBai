@@ -4,5 +4,17 @@
 */
 
 import * as z from 'zod'
+import { systemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsCreatePostDiagnosisInputSchema } from './systemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsCreatePostDiagnosisInputSchema'
+import { systemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsCreatePostOrderInputSchema } from './systemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsCreatePostOrderInputSchema'
 
-export const saBaiAPIEndpointsConsultsCreatePostRequestSchema = z.null()
+export const saBaiAPIEndpointsConsultsCreatePostRequestSchema = z.object({
+  visitId: z.int32().gt(0).optional(),
+  pastMedicalHistory: z.string().nullish(),
+  consultation: z.string().nullish(),
+  treatmentPlan: z.string().nullish(),
+  referredFor: z.string().nullish(),
+  referralNotes: z.string().nullish(),
+  remarks: z.string().nullish(),
+  diagnoses: systemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsCreatePostDiagnosisInputSchema,
+  orders: systemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsCreatePostOrderInputSchema.optional(),
+})

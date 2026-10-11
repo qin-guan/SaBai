@@ -3,6 +3,18 @@
 * Do not edit manually.
 */
 
-export function createSaBaiAPIEndpointsFilesUpdatePatchRequest() {
-  return null
+import type { SaBaiAPIEndpointsFilesUpdatePatchRequest } from '../types/SaBaiAPIEndpointsFilesUpdatePatchRequest'
+import { fakerEN as faker } from '@faker-js/faker'
+
+export function createSaBaiAPIEndpointsFilesUpdatePatchRequest<TData extends Partial<SaBaiAPIEndpointsFilesUpdatePatchRequest> = object>(data?: TData)
+
+{
+  const defaultFakeData = {
+  fileName: faker.string.alpha({ length: { min: 0, max: 255 } }),
+  description: faker.string.alpha(),
+}
+  return {
+    ...defaultFakeData,
+    ...(data || {}),
+  } as Omit<typeof defaultFakeData, keyof NoInfer<TData>> & NoInfer<TData>
 }

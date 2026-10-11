@@ -5,4 +5,7 @@
 
 import * as z from 'zod'
 
-export const saBaiAPIEndpointsAuthLoginPostRequestSchema = z.null()
+export const saBaiAPIEndpointsAuthLoginPostRequestSchema = z.object({
+  email: z.email().min(1),
+  password: z.string().min(1),
+})

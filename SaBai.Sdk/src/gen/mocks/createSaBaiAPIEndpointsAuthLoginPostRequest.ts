@@ -3,6 +3,18 @@
 * Do not edit manually.
 */
 
-export function createSaBaiAPIEndpointsAuthLoginPostRequest() {
-  return null
+import type { SaBaiAPIEndpointsAuthLoginPostRequest } from '../types/SaBaiAPIEndpointsAuthLoginPostRequest'
+import { fakerEN as faker } from '@faker-js/faker'
+
+export function createSaBaiAPIEndpointsAuthLoginPostRequest<TData extends Partial<SaBaiAPIEndpointsAuthLoginPostRequest> = object>(data?: TData)
+
+{
+  const defaultFakeData = {
+  email: faker.internet.email(),
+  password: faker.string.alpha({ length: 1 }),
+}
+  return {
+    ...defaultFakeData,
+    ...(data || {}),
+  } as Omit<typeof defaultFakeData, keyof NoInfer<TData>> & NoInfer<TData>
 }

@@ -3,4 +3,8 @@
 * Do not edit manually.
 */
 
-export type SaBaiAPIEndpointsMedicationStockSplitsPostRequest = null;
+import type { SystemCollectionsGenericListOfSaBaiAPIEndpointsMedicationStockSplitsPostSplitItem } from './SystemCollectionsGenericListOfSaBaiAPIEndpointsMedicationStockSplitsPostSplitItem'
+
+export type SaBaiAPIEndpointsMedicationStockSplitsPostRequest = {
+    splits: SystemCollectionsGenericListOfSaBaiAPIEndpointsMedicationStockSplitsPostSplitItem;
+};

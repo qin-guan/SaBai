@@ -24,4 +24,6 @@ export const saBaiAPIEndpointsPatientsGetResponseSchema = z.object({
   filterString: z.string(),
   lastVisitDate: z.iso.datetime().nullable(),
   lastVisitId: z.int32().nullable(),
+  hasPhoto: z.boolean(),
+  hasFace: z.boolean(),
 })

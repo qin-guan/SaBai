@@ -3,4 +3,9 @@
 * Do not edit manually.
 */
 
-export type SaBaiAPIEndpointsDiagnosesUpdatePatchRequest = null;
+import type { SaBaiAPIDomainDiagnosisCategoryKey } from './SaBaiAPIDomainDiagnosisCategory'
+
+export type SaBaiAPIEndpointsDiagnosesUpdatePatchRequest = {
+    details?: string | null;
+    category?: (null | SaBaiAPIDomainDiagnosisCategoryKey);
+};

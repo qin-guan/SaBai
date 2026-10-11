@@ -5,4 +5,6 @@
 
 import * as z from 'zod'
 
-export const saBaiAPIEndpointsPersonsFacesPostRequestSchema = z.null()
+export const saBaiAPIEndpointsPersonsFacesPostRequestSchema = z.object({
+  image: z.instanceof(File).optional(),
+})

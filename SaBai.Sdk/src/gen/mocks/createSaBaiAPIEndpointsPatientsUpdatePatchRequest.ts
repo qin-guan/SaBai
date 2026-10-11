@@ -3,6 +3,28 @@
 * Do not edit manually.
 */
 
-export function createSaBaiAPIEndpointsPatientsUpdatePatchRequest() {
-  return null
+import type { SaBaiAPIEndpointsPatientsUpdatePatchRequest } from '../types/SaBaiAPIEndpointsPatientsUpdatePatchRequest'
+import { createSaBaiAPIDomainGender } from './createSaBaiAPIDomainGender'
+import { fakerEN as faker } from '@faker-js/faker'
+
+export function createSaBaiAPIEndpointsPatientsUpdatePatchRequest<TData extends Partial<SaBaiAPIEndpointsPatientsUpdatePatchRequest> = object>(data?: TData)
+
+{
+  const defaultFakeData = {
+  name: faker.string.alpha({ length: { min: 0, max: 255 } }),
+  identificationNumber: faker.string.alpha({ length: { min: 0, max: 255 } }),
+  contactNo: faker.string.alpha({ length: { min: 0, max: 255 } }),
+  gender: faker.helpers.arrayElement([null, createSaBaiAPIDomainGender()]),
+  dateOfBirth: faker.date.anytime().toISOString(),
+  drugAllergy: faker.string.alpha(),
+  hasPoorCard: faker.datatype.boolean(),
+  hasBS2Card: faker.datatype.boolean(),
+  hasSabaiCard: faker.datatype.boolean(),
+  toGetReport: faker.datatype.boolean(),
+  villageCodeId: faker.number.int(),
+}
+  return {
+    ...defaultFakeData,
+    ...(data || {}),
+  } as Omit<typeof defaultFakeData, keyof NoInfer<TData>> & NoInfer<TData>
 }

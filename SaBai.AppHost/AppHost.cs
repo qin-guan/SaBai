@@ -43,6 +43,12 @@ if (!useFakeWorkOs)
         .WithEnvironment("WorkOS__ApiKey", builder.AddParameter("workOsApiKey", secret: true));
 }
 
+var frontend = builder.AddNextJsApp("frontend", "../SaBai.Web")
+    .WithPnpm(install: false)
+    .WithEnvironment("NEXT_PUBLIC_API_URL", api.GetEndpoint("http"))
+    .WithHttpEndpoint(port: 3000, env: "PORT")
+    .WaitFor(api);
+
 if (builder.ExecutionContext.IsPublishMode)
 {
     builder.AddDockerComposeEnvironment("compose")

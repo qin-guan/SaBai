@@ -3,6 +3,19 @@
 * Do not edit manually.
 */
 
-export function createSaBaiAPIEndpointsMedicationBrandsCreatePostRequest() {
-  return null
+import type { SaBaiAPIEndpointsMedicationBrandsCreatePostRequest } from '../types/SaBaiAPIEndpointsMedicationBrandsCreatePostRequest'
+import { fakerEN as faker } from '@faker-js/faker'
+
+export function createSaBaiAPIEndpointsMedicationBrandsCreatePostRequest<TData extends Partial<SaBaiAPIEndpointsMedicationBrandsCreatePostRequest> = object>(data?: TData)
+
+{
+  const defaultFakeData = {
+  name: faker.string.alpha({ length: { min: 0, max: 255 } }),
+  activeIngredientId: faker.number.int(),
+  remarks: faker.string.alpha(),
+}
+  return {
+    ...defaultFakeData,
+    ...(data || {}),
+  } as Omit<typeof defaultFakeData, keyof NoInfer<TData>> & NoInfer<TData>
 }

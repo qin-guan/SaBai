@@ -5,4 +5,9 @@
 
 import * as z from 'zod'
 
-export const saBaiAPIEndpointsVillageCodesUpdatePatchRequestSchema = z.null()
+export const saBaiAPIEndpointsVillageCodesUpdatePatchRequestSchema = z.object({
+  code: z.string().min(0).max(255).nullish(),
+  name: z.string().min(0).max(255).nullish(),
+  colorHex: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/).nullish(),
+  isVisible: z.boolean().nullish(),
+})

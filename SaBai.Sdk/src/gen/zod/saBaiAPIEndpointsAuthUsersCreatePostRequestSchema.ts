@@ -4,5 +4,12 @@
 */
 
 import * as z from 'zod'
+import { saBaiAPIDomainStaffRoleSchema } from './saBaiAPIDomainStaffRoleSchema'
 
-export const saBaiAPIEndpointsAuthUsersCreatePostRequestSchema = z.null()
+export const saBaiAPIEndpointsAuthUsersCreatePostRequestSchema = z.object({
+  username: z.string().min(0).max(150),
+  email: z.email().min(0).max(255),
+  password: z.string().min(8),
+  nickname: z.string().min(0).max(255).nullish(),
+  role: saBaiAPIDomainStaffRoleSchema.optional(),
+})

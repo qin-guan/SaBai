@@ -3,4 +3,9 @@
 * Do not edit manually.
 */
 
-export type SaBaiAPIEndpointsReferralsUpdateStatePatchRequest = null;
+import type { SaBaiAPIDomainReferralStateKey } from './SaBaiAPIDomainReferralState'
+
+export type SaBaiAPIEndpointsReferralsUpdateStatePatchRequest = {
+    referralState: (null | SaBaiAPIDomainReferralStateKey);
+    referralOutcome?: string | null;
+};

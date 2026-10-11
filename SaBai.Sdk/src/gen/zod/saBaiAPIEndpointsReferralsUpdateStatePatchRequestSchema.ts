@@ -4,5 +4,9 @@
 */
 
 import * as z from 'zod'
+import { saBaiAPIDomainReferralStateSchema } from './saBaiAPIDomainReferralStateSchema'
 
-export const saBaiAPIEndpointsReferralsUpdateStatePatchRequestSchema = z.null()
+export const saBaiAPIEndpointsReferralsUpdateStatePatchRequestSchema = z.object({
+  referralState: z.union([z.null(), saBaiAPIDomainReferralStateSchema]),
+  referralOutcome: z.string().nullish(),
+})

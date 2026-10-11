@@ -3,4 +3,23 @@
 * Do not edit manually.
 */
 
-export type SaBaiAPIEndpointsVillageCodesUpdatePatchRequest = null;
+export type SaBaiAPIEndpointsVillageCodesUpdatePatchRequest = {
+    /**
+     * @minLength 0
+     * @maxLength 255
+     * @type string | undefined
+    */
+    code?: string | null;
+    /**
+     * @minLength 0
+     * @maxLength 255
+     * @type string | undefined
+    */
+    name?: string | null;
+    /**
+     * @pattern ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
+     * @type string | undefined
+    */
+    colorHex?: string | null;
+    isVisible?: boolean | null;
+};

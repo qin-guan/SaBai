@@ -3,4 +3,29 @@
 * Do not edit manually.
 */
 
-export type SaBaiAPIEndpointsOrdersCreatePostRequest = null;
+export type SaBaiAPIEndpointsOrdersCreatePostRequest = {
+    /**
+     * @description
+     * Format: `int32`
+     * @type integer | undefined
+    */
+    consultId?: number;
+    /**
+     * @description
+     * Format: `int32`
+     * @type integer | undefined
+    */
+    medicationBrandId?: number;
+    /**
+     * @description
+     * Format: `int32`
+     * @type integer | undefined
+    */
+    quantity?: number;
+    /**
+     * @minLength 1
+     * @type string
+    */
+    dosageInstructions: string;
+    remarks?: string | null;
+};

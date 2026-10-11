@@ -3,6 +3,20 @@
 * Do not edit manually.
 */
 
-export function createSaBaiAPIEndpointsBroadcastsCreatePostRequest() {
-  return null
+import type { SaBaiAPIEndpointsBroadcastsCreatePostRequest } from '../types/SaBaiAPIEndpointsBroadcastsCreatePostRequest'
+import { createSaBaiAPIDomainBroadcastSeverity } from './createSaBaiAPIDomainBroadcastSeverity'
+import { fakerEN as faker } from '@faker-js/faker'
+
+export function createSaBaiAPIEndpointsBroadcastsCreatePostRequest<TData extends Partial<SaBaiAPIEndpointsBroadcastsCreatePostRequest> = object>(data?: TData)
+
+{
+  const defaultFakeData = {
+  title: faker.string.alpha({ length: { min: 0, max: 255 } }),
+  body: faker.string.alpha({ length: 1 }),
+  severity: createSaBaiAPIDomainBroadcastSeverity(),
+}
+  return {
+    ...defaultFakeData,
+    ...(data || {}),
+  } as Omit<typeof defaultFakeData, keyof NoInfer<TData>> & NoInfer<TData>
 }

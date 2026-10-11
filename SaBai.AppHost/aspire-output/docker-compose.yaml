@@ -107,6 +107,23 @@ services:
         condition: "service_started"
     networks:
       - "aspire"
+  frontend:
+    image: "${FRONTEND_IMAGE}"
+    environment:
+      NODE_ENV: "production"
+      PORT: "3000"
+      HOSTNAME: "0.0.0.0"
+      NEXT_PUBLIC_API_URL: "http://api:${API_PORT}"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://compose-dashboard:18889"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "frontend"
+    expose:
+      - "3000"
+    depends_on:
+      api:
+        condition: "service_started"
+    networks:
+      - "aspire"
 networks:
   aspire:
     driver: "bridge"

@@ -3,4 +3,11 @@
 * Do not edit manually.
 */
 
-export type SaBaiAPIEndpointsConsultsUpdatePatchRequest = null;
+export type SaBaiAPIEndpointsConsultsUpdatePatchRequest = {
+    pastMedicalHistory?: string | null;
+    consultation?: string | null;
+    treatmentPlan?: string | null;
+    referredFor?: string | null;
+    referralNotes?: string | null;
+    remarks?: string | null;
+};

@@ -3,6 +3,26 @@
 * Do not edit manually.
 */
 
-export function createSaBaiAPIEndpointsChildVitalsCreatePostRequest() {
-  return null
+import type { SaBaiAPIEndpointsChildVitalsCreatePostRequest } from '../types/SaBaiAPIEndpointsChildVitalsCreatePostRequest'
+import { fakerEN as faker } from '@faker-js/faker'
+
+export function createSaBaiAPIEndpointsChildVitalsCreatePostRequest<TData extends Partial<SaBaiAPIEndpointsChildVitalsCreatePostRequest> = object>(data?: TData)
+
+{
+  const defaultFakeData = {
+  vitalsId: faker.number.int(),
+  grossMotor: faker.string.alpha(),
+  redReflex: faker.string.alpha(),
+  scoliosis: faker.string.alpha(),
+  pallor: faker.datatype.boolean(),
+  oralCavity: faker.string.alpha(),
+  heart: faker.string.alpha(),
+  abdomen: faker.string.alpha(),
+  lungs: faker.string.alpha(),
+  hernialOrifices: faker.string.alpha(),
+}
+  return {
+    ...defaultFakeData,
+    ...(data || {}),
+  } as Omit<typeof defaultFakeData, keyof NoInfer<TData>> & NoInfer<TData>
 }

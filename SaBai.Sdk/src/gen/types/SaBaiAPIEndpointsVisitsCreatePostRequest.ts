@@ -3,4 +3,29 @@
 * Do not edit manually.
 */
 
-export type SaBaiAPIEndpointsVisitsCreatePostRequest = null;
+export type SaBaiAPIEndpointsVisitsCreatePostRequest = {
+    /**
+     * @description
+     * Format: `int32`
+     * @type integer | undefined
+    */
+    patientId?: number;
+    /**
+     * @description
+     * Format: `int32`
+     * @type integer | undefined
+    */
+    villageCodeId?: number;
+    /**
+     * @description
+     * Format: `date-time`
+     * @type string | undefined
+    */
+    date?: string | null;
+    /**
+     * @minLength 0
+     * @maxLength 100
+     * @type string | undefined
+    */
+    status?: string | null;
+};

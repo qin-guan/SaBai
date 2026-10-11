@@ -3,4 +3,14 @@
 * Do not edit manually.
 */
 
-export type SaBaiAPIEndpointsChildVitalsUpdatePatchRequest = null;
+export type SaBaiAPIEndpointsChildVitalsUpdatePatchRequest = {
+    grossMotor?: string | null;
+    redReflex?: string | null;
+    scoliosis?: string | null;
+    pallor?: boolean | null;
+    oralCavity?: string | null;
+    heart?: string | null;
+    abdomen?: string | null;
+    lungs?: string | null;
+    hernialOrifices?: string | null;
+};

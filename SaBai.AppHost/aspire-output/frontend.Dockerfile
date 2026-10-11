@@ -10,6 +10,7 @@ COPY SaBai.Web SaBai.Web
 COPY SaBai.Sdk SaBai.Sdk
 ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+RUN pnpm --filter @sabai/sdk... build
 RUN pnpm --filter project-sabai... build
 
 FROM node:22-slim AS runtime

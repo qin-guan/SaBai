@@ -34,14 +34,13 @@ var api = builder.AddProject<SaBai_API>("api")
     .WaitFor(rustFs)
     .WithHttpHealthCheck("/health");
 
-var useFakeWorkOs = !builder.ExecutionContext.IsPublishMode && IsEnabled(builder.Configuration["WorkOS:UseFake"]);
+var useFakeWorkOs = !builder.ExecutionContext.IsPublishMode
+    && builder.Configuration["WorkOS:UseFake"] is "true" or "1";
 api.WithEnvironment("WorkOS__UseFake", useFakeWorkOs ? "true" : "false");
 if (!useFakeWorkOs)
 {
-    ForwardWorkOs("WorkOS__ClientId", builder.Configuration["WorkOS:ClientId"], () =>
-        builder.AddParameter("workOsClientId", "client_01M4K5B4J6E84RQ9DX81J49013"));
-    ForwardWorkOs("WorkOS__ApiKey", builder.Configuration["WorkOS:ApiKey"], () =>
-        builder.AddParameter("workOsApiKey", secret: true));
+    api.WithEnvironment("WorkOS__ClientId", builder.AddParameter("workOsClientId", "client_01M4K5B4J6E84RQ9DX81J49013"))
+        .WithEnvironment("WorkOS__ApiKey", builder.AddParameter("workOsApiKey", secret: true));
 }
 
 if (builder.ExecutionContext.IsPublishMode)
@@ -55,17 +54,3 @@ if (builder.ExecutionContext.IsPublishMode)
 }
 
 builder.Build().Run();
-
-void ForwardWorkOs(string name, string? configured, Func<IResourceBuilder<ParameterResource>> parameter)
-{
-    if (string.IsNullOrWhiteSpace(configured))
-    {
-        api.WithEnvironment(name, parameter());
-        return;
-    }
-
-    api.WithEnvironment(name, configured);
-}
-
-static bool IsEnabled(string? value) =>
-    string.Equals(value, "true", StringComparison.OrdinalIgnoreCase) || value == "1";

@@ -2,41 +2,46 @@ using Projects;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-var useFakeWorkOs = !builder.ExecutionContext.IsPublishMode
-    && IsEnabled(builder.Configuration["WorkOS:UseFake"]);
-
-if (useFakeWorkOs)
-{
-    Environment.SetEnvironmentVariable("ASPIRE_ALLOW_UNSECURED_TRANSPORT", "true");
-}
-
-var qdrant = builder.AddQdrant("qdrant");
-var postgres = builder.AddPostgres("postgres").WithPgAdmin();
+var qdrant = builder.AddQdrant("qdrant").WithDataVolume();
+var postgres = builder.AddPostgres("postgres").WithDataVolume().WithPgAdmin();
 var db = postgres.AddDatabase("sabai");
 
 var rustFsAccessKey = builder.AddParameter("rustFsAccessKey", "rustfsadmin");
-var rustFsSecretKey = builder.AddParameter("rustFsSecretKey", "rustfsadmin");
-var rustFs = builder.AddRustFs("fs", rustFsAccessKey, rustFsSecretKey);
-var bucket = rustFs.AddBucket("sabai");
+var rustFsSecretKey = builder.AddParameter("rustFsSecretKey", "rustfsadmin", secret: true);
+var rustFs = builder.AddContainer("fs", "rustfs/rustfs", "latest")
+    .WithHttpEndpoint(targetPort: 9000, name: "s3")
+    .WithHttpEndpoint(targetPort: 9001, name: "console")
+    .WithEnvironment("RUSTFS_VOLUMES", "/data/rustfs0")
+    .WithEnvironment("RUSTFS_ADDRESS", "0.0.0.0:9000")
+    .WithEnvironment("RUSTFS_CONSOLE_ADDRESS", "0.0.0.0:9001")
+    .WithEnvironment("RUSTFS_CONSOLE_ENABLE", "true")
+    .WithEnvironment("RUSTFS_CORS_ALLOWED_ORIGINS", "*")
+    .WithEnvironment("RUSTFS_CONSOLE_CORS_ALLOWED_ORIGINS", "*")
+    .WithEnvironment("RUSTFS_ACCESS_KEY", rustFsAccessKey)
+    .WithEnvironment("RUSTFS_SECRET_KEY", rustFsSecretKey)
+    .WithEnvironment("RUSTFS_OBS_LOGGER_LEVEL", "info")
+    .WithVolume("fs-data", "/data")
+    .WithVolume("fs-logs", "/app/logs");
+var s3 = rustFs.GetEndpoint("s3");
 
-var api = builder.AddProject<SaBai_API>("api", useFakeWorkOs ? "http" : "https")
+var api = builder.AddProject<SaBai_API>("api")
     .WithReference(qdrant)
     .WithReference(db)
-    .WithReference(bucket)
+    .WithReference(s3)
+    .WithEnvironment("ConnectionStrings__fs-sabai", ReferenceExpression.Create(
+        $"Endpoint={s3};AccessKey={rustFsAccessKey};SecretKey={rustFsSecretKey};Bucket=sabai"))
     .WaitFor(db)
-    .WaitFor(bucket)
+    .WaitFor(rustFs)
     .WithHttpHealthCheck("/health");
 
-if (useFakeWorkOs)
+var useFakeWorkOs = !builder.ExecutionContext.IsPublishMode && IsEnabled(builder.Configuration["WorkOS:UseFake"]);
+api.WithEnvironment("WorkOS__UseFake", useFakeWorkOs ? "true" : "false");
+if (!useFakeWorkOs)
 {
-    api.WithEnvironment("WorkOS__UseFake", "true");
-}
-else
-{
-    var workOsClientId = builder.AddParameter("workOsClientId", "client_01M4K5B4J6E84RQ9DX81J49013");
-    var workOsApiKey = builder.AddParameter("workOsApiKey", secret: true);
-    api.WithEnvironment("WorkOS__ClientId", workOsClientId)
-        .WithEnvironment("WorkOS__ApiKey", workOsApiKey);
+    ForwardWorkOs("WorkOS__ClientId", builder.Configuration["WorkOS:ClientId"], () =>
+        builder.AddParameter("workOsClientId", "client_01M4K5B4J6E84RQ9DX81J49013"));
+    ForwardWorkOs("WorkOS__ApiKey", builder.Configuration["WorkOS:ApiKey"], () =>
+        builder.AddParameter("workOsApiKey", secret: true));
 }
 
 if (builder.ExecutionContext.IsPublishMode)
@@ -50,7 +55,17 @@ if (builder.ExecutionContext.IsPublishMode)
 }
 
 builder.Build().Run();
-return;
+
+void ForwardWorkOs(string name, string? configured, Func<IResourceBuilder<ParameterResource>> parameter)
+{
+    if (string.IsNullOrWhiteSpace(configured))
+    {
+        api.WithEnvironment(name, parameter());
+        return;
+    }
+
+    api.WithEnvironment(name, configured);
+}
 
 static bool IsEnabled(string? value) =>
     string.Equals(value, "true", StringComparison.OrdinalIgnoreCase) || value == "1";

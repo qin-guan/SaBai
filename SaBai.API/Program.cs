@@ -26,15 +26,12 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 
 builder.Services.Configure<WorkOsSettings>(builder.Configuration.GetSection(WorkOsSettings.SectionName));
 builder.Services.Configure<AuthSettings>(builder.Configuration.GetSection(AuthSettings.SectionName));
+
 builder.Services.AddSingleton(sp => RustFsS3.Read(sp.GetRequiredService<IConfiguration>()));
 builder.Services.AddSingleton<Amazon.S3.IAmazonS3>(sp => RustFsS3.CreateClient(sp.GetRequiredService<RustFsSettings>()));
 
 var auth = builder.Configuration.GetSection(AuthSettings.SectionName).Get<AuthSettings>() ?? new AuthSettings();
 var workOs = builder.Configuration.GetSection(WorkOsSettings.SectionName).Get<WorkOsSettings>() ?? new WorkOsSettings();
-if (IsContinuousIntegration())
-{
-    workOs.UseFake = true;
-}
 if (auth.JwtSigningKey.Length < 32)
 {
     throw new InvalidOperationException("Auth:JwtSigningKey must be at least 32 characters.");
@@ -42,8 +39,7 @@ if (auth.JwtSigningKey.Length < 32)
 
 if (workOs.UseFake)
 {
-    builder.Services.AddSingleton<FakeWorkOsDirectory>();
-    builder.Services.AddSingleton<IWorkOsDirectory>(sp => sp.GetRequiredService<FakeWorkOsDirectory>());
+    builder.Services.AddSingleton<IWorkOsDirectory, FakeWorkOsDirectory>();
 }
 else
 {
@@ -64,6 +60,16 @@ builder.AddQdrantClient("qdrant");
 builder.AddFaceRecognition();
 
 var app = builder.Build();
+var storage = app.Services.GetRequiredService<RustFsSettings>();
+if (!string.IsNullOrWhiteSpace(storage.Endpoint))
+{
+    await RustFsS3.EnsureBucketAsync(app.Services.GetRequiredService<Amazon.S3.IAmazonS3>(), storage, CancellationToken.None);
+}
+app.Logger.LogInformation(
+    "WorkOS UseFake={UseFake}; ClientId is {ClientIdState}; ApiKey is {ApiKeyState}",
+    workOs.UseFake,
+    string.IsNullOrWhiteSpace(workOs.ClientId) ? "missing" : "set",
+    string.IsNullOrWhiteSpace(workOs.ApiKey) ? "missing" : "set");
 
 app.UseExceptionHandler();
 
@@ -101,12 +107,3 @@ app.UseFastEndpoints(config =>
 });
 
 app.Run();
-
-static bool IsContinuousIntegration() =>
-    IsEnabled(Environment.GetEnvironmentVariable("CI"))
-    || IsEnabled(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"))
-    || IsEnabled(Environment.GetEnvironmentVariable("GITLAB_CI"))
-    || IsEnabled(Environment.GetEnvironmentVariable("TF_BUILD"));
-
-static bool IsEnabled(string? value) =>
-    string.Equals(value, "true", StringComparison.OrdinalIgnoreCase) || value == "1";

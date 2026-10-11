@@ -1,9 +1,10 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using SaBai.API.Domain;
 
 namespace SaBai.API.Auth;
 
-public sealed class FakeWorkOsDirectory : IWorkOsDirectory
+public sealed class FakeWorkOsDirectory(ILogger<FakeWorkOsDirectory> logger) : IWorkOsDirectory
 {
     private readonly ConcurrentDictionary<string, FakeUser> _byEmail = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, FakeUser> _byId = new(StringComparer.Ordinal);
@@ -20,11 +21,18 @@ public sealed class FakeWorkOsDirectory : IWorkOsDirectory
         string password,
         CancellationToken cancellationToken)
     {
+        using var activity = WorkOsTelemetry.Start("authenticate", email);
+        activity?.SetTag("workos.fake", true);
         if (!_byEmail.TryGetValue(email, out var user) || user.Password != password)
         {
-            throw new AuthRejectedException();
+            var rejected = new AuthRejectedException();
+            WorkOsTelemetry.Fail(activity, rejected);
+            logger.LogWarning("Fake WorkOS rejected {Email}. The API is not calling WorkOS.", email);
+            throw rejected;
         }
 
+        activity?.SetStatus(ActivityStatusCode.Ok);
+        logger.LogInformation("Fake WorkOS accepted {Email}. The API is not calling WorkOS.", email);
         return Task.FromResult(new WorkOsIdentity(user.Id, user.Email, null, null));
     }
 

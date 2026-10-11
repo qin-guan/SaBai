@@ -25,8 +25,7 @@ export function WebcamInput({
   /** Open the camera immediately when no image is captured. */
   autoOpenCamera?: boolean;
 }) {
-  const [cameraIsOpen, toggleCameraOpen, setCameraIsOpen] =
-    useToggle(autoOpenCamera);
+  const [cameraIsOpen, , setCameraIsOpen] = useToggle(autoOpenCamera);
 
   // Until the browser hands us a live media stream, `getScreenshot()` returns
   // null (see react-webcam's `getScreenshot`/`getCanvas`). Without tracking that,
@@ -34,6 +33,13 @@ export function WebcamInput({
   // from the camera so the failure is visible instead.
   const [cameraReady, setCameraReady] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
+
+  const openCamera = useCallback(() => {
+    // Fresh stream, so wait for `onUserMedia` again before allowing capture.
+    setCameraReady(false);
+    setCameraError(null);
+    setCameraIsOpen(true);
+  }, [setCameraIsOpen]);
 
   const webcamRef = useRef<Webcam>(null);
   const webcamCapture = useCallback(() => {
@@ -55,11 +61,6 @@ export function WebcamInput({
     // open camera automatically if there is no image (unless opted out)
     else if (autoOpenCamera) setCameraIsOpen(true);
   }, [imageDetails, setCameraIsOpen, autoOpenCamera]);
-
-  useEffect(() => {
-    // A closed camera has no stream, so it is never ready to capture.
-    if (!cameraIsOpen) setCameraReady(false);
-  }, [cameraIsOpen]);
 
   useEffect(() => {
     if (cameraIsOpenCallback) cameraIsOpenCallback(cameraIsOpen);
@@ -121,17 +122,13 @@ export function WebcamInput({
       <div className="mt-6 flex items-center justify-center">
         {!cameraIsOpen ? (
           imageDetails == null ? (
-            <Button
-              colour="emerald"
-              title="Take Photo"
-              onClick={toggleCameraOpen}
-            />
+            <Button colour="emerald" title="Take Photo" onClick={openCamera} />
           ) : (
             <Button
               colour="red"
               title="Retake Photo"
               onClick={() => {
-                toggleCameraOpen();
+                openCamera();
                 setImageDetails(null);
               }}
             />
@@ -139,7 +136,11 @@ export function WebcamInput({
         ) : (
           // don't show cancel button when there is no image captured yet
           imageDetails != null && (
-            <Button colour="red" title="Cancel" onClick={toggleCameraOpen} />
+            <Button
+              colour="red"
+              title="Cancel"
+              onClick={() => setCameraIsOpen(false)}
+            />
           )
         )}
       </div>

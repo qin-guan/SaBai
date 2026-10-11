@@ -67,11 +67,13 @@ services:
     networks:
       - "aspire"
   api:
-    image: "${API_IMAGE}"
+    build:
+      context: "."
+      dockerfile: "SaBai.AppHost/aspire-output/api.Dockerfile"
     environment:
       OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
       ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
-      HTTP_PORTS: "${API_PORT}"
+      HTTP_PORTS: "8080"
       ConnectionStrings__qdrant: "Endpoint=http://qdrant:6334;Key=${QDRANT_KEY}"
       QDRANT_GRPCHOST: "qdrant"
       QDRANT_GRPCPORT: "6334"
@@ -99,7 +101,7 @@ services:
       OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
       OTEL_SERVICE_NAME: "api"
     expose:
-      - "${API_PORT}"
+      - "8080"
     depends_on:
       postgres:
         condition: "service_started"
@@ -108,12 +110,16 @@ services:
     networks:
       - "aspire"
   frontend:
-    image: "${FRONTEND_IMAGE}"
+    build:
+      context: "."
+      dockerfile: "SaBai.AppHost/aspire-output/frontend.Dockerfile"
+      args:
+        NEXT_PUBLIC_API_URL: "${NEXT_PUBLIC_API_URL:?}"
     environment:
       NODE_ENV: "production"
       PORT: "3000"
       HOSTNAME: "0.0.0.0"
-      NEXT_PUBLIC_API_URL: "http://api:${API_PORT}"
+      NEXT_PUBLIC_API_URL: "${NEXT_PUBLIC_API_URL:?}"
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://compose-dashboard:18889"
       OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
       OTEL_SERVICE_NAME: "frontend"

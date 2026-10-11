@@ -1,0 +1,9 @@
+{
+            "mcpServers": {
+              "SaBai.API | v1": {
+                "type": "stdio",
+                "command": "npx",
+                "args": ["tsx", "server.ts"]
+              }
+            }
+          }

@@ -3,6 +3,20 @@
 * Do not edit manually.
 */
 
-export function createSaBaiAPIEndpointsVillageCodesUpdatePatchRequest() {
-  return null
+import type { SaBaiAPIEndpointsVillageCodesUpdatePatchRequest } from '../types/SaBaiAPIEndpointsVillageCodesUpdatePatchRequest'
+import { fakerEN as faker } from '@faker-js/faker'
+
+export function createSaBaiAPIEndpointsVillageCodesUpdatePatchRequest<TData extends Partial<SaBaiAPIEndpointsVillageCodesUpdatePatchRequest> = object>(data?: TData)
+
+{
+  const defaultFakeData = {
+  code: faker.string.alpha({ length: { min: 0, max: 255 } }),
+  name: faker.string.alpha({ length: { min: 0, max: 255 } }),
+  colorHex: faker.helpers.fromRegExp("^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"),
+  isVisible: faker.datatype.boolean(),
+}
+  return {
+    ...defaultFakeData,
+    ...(data || {}),
+  } as Omit<typeof defaultFakeData, keyof NoInfer<TData>> & NoInfer<TData>
 }

@@ -3,4 +3,33 @@
 * Do not edit manually.
 */
 
-export type SaBaiAPIEndpointsAuthUsersCreatePostRequest = null;
+import type { SaBaiAPIDomainStaffRoleKey } from './SaBaiAPIDomainStaffRole'
+
+export type SaBaiAPIEndpointsAuthUsersCreatePostRequest = {
+    /**
+     * @minLength 0
+     * @maxLength 150
+     * @type string
+    */
+    username: string;
+    /**
+     * @description
+     * Format: `email`
+     * @minLength 0
+     * @maxLength 255
+     * @type string
+    */
+    email: string;
+    /**
+     * @minLength 8
+     * @type string
+    */
+    password: string;
+    /**
+     * @minLength 0
+     * @maxLength 255
+     * @type string | undefined
+    */
+    nickname?: string | null;
+    role?: SaBaiAPIDomainStaffRoleKey;
+};

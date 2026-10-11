@@ -28,6 +28,8 @@ export function createSaBaiAPIEndpointsPatientsUpdatePatchResponse<TData extends
   filterString: faker.string.alpha(),
   lastVisitDate: faker.date.anytime().toISOString(),
   lastVisitId: faker.number.int(),
+  hasPhoto: faker.datatype.boolean(),
+  hasFace: faker.datatype.boolean(),
 }
   return {
     ...defaultFakeData,

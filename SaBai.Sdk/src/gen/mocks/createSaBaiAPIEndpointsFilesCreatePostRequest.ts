@@ -12,7 +12,7 @@ export function createSaBaiAPIEndpointsFilesCreatePostRequest<TData extends Part
   const defaultFakeData = {
   patientId: faker.number.int(),
   files: faker.helpers.multiple(() => (faker.image.url() as unknown as Blob)),
-  descriptions: null,
+  descriptions: faker.helpers.multiple(() => (faker.string.alpha())),
 }
   return {
     ...defaultFakeData,

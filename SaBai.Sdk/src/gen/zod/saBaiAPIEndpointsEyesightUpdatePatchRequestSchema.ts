@@ -5,4 +5,14 @@
 
 import * as z from 'zod'
 
-export const saBaiAPIEndpointsEyesightUpdatePatchRequestSchema = z.null()
+export const saBaiAPIEndpointsEyesightUpdatePatchRequestSchema = z.object({
+  leftEyeDegree: z.string().nullish(),
+  rightEyeDegree: z.string().nullish(),
+  leftEyePinhole: z.string().nullish(),
+  rightEyePinhole: z.string().nullish(),
+  leftAstigmatism: z.string().nullish(),
+  rightAstigmatism: z.string().nullish(),
+  comments: z.string().nullish(),
+  leftPrescribedGlassesDegree: z.string().nullish(),
+  rightPrescribedGlassesDegree: z.string().nullish(),
+})

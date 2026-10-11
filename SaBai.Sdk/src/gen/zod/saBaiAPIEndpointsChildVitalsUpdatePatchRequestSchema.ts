@@ -5,4 +5,14 @@
 
 import * as z from 'zod'
 
-export const saBaiAPIEndpointsChildVitalsUpdatePatchRequestSchema = z.null()
+export const saBaiAPIEndpointsChildVitalsUpdatePatchRequestSchema = z.object({
+  grossMotor: z.string().nullish(),
+  redReflex: z.string().nullish(),
+  scoliosis: z.string().nullish(),
+  pallor: z.boolean().nullish(),
+  oralCavity: z.string().nullish(),
+  heart: z.string().nullish(),
+  abdomen: z.string().nullish(),
+  lungs: z.string().nullish(),
+  hernialOrifices: z.string().nullish(),
+})

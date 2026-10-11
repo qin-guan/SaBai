@@ -83,8 +83,15 @@ import { saBaiAPIEndpointsPatientConsultGetEndpointHandler } from './saBaiAPIEnd
 import { saBaiAPIEndpointsPatientRecordsGetEndpointHandler } from './saBaiAPIEndpointsPatientRecordsGetEndpoint'
 import { saBaiAPIEndpointsPatientsCreatePostEndpointHandler } from './saBaiAPIEndpointsPatientsCreatePostEndpoint'
 import { saBaiAPIEndpointsPatientsDeleteDeleteEndpointHandler } from './saBaiAPIEndpointsPatientsDeleteDeleteEndpoint'
+import { saBaiAPIEndpointsPatientsFacesDeleteEndpointHandler } from './saBaiAPIEndpointsPatientsFacesDeleteEndpoint'
+import { saBaiAPIEndpointsPatientsFacesGetEndpointHandler } from './saBaiAPIEndpointsPatientsFacesGetEndpoint'
+import { saBaiAPIEndpointsPatientsFacesPostEndpointHandler } from './saBaiAPIEndpointsPatientsFacesPostEndpoint'
 import { saBaiAPIEndpointsPatientsGetEndpointHandler } from './saBaiAPIEndpointsPatientsGetEndpoint'
 import { saBaiAPIEndpointsPatientsListGetEndpointHandler } from './saBaiAPIEndpointsPatientsListGetEndpoint'
+import { saBaiAPIEndpointsPatientsPhotoDeleteEndpointHandler } from './saBaiAPIEndpointsPatientsPhotoDeleteEndpoint'
+import { saBaiAPIEndpointsPatientsPhotoGetEndpointHandler } from './saBaiAPIEndpointsPatientsPhotoGetEndpoint'
+import { saBaiAPIEndpointsPatientsPhotoPutEndpointHandler } from './saBaiAPIEndpointsPatientsPhotoPutEndpoint'
+import { saBaiAPIEndpointsPatientsSearchByFacePostEndpointHandler } from './saBaiAPIEndpointsPatientsSearchByFacePostEndpoint'
 import { saBaiAPIEndpointsPatientsUpdatePatchEndpointHandler } from './saBaiAPIEndpointsPatientsUpdatePatchEndpoint'
 import { saBaiAPIEndpointsPatientsVisitsGetEndpointHandler } from './saBaiAPIEndpointsPatientsVisitsGetEndpoint'
 import { saBaiAPIEndpointsPatientsWithLatestVisitGetEndpointHandler } from './saBaiAPIEndpointsPatientsWithLatestVisitGetEndpoint'
@@ -201,8 +208,15 @@ import { saBaiAPIEndpointsPatientConsultGetEndpointQueryVisitIdSchema, saBaiAPIE
 import { saBaiAPIEndpointsPatientRecordsGetEndpointQueryVisitIdSchema, saBaiAPIEndpointsPatientRecordsGetEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsPatientRecordsGetEndpointSchema'
 import { saBaiAPIEndpointsPatientsCreatePostEndpointBodySchema, saBaiAPIEndpointsPatientsCreatePostEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsPatientsCreatePostEndpointSchema'
 import { saBaiAPIEndpointsPatientsDeleteDeleteEndpointPathIdSchema, saBaiAPIEndpointsPatientsDeleteDeleteEndpointStatus204Schema } from '../zod/saBaiAPIEndpointsPatientsDeleteDeleteEndpointSchema'
+import { saBaiAPIEndpointsPatientsFacesDeleteEndpointPathFaceIdSchema, saBaiAPIEndpointsPatientsFacesDeleteEndpointPathIdSchema, saBaiAPIEndpointsPatientsFacesDeleteEndpointStatus204Schema } from '../zod/saBaiAPIEndpointsPatientsFacesDeleteEndpointSchema'
+import { saBaiAPIEndpointsPatientsFacesGetEndpointPathIdSchema, saBaiAPIEndpointsPatientsFacesGetEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsPatientsFacesGetEndpointSchema'
+import { saBaiAPIEndpointsPatientsFacesPostEndpointBodySchema, saBaiAPIEndpointsPatientsFacesPostEndpointPathIdSchema, saBaiAPIEndpointsPatientsFacesPostEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsPatientsFacesPostEndpointSchema'
 import { saBaiAPIEndpointsPatientsGetEndpointPathIdSchema, saBaiAPIEndpointsPatientsGetEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsPatientsGetEndpointSchema'
 import { saBaiAPIEndpointsPatientsListGetEndpointQueryNameSchema, saBaiAPIEndpointsPatientsListGetEndpointQueryVillageCodeSchema, saBaiAPIEndpointsPatientsListGetEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsPatientsListGetEndpointSchema'
+import { saBaiAPIEndpointsPatientsPhotoDeleteEndpointPathIdSchema, saBaiAPIEndpointsPatientsPhotoDeleteEndpointStatus204Schema } from '../zod/saBaiAPIEndpointsPatientsPhotoDeleteEndpointSchema'
+import { saBaiAPIEndpointsPatientsPhotoGetEndpointPathIdSchema, saBaiAPIEndpointsPatientsPhotoGetEndpointStatus204Schema } from '../zod/saBaiAPIEndpointsPatientsPhotoGetEndpointSchema'
+import { saBaiAPIEndpointsPatientsPhotoPutEndpointBodySchema, saBaiAPIEndpointsPatientsPhotoPutEndpointPathIdSchema, saBaiAPIEndpointsPatientsPhotoPutEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsPatientsPhotoPutEndpointSchema'
+import { saBaiAPIEndpointsPatientsSearchByFacePostEndpointBodySchema, saBaiAPIEndpointsPatientsSearchByFacePostEndpointQueryMaxMatchesSchema, saBaiAPIEndpointsPatientsSearchByFacePostEndpointQueryThresholdSchema, saBaiAPIEndpointsPatientsSearchByFacePostEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsPatientsSearchByFacePostEndpointSchema'
 import { saBaiAPIEndpointsPatientsUpdatePatchEndpointBodySchema, saBaiAPIEndpointsPatientsUpdatePatchEndpointPathIdSchema, saBaiAPIEndpointsPatientsUpdatePatchEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsPatientsUpdatePatchEndpointSchema'
 import { saBaiAPIEndpointsPatientsVisitsGetEndpointPathPatientIdSchema, saBaiAPIEndpointsPatientsVisitsGetEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsPatientsVisitsGetEndpointSchema'
 import { saBaiAPIEndpointsPatientsWithLatestVisitGetEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsPatientsWithLatestVisitGetEndpointSchema'
@@ -991,6 +1005,16 @@ export function getServer() {
   })
 
 
+  server.registerTool("SaBaiAPIEndpointsPatientsSearchByFacePostEndpoint", {
+    title: "Search for patients by face photo",
+    description: "Make a POST request to /patients/search-by-face",
+    outputSchema: { data: saBaiAPIEndpointsPatientsSearchByFacePostEndpointStatus200Schema },
+    inputSchema: { query: z.object({ "threshold": saBaiAPIEndpointsPatientsSearchByFacePostEndpointQueryThresholdSchema, "maxMatches": saBaiAPIEndpointsPatientsSearchByFacePostEndpointQueryMaxMatchesSchema }), body: saBaiAPIEndpointsPatientsSearchByFacePostEndpointBodySchema },
+  }, async ({ query, body }, request) => {
+    return saBaiAPIEndpointsPatientsSearchByFacePostEndpointHandler({ query, body }, request)
+  })
+
+
   server.registerTool("SaBaiAPIEndpointsPatientsWithLatestVisitGetEndpoint", {
     title: "List patients with their latest visit",
     description: "Make a GET request to /patients/with-latest-visit",
@@ -1027,6 +1051,66 @@ export function getServer() {
     inputSchema: { path: z.object({ "id": saBaiAPIEndpointsPatientsDeleteDeleteEndpointPathIdSchema }) },
   }, async ({ path }, request) => {
     return saBaiAPIEndpointsPatientsDeleteDeleteEndpointHandler({ path }, request)
+  })
+
+
+  server.registerTool("SaBaiAPIEndpointsPatientsFacesPostEndpoint", {
+    title: "Enroll a face for a patient.",
+    description: "Uses the most prominent face in the image. Enroll several photos per patient for better accuracy.",
+    outputSchema: { data: saBaiAPIEndpointsPatientsFacesPostEndpointStatus200Schema },
+    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsPatientsFacesPostEndpointPathIdSchema }), body: saBaiAPIEndpointsPatientsFacesPostEndpointBodySchema },
+  }, async ({ path, body }, request) => {
+    return saBaiAPIEndpointsPatientsFacesPostEndpointHandler({ path, body }, request)
+  })
+
+
+  server.registerTool("SaBaiAPIEndpointsPatientsFacesGetEndpoint", {
+    title: "List the faces enrolled for a patient",
+    description: "Make a GET request to /patients/{id}/faces",
+    outputSchema: { data: saBaiAPIEndpointsPatientsFacesGetEndpointStatus200Schema },
+    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsPatientsFacesGetEndpointPathIdSchema }) },
+  }, async ({ path }, request) => {
+    return saBaiAPIEndpointsPatientsFacesGetEndpointHandler({ path }, request)
+  })
+
+
+  server.registerTool("SaBaiAPIEndpointsPatientsFacesDeleteEndpoint", {
+    title: "Delete an enrolled face for a patient",
+    description: "Make a DELETE request to /patients/{id}/faces/{faceId}",
+    outputSchema: { data: saBaiAPIEndpointsPatientsFacesDeleteEndpointStatus204Schema },
+    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsPatientsFacesDeleteEndpointPathIdSchema, "faceId": saBaiAPIEndpointsPatientsFacesDeleteEndpointPathFaceIdSchema }) },
+  }, async ({ path }, request) => {
+    return saBaiAPIEndpointsPatientsFacesDeleteEndpointHandler({ path }, request)
+  })
+
+
+  server.registerTool("SaBaiAPIEndpointsPatientsPhotoPutEndpoint", {
+    title: "Set or replace a patient's profile photo",
+    description: "Make a PUT request to /patients/{id}/photo",
+    outputSchema: { data: saBaiAPIEndpointsPatientsPhotoPutEndpointStatus200Schema },
+    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsPatientsPhotoPutEndpointPathIdSchema }), body: saBaiAPIEndpointsPatientsPhotoPutEndpointBodySchema },
+  }, async ({ path, body }, request) => {
+    return saBaiAPIEndpointsPatientsPhotoPutEndpointHandler({ path, body }, request)
+  })
+
+
+  server.registerTool("SaBaiAPIEndpointsPatientsPhotoGetEndpoint", {
+    title: "Download a patient's profile photo",
+    description: "Make a GET request to /patients/{id}/photo",
+    outputSchema: { data: saBaiAPIEndpointsPatientsPhotoGetEndpointStatus204Schema },
+    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsPatientsPhotoGetEndpointPathIdSchema }) },
+  }, async ({ path }, request) => {
+    return saBaiAPIEndpointsPatientsPhotoGetEndpointHandler({ path }, request)
+  })
+
+
+  server.registerTool("SaBaiAPIEndpointsPatientsPhotoDeleteEndpoint", {
+    title: "Remove a patient's profile photo",
+    description: "Make a DELETE request to /patients/{id}/photo",
+    outputSchema: { data: saBaiAPIEndpointsPatientsPhotoDeleteEndpointStatus204Schema },
+    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsPatientsPhotoDeleteEndpointPathIdSchema }) },
+  }, async ({ path }, request) => {
+    return saBaiAPIEndpointsPatientsPhotoDeleteEndpointHandler({ path }, request)
   })
 
 

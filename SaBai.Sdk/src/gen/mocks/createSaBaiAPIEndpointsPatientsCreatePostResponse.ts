@@ -30,6 +30,8 @@ export function createSaBaiAPIEndpointsPatientsCreatePostResponse<TData extends 
   lastVisitId: faker.number.int(),
   visitId: faker.number.int(),
   vitalsId: faker.number.int(),
+  hasPhoto: faker.datatype.boolean(),
+  hasFace: faker.datatype.boolean(),
 }
   return {
     ...defaultFakeData,

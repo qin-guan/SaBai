@@ -60,4 +60,6 @@ export type SaBaiAPIEndpointsPatientsCreatePostResponse = {
      * @type integer
     */
     vitalsId: number | null;
+    hasPhoto: boolean;
+    hasFace: boolean;
 };

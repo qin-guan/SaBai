@@ -3,4 +3,15 @@
 * Do not edit manually.
 */
 
-export type SaBaiAPIEndpointsMedicationStockUpdatePatchRequest = null;
+import type { SaBaiAPIDomainStockStatusKey } from './SaBaiAPIDomainStockStatus'
+
+export type SaBaiAPIEndpointsMedicationStockUpdatePatchRequest = {
+    /**
+     * @minLength 0
+     * @maxLength 255
+     * @type string | undefined
+    */
+    location?: string | null;
+    stockStatus?: (null | SaBaiAPIDomainStockStatusKey);
+    remarks?: string | null;
+};

@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using SaBai.API.Auth;
 using SaBai.API.Data;
 using SaBai.API.Middleware;
+using SaBai.API.OpenApi;
 using SaBai.API.Storage;
 
 QuestPDF.Settings.License = LicenseType.Community;
@@ -18,7 +19,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 builder.Services
     .AddFastEndpoints()
-    .OpenApiDocument();
+    .OpenApiDocument(o =>
+    {
+        // Strip the invalid `"const": null` that Microsoft.OpenApi emits on cloned
+        // request schemas. Runs after FastEndpoints' own document transformer.
+        // See BareConstOpenApiCleanup for the full explanation.
+        o.ConfigureOpenApi = BareConstOpenApiCleanup.Register;
+    });
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<ApiExceptionHandler>();
 builder.Services.ConfigureHttpJsonOptions(options =>
@@ -54,6 +61,16 @@ else
 builder.Services
     .AddAuthenticationJwtBearer(options => options.SigningKey = auth.JwtSigningKey)
     .AddAuthorization();
+
+// The web client is a separate origin (Next.js) and authenticates with a bearer
+// token, so it needs an explicit CORS policy. Origins are configurable per
+// environment; the local Next.js dev server is allowed by default.
+const string webCorsPolicy = "web";
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+    ?? ["http://localhost:3000"];
+builder.Services.AddCors(options => options.AddPolicy(
+    webCorsPolicy,
+    policy => policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod()));
 
 builder.AddNpgsqlDbContext<AppDbContext>(connectionName: "sabai");
 builder.AddQdrantClient("qdrant");
@@ -98,6 +115,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 
+app.UseCors(webCorsPolicy);
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseFastEndpoints(config =>

@@ -3,4 +3,14 @@
 * Do not edit manually.
 */
 
-export type SaBaiAPIEndpointsGlassesCreatePostRequest = null;
+export type SaBaiAPIEndpointsGlassesCreatePostRequest = {
+    /**
+     * @description
+     * Format: `int32`
+     * @type integer | undefined
+    */
+    visitId?: number;
+    leftGlassesDegree?: string | null;
+    rightGlassesDegree?: string | null;
+    notes?: string | null;
+};

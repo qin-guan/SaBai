@@ -109,6 +109,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                 x.ToGetReport,
                 x.VillageCodeId,
                 VillageCode = x.VillageCode != null ? x.VillageCode.Code : null,
+                x.PhotoStoredFileName,
+                x.LatestFaceId,
             })
             .FirstAsync(ct);
         var lastVisit = await db.Visits.AsNoTracking()
@@ -135,6 +137,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             Patient.FormatDisplayId(row.VillageCode, row.Id),
             Patient.FormatFilterString(row.VillageCode, row.Id, row.ContactNo, row.Name),
             lastVisit?.Date,
-            lastVisit?.Id);
+            lastVisit?.Id,
+            row.PhotoStoredFileName != null,
+            row.LatestFaceId != null);
     }
 }

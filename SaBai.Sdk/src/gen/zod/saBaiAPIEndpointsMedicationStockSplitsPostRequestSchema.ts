@@ -4,5 +4,8 @@
 */
 
 import * as z from 'zod'
+import { systemCollectionsGenericListOfSaBaiAPIEndpointsMedicationStockSplitsPostSplitItemSchema } from './systemCollectionsGenericListOfSaBaiAPIEndpointsMedicationStockSplitsPostSplitItemSchema'
 
-export const saBaiAPIEndpointsMedicationStockSplitsPostRequestSchema = z.null()
+export const saBaiAPIEndpointsMedicationStockSplitsPostRequestSchema = z.object({
+  splits: systemCollectionsGenericListOfSaBaiAPIEndpointsMedicationStockSplitsPostSplitItemSchema,
+})

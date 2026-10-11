@@ -3,4 +3,24 @@
 * Do not edit manually.
 */
 
-export type SaBaiAPIEndpointsVillageCodesCreatePostRequest = null;
+export type SaBaiAPIEndpointsVillageCodesCreatePostRequest = {
+    /**
+     * @minLength 0
+     * @maxLength 255
+     * @type string
+    */
+    code: string;
+    /**
+     * @minLength 0
+     * @maxLength 255
+     * @type string
+    */
+    name: string;
+    /**
+     * @minLength 1
+     * @pattern ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
+     * @type string
+    */
+    colorHex: string;
+    isVisible?: boolean;
+};

@@ -3,6 +3,20 @@
 * Do not edit manually.
 */
 
-export function createSaBaiAPIEndpointsGlassesCreatePostRequest() {
-  return null
+import type { SaBaiAPIEndpointsGlassesCreatePostRequest } from '../types/SaBaiAPIEndpointsGlassesCreatePostRequest'
+import { fakerEN as faker } from '@faker-js/faker'
+
+export function createSaBaiAPIEndpointsGlassesCreatePostRequest<TData extends Partial<SaBaiAPIEndpointsGlassesCreatePostRequest> = object>(data?: TData)
+
+{
+  const defaultFakeData = {
+  visitId: faker.number.int(),
+  leftGlassesDegree: faker.string.alpha(),
+  rightGlassesDegree: faker.string.alpha(),
+  notes: faker.string.alpha(),
+}
+  return {
+    ...defaultFakeData,
+    ...(data || {}),
+  } as Omit<typeof defaultFakeData, keyof NoInfer<TData>> & NoInfer<TData>
 }

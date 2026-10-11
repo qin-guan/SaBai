@@ -3,4 +3,22 @@
 * Do not edit manually.
 */
 
-export type SaBaiAPIEndpointsConsultsCreatePostRequest = null;
+import type { SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsCreatePostDiagnosisInput } from './SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsCreatePostDiagnosisInput'
+import type { SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsCreatePostOrderInput } from './SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsCreatePostOrderInput'
+
+export type SaBaiAPIEndpointsConsultsCreatePostRequest = {
+    /**
+     * @description
+     * Format: `int32`
+     * @type integer | undefined
+    */
+    visitId?: number;
+    pastMedicalHistory?: string | null;
+    consultation?: string | null;
+    treatmentPlan?: string | null;
+    referredFor?: string | null;
+    referralNotes?: string | null;
+    remarks?: string | null;
+    diagnoses: SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsCreatePostDiagnosisInput;
+    orders?: SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsCreatePostOrderInput;
+};

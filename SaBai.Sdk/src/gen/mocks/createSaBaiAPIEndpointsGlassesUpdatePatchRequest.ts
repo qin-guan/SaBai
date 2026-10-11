@@ -3,6 +3,19 @@
 * Do not edit manually.
 */
 
-export function createSaBaiAPIEndpointsGlassesUpdatePatchRequest() {
-  return null
+import type { SaBaiAPIEndpointsGlassesUpdatePatchRequest } from '../types/SaBaiAPIEndpointsGlassesUpdatePatchRequest'
+import { fakerEN as faker } from '@faker-js/faker'
+
+export function createSaBaiAPIEndpointsGlassesUpdatePatchRequest<TData extends Partial<SaBaiAPIEndpointsGlassesUpdatePatchRequest> = object>(data?: TData)
+
+{
+  const defaultFakeData = {
+  leftGlassesDegree: faker.string.alpha(),
+  rightGlassesDegree: faker.string.alpha(),
+  notes: faker.string.alpha(),
+}
+  return {
+    ...defaultFakeData,
+    ...(data || {}),
+  } as Omit<typeof defaultFakeData, keyof NoInfer<TData>> & NoInfer<TData>
 }

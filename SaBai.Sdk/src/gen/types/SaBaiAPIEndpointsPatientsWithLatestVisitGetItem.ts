@@ -49,4 +49,6 @@ export type SaBaiAPIEndpointsPatientsWithLatestVisitGetItem = {
      * @type integer
     */
     lastVisitId: number | null;
+    hasPhoto: boolean;
+    hasFace: boolean;
 };

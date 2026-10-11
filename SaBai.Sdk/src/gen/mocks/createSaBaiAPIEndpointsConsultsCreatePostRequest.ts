@@ -3,6 +3,27 @@
 * Do not edit manually.
 */
 
-export function createSaBaiAPIEndpointsConsultsCreatePostRequest() {
-  return null
+import type { SaBaiAPIEndpointsConsultsCreatePostRequest } from '../types/SaBaiAPIEndpointsConsultsCreatePostRequest'
+import { createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsCreatePostDiagnosisInput } from './createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsCreatePostDiagnosisInput'
+import { createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsCreatePostOrderInput } from './createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsCreatePostOrderInput'
+import { fakerEN as faker } from '@faker-js/faker'
+
+export function createSaBaiAPIEndpointsConsultsCreatePostRequest<TData extends Partial<SaBaiAPIEndpointsConsultsCreatePostRequest> = object>(data?: TData)
+
+{
+  const defaultFakeData = {
+  visitId: faker.number.int(),
+  pastMedicalHistory: faker.string.alpha(),
+  consultation: faker.string.alpha(),
+  treatmentPlan: faker.string.alpha(),
+  referredFor: faker.string.alpha(),
+  referralNotes: faker.string.alpha(),
+  remarks: faker.string.alpha(),
+  diagnoses: createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsCreatePostDiagnosisInput(),
+  orders: createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsCreatePostOrderInput(),
+}
+  return {
+    ...defaultFakeData,
+    ...(data || {}),
+  } as Omit<typeof defaultFakeData, keyof NoInfer<TData>> & NoInfer<TData>
 }

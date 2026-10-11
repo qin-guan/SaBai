@@ -3,4 +3,8 @@
 * Do not edit manually.
 */
 
-export type SaBaiAPIEndpointsGlassesUpdatePatchRequest = null;
+export type SaBaiAPIEndpointsGlassesUpdatePatchRequest = {
+    leftGlassesDegree?: string | null;
+    rightGlassesDegree?: string | null;
+    notes?: string | null;
+};

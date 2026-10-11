@@ -47,6 +47,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                 x.ToGetReport,
                 x.VillageCodeId,
                 VillageCode = x.VillageCode != null ? x.VillageCode.Code : null,
+                x.PhotoStoredFileName,
+                x.LatestFaceId,
             })
             .ToListAsync(ct);
         var latest = await LatestVisitsAsync([.. rows.Select(x => x.Id)], ct);
@@ -72,7 +74,9 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                     Patient.FormatDisplayId(x.VillageCode, x.Id),
                     Patient.FormatFilterString(x.VillageCode, x.Id, x.ContactNo, x.Name),
                     last?.Date,
-                    last?.Id);
+                    last?.Id,
+                    x.PhotoStoredFileName != null,
+                    x.LatestFaceId != null);
             })
             .ToList();
 

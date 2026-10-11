@@ -48,4 +48,6 @@ export type SaBaiAPIEndpointsPatientsGetResponse = {
      * @type integer
     */
     lastVisitId: number | null;
+    hasPhoto: boolean;
+    hasFace: boolean;
 };

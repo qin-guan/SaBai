@@ -5,4 +5,8 @@
 
 import * as z from 'zod'
 
-export const saBaiAPIEndpointsGlassesUpdatePatchRequestSchema = z.null()
+export const saBaiAPIEndpointsGlassesUpdatePatchRequestSchema = z.object({
+  leftGlassesDegree: z.string().nullish(),
+  rightGlassesDegree: z.string().nullish(),
+  notes: z.string().nullish(),
+})

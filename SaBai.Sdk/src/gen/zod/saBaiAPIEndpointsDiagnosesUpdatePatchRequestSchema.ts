@@ -4,5 +4,9 @@
 */
 
 import * as z from 'zod'
+import { saBaiAPIDomainDiagnosisCategorySchema } from './saBaiAPIDomainDiagnosisCategorySchema'
 
-export const saBaiAPIEndpointsDiagnosesUpdatePatchRequestSchema = z.null()
+export const saBaiAPIEndpointsDiagnosesUpdatePatchRequestSchema = z.object({
+  details: z.string().nullish(),
+  category: z.union([z.null(), saBaiAPIDomainDiagnosisCategorySchema]).optional(),
+})

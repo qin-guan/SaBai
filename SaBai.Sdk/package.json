@@ -38,6 +38,7 @@
     "dist"
   ],
   "scripts": {
+    "generate": "kubb generate",
     "build": "tsdown"
   },
   "keywords": [],

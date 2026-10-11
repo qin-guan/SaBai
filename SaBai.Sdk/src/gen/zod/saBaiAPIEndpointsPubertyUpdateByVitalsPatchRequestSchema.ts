@@ -5,4 +5,16 @@
 
 import * as z from 'zod'
 
-export const saBaiAPIEndpointsPubertyUpdateByVitalsPatchRequestSchema = z.null()
+export const saBaiAPIEndpointsPubertyUpdateByVitalsPatchRequestSchema = z.object({
+  pubarche: z.boolean().nullish(),
+  pubarcheAge: z.int32().nullish(),
+  thelarche: z.boolean().nullish(),
+  thelarcheAge: z.int32().nullish(),
+  menarche: z.boolean().nullish(),
+  menarcheAge: z.int32().nullish(),
+  voiceChange: z.boolean().nullish(),
+  voiceChangeAge: z.int32().nullish(),
+  testicularGrowth: z.boolean().nullish(),
+  testicularGrowthAge: z.int32().nullish(),
+  additionalNotes: z.string().nullish(),
+})

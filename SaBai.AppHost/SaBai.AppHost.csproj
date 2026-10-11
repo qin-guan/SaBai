@@ -9,8 +9,13 @@
         <UserSecretsId>2f8f675f-2302-4616-a3a8-485f0029c47b</UserSecretsId>
     </PropertyGroup>
 
+    <PropertyGroup>
+        <NoWarn>$(NoWarn);ASPIREJAVASCRIPT001</NoWarn>
+    </PropertyGroup>
+
     <ItemGroup>
       <PackageReference Include="Aspire.Hosting.Docker" Version="13.6.1" />
+      <PackageReference Include="Aspire.Hosting.JavaScript" Version="13.6.1" />
       <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="13.6.1" />
       <PackageReference Include="Aspire.Hosting.Qdrant" Version="13.6.1" />
     </ItemGroup>

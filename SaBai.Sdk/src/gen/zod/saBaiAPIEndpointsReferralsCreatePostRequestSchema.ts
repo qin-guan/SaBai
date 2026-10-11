@@ -5,4 +5,8 @@
 
 import * as z from 'zod'
 
-export const saBaiAPIEndpointsReferralsCreatePostRequestSchema = z.null()
+export const saBaiAPIEndpointsReferralsCreatePostRequestSchema = z.object({
+  consultId: z.int32().gt(0).optional(),
+  referredFor: z.string().min(1),
+  referralNotes: z.string().nullish(),
+})

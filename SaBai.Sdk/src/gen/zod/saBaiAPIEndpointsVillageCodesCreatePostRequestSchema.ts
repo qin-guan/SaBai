@@ -5,4 +5,9 @@
 
 import * as z from 'zod'
 
-export const saBaiAPIEndpointsVillageCodesCreatePostRequestSchema = z.null()
+export const saBaiAPIEndpointsVillageCodesCreatePostRequestSchema = z.object({
+  code: z.string().min(0).max(255),
+  name: z.string().min(0).max(255),
+  colorHex: z.string().min(1).regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/),
+  isVisible: z.boolean().optional(),
+})

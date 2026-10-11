@@ -5,4 +5,9 @@
 
 import * as z from 'zod'
 
-export const saBaiAPIEndpointsVisitsUpdatePatchRequestSchema = z.null()
+export const saBaiAPIEndpointsVisitsUpdatePatchRequestSchema = z.object({
+  patientId: z.int32().gt(0).nullish(),
+  villageCodeId: z.int32().gt(0).nullish(),
+  date: z.iso.datetime().nullish(),
+  status: z.string().min(0).max(100).nullish(),
+})

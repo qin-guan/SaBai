@@ -3,4 +3,11 @@
 * Do not edit manually.
 */
 
-export type SaBaiAPIEndpointsPersonsFacesPostRequest = null;
+export type SaBaiAPIEndpointsPersonsFacesPostRequest = {
+    /**
+     * @description
+     * Format: `binary`
+     * @type string | undefined
+    */
+    image?: Blob;
+};

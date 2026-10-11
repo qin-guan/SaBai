@@ -4,5 +4,20 @@
 */
 
 import * as z from 'zod'
+import { saBaiAPIDomainGenderSchema } from './saBaiAPIDomainGenderSchema'
+import { saBaiAPIEndpointsPatientsCreatePostVitalsRequestSchema } from './saBaiAPIEndpointsPatientsCreatePostVitalsRequestSchema'
 
-export const saBaiAPIEndpointsPatientsCreatePostRequestSchema = z.null()
+export const saBaiAPIEndpointsPatientsCreatePostRequestSchema = z.object({
+  name: z.string().min(0).max(255),
+  identificationNumber: z.string().min(0).max(255).nullish(),
+  contactNo: z.string().min(0).max(255).nullish(),
+  gender: z.union([z.null(), saBaiAPIDomainGenderSchema]),
+  dateOfBirth: z.iso.datetime(),
+  drugAllergy: z.string().min(1),
+  hasPoorCard: z.boolean().optional(),
+  hasBS2Card: z.boolean().optional(),
+  hasSabaiCard: z.boolean().optional(),
+  toGetReport: z.boolean().optional(),
+  villageCodeId: z.int32().gt(0).optional(),
+  vitals: z.union([z.null(), saBaiAPIEndpointsPatientsCreatePostVitalsRequestSchema.strict()]).optional(),
+})

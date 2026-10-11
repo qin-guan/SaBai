@@ -3,6 +3,19 @@
 * Do not edit manually.
 */
 
-export function createSaBaiAPIEndpointsReferralsUpdateStatePatchRequest() {
-  return null
+import type { SaBaiAPIEndpointsReferralsUpdateStatePatchRequest } from '../types/SaBaiAPIEndpointsReferralsUpdateStatePatchRequest'
+import { createSaBaiAPIDomainReferralState } from './createSaBaiAPIDomainReferralState'
+import { fakerEN as faker } from '@faker-js/faker'
+
+export function createSaBaiAPIEndpointsReferralsUpdateStatePatchRequest<TData extends Partial<SaBaiAPIEndpointsReferralsUpdateStatePatchRequest> = object>(data?: TData)
+
+{
+  const defaultFakeData = {
+  referralState: faker.helpers.arrayElement([null, createSaBaiAPIDomainReferralState()]),
+  referralOutcome: faker.string.alpha(),
+}
+  return {
+    ...defaultFakeData,
+    ...(data || {}),
+  } as Omit<typeof defaultFakeData, keyof NoInfer<TData>> & NoInfer<TData>
 }

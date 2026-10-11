@@ -3,4 +3,6 @@
 * Do not edit manually.
 */
 
-export type SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsCreatePostDiagnosisInput = null;
+import type { SaBaiAPIEndpointsConsultsCreatePostDiagnosisInput } from './SaBaiAPIEndpointsConsultsCreatePostDiagnosisInput'
+
+export type SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsCreatePostDiagnosisInput = SaBaiAPIEndpointsConsultsCreatePostDiagnosisInput[];

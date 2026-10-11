@@ -3,4 +3,24 @@
 * Do not edit manually.
 */
 
-export type SaBaiAPIEndpointsMedicationBrandsUpdatePatchRequestOpB04D6A8855E2 = null;
+export type SaBaiAPIEndpointsMedicationBrandsUpdatePatchRequestOpB04D6A8855E2 = {
+    /**
+     * @description
+     * Format: `int32`
+     * @type integer | undefined
+    */
+    id?: number;
+    /**
+     * @minLength 0
+     * @maxLength 255
+     * @type string | undefined
+    */
+    name?: string | null;
+    /**
+     * @description
+     * Format: `int32`
+     * @type integer | undefined
+    */
+    activeIngredientId?: number;
+    remarks: string;
+};

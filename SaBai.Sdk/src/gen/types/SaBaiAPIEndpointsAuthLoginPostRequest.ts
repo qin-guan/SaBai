@@ -3,4 +3,17 @@
 * Do not edit manually.
 */
 
-export type SaBaiAPIEndpointsAuthLoginPostRequest = null;
+export type SaBaiAPIEndpointsAuthLoginPostRequest = {
+    /**
+     * @description
+     * Format: `email`
+     * @minLength 1
+     * @type string
+    */
+    email: string;
+    /**
+     * @minLength 1
+     * @type string
+    */
+    password: string;
+};

@@ -26,4 +26,6 @@ export const saBaiAPIEndpointsPatientsCreatePostResponseSchema = z.object({
   lastVisitId: z.int32(),
   visitId: z.int32(),
   vitalsId: z.int32().nullable(),
+  hasPhoto: z.boolean(),
+  hasFace: z.boolean(),
 })

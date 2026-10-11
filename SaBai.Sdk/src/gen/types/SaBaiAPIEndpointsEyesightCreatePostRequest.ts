@@ -3,4 +3,20 @@
 * Do not edit manually.
 */
 
-export type SaBaiAPIEndpointsEyesightCreatePostRequest = null;
+export type SaBaiAPIEndpointsEyesightCreatePostRequest = {
+    /**
+     * @description
+     * Format: `int32`
+     * @type integer | undefined
+    */
+    visitId?: number;
+    leftEyeDegree?: string | null;
+    rightEyeDegree?: string | null;
+    leftEyePinhole?: string | null;
+    rightEyePinhole?: string | null;
+    leftAstigmatism?: string | null;
+    rightAstigmatism?: string | null;
+    comments?: string | null;
+    leftPrescribedGlassesDegree?: string | null;
+    rightPrescribedGlassesDegree?: string | null;
+};

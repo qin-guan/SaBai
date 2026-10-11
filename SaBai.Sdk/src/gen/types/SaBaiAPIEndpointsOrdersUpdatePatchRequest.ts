@@ -3,4 +3,10 @@
 * Do not edit manually.
 */
 
-export type SaBaiAPIEndpointsOrdersUpdatePatchRequest = null;
+import type { SaBaiAPIDomainOrderStatusKey } from './SaBaiAPIDomainOrderStatus'
+
+export type SaBaiAPIEndpointsOrdersUpdatePatchRequest = {
+    status: (null | SaBaiAPIDomainOrderStatusKey);
+    dosageInstructions?: string | null;
+    remarks?: string | null;
+};

@@ -3,4 +3,34 @@
 * Do not edit manually.
 */
 
-export type SaBaiAPIEndpointsMedicationStockCreatePostRequest = null;
+import type { SaBaiAPIDomainStockStatusKey } from './SaBaiAPIDomainStockStatus'
+
+export type SaBaiAPIEndpointsMedicationStockCreatePostRequest = {
+    /**
+     * @description
+     * Format: `int32`
+     * @type integer | undefined
+    */
+    medicationBrandId?: number;
+    /**
+     * @description
+     * Format: `int32`
+     * @minLength 0
+     * @type integer | undefined
+    */
+    quantity?: number;
+    /**
+     * @description
+     * Format: `date-time`
+     * @type string | undefined
+    */
+    expiry?: string;
+    /**
+     * @minLength 0
+     * @maxLength 255
+     * @type string
+    */
+    location: string;
+    stockStatus?: SaBaiAPIDomainStockStatusKey;
+    remarks?: string | null;
+};

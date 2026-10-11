@@ -79,7 +79,9 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                 visit.Date,
                 visit.Id,
                 visit.Id,
-            visit.Vitals?.Id);
+                visit.Vitals?.Id,
+                false,
+                false);
     }
 
     private static Domain.Vitals ToVitals(VitalsRequest request) => new()

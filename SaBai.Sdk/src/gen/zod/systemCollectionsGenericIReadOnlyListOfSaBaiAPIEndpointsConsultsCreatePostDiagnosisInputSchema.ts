@@ -4,5 +4,6 @@
 */
 
 import * as z from 'zod'
+import { saBaiAPIEndpointsConsultsCreatePostDiagnosisInputSchema } from './saBaiAPIEndpointsConsultsCreatePostDiagnosisInputSchema'
 
-export const systemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsCreatePostDiagnosisInputSchema = z.null()
+export const systemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsCreatePostDiagnosisInputSchema = z.array(saBaiAPIEndpointsConsultsCreatePostDiagnosisInputSchema).min(1)

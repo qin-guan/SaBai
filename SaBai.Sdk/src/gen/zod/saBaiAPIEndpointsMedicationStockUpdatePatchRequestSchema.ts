@@ -4,5 +4,10 @@
 */
 
 import * as z from 'zod'
+import { saBaiAPIDomainStockStatusSchema } from './saBaiAPIDomainStockStatusSchema'
 
-export const saBaiAPIEndpointsMedicationStockUpdatePatchRequestSchema = z.null()
+export const saBaiAPIEndpointsMedicationStockUpdatePatchRequestSchema = z.object({
+  location: z.string().min(0).max(255).nullish(),
+  stockStatus: z.union([z.null(), saBaiAPIDomainStockStatusSchema]).optional(),
+  remarks: z.string().nullish(),
+})

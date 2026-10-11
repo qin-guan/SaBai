@@ -4,5 +4,12 @@
 */
 
 import * as z from 'zod'
+import { saBaiAPIDomainStaffRoleSchema } from './saBaiAPIDomainStaffRoleSchema'
 
-export const saBaiAPIEndpointsAuthUsersUpdatePatchRequestSchema = z.null()
+export const saBaiAPIEndpointsAuthUsersUpdatePatchRequestSchema = z.object({
+  username: z.string().min(0).max(150).nullish(),
+  email: z.email().min(0).max(255).nullish(),
+  nickname: z.string().min(0).max(255).nullish(),
+  password: z.string().min(8).nullish(),
+  role: z.union([z.null(), saBaiAPIDomainStaffRoleSchema]).optional(),
+})

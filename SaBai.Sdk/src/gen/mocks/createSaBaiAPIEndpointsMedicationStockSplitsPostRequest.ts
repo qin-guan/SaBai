@@ -3,6 +3,17 @@
 * Do not edit manually.
 */
 
-export function createSaBaiAPIEndpointsMedicationStockSplitsPostRequest() {
-  return null
+import type { SaBaiAPIEndpointsMedicationStockSplitsPostRequest } from '../types/SaBaiAPIEndpointsMedicationStockSplitsPostRequest'
+import { createSystemCollectionsGenericListOfSaBaiAPIEndpointsMedicationStockSplitsPostSplitItem } from './createSystemCollectionsGenericListOfSaBaiAPIEndpointsMedicationStockSplitsPostSplitItem'
+
+export function createSaBaiAPIEndpointsMedicationStockSplitsPostRequest<TData extends Partial<SaBaiAPIEndpointsMedicationStockSplitsPostRequest> = object>(data?: TData)
+
+{
+  const defaultFakeData = {
+  splits: createSystemCollectionsGenericListOfSaBaiAPIEndpointsMedicationStockSplitsPostSplitItem(),
+}
+  return {
+    ...defaultFakeData,
+    ...(data || {}),
+  } as Omit<typeof defaultFakeData, keyof NoInfer<TData>> & NoInfer<TData>
 }

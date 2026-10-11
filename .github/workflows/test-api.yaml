@@ -60,6 +60,8 @@ jobs:
 
       - name: Run tests
         run: dotnet test --no-build --configuration Release
+        env:
+          WorkOS__UseFake: true
 
       - name: Upload API server log
         if: always()

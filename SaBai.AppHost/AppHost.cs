@@ -1,6 +1,19 @@
 using Projects;
 
+// Tests pass this because the AppHost process Aspire starts does not inherit CI.
+var useFakeWorkOs = IsContinuousIntegration() || HasArg(args, "--use-fake-workos=true");
+if (useFakeWorkOs)
+{
+    // The GitHub runner has no trusted ASP.NET dev cert, so the HTTPS health check cannot connect.
+    Environment.SetEnvironmentVariable("ASPIRE_ALLOW_UNSECURED_TRANSPORT", "true");
+}
+
 var builder = DistributedApplication.CreateBuilder(args);
+useFakeWorkOs |= !builder.ExecutionContext.IsPublishMode && IsEnabled(builder.Configuration["WorkOS:UseFake"]);
+if (builder.ExecutionContext.IsPublishMode)
+{
+    useFakeWorkOs = false;
+}
 
 var qdrant = builder.AddQdrant("qdrant");
 var postgres = builder.AddPostgres("postgres").WithPgAdmin();
@@ -11,7 +24,9 @@ var rustFsSecretKey = builder.AddParameter("rustFsSecretKey", "rustfsadmin");
 var rustFs = builder.AddRustFs("fs", rustFsAccessKey, rustFsSecretKey);
 var bucket = rustFs.AddBucket("sabai");
 
-var api = builder.AddProject<SaBai_API>("api")
+var api = (useFakeWorkOs
+        ? builder.AddProject<SaBai_API>("api", "http")
+        : builder.AddProject<SaBai_API>("api"))
     .WithReference(qdrant)
     .WithReference(db)
     .WithReference(bucket)
@@ -19,7 +34,7 @@ var api = builder.AddProject<SaBai_API>("api")
     .WaitFor(bucket)
     .WithHttpHealthCheck("/health");
 
-if (IsContinuousIntegration())
+if (useFakeWorkOs)
 {
     api.WithEnvironment("WorkOS__UseFake", "true");
 }
@@ -48,6 +63,9 @@ static bool IsContinuousIntegration() =>
     || IsEnabled(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"))
     || IsEnabled(Environment.GetEnvironmentVariable("GITLAB_CI"))
     || IsEnabled(Environment.GetEnvironmentVariable("TF_BUILD"));
+
+static bool HasArg(string[] args, string expected) =>
+    args.Any(arg => string.Equals(arg, expected, StringComparison.OrdinalIgnoreCase));
 
 static bool IsEnabled(string? value) =>
     string.Equals(value, "true", StringComparison.OrdinalIgnoreCase) || value == "1";

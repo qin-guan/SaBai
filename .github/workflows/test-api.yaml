@@ -6,7 +6,7 @@ permissions:
 on:
   pull_request:
     paths:
-      - "SaBai.Api/**"
+      - "SaBai.API/**"
       - "SaBai.AppHost/**"
       - "SaBai.DbMigrator/**"
       - "SaBai.Tests/**"
@@ -14,7 +14,7 @@ on:
       - ".github/workflows/test-api.yaml"
   push:
     paths:
-      - "SaBai.Api/**"
+      - "SaBai.API/**"
       - "SaBai.AppHost/**"
       - "SaBai.DbMigrator/**"
       - "SaBai.Tests/**"
@@ -32,6 +32,8 @@ jobs:
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
       DOTNET_NOLOGO: true
       NUGET_XMLDOC_MODE: skip
+      ASPIRE_ALLOW_UNSECURED_TRANSPORT: true
+      WorkOS__UseFake: true
 
     steps:
       - name: Checkout code
@@ -60,8 +62,6 @@ jobs:
 
       - name: Run tests
         run: dotnet test --no-build --configuration Release
-        env:
-          WorkOS__UseFake: true
 
       - name: Upload API server log
         if: always()

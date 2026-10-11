@@ -136,7 +136,9 @@ async function fillValidRegistrationForm(container: HTMLElement) {
     container.querySelector('input[name="dateOfBirth"]')!,
     "2000-10-10",
   );
-  await user.click(container.querySelector('button[name="gender-dropdown-button"]')!);
+  await user.click(
+    container.querySelector('button[name="gender-dropdown-button"]')!,
+  );
   await user.click(
     container.querySelector('button[name="gender-male-dropdown-option"]')!,
   );
@@ -227,7 +229,9 @@ describe("ScanFacePage", () => {
 
     await user.click(screen.getByRole("button", { name: "Capture" }));
 
-    expect(await screen.findByText("No matching patients found.")).toBeInTheDocument();
+    expect(
+      await screen.findByText("No matching patients found."),
+    ).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Register New Patient" }),
     ).toBeInTheDocument();

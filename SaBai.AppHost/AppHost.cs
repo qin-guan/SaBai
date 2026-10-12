@@ -54,7 +54,11 @@ if (builder.ExecutionContext.IsPublishMode)
     builder.AddDockerComposeEnvironment("compose")
         .WithProperties(env => { env.DashboardEnabled = true; });
     qdrant.PublishAsDockerComposeService((_, service) => { service.Name = "qdrant"; });
-    postgres.PublishAsDockerComposeService((_, service) => { service.Name = "postgres"; });
+    postgres.PublishAsDockerComposeService((_, service) =>
+    {
+        service.Name = "postgres";
+        service.AddEnvironmentalVariable("POSTGRES_DB", "sabai");
+    });
     rustFs.PublishAsDockerComposeService((_, service) => { service.Name = "fs"; });
     api.PublishAsDockerComposeService((_, service) => { service.Name = "api"; });
 }

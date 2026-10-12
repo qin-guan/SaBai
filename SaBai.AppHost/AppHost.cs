@@ -84,7 +84,7 @@ if (builder.ExecutionContext.IsPublishMode)
         service.Build = new Build
         {
             Context = ".",
-            Dockerfile = "Sabai.API/Dockerfile",
+            Dockerfile = "SaBai.API/Dockerfile",
         };
     });
 

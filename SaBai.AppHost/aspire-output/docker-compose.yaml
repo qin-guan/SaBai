@@ -74,7 +74,7 @@ services:
   api:
     build:
       context: "."
-      dockerfile: "Sabai.API/Dockerfile"
+      dockerfile: "SaBai.API/Dockerfile"
     environment:
       OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
       ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"

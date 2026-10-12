@@ -14,8 +14,7 @@ var postgres = builder.AddPostgres("postgres").WithDataVolume().WithPgAdmin(pgAd
             .PublishAsDockerComposeService((_, service) =>
             {
                 service.Name = "pgadmin";
-                // Aspire's pgAdmin configuration disables authentication.
-                service.Ports = ["5050:5050"];
+                service.Ports = ["5050:80"];
             });
     }
 });

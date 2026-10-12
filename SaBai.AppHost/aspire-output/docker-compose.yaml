@@ -52,7 +52,7 @@ services:
       PGADMIN_DEFAULT_EMAIL: "admin@domain.com"
       PGADMIN_DEFAULT_PASSWORD: "admin"
     ports:
-      - "5050:5050"
+      - "5050:80"
     expose:
       - "80"
     networks:
@@ -168,4 +168,4 @@ volumes:
     driver: "local"
 configs:
   pgadmin__pgadmin4_servers.json:
-    content: "{\n  \"Servers\": {\n    \"1\": {\n      \"Name\": \"postgres\",\n      \"Group\": \"Servers\",\n      \"Host\": \"postgres\",\n      \"Port\": 5432,\n      \"Username\": \"postgres\",\n      \"SSLMode\": \"prefer\",\n      \"MaintenanceDB\": \"postgres\",\n      \"PasswordExecCommand\": \"echo \\u0027~y(9Sy3QdYYT~)BUKrc9*)\\u0027\"\n    }\n  }\n}"
+    content: "{\n  \"Servers\": {\n    \"1\": {\n      \"Name\": \"postgres\",\n      \"Group\": \"Servers\",\n      \"Host\": \"postgres\",\n      \"Port\": 5432,\n      \"Username\": \"postgres\",\n      \"SSLMode\": \"prefer\",\n      \"MaintenanceDB\": \"postgres\",\n      \"PasswordExecCommand\": \"echo \\u0027h_6{sT4SM~WHaruzxuUNVd\\u0027\"\n    }\n  }\n}"

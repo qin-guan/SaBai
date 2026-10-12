@@ -96,7 +96,11 @@ app.UseExceptionHandler();
 
 await using var scope = app.Services.CreateAsyncScope();
 var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-await db.Database.MigrateAsync();
+var pendingMigrations = await db.Database.GetPendingMigrationsAsync();
+if (pendingMigrations.Any())
+{
+    await db.Database.MigrateAsync();
+}
 
 if (workOs.UseFake)
 {

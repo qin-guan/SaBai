@@ -14,6 +14,7 @@ public sealed class ScrfdFaceDetector : IDisposable
     private readonly InferenceSession _session;
     private readonly string _inputName;
     private readonly string[] _outputNames;
+    private readonly int? _fixedInputSize;
     private const int AnchorsPerLocation = 2;
 
     public ScrfdFaceDetector(InferenceSession session)
@@ -21,6 +22,15 @@ public sealed class ScrfdFaceDetector : IDisposable
         _session = session;
         _inputName = session.InputMetadata.Keys.Single();
         _outputNames = session.OutputMetadata.Keys.ToArray();
+        var dimensions = session.InputMetadata[_inputName].Dimensions;
+        if (dimensions.Length != 4 || (dimensions[1] > 0 && dimensions[1] != 3))
+            throw new NotSupportedException("SCRFD requires an NCHW RGB input.");
+        if (dimensions[2] > 0 || dimensions[3] > 0)
+        {
+            if (dimensions[2] <= 0 || dimensions[2] != dimensions[3] || dimensions[2] % 32 != 0)
+                throw new NotSupportedException("SCRFD requires a square input with sides divisible by 32.");
+            _fixedInputSize = dimensions[2];
+        }
 
         // Landmark-capable SCRFD models (det_*g, *_kps) with 3 strides expose 9 outputs:
         // scores, box distances and landmark offsets for each stride, with 2 anchors per cell.
@@ -31,6 +41,7 @@ public sealed class ScrfdFaceDetector : IDisposable
 
     public IReadOnlyList<DetectedFace> Detect(RgbImage image, int inputSize, float scoreThreshold, float nmsThreshold)
     {
+        inputSize = _fixedInputSize ?? inputSize;
         // Letterbox: keep the aspect ratio and pad the bottom/right edge.
         var ratio = (float)image.Height / image.Width;
         int newWidth, newHeight;
@@ -48,7 +59,7 @@ public sealed class ScrfdFaceDetector : IDisposable
         // Integer resize dimensions can produce slightly different scales per axis.
         var scaleX = (float)newWidth / image.Width;
         var scaleY = (float)newHeight / image.Height;
-        var resized = ImageOps.Resize(image, newWidth, newHeight);
+        var resized = ImageOps.ResizeBilinear(image, newWidth, newHeight);
         var input = ToTensor(resized, inputSize);
 
         using var results = _session.Run([NamedOnnxValue.CreateFromTensor(_inputName, input)], _outputNames);

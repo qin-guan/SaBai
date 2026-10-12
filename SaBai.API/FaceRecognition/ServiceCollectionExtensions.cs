@@ -10,6 +10,10 @@ public static class ServiceCollectionExtensions
             .Bind(builder.Configuration.GetSection(FaceRecognitionOptions.SectionName))
             .Validate(o => o.DetectionSize > 0 && o.DetectionSize % 32 == 0, "DetectionSize must be a positive multiple of 32.")
             .Validate(o => o.DetectionThreshold is >= 0 and <= 1, "DetectionThreshold must be between 0 and 1.")
+            .Validate(o => o.DetectionFallbackSize > 0 && o.DetectionFallbackSize % 32 == 0,
+                "DetectionFallbackSize must be a positive multiple of 32.")
+            .Validate(o => o.DetectionFallbackThreshold >= 0 && o.DetectionFallbackThreshold <= o.DetectionThreshold,
+                "DetectionFallbackThreshold must be between zero and DetectionThreshold.")
             .Validate(o => o.NmsThreshold is >= 0 and <= 1, "NmsThreshold must be between 0 and 1.")
             .Validate(o => o.MinimumFaceSize >= 0, "MinimumFaceSize must be non-negative.")
             .Validate(o => float.IsFinite(o.MinimumEyeDistance) && o.MinimumEyeDistance >= 0,

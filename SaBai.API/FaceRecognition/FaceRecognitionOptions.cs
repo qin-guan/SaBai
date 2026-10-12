@@ -31,6 +31,12 @@ public sealed class FaceRecognitionOptions
     /// <summary>IoU threshold for non-maximum suppression.</summary>
     public float NmsThreshold { get; set; } = 0.4f;
 
+    /// <summary>Minimum face width and height in source pixels for recognition; zero disables the size guard.</summary>
+    public int MinimumFaceSize { get; set; } = 40;
+
+    /// <summary>Minimum distance between the eyes in source pixels; zero disables the resolution guard.</summary>
+    public float MinimumEyeDistance { get; set; } = 12f;
+
     /// <summary>Cosine similarity at or above which two faces are considered the same person.</summary>
     public float MatchThreshold { get; set; } = 0.4f;
 

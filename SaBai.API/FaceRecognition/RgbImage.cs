@@ -76,11 +76,11 @@ public sealed class RgbImage
         var swap = origin >= SKEncodedOrigin.LeftTop;
         var result = new RgbImage(swap ? h : w, swap ? w : h);
         for (var y = 0; y < result.Height; y++)
-        for (var x = 0; x < result.Width; x++)
-        {
-            var (sx, sy) = map(x, y);
-            Buffer.BlockCopy(image.Pixels, (sy * w + sx) * 3, result.Pixels, (y * result.Width + x) * 3, 3);
-        }
+            for (var x = 0; x < result.Width; x++)
+            {
+                var (sx, sy) = map(x, y);
+                Buffer.BlockCopy(image.Pixels, (sy * w + sx) * 3, result.Pixels, (y * result.Width + x) * 3, 3);
+            }
 
         return result;
     }

@@ -34,6 +34,7 @@ public sealed class FaceAnalyzer(
     {
         var models = await GetModelsAsync(ct);
         var faces = models.Detector.Detect(image, _options.DetectionSize, _options.DetectionThreshold, _options.NmsThreshold);
+        faces = faces.Where(f => FaceQuality.IsSuitable(f, _options)).ToList();
         var aligned = faces.Select(f => FaceAligner.Align(image, f.Landmarks)).ToList();
         var embeddings = models.Embedder.Embed(aligned);
         return faces.Zip(embeddings, (face, embedding) => new AnalyzedFace(face, embedding)).ToList();

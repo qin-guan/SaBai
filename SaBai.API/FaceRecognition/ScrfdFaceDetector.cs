@@ -45,7 +45,9 @@ public sealed class ScrfdFaceDetector : IDisposable
             newHeight = Math.Max(1, (int)(newWidth * ratio));
         }
 
-        var scale = (float)newHeight / image.Height;
+        // Integer resize dimensions can produce slightly different scales per axis.
+        var scaleX = (float)newWidth / image.Width;
+        var scaleY = (float)newHeight / image.Height;
         var resized = ImageOps.Resize(image, newWidth, newHeight);
         var input = ToTensor(resized, inputSize);
 
@@ -66,24 +68,24 @@ public sealed class ScrfdFaceDetector : IDisposable
             for (var i = 0; i < count; i++)
             {
                 var score = scores.GetValue(i);
-                if (score < scoreThreshold) continue;
+                if (!float.IsFinite(score) || score < scoreThreshold) continue;
 
                 var cell = i / AnchorsPerLocation;
                 var cx = (float)(cell % gridW * stride);
                 var cy = (float)(cell / gridW * stride);
 
                 var box = new BoundingBox(
-                    (cx - boxes.GetValue(i * 4) * stride) / scale,
-                    (cy - boxes.GetValue(i * 4 + 1) * stride) / scale,
-                    (cx + boxes.GetValue(i * 4 + 2) * stride) / scale,
-                    (cy + boxes.GetValue(i * 4 + 3) * stride) / scale);
+                    (cx - boxes.GetValue(i * 4) * stride) / scaleX,
+                    (cy - boxes.GetValue(i * 4 + 1) * stride) / scaleY,
+                    (cx + boxes.GetValue(i * 4 + 2) * stride) / scaleX,
+                    (cy + boxes.GetValue(i * 4 + 3) * stride) / scaleY);
 
                 var landmarks = new PointF[5];
                 for (var k = 0; k < 5; k++)
                 {
                     landmarks[k] = new PointF(
-                        (cx + kps.GetValue(i * 10 + k * 2) * stride) / scale,
-                        (cy + kps.GetValue(i * 10 + k * 2 + 1) * stride) / scale);
+                        (cx + kps.GetValue(i * 10 + k * 2) * stride) / scaleX,
+                        (cy + kps.GetValue(i * 10 + k * 2 + 1) * stride) / scaleY);
                 }
 
                 candidates.Add(new DetectedFace(box, score, landmarks));
@@ -120,14 +122,14 @@ public sealed class ScrfdFaceDetector : IDisposable
 
         var plane = size * size;
         for (var y = 0; y < image.Height; y++)
-        for (var x = 0; x < image.Width; x++)
-        {
-            var s = (y * image.Width + x) * 3;
-            var d = y * size + x;
-            data[d] = (image.Pixels[s] - mean) / std;
-            data[plane + d] = (image.Pixels[s + 1] - mean) / std;
-            data[2 * plane + d] = (image.Pixels[s + 2] - mean) / std;
-        }
+            for (var x = 0; x < image.Width; x++)
+            {
+                var s = (y * image.Width + x) * 3;
+                var d = y * size + x;
+                data[d] = (image.Pixels[s] - mean) / std;
+                data[plane + d] = (image.Pixels[s + 1] - mean) / std;
+                data[2 * plane + d] = (image.Pixels[s + 2] - mean) / std;
+            }
 
         return tensor;
     }

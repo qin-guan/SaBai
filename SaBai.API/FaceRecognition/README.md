@@ -13,7 +13,9 @@ there or pre-provision the files and set `FaceRecognition:AutoDownloadModels` to
 landmarks) or ArcFace ONNX export works, for example `antelopev2`'s `glintr100.onnx`; the Qdrant collection is sized
 from the model's output.
 
-The pipeline matches InsightFace's reference Python implementation (same boxes, scores and embeddings).
+The pipeline uses InsightFace's RGB normalization and ArcFace alignment template. Resizing uses
+fractionally weighted area averaging when shrinking and bilinear interpolation when enlarging;
+pixel-identical parity with the reference Python/OpenCV implementation is not guaranteed.
 
 Endpoints require an authenticated staff user (`Admin` or `Member` role).
 
@@ -33,5 +35,23 @@ Endpoints require an authenticated staff user (`Admin` or `Member` role).
 | `POST` | `/faces/verify` | 1:1 similarity between the main faces in two images |
 
 Images are sent as `multipart/form-data` (`image`, or `first`/`second` for verify). Similarity is cosine in
-`[-1, 1]`; the default `MatchThreshold` of `0.4` suits `w600k_r50`. Enrolling several photos per person improves
-recall.
+`[-1, 1]`; the default `MatchThreshold` is `0.4`. It is a starting point, not a calibrated probability
+or a guarantee of identity. Enrolling several sharp, well-lit photos per person improves recall.
+
+## Accuracy settings
+
+Recognition (enrollment, identification and verification) excludes faces smaller than
+`MinimumFaceSize` (default 40 source pixels in either dimension), or with eyes less than
+`MinimumEyeDistance` (default 12 source pixels) apart. Non-finite landmarks and degenerate alignment
+are also rejected. Detection still returns small faces. Set either size setting to zero to disable
+that guard. These defaults are conservative starting points, not dataset-calibrated values;
+they can reduce recall for distant faces. Use a closer, sharper photo when no usable face remains.
+
+Preprocessing fixes change generated embeddings slightly. Existing vectors are not rewritten;
+re-enroll from original photos for consistent enrollment/query preprocessing.
+
+Before production tuning, evaluate labeled same-person and different-person pairs from the actual
+camera workflow, keeping identities separate between calibration and evaluation sets. Choose
+`MatchThreshold` using measured false-match and false-non-match rates, and check lighting, pose and
+demographic slices. Do not lower the threshold just to force a match. Model weights and the default
+match threshold have not been changed, and accuracy gains require validation on those images.

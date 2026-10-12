@@ -31,8 +31,8 @@ public class Endpoint(FaceAnalyzer analyzer, IOptions<FaceRecognitionOptions> op
 
         var a = FaceImages.Largest(await analyzer.AnalyzeAsync(first!, ct));
         var b = FaceImages.Largest(await analyzer.AnalyzeAsync(second!, ct));
-        if (a is null) AddError(r => r.First, "No face detected.");
-        if (b is null) AddError(r => r.Second, "No face detected.");
+        if (a is null) AddError(r => r.First, "No usable face detected. Use a closer, sharp, well-lit photo.");
+        if (b is null) AddError(r => r.Second, "No usable face detected. Use a closer, sharp, well-lit photo.");
         ThrowIfAnyErrors(StatusCodes.Status422UnprocessableEntity);
 
         var similarity = ArcFaceEmbedder.Similarity(a!.Embedding, b!.Embedding);

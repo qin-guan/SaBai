@@ -24,11 +24,11 @@ public static class FaceAligner
         var inverse = t.Inverse();
         var output = new RgbImage(Size, Size);
         for (var y = 0; y < Size; y++)
-        for (var x = 0; x < Size; x++)
-        {
-            var (sx, sy) = inverse.Apply(x, y);
-            ImageOps.SampleBilinear(image, sx, sy, output.Pixels.AsSpan((y * Size + x) * 3, 3));
-        }
+            for (var x = 0; x < Size; x++)
+            {
+                var (sx, sy) = inverse.Apply(x, y);
+                ImageOps.SampleBilinear(image, sx, sy, output.Pixels.AsSpan((y * Size + x) * 3, 3));
+            }
 
         return output;
     }

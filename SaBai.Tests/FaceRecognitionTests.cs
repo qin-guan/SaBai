@@ -71,6 +71,106 @@ public class DetectionTests
     }
 }
 
+public class ImageOpsTests
+{
+    [Test]
+    public async Task Resize_FractionalShrink_WeightsPartialPixels()
+    {
+        var image = new RgbImage(3, 2,
+        [
+            0, 0, 0, 120, 120, 120, 240, 240, 240,
+            0, 0, 0, 120, 120, 120, 240, 240, 240,
+        ]);
+
+        var resized = ImageOps.Resize(image, 2, 1);
+
+        // Each output covers 1.5 columns: a whole edge pixel and half the middle pixel.
+        await Assert.That(resized.Pixels.SequenceEqual(new byte[] { 40, 40, 40, 200, 200, 200 })).IsTrue();
+    }
+
+    [Test]
+    public async Task SampleBilinear_InterpolatesChannelsIndependently()
+    {
+        var image = new RgbImage(2, 1, [20, 40, 60, 100, 120, 140]);
+        var sample = new byte[3];
+
+        ImageOps.SampleBilinear(image, 0.5f, 0, sample);
+
+        await Assert.That(sample.SequenceEqual(new byte[] { 60, 80, 100 })).IsTrue();
+    }
+
+    [Test]
+    public async Task SampleBilinear_OutsideImage_IsBlack()
+    {
+        var image = new RgbImage(1, 1, [255, 255, 255]);
+        var sample = new byte[] { 255, 255, 255 };
+
+        ImageOps.SampleBilinear(image, -2, -2, sample);
+
+        await Assert.That(sample.SequenceEqual(new byte[] { 0, 0, 0 })).IsTrue();
+    }
+}
+
+public class FaceQualityTests
+{
+    private static DetectedFace Face() => new(
+        new BoundingBox(0, 0, 112, 112), 0.9f, FaceAligner.ArcFaceTemplate.ToArray());
+
+    [Test]
+    public async Task IsSuitable_AcceptsWellResolvedFace()
+    {
+        await Assert.That(FaceQuality.IsSuitable(Face(), new FaceRecognitionOptions())).IsTrue();
+    }
+
+    [Test]
+    public async Task IsSuitable_RejectsSmallFace()
+    {
+        var face = Face() with { Box = new BoundingBox(0, 0, 39, 112) };
+
+        await Assert.That(FaceQuality.IsSuitable(face, new FaceRecognitionOptions())).IsFalse();
+    }
+
+    [Test]
+    public async Task IsSuitable_RejectsInsufficientEyeResolution()
+    {
+        var face = Face();
+        face.Landmarks[1] = face.Landmarks[0] with { X = face.Landmarks[0].X + 5 };
+
+        await Assert.That(FaceQuality.IsSuitable(face, new FaceRecognitionOptions())).IsFalse();
+    }
+
+    [Test]
+    public async Task IsSuitable_RejectsNonFiniteLandmarks()
+    {
+        var face = Face();
+        face.Landmarks[2] = new PointF(float.NaN, 50);
+
+        await Assert.That(FaceQuality.IsSuitable(face, new FaceRecognitionOptions())).IsFalse();
+    }
+
+    [Test]
+    public async Task IsSuitable_RejectsDegenerateLandmarksEvenWithSizeGuardsDisabled()
+    {
+        var face = Face() with { Landmarks = Enumerable.Repeat(new PointF(50, 50), 5).ToArray() };
+        var options = new FaceRecognitionOptions { MinimumFaceSize = 0, MinimumEyeDistance = 0 };
+
+        await Assert.That(FaceQuality.IsSuitable(face, options)).IsFalse();
+    }
+
+    [Test]
+    public async Task IsSuitable_SizeGuardsCanBeDisabled()
+    {
+        var face = Face() with
+        {
+            Box = new BoundingBox(0, 0, 20, 20),
+            Landmarks = FaceAligner.ArcFaceTemplate.Select(p => new PointF(p.X / 10, p.Y / 10)).ToArray(),
+        };
+        var options = new FaceRecognitionOptions { MinimumFaceSize = 0, MinimumEyeDistance = 0 };
+
+        await Assert.That(FaceQuality.IsSuitable(face, options)).IsTrue();
+    }
+}
+
 public class RgbImageTests
 {
     // 2x3 image whose red channel encodes the pixel position as 10 * y + x.
@@ -78,8 +178,8 @@ public class RgbImageTests
     {
         var image = new RgbImage(2, 3);
         for (var y = 0; y < 3; y++)
-        for (var x = 0; x < 2; x++)
-            image.Pixels[(y * 2 + x) * 3] = (byte)(10 * y + x);
+            for (var x = 0; x < 2; x++)
+                image.Pixels[(y * 2 + x) * 3] = (byte)(10 * y + x);
         return image;
     }
 

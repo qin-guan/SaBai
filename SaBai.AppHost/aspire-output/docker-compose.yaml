@@ -119,12 +119,11 @@ services:
   frontend:
     build:
       context: "."
-      dockerfile: "./SaBai.AppHost/aspire-output/frontend.Dockerfile"
+      dockerfile: "SaBai.Web/Dockerfile"
     environment:
-      NODE_ENV: "production"
+      NEXT_PUBLIC_API_URL: "http://api:${API_PORT}"
       PORT: "3000"
       HOSTNAME: "0.0.0.0"
-      NEXT_PUBLIC_API_URL: "http://api:${API_PORT}"
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://compose-dashboard:18889"
       OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
       OTEL_SERVICE_NAME: "frontend"

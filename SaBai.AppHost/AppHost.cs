@@ -1,3 +1,4 @@
+using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Docker.Resources.ServiceNodes;
 using Projects;
 
@@ -44,19 +45,28 @@ if (!useFakeWorkOs)
         .WithEnvironment("WorkOS__ApiKey", builder.AddParameter("workOsApiKey", secret: true));
 }
 
-var frontend = builder.AddNextJsApp("frontend", "../SaBai.Web")
-    .WithPnpm(install: false)
-    .WithEnvironment("NEXT_PUBLIC_API_URL", api.GetEndpoint("http"))
-    .WithHttpEndpoint(port: 3000, env: "PORT")
-    .WaitFor(api);
+if (!builder.ExecutionContext.IsPublishMode)
+{
+    builder.AddNextJsApp("frontend", "../SaBai.Web")
+        .WithPnpm()
+        .WithEnvironment("NEXT_PUBLIC_API_URL", api.GetEndpoint("http"))
+        .WithHttpEndpoint(port: 3000, env: "PORT")
+        .WaitFor(api);
+}
 
 if (builder.ExecutionContext.IsPublishMode)
 {
+    // Build from the repo root so pnpm can resolve the SDK workspace package.
+    var frontend = builder.AddDockerfile("frontend", "..", "SaBai.Web/Dockerfile")
+        .WithEnvironment("NEXT_PUBLIC_API_URL", api.GetEndpoint("http"))
+        .WithEnvironment("PORT", "3000")
+        .WithEnvironment("HOSTNAME", "0.0.0.0")
+        .WithHttpEndpoint(port: 3000, targetPort: 3000)
+        .WithOtlpExporter()
+        .WaitFor(api);
+
     builder.AddDockerComposeEnvironment("compose")
-        .WithProperties(env =>
-        {
-            env.DashboardEnabled = true;
-        });
+        .WithProperties(env => { env.DashboardEnabled = true; });
 
     qdrant.PublishAsDockerComposeService((_, service) =>
     {
@@ -96,7 +106,7 @@ if (builder.ExecutionContext.IsPublishMode)
         service.Build = new Build
         {
             Context = ".",
-            Dockerfile = "./SaBai.AppHost/aspire-output/frontend.Dockerfile",
+            Dockerfile = "SaBai.Web/Dockerfile",
         };
     });
 }

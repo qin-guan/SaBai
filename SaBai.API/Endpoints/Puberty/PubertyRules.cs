@@ -14,7 +14,8 @@ internal static class PubertyRules
         bool? voiceChange,
         int? voiceChangeAge,
         bool? testicularGrowth,
-        int? testicularGrowthAge)
+        int? testicularGrowthAge
+    )
     {
         Ensure(pubarche, pubarcheAge, "pubarche", "pubarcheAge");
         Ensure(thelarche, thelarcheAge, "thelarche", "thelarcheAge");

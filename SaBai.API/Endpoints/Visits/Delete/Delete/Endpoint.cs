@@ -17,7 +17,11 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var visit = await db.Visits.FirstOrNotFoundAsync(x => x.Id == req.Id, "Visit was not found.", ct);
+        var visit = await db.Visits.FirstOrNotFoundAsync(
+            x => x.Id == req.Id,
+            "Visit was not found.",
+            ct
+        );
         if (await db.Consults.AnyAsync(x => x.VisitId == visit.Id, ct))
         {
             throw new ConflictException("A consult still references this visit.");

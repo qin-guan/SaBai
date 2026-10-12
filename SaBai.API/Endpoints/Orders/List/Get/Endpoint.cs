@@ -41,7 +41,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, List<Response>
                 x.Remarks,
                 x.ApprovedById,
                 x.ApprovedAt,
-                x.CreatedAt))
+                x.CreatedAt
+            ))
             .ToListAsync(ct);
 
         await Send.OkAsync(orders, ct);

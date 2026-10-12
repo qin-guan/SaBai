@@ -20,11 +20,14 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request>
         var stock = await db.MedicationStocks.FirstOrNotFoundAsync(
             x => x.Id == req.Id,
             "Medication stock was not found.",
-            ct);
+            ct
+        );
 
         if (await db.StockChanges.AnyAsync(x => x.StockId == stock.Id, ct))
         {
-            throw new ConflictException("Medication stock has change history and cannot be deleted.");
+            throw new ConflictException(
+                "Medication stock has change history and cannot be deleted."
+            );
         }
 
         db.MedicationStocks.Remove(stock);

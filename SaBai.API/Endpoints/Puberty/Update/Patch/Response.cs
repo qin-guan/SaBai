@@ -16,20 +16,23 @@ public sealed record Response(
     int? VoiceChangeAge,
     bool? TesticularGrowth,
     int? TesticularGrowthAge,
-    string? AdditionalNotes)
+    string? AdditionalNotes
+)
 {
-    public static Response From(PubertyAssessment puberty) => new(
-        puberty.Id,
-        puberty.VitalsId,
-        puberty.Pubarche,
-        puberty.PubarcheAge,
-        puberty.Thelarche,
-        puberty.ThelarcheAge,
-        puberty.Menarche,
-        puberty.MenarcheAge,
-        puberty.VoiceChange,
-        puberty.VoiceChangeAge,
-        puberty.TesticularGrowth,
-        puberty.TesticularGrowthAge,
-        puberty.AdditionalNotes);
+    public static Response From(PubertyAssessment puberty) =>
+        new(
+            puberty.Id,
+            puberty.VitalsId,
+            puberty.Pubarche,
+            puberty.PubarcheAge,
+            puberty.Thelarche,
+            puberty.ThelarcheAge,
+            puberty.Menarche,
+            puberty.MenarcheAge,
+            puberty.VoiceChange,
+            puberty.VoiceChangeAge,
+            puberty.TesticularGrowth,
+            puberty.TesticularGrowthAge,
+            puberty.AdditionalNotes
+        );
 }

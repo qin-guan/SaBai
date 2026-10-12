@@ -23,7 +23,9 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, List<Response>
             "false" => false,
             "true" => true,
             "all" => null,
-            _ => throw new BadRequestException("deleted parameter must be 'all', 'true', or 'false'."),
+            _ => throw new BadRequestException(
+                "deleted parameter must be 'all', 'true', or 'false'."
+            ),
         };
 
         var query = db.ClinicalFiles.AsNoTracking().AsQueryable();
@@ -48,7 +50,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, List<Response>
                 x.Description,
                 x.SizeBytes,
                 x.IsDeleted,
-                x.CreatedAt))
+                x.CreatedAt
+            ))
             .ToListAsync(ct);
 
         await Send.OkAsync(files, ct);

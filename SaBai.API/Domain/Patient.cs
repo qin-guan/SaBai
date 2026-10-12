@@ -46,7 +46,12 @@ public sealed class Patient
     public static string FormatDisplayId(string? villageCode, int id) =>
         string.IsNullOrWhiteSpace(villageCode) ? id.ToString("D4") : $"{villageCode}{id:0000}";
 
-    public static string FormatFilterString(string? villageCode, int id, string? contactNo, string name)
+    public static string FormatFilterString(
+        string? villageCode,
+        int id,
+        string? contactNo,
+        string name
+    )
     {
         var display = FormatDisplayId(villageCode, id);
         var compact = string.IsNullOrWhiteSpace(villageCode) ? id.ToString() : $"{villageCode}{id}";

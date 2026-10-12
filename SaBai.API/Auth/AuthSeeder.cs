@@ -8,7 +8,12 @@ public static class AuthSeeder
 {
     public const string Password = "Password1!";
 
-    public static readonly (string Email, string Username, string Nickname, StaffRole Role)[] People =
+    public static readonly (
+        string Email,
+        string Username,
+        string Nickname,
+        StaffRole Role
+    )[] People =
     [
         ("admin@sabai.test", "admin", "Admin", StaffRole.Admin),
         ("doctor@sabai.test", "doctor", "Doctor", StaffRole.Member),
@@ -19,13 +24,15 @@ public static class AuthSeeder
     public static async Task EnsureAsync(
         AppDbContext db,
         FakeWorkOsDirectory directory,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         foreach (var person in People)
         {
             var existing = await db.StaffUsers.FirstOrDefaultAsync(
                 x => x.Email == person.Email,
-                cancellationToken);
+                cancellationToken
+            );
 
             if (existing is null)
             {
@@ -36,18 +43,21 @@ public static class AuthSeeder
                     person.Nickname,
                     null,
                     id.ToString(),
-                    cancellationToken);
+                    cancellationToken
+                );
 
-                db.StaffUsers.Add(new StaffUser
-                {
-                    Id = id,
-                    WorkOsUserId = identity.Id,
-                    Username = person.Username,
-                    Email = person.Email,
-                    Nickname = person.Nickname,
-                    Role = person.Role,
-                    CreatedAt = DateTimeOffset.UtcNow,
-                });
+                db.StaffUsers.Add(
+                    new StaffUser
+                    {
+                        Id = id,
+                        WorkOsUserId = identity.Id,
+                        Username = person.Username,
+                        Email = person.Email,
+                        Nickname = person.Nickname,
+                        Role = person.Role,
+                        CreatedAt = DateTimeOffset.UtcNow,
+                    }
+                );
             }
             else
             {

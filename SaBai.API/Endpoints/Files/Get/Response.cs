@@ -11,8 +11,18 @@ public sealed record Response(
     string Description,
     long SizeBytes,
     bool IsDeleted,
-    DateTimeOffset CreatedAt)
+    DateTimeOffset CreatedAt
+)
 {
     public static Response From(ClinicalFile file) =>
-        new(file.Id, file.PatientId, file.FileName, file.StoredFileName, file.Description, file.SizeBytes, file.IsDeleted, file.CreatedAt);
+        new(
+            file.Id,
+            file.PatientId,
+            file.FileName,
+            file.StoredFileName,
+            file.Description,
+            file.SizeBytes,
+            file.IsDeleted,
+            file.CreatedAt
+        );
 }

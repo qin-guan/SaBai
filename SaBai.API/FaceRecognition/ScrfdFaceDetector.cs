@@ -28,7 +28,9 @@ public sealed class ScrfdFaceDetector : IDisposable
         if (dimensions[2] > 0 || dimensions[3] > 0)
         {
             if (dimensions[2] <= 0 || dimensions[2] != dimensions[3] || dimensions[2] % 32 != 0)
-                throw new NotSupportedException("SCRFD requires a square input with sides divisible by 32.");
+                throw new NotSupportedException(
+                    "SCRFD requires a square input with sides divisible by 32."
+                );
             _fixedInputSize = dimensions[2];
         }
 
@@ -36,15 +38,22 @@ public sealed class ScrfdFaceDetector : IDisposable
         // scores, box distances and landmark offsets for each stride, with 2 anchors per cell.
         if (_outputNames.Length != 9)
             throw new NotSupportedException(
-                $"Unsupported SCRFD model with {_outputNames.Length} outputs; a 3-stride model with landmarks is required.");
+                $"Unsupported SCRFD model with {_outputNames.Length} outputs; a 3-stride model with landmarks is required."
+            );
     }
 
-    public IReadOnlyList<DetectedFace> Detect(RgbImage image, int inputSize, float scoreThreshold, float nmsThreshold)
+    public IReadOnlyList<DetectedFace> Detect(
+        RgbImage image,
+        int inputSize,
+        float scoreThreshold,
+        float nmsThreshold
+    )
     {
         inputSize = _fixedInputSize ?? inputSize;
         // Letterbox: keep the aspect ratio and pad the bottom/right edge.
         var ratio = (float)image.Height / image.Width;
-        int newWidth, newHeight;
+        int newWidth,
+            newHeight;
         if (ratio > 1)
         {
             newHeight = inputSize;
@@ -62,7 +71,10 @@ public sealed class ScrfdFaceDetector : IDisposable
         var resized = ImageOps.ResizeBilinear(image, newWidth, newHeight);
         var input = ToTensor(resized, inputSize);
 
-        using var results = _session.Run([NamedOnnxValue.CreateFromTensor(_inputName, input)], _outputNames);
+        using var results = _session.Run(
+            [NamedOnnxValue.CreateFromTensor(_inputName, input)],
+            _outputNames
+        );
         var outputs = results.Select(r => r.AsTensor<float>()).ToArray();
 
         var candidates = new List<DetectedFace>();
@@ -79,7 +91,8 @@ public sealed class ScrfdFaceDetector : IDisposable
             for (var i = 0; i < count; i++)
             {
                 var score = scores.GetValue(i);
-                if (!float.IsFinite(score) || score < scoreThreshold) continue;
+                if (!float.IsFinite(score) || score < scoreThreshold)
+                    continue;
 
                 var cell = i / AnchorsPerLocation;
                 var cx = (float)(cell % gridW * stride);
@@ -89,14 +102,16 @@ public sealed class ScrfdFaceDetector : IDisposable
                     (cx - boxes.GetValue(i * 4) * stride) / scaleX,
                     (cy - boxes.GetValue(i * 4 + 1) * stride) / scaleY,
                     (cx + boxes.GetValue(i * 4 + 2) * stride) / scaleX,
-                    (cy + boxes.GetValue(i * 4 + 3) * stride) / scaleY);
+                    (cy + boxes.GetValue(i * 4 + 3) * stride) / scaleY
+                );
 
                 var landmarks = new PointF[5];
                 for (var k = 0; k < 5; k++)
                 {
                     landmarks[k] = new PointF(
                         (cx + kps.GetValue(i * 10 + k * 2) * stride) / scaleX,
-                        (cy + kps.GetValue(i * 10 + k * 2 + 1) * stride) / scaleY);
+                        (cy + kps.GetValue(i * 10 + k * 2 + 1) * stride) / scaleY
+                    );
                 }
 
                 candidates.Add(new DetectedFace(box, score, landmarks));
@@ -108,7 +123,10 @@ public sealed class ScrfdFaceDetector : IDisposable
             .ToList();
     }
 
-    public static List<DetectedFace> NonMaxSuppression(IEnumerable<DetectedFace> faces, float iouThreshold)
+    public static List<DetectedFace> NonMaxSuppression(
+        IEnumerable<DetectedFace> faces,
+        float iouThreshold
+    )
     {
         var kept = new List<DetectedFace>();
         foreach (var face in faces.OrderByDescending(f => f.Score))
@@ -120,27 +138,32 @@ public sealed class ScrfdFaceDetector : IDisposable
         return kept;
     }
 
-    private static BoundingBox Clamp(BoundingBox b, int width, int height) => new(
-        Math.Clamp(b.X1, 0, width), Math.Clamp(b.Y1, 0, height),
-        Math.Clamp(b.X2, 0, width), Math.Clamp(b.Y2, 0, height));
+    private static BoundingBox Clamp(BoundingBox b, int width, int height) =>
+        new(
+            Math.Clamp(b.X1, 0, width),
+            Math.Clamp(b.Y1, 0, height),
+            Math.Clamp(b.X2, 0, width),
+            Math.Clamp(b.Y2, 0, height)
+        );
 
     private static DenseTensor<float> ToTensor(RgbImage image, int size)
     {
-        const float mean = 127.5f, std = 128f;
+        const float mean = 127.5f,
+            std = 128f;
         var tensor = new DenseTensor<float>([1, 3, size, size]);
         var data = tensor.Buffer.Span;
         data.Fill(-mean / std);
 
         var plane = size * size;
         for (var y = 0; y < image.Height; y++)
-            for (var x = 0; x < image.Width; x++)
-            {
-                var s = (y * image.Width + x) * 3;
-                var d = y * size + x;
-                data[d] = (image.Pixels[s] - mean) / std;
-                data[plane + d] = (image.Pixels[s + 1] - mean) / std;
-                data[2 * plane + d] = (image.Pixels[s + 2] - mean) / std;
-            }
+        for (var x = 0; x < image.Width; x++)
+        {
+            var s = (y * image.Width + x) * 3;
+            var d = y * size + x;
+            data[d] = (image.Pixels[s] - mean) / std;
+            data[plane + d] = (image.Pixels[s + 1] - mean) / std;
+            data[2 * plane + d] = (image.Pixels[s + 2] - mean) / std;
+        }
 
         return tensor;
     }

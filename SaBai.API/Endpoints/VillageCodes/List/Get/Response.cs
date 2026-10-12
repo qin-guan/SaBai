@@ -11,4 +11,5 @@ public sealed record Item(
     string ColorHex,
     bool IsVisible,
     DateTimeOffset CreatedAt,
-    DateTimeOffset UpdatedAt);
+    DateTimeOffset UpdatedAt
+);

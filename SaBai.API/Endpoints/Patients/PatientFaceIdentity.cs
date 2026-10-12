@@ -15,7 +15,7 @@ public static class PatientFaceIdentity
     {
         patientId = 0;
         return personId is not null
-               && personId.StartsWith(Prefix, StringComparison.Ordinal)
-               && int.TryParse(personId.AsSpan(Prefix.Length), out patientId);
+            && personId.StartsWith(Prefix, StringComparison.Ordinal)
+            && int.TryParse(personId.AsSpan(Prefix.Length), out patientId);
     }
 }

@@ -18,7 +18,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
         var ingredient = await db.MedicationActiveIngredients.FirstOrNotFoundAsync(
             x => x.Id == req.Id,
             "Medication ingredient was not found.",
-            ct);
+            ct
+        );
 
         ingredient.Name = req.Name.Trim();
         ingredient.UnitOfMeasurement = req.UnitOfMeasurement.Trim();
@@ -27,7 +28,14 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
         await db.SaveChangesAsync(ct);
 
         await Send.OkAsync(
-            new Response(ingredient.Id, ingredient.Name, ingredient.UnitOfMeasurement, ingredient.FallBelow, ingredient.Remarks),
-            ct);
+            new Response(
+                ingredient.Id,
+                ingredient.Name,
+                ingredient.UnitOfMeasurement,
+                ingredient.FallBelow,
+                ingredient.Remarks
+            ),
+            ct
+        );
     }
 }

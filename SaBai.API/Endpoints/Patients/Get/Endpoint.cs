@@ -17,8 +17,11 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        await db.Patients.AsNoTracking().FirstOrNotFoundAsync(x => x.Id == req.Id, "Patient was not found.", ct);
-        var row = await db.Patients.AsNoTracking()
+        await db
+            .Patients.AsNoTracking()
+            .FirstOrNotFoundAsync(x => x.Id == req.Id, "Patient was not found.", ct);
+        var row = await db
+            .Patients.AsNoTracking()
             .Where(x => x.Id == req.Id)
             .Select(x => new
             {
@@ -39,7 +42,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                 x.LatestFaceId,
             })
             .FirstAsync(ct);
-        var lastVisit = await db.Visits.AsNoTracking()
+        var lastVisit = await db
+            .Visits.AsNoTracking()
             .Where(x => x.PatientId == row.Id)
             .OrderByDescending(x => x.Date)
             .ThenByDescending(x => x.Id)
@@ -66,7 +70,9 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                 lastVisit?.Date,
                 lastVisit?.Id,
                 row.PhotoStoredFileName != null,
-                row.LatestFaceId != null),
-            ct);
+                row.LatestFaceId != null
+            ),
+            ct
+        );
     }
 }

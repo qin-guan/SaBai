@@ -26,7 +26,8 @@ public sealed class OrderEdgeTests(AppFixture fixture)
                 quantity = 1,
                 dosageInstructions = "1 tablet daily",
             },
-            ApiJson.Options);
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.NotFound);
@@ -52,7 +53,8 @@ public sealed class OrderEdgeTests(AppFixture fixture)
                 quantity = 0,
                 dosageInstructions = "1 tablet daily",
             },
-            ApiJson.Options);
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
@@ -74,7 +76,8 @@ public sealed class OrderEdgeTests(AppFixture fixture)
         var response = await client.PatchAsJsonAsync(
             $"/orders/{orderId}",
             new { status = "APPROVED" },
-            ApiJson.Options);
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
@@ -94,14 +97,16 @@ public sealed class OrderEdgeTests(AppFixture fixture)
         var approved = await client.PatchAsJsonAsync(
             $"/orders/{orderId}",
             new { status = "APPROVED" },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         approved.EnsureSuccessStatusCode();
 
         // Act
         var second = await client.PatchAsJsonAsync(
             $"/orders/{orderId}",
             new { status = "APPROVED" },
-            ApiJson.Options);
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(second.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
@@ -124,7 +129,8 @@ public sealed class OrderEdgeTests(AppFixture fixture)
         var cancelled = await client.PatchAsJsonAsync(
             $"/orders/{orderId}",
             new { status = "CANCELLED" },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var listed = await client.GetAsync("/medication-stock");
         var body = await listed.Content.ReadAsStringAsync();
         var lot = FindLot(body, stockId);
@@ -187,29 +193,57 @@ public sealed class OrderEdgeTests(AppFixture fixture)
                 quantity = 1,
                 dosageInstructions = "1 tablet daily",
             },
-            ApiJson.Options);
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.Unauthorized);
     }
 
-    private static async Task<int> CreateBrandAsync(HttpClient client, string suffix, string? name = null)
+    private static async Task<int> CreateBrandAsync(
+        HttpClient client,
+        string suffix,
+        string? name = null
+    )
     {
         var ingredient = await client.PostAsJsonAsync(
             "/medication-ingredients",
-            new { name = $"Order ingredient {suffix}", unitOfMeasurement = "tablets", fallBelow = 5 },
-            ApiJson.Options);
+            new
+            {
+                name = $"Order ingredient {suffix}",
+                unitOfMeasurement = "tablets",
+                fallBelow = 5,
+            },
+            ApiJson.Options
+        );
         ingredient.EnsureSuccessStatusCode();
-        var ingredientId = ClinicSetup.ReadInt(await ingredient.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options), "id");
+        var ingredientId = ClinicSetup.ReadInt(
+            await ingredient.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
+            "id"
+        );
         var brand = await client.PostAsJsonAsync(
             "/medication-brands",
-            new { name = name ?? $"Order brand {suffix}", activeIngredientId = ingredientId, remarks = "" },
-            ApiJson.Options);
+            new
+            {
+                name = name ?? $"Order brand {suffix}",
+                activeIngredientId = ingredientId,
+                remarks = "",
+            },
+            ApiJson.Options
+        );
         brand.EnsureSuccessStatusCode();
-        return ClinicSetup.ReadInt(await brand.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options), "id");
+        return ClinicSetup.ReadInt(
+            await brand.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
+            "id"
+        );
     }
 
-    private static async Task<int> CreateStockAsync(HttpClient client, int brandId, int quantity, string location)
+    private static async Task<int> CreateStockAsync(
+        HttpClient client,
+        int brandId,
+        int quantity,
+        string location
+    )
     {
         var response = await client.PostAsJsonAsync(
             "/medication-stock",
@@ -221,9 +255,13 @@ public sealed class OrderEdgeTests(AppFixture fixture)
                 location,
                 stockStatus = "active",
             },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         response.EnsureSuccessStatusCode();
-        return ClinicSetup.ReadInt(await response.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options), "id");
+        return ClinicSetup.ReadInt(
+            await response.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
+            "id"
+        );
     }
 
     private static async Task<int> CreateConsultIdAsync(HttpClient client)
@@ -233,7 +271,12 @@ public sealed class OrderEdgeTests(AppFixture fixture)
         return await ClinicSetup.CreateConsultAsync(client, visitId);
     }
 
-    private static async Task<int> CreateOrderAsync(HttpClient client, int consultId, int brandId, int quantity)
+    private static async Task<int> CreateOrderAsync(
+        HttpClient client,
+        int consultId,
+        int brandId,
+        int quantity
+    )
     {
         var response = await client.PostAsJsonAsync(
             "/orders",
@@ -244,14 +287,19 @@ public sealed class OrderEdgeTests(AppFixture fixture)
                 quantity,
                 dosageInstructions = "1 tablet daily",
             },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         response.EnsureSuccessStatusCode();
-        return ClinicSetup.ReadInt(await response.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options), "id");
+        return ClinicSetup.ReadInt(
+            await response.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
+            "id"
+        );
     }
 
     private static StockLot FindLot(string body, int stockId)
     {
-        var stocks = JsonSerializer.Deserialize<List<StockLot>>(body, ApiJson.Options)
+        var stocks =
+            JsonSerializer.Deserialize<List<StockLot>>(body, ApiJson.Options)
             ?? throw new InvalidOperationException($"Stock list was not JSON: {body}");
         return stocks.SingleOrDefault(x => x.Id == stockId)
             ?? throw new InvalidOperationException($"Stock {stockId} was not listed: {body}");

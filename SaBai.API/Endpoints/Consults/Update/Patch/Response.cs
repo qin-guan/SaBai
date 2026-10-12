@@ -15,7 +15,8 @@ public sealed record Response(
     string? Remarks,
     Guid DoctorId,
     string DoctorNickname,
-    IReadOnlyList<DiagnosisItem> Diagnoses)
+    IReadOnlyList<DiagnosisItem> Diagnoses
+)
 {
     public static Response From(Consult consult) =>
         new(
@@ -31,11 +32,17 @@ public sealed record Response(
             consult.DoctorId,
             consult.Doctor.Nickname,
             [
-                .. consult.Diagnoses
-                    .OrderBy(x => x.Id)
-                    .Select(x => new DiagnosisItem(x.Id, x.ConsultId, x.Details, x.Category))
-            ]);
+                .. consult
+                    .Diagnoses.OrderBy(x => x.Id)
+                    .Select(x => new DiagnosisItem(x.Id, x.ConsultId, x.Details, x.Category)),
+            ]
+        );
 }
 
 /// <summary>Diagnosis recorded on a consult.</summary>
-public sealed record DiagnosisItem(int Id, int ConsultId, string Details, DiagnosisCategory? Category);
+public sealed record DiagnosisItem(
+    int Id,
+    int ConsultId,
+    string Details,
+    DiagnosisCategory? Category
+);

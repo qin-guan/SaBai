@@ -25,12 +25,20 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             throw new NotFoundException("Doctor was not found.");
         }
 
-        await Send.CreatedAtAsync<Get.Endpoint>(new { consult.Id }, Response.From(consult), cancellation: ct);
+        await Send.CreatedAtAsync<Get.Endpoint>(
+            new { consult.Id },
+            Response.From(consult),
+            cancellation: ct
+        );
     }
 
     private async Task<Consult> InsertConsultAsync(Request req, Guid doctorId, CancellationToken ct)
     {
-        _ = await db.Visits.FirstOrNotFoundAsync(x => x.Id == req.VisitId, "Visit was not found.", ct);
+        _ = await db.Visits.FirstOrNotFoundAsync(
+            x => x.Id == req.VisitId,
+            "Visit was not found.",
+            ct
+        );
         if (req.Diagnoses is not { Count: > 0 })
         {
             throw new BadRequestException("At least one diagnosis is required.");
@@ -60,24 +68,24 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                 throw new BadRequestException("Diagnosis details are required.");
             }
 
-            consult.Diagnoses.Add(new Diagnosis
-            {
-                Details = details,
-                Category = diagnosis.Category,
-            });
+            consult.Diagnoses.Add(
+                new Diagnosis { Details = details, Category = diagnosis.Category }
+            );
         }
 
         foreach (var order in req.Orders ?? [])
         {
-            consult.Orders.Add(new SaBai.API.Domain.Order
-            {
-                MedicationBrandId = order.MedicationBrandId,
-                DosageInstructions = order.DosageInstructions ?? "",
-                Remarks = order.Remarks,
-                Status = OrderStatus.Pending,
-                Quantity = order.Quantity,
-                CreatedAt = now,
-            });
+            consult.Orders.Add(
+                new SaBai.API.Domain.Order
+                {
+                    MedicationBrandId = order.MedicationBrandId,
+                    DosageInstructions = order.DosageInstructions ?? "",
+                    Remarks = order.Remarks,
+                    Status = OrderStatus.Pending,
+                    Quantity = order.Quantity,
+                    CreatedAt = now,
+                }
+            );
         }
 
         db.Consults.Add(consult);

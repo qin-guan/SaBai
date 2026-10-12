@@ -23,5 +23,3 @@ public sealed class AuthSettings
 
     public int TokenLifetimeMinutes { get; set; } = 480;
 }
-
-

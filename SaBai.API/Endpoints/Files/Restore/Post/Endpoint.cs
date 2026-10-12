@@ -15,11 +15,25 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var file = await db.ClinicalFiles.FirstOrNotFoundAsync(x => x.Id == req.Id, "File was not found.", ct);
+        var file = await db.ClinicalFiles.FirstOrNotFoundAsync(
+            x => x.Id == req.Id,
+            "File was not found.",
+            ct
+        );
         file.IsDeleted = false;
         await db.SaveChangesAsync(ct);
         await Send.OkAsync(
-            new Response(file.Id, file.PatientId, file.FileName, file.StoredFileName, file.Description, file.SizeBytes, file.IsDeleted, file.CreatedAt),
-            ct);
+            new Response(
+                file.Id,
+                file.PatientId,
+                file.FileName,
+                file.StoredFileName,
+                file.Description,
+                file.SizeBytes,
+                file.IsDeleted,
+                file.CreatedAt
+            ),
+            ct
+        );
     }
 }

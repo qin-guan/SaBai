@@ -12,16 +12,27 @@ public static class ClinicSetup
         code ??= $"V{Suffix().ToUpperInvariant()}";
         var response = await client.PostAsJsonAsync(
             "/village-codes",
-            new { code, name = $"Village {code}", colorHex = "#336699", isVisible = true },
-            ApiJson.Options);
+            new
+            {
+                code,
+                name = $"Village {code}",
+                colorHex = "#336699",
+                isVisible = true,
+            },
+            ApiJson.Options
+        );
         response.EnsureSuccessStatusCode();
-        return ReadInt(await response.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options), "id");
+        return ReadInt(
+            await response.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
+            "id"
+        );
     }
 
     public static async Task<(int PatientId, int VisitId)> RegisterPatientAsync(
         HttpClient client,
         int villageId,
-        string? name = null)
+        string? name = null
+    )
     {
         name ??= $"Patient {Suffix()}";
         var response = await client.PostAsJsonAsync(
@@ -37,13 +48,18 @@ public static class ClinicSetup
                 hasSabaiCard = false,
                 villageCodeId = villageId,
             },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         response.EnsureSuccessStatusCode();
         var body = await response.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
         return (ReadInt(body, "id"), ReadInt(body, "visitId"));
     }
 
-    public static async Task<int> CreateConsultAsync(HttpClient client, int visitId, string details = "cough")
+    public static async Task<int> CreateConsultAsync(
+        HttpClient client,
+        int visitId,
+        string details = "cough"
+    )
     {
         var response = await client.PostAsJsonAsync(
             "/consults",
@@ -53,16 +69,22 @@ public static class ClinicSetup
                 consultation = "exam",
                 diagnoses = new[] { new { details, category = "Respiratory" } },
             },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         response.EnsureSuccessStatusCode();
-        return ReadInt(await response.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options), "id");
+        return ReadInt(
+            await response.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
+            "id"
+        );
     }
 
     public static int ReadInt(JsonElement element, string name)
     {
-        if (element.ValueKind == JsonValueKind.Object
+        if (
+            element.ValueKind == JsonValueKind.Object
             && element.TryGetProperty(name, out var value)
-            && value.TryGetInt32(out var id))
+            && value.TryGetInt32(out var id)
+        )
         {
             return id;
         }

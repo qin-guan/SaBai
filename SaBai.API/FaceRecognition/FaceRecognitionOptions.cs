@@ -5,9 +5,15 @@ public sealed class FaceRecognitionOptions
     public const string SectionName = "FaceRecognition";
 
     /// <summary>Directory holding the ONNX models. Defaults to a per-user data directory.</summary>
-    public string ModelsDirectory { get; set; } = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData, Environment.SpecialFolderOption.Create),
-        "sabai", "models");
+    public string ModelsDirectory { get; set; } =
+        Path.Combine(
+            Environment.GetFolderPath(
+                Environment.SpecialFolder.LocalApplicationData,
+                Environment.SpecialFolderOption.Create
+            ),
+            "sabai",
+            "models"
+        );
 
     /// <summary>File name of the SCRFD face detection model inside <see cref="ModelsDirectory"/>.</summary>
     public string DetectorModel { get; set; } = "det_10g.onnx";

@@ -18,8 +18,14 @@ public sealed class DiagnosisTests(AppFixture fixture)
         // Act
         var created = await client.PostAsJsonAsync(
             "/diagnoses",
-            new { consultId, details = "wheeze", category = "Respiratory" },
-            ApiJson.Options);
+            new
+            {
+                consultId,
+                details = "wheeze",
+                category = "Respiratory",
+            },
+            ApiJson.Options
+        );
         var createdBody = await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
         var id = ClinicSetup.ReadInt(createdBody, "id");
         var fetched = await client.GetAsync($"/diagnoses/{id}");
@@ -45,16 +51,26 @@ public sealed class DiagnosisTests(AppFixture fixture)
         var consultId = await CreateConsultAsync(client);
         var created = await client.PostAsJsonAsync(
             "/diagnoses",
-            new { consultId, details = $"open {ClinicSetup.Suffix()}", category = "Respiratory" },
-            ApiJson.Options);
+            new
+            {
+                consultId,
+                details = $"open {ClinicSetup.Suffix()}",
+                category = "Respiratory",
+            },
+            ApiJson.Options
+        );
         created.EnsureSuccessStatusCode();
-        var id = ClinicSetup.ReadInt(await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options), "id");
+        var id = ClinicSetup.ReadInt(
+            await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
+            "id"
+        );
 
         // Act
         var patched = await client.PatchAsJsonAsync(
             $"/diagnoses/{id}",
             new { details = "resolved" },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var fetched = await client.GetAsync($"/diagnoses/{id}");
         var body = await fetched.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
         var deleted = await client.DeleteAsync($"/diagnoses/{id}");
@@ -78,8 +94,14 @@ public sealed class DiagnosisTests(AppFixture fixture)
         // Act
         var response = await client.PostAsJsonAsync(
             "/diagnoses",
-            new { consultId = 99999999, details = $"absent {ClinicSetup.Suffix()}", category = "Respiratory" },
-            ApiJson.Options);
+            new
+            {
+                consultId = 99999999,
+                details = $"absent {ClinicSetup.Suffix()}",
+                category = "Respiratory",
+            },
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.NotFound);
@@ -96,8 +118,14 @@ public sealed class DiagnosisTests(AppFixture fixture)
         // Act
         var response = await client.PostAsJsonAsync(
             "/diagnoses",
-            new { consultId, details = "", category = "Respiratory" },
-            ApiJson.Options);
+            new
+            {
+                consultId,
+                details = "",
+                category = "Respiratory",
+            },
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
@@ -126,10 +154,19 @@ public sealed class DiagnosisTests(AppFixture fixture)
         var consultId = await CreateConsultAsync(client);
         var created = await client.PostAsJsonAsync(
             "/diagnoses",
-            new { consultId, details = $"locked {ClinicSetup.Suffix()}", category = "Respiratory" },
-            ApiJson.Options);
+            new
+            {
+                consultId,
+                details = $"locked {ClinicSetup.Suffix()}",
+                category = "Respiratory",
+            },
+            ApiJson.Options
+        );
         created.EnsureSuccessStatusCode();
-        var id = ClinicSetup.ReadInt(await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options), "id");
+        var id = ClinicSetup.ReadInt(
+            await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
+            "id"
+        );
         var anonymous = fixture.CreateHttpClient("api");
 
         // Act
@@ -143,7 +180,11 @@ public sealed class DiagnosisTests(AppFixture fixture)
     {
         var suffix = ClinicSetup.Suffix();
         var villageId = await ClinicSetup.CreateVillageAsync(client, $"D{suffix}");
-        var (_, visitId) = await ClinicSetup.RegisterPatientAsync(client, villageId, $"Diagnosis {suffix}");
+        var (_, visitId) = await ClinicSetup.RegisterPatientAsync(
+            client,
+            villageId,
+            $"Diagnosis {suffix}"
+        );
         return await ClinicSetup.CreateConsultAsync(client, visitId, $"consult {suffix}");
     }
 }

@@ -24,4 +24,5 @@ public sealed record Response(
     int VisitId,
     int? VitalsId,
     bool HasPhoto,
-    bool HasFace);
+    bool HasFace
+);

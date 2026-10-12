@@ -19,7 +19,8 @@ public sealed class VitalsTests(AppFixture fixture)
         var created = await client.PostAsJsonAsync(
             "/vitals",
             new { visitId, temperature = 36.6m },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var createdBody = await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
         var id = ClinicSetup.ReadInt(createdBody, "id");
         var fetched = await client.GetAsync($"/vitals/{id}");
@@ -41,9 +42,13 @@ public sealed class VitalsTests(AppFixture fixture)
         var created = await client.PostAsJsonAsync(
             "/vitals",
             new { visitId, temperature = 36.6m },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         created.EnsureSuccessStatusCode();
-        var id = ClinicSetup.ReadInt(await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options), "id");
+        var id = ClinicSetup.ReadInt(
+            await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
+            "id"
+        );
 
         // Act
         var listed = await client.GetAsync($"/patients/{patientId}/vitals");
@@ -65,7 +70,8 @@ public sealed class VitalsTests(AppFixture fixture)
         var response = await client.PostAsJsonAsync(
             "/vitals",
             new { visitId = 99999999, temperature = 36.6m },
-            ApiJson.Options);
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.NotFound);
@@ -96,7 +102,8 @@ public sealed class VitalsTests(AppFixture fixture)
         var response = await client.PatchAsJsonAsync(
             "/vitals/99999999",
             new { temperature = 37.1m },
-            ApiJson.Options);
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.NotFound);
@@ -112,7 +119,8 @@ public sealed class VitalsTests(AppFixture fixture)
         var response = await client.PostAsJsonAsync(
             "/vitals",
             new { visitId = 1, temperature = 36.6m },
-            ApiJson.Options);
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.Unauthorized);

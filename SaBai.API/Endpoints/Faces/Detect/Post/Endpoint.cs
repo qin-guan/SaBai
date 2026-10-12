@@ -27,6 +27,9 @@ public class Endpoint(FaceAnalyzer analyzer) : Endpoint<Request, Response>
         ThrowIfAnyErrors();
 
         var faces = await analyzer.DetectAsync(image!, ct);
-        await Send.OkAsync(new Response(image!.Width, image.Height, faces.Select(FaceDto.From).ToArray()), ct);
+        await Send.OkAsync(
+            new Response(image!.Width, image.Height, faces.Select(FaceDto.From).ToArray()),
+            ct
+        );
     }
 }

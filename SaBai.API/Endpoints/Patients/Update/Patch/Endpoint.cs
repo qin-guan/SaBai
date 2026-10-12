@@ -17,7 +17,11 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var patient = await db.Patients.FirstOrNotFoundAsync(x => x.Id == req.Id, "Patient was not found.", ct);
+        var patient = await db.Patients.FirstOrNotFoundAsync(
+            x => x.Id == req.Id,
+            "Patient was not found.",
+            ct
+        );
 
         if (req.Name is not null)
         {
@@ -27,18 +31,28 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
         if (req.IdentificationNumber is not null)
         {
             var identificationNumber = req.IdentificationNumber.Trim();
-            if (identificationNumber.Length > 0 &&
-                await db.Patients.AnyAsync(x => x.Id != patient.Id && x.IdentificationNumber == identificationNumber, ct))
+            if (
+                identificationNumber.Length > 0
+                && await db.Patients.AnyAsync(
+                    x => x.Id != patient.Id && x.IdentificationNumber == identificationNumber,
+                    ct
+                )
+            )
             {
-                throw new ConflictException("Another patient already has this identification number.");
+                throw new ConflictException(
+                    "Another patient already has this identification number."
+                );
             }
 
-            patient.IdentificationNumber = identificationNumber.Length == 0 ? null : identificationNumber;
+            patient.IdentificationNumber =
+                identificationNumber.Length == 0 ? null : identificationNumber;
         }
 
         if (req.ContactNo is not null)
         {
-            patient.ContactNo = string.IsNullOrWhiteSpace(req.ContactNo) ? null : req.ContactNo.Trim();
+            patient.ContactNo = string.IsNullOrWhiteSpace(req.ContactNo)
+                ? null
+                : req.ContactNo.Trim();
         }
 
         if (req.Gender is Gender gender)
@@ -78,10 +92,13 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
         if (req.VillageCodeId is int villageCodeId)
         {
-            await db.VillageCodes.AsNoTracking().FirstOrNotFoundAsync(
-                x => x.Id == villageCodeId,
-                "Village code was not found.",
-                ct);
+            await db
+                .VillageCodes.AsNoTracking()
+                .FirstOrNotFoundAsync(
+                    x => x.Id == villageCodeId,
+                    "Village code was not found.",
+                    ct
+                );
             patient.VillageCodeId = villageCodeId;
         }
 
@@ -91,8 +108,11 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
     private async Task<Response> LoadAsync(int id, CancellationToken ct)
     {
-        await db.Patients.AsNoTracking().FirstOrNotFoundAsync(x => x.Id == id, "Patient was not found.", ct);
-        var row = await db.Patients.AsNoTracking()
+        await db
+            .Patients.AsNoTracking()
+            .FirstOrNotFoundAsync(x => x.Id == id, "Patient was not found.", ct);
+        var row = await db
+            .Patients.AsNoTracking()
             .Where(x => x.Id == id)
             .Select(x => new
             {
@@ -113,7 +133,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                 x.LatestFaceId,
             })
             .FirstAsync(ct);
-        var lastVisit = await db.Visits.AsNoTracking()
+        var lastVisit = await db
+            .Visits.AsNoTracking()
             .Where(x => x.PatientId == row.Id)
             .OrderByDescending(x => x.Date)
             .ThenByDescending(x => x.Id)
@@ -139,6 +160,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             lastVisit?.Date,
             lastVisit?.Id,
             row.PhotoStoredFileName != null,
-            row.LatestFaceId != null);
+            row.LatestFaceId != null
+        );
     }
 }

@@ -15,7 +15,8 @@ internal static class ClinicSamples
         string code,
         bool isVisible = true,
         string colorHex = "#336699",
-        string? name = null)
+        string? name = null
+    )
     {
         var response = await client.PostAsJsonAsync(
             "/village-codes",
@@ -26,7 +27,8 @@ internal static class ClinicSamples
                 colorHex,
                 isVisible,
             },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<CreateVillageResponse>(ApiJson.Options))!;
     }
@@ -36,7 +38,8 @@ internal static class ClinicSamples
         int villageCodeId,
         string name,
         string? identificationNumber = null,
-        bool withVitals = false)
+        bool withVitals = false
+    )
     {
         var response = await client.PostAsJsonAsync(
             "/patients",
@@ -72,7 +75,8 @@ internal static class ClinicSamples
                     }
                     : null,
             },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<CreatePatientResponse>(ApiJson.Options))!;
     }

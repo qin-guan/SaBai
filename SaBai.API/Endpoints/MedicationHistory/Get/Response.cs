@@ -7,4 +7,5 @@ public sealed record Response(
     string PatientName,
     int QuantityChanged,
     int QuantityRemaining,
-    DateTimeOffset Date);
+    DateTimeOffset Date
+);

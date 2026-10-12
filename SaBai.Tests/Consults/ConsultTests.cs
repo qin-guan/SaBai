@@ -22,7 +22,8 @@ public sealed class ConsultTests(AppFixture fixture)
         var response = await client.PostAsJsonAsync(
             "/consults",
             new { visitId, diagnoses = Array.Empty<object>() },
-            ApiJson.Options);
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
@@ -48,9 +49,13 @@ public sealed class ConsultTests(AppFixture fixture)
                     new { details = "Acute cough", category = DiagnosisCategory.Respiratory },
                 },
             },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var consult = await created.Content.ReadFromJsonAsync<Response>(ApiJson.Options);
-        var listed = await client.GetFromJsonAsync<List<Response>>($"/visits/{visitId}/consults", ApiJson.Options);
+        var listed = await client.GetFromJsonAsync<List<Response>>(
+            $"/visits/{visitId}/consults",
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(created.StatusCode).IsEqualTo(HttpStatusCode.Created);
@@ -75,7 +80,8 @@ public sealed class ConsultTests(AppFixture fixture)
         var patched = await client.PatchAsJsonAsync(
             $"/consults/{consultId}",
             new { consultation = "updated consultation" },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var body = await patched.Content.ReadFromJsonAsync<Response>(ApiJson.Options);
 
         // Assert
@@ -112,9 +118,18 @@ public sealed class ConsultTests(AppFixture fixture)
         // Act
         var created = await client.PostAsJsonAsync(
             "/referrals",
-            new { consultId, referredFor = "Cardiology", referralNotes = "soon" },
-            ApiJson.Options);
-        var referral = await created.Content.ReadFromJsonAsync<SaBai.API.Endpoints.Referrals.Create.Post.Response>(ApiJson.Options);
+            new
+            {
+                consultId,
+                referredFor = "Cardiology",
+                referralNotes = "soon",
+            },
+            ApiJson.Options
+        );
+        var referral =
+            await created.Content.ReadFromJsonAsync<SaBai.API.Endpoints.Referrals.Create.Post.Response>(
+                ApiJson.Options
+            );
 
         // Assert
         await Assert.That(created.StatusCode).IsEqualTo(HttpStatusCode.Created);
@@ -133,19 +148,28 @@ public sealed class ConsultTests(AppFixture fixture)
         var created = await client.PostAsJsonAsync(
             "/referrals",
             new { consultId, referredFor = "ENT" },
-            ApiJson.Options);
-        var referral = await created.Content.ReadFromJsonAsync<SaBai.API.Endpoints.Referrals.Create.Post.Response>(ApiJson.Options);
+            ApiJson.Options
+        );
+        var referral =
+            await created.Content.ReadFromJsonAsync<SaBai.API.Endpoints.Referrals.Create.Post.Response>(
+                ApiJson.Options
+            );
 
         // Act
         var seen = await client.PatchAsJsonAsync(
             $"/referrals/{referral!.Id}/state",
             new { referralState = ReferralState.Seen, referralOutcome = "booked" },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var completed = await client.PatchAsJsonAsync(
             $"/referrals/{referral.Id}/state",
             new { referralState = ReferralState.Completed },
-            ApiJson.Options);
-        var body = await completed.Content.ReadFromJsonAsync<SaBai.API.Endpoints.Referrals.UpdateState.Patch.Response>(ApiJson.Options);
+            ApiJson.Options
+        );
+        var body =
+            await completed.Content.ReadFromJsonAsync<SaBai.API.Endpoints.Referrals.UpdateState.Patch.Response>(
+                ApiJson.Options
+            );
 
         // Assert
         await Assert.That(seen.StatusCode).IsEqualTo(HttpStatusCode.OK);
@@ -196,7 +220,10 @@ public sealed class ConsultTests(AppFixture fixture)
         var bytes = await pdf.Content.ReadAsByteArrayAsync();
 
         // Assert
-        var header = bytes.Length >= 4 ? Encoding.ASCII.GetString(bytes, 0, 4) : Encoding.ASCII.GetString(bytes);
+        var header =
+            bytes.Length >= 4
+                ? Encoding.ASCII.GetString(bytes, 0, 4)
+                : Encoding.ASCII.GetString(bytes);
         await Assert.That(pdf.StatusCode).IsEqualTo(HttpStatusCode.OK);
         await Assert.That(pdf.Content.Headers.ContentType?.MediaType).IsEqualTo("application/pdf");
         await Assert.That(header).IsEqualTo("%PDF");
@@ -213,7 +240,8 @@ public sealed class ConsultTests(AppFixture fixture)
                 name = $"Village {suffix}",
                 colorHex = "#123456",
             },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var villageId = await ReadRootIdAsync(village, "id");
 
         var patient = await client.PostAsJsonAsync(
@@ -232,7 +260,8 @@ public sealed class ConsultTests(AppFixture fixture)
                 hasSabaiCard = false,
                 toGetReport = false,
             },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         return await ReadVisitIdAsync(patient);
     }
 
@@ -250,7 +279,8 @@ public sealed class ConsultTests(AppFixture fixture)
                     new { details = "Wheeze", category = DiagnosisCategory.Respiratory },
                 },
             },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         return await ReadRootIdAsync(response, "id");
     }
 
@@ -259,7 +289,9 @@ public sealed class ConsultTests(AppFixture fixture)
         var body = await response.Content.ReadAsStringAsync();
         if (!response.IsSuccessStatusCode)
         {
-            throw new InvalidOperationException($"{response.RequestMessage?.Method} {response.RequestMessage?.RequestUri} failed {(int)response.StatusCode}: {body}");
+            throw new InvalidOperationException(
+                $"{response.RequestMessage?.Method} {response.RequestMessage?.RequestUri} failed {(int)response.StatusCode}: {body}"
+            );
         }
 
         using var document = JsonDocument.Parse(string.IsNullOrWhiteSpace(body) ? "{}" : body);
@@ -282,7 +314,9 @@ public sealed class ConsultTests(AppFixture fixture)
         var body = await response.Content.ReadAsStringAsync();
         if (!response.IsSuccessStatusCode)
         {
-            throw new InvalidOperationException($"POST /patients failed {(int)response.StatusCode}: {body}");
+            throw new InvalidOperationException(
+                $"POST /patients failed {(int)response.StatusCode}: {body}"
+            );
         }
 
         using var document = JsonDocument.Parse(body);
@@ -291,9 +325,11 @@ public sealed class ConsultTests(AppFixture fixture)
             return visitId;
         }
 
-        if (document.RootElement.ValueKind == JsonValueKind.Object
+        if (
+            document.RootElement.ValueKind == JsonValueKind.Object
             && TryGetProperty(document.RootElement, "visit", out var visit)
-            && TryReadProperty(visit, "id", out visitId))
+            && TryReadProperty(visit, "id", out visitId)
+        )
         {
             return visitId;
         }
@@ -307,7 +343,10 @@ public sealed class ConsultTests(AppFixture fixture)
         {
             foreach (var property in element.EnumerateObject())
             {
-                if (property.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && property.Value.TryGetInt32(out value))
+                if (
+                    property.Name.Equals(name, StringComparison.OrdinalIgnoreCase)
+                    && property.Value.TryGetInt32(out value)
+                )
                 {
                     return true;
                 }

@@ -7,8 +7,12 @@ using SaBai.API.Storage;
 
 namespace SaBai.API.Endpoints.Patients.Photo.Put;
 
-public sealed class Endpoint(AppDbContext db, IAmazonS3 s3, RustFsSettings storage, ILogger<Endpoint> logger)
-    : Endpoint<Request, Response>
+public sealed class Endpoint(
+    AppDbContext db,
+    IAmazonS3 s3,
+    RustFsSettings storage,
+    ILogger<Endpoint> logger
+) : Endpoint<Request, Response>
 {
     public override void Configure()
     {
@@ -21,7 +25,11 @@ public sealed class Endpoint(AppDbContext db, IAmazonS3 s3, RustFsSettings stora
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var patient = await db.Patients.FirstOrNotFoundAsync(x => x.Id == req.Id, "Patient was not found.", ct);
+        var patient = await db.Patients.FirstOrNotFoundAsync(
+            x => x.Id == req.Id,
+            "Patient was not found.",
+            ct
+        );
 
         var bytes = await PatientPhoto.ReadValidatedAsync(this, req.Image, nameof(req.Image), ct);
         ThrowIfAnyErrors();
@@ -40,7 +48,8 @@ public sealed class Endpoint(AppDbContext db, IAmazonS3 s3, RustFsSettings stora
                     ContentType = PatientPhoto.ContentType(req.Image.ContentType, extension),
                     AutoCloseStream = false,
                 },
-                ct);
+                ct
+            );
         }
 
         var previousKey = patient.PhotoStoredFileName;

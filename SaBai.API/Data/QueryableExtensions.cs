@@ -10,8 +10,10 @@ public static class QueryableExtensions
         this IQueryable<T> query,
         Expression<Func<T, bool>> predicate,
         string message,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
-        return await query.FirstOrDefaultAsync(predicate, cancellationToken) ?? throw new NotFoundException(message);
+        return await query.FirstOrDefaultAsync(predicate, cancellationToken)
+            ?? throw new NotFoundException(message);
     }
 }

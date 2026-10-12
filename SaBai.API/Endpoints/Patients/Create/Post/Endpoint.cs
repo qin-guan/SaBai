@@ -19,15 +19,20 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
         var response = await RegisterAsync(req, ct);
-        await Send.CreatedAtAsync<Get.Endpoint>(new { Id = response.Id }, response, cancellation: ct);
+        await Send.CreatedAtAsync<Get.Endpoint>(
+            new { Id = response.Id },
+            response,
+            cancellation: ct
+        );
     }
 
     private async Task<Response> RegisterAsync(Request req, CancellationToken ct)
     {
         var village = await db.VillageCodes.FirstOrNotFoundAsync(
-                x => x.Id == req.VillageCodeId,
-                "Village code was not found.",
-                ct);
+            x => x.Id == req.VillageCodeId,
+            "Village code was not found.",
+            ct
+        );
         var now = DateTimeOffset.UtcNow;
         var patient = new Patient
         {
@@ -35,7 +40,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             IdentificationNumber = Normalize(req.IdentificationNumber),
             ContactNo = Normalize(req.ContactNo),
             Gender = req.Gender ?? throw new BadRequestException("Gender is required."),
-            DateOfBirth = req.DateOfBirth ?? throw new BadRequestException("Date of birth is required."),
+            DateOfBirth =
+                req.DateOfBirth ?? throw new BadRequestException("Date of birth is required."),
             DrugAllergy = req.DrugAllergy.Trim(),
             HasPoorCard = req.HasPoorCard,
             HasBS2Card = req.HasBS2Card,
@@ -61,45 +67,47 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
         await db.SaveChangesAsync(ct);
 
         return new Response(
-                patient.Id,
-                patient.Name,
-                patient.IdentificationNumber,
-                patient.ContactNo,
-                patient.Gender,
-                patient.DateOfBirth,
-                patient.DrugAllergy,
-                patient.HasPoorCard,
-                patient.HasBS2Card,
-                patient.HasSabaiCard,
-                patient.ToGetReport,
-                patient.VillageCodeId,
-                village.Code,
-                Patient.FormatDisplayId(village.Code, patient.Id),
-                Patient.FormatFilterString(village.Code, patient.Id, patient.ContactNo, patient.Name),
-                visit.Date,
-                visit.Id,
-                visit.Id,
-                visit.Vitals?.Id,
-                false,
-                false);
+            patient.Id,
+            patient.Name,
+            patient.IdentificationNumber,
+            patient.ContactNo,
+            patient.Gender,
+            patient.DateOfBirth,
+            patient.DrugAllergy,
+            patient.HasPoorCard,
+            patient.HasBS2Card,
+            patient.HasSabaiCard,
+            patient.ToGetReport,
+            patient.VillageCodeId,
+            village.Code,
+            Patient.FormatDisplayId(village.Code, patient.Id),
+            Patient.FormatFilterString(village.Code, patient.Id, patient.ContactNo, patient.Name),
+            visit.Date,
+            visit.Id,
+            visit.Id,
+            visit.Vitals?.Id,
+            false,
+            false
+        );
     }
 
-    private static Domain.Vitals ToVitals(VitalsRequest request) => new()
-    {
-        Temperature = request.Temperature,
-        Height = request.Height,
-        Weight = request.Weight,
-        Systolic = request.Systolic,
-        Diastolic = request.Diastolic,
-        HeartRate = request.HeartRate,
-        HemocueCount = request.HemocueCount,
-        DiabetesMellitus = request.DiabetesMellitus,
-        UrineTest = Normalize(request.UrineTest),
-        BloodGlucoseNonFasting = request.BloodGlucoseNonFasting,
-        BloodGlucoseFasting = request.BloodGlucoseFasting,
-        Hba1c = request.Hba1c,
-        Others = Normalize(request.Others),
-    };
+    private static Domain.Vitals ToVitals(VitalsRequest request) =>
+        new()
+        {
+            Temperature = request.Temperature,
+            Height = request.Height,
+            Weight = request.Weight,
+            Systolic = request.Systolic,
+            Diastolic = request.Diastolic,
+            HeartRate = request.HeartRate,
+            HemocueCount = request.HemocueCount,
+            DiabetesMellitus = request.DiabetesMellitus,
+            UrineTest = Normalize(request.UrineTest),
+            BloodGlucoseNonFasting = request.BloodGlucoseNonFasting,
+            BloodGlucoseFasting = request.BloodGlucoseFasting,
+            Hba1c = request.Hba1c,
+            Others = Normalize(request.Others),
+        };
 
     private static string? Normalize(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();

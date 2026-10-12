@@ -28,15 +28,18 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             req.VoiceChange,
             req.VoiceChangeAge,
             req.TesticularGrowth,
-            req.TesticularGrowthAge);
+            req.TesticularGrowthAge
+        );
 
-        _ = await db.Vitals
-            .AsNoTracking()
+        _ = await db
+            .Vitals.AsNoTracking()
             .FirstOrNotFoundAsync(x => x.Id == req.VitalsId, "Vitals were not found.", ct);
 
         if (await db.PubertyAssessments.AnyAsync(x => x.VitalsId == req.VitalsId, ct))
         {
-            throw new ConflictException("A puberty assessment already exists for this vitals record.");
+            throw new ConflictException(
+                "A puberty assessment already exists for this vitals record."
+            );
         }
 
         var puberty = new PubertyAssessment
@@ -59,11 +62,20 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
         {
             await db.SaveChangesAsync(ct);
         }
-        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+        catch (DbUpdateException ex)
+            when (ex.InnerException
+                    is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation }
+            )
         {
-            throw new ConflictException("A puberty assessment already exists for this vitals record.");
+            throw new ConflictException(
+                "A puberty assessment already exists for this vitals record."
+            );
         }
 
-        await Send.CreatedAtAsync<Get.Endpoint>(new { puberty.Id }, Response.From(puberty), cancellation: ct);
+        await Send.CreatedAtAsync<Get.Endpoint>(
+            new { puberty.Id },
+            Response.From(puberty),
+            cancellation: ct
+        );
     }
 }

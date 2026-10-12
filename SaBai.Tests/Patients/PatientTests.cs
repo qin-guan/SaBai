@@ -2,9 +2,9 @@ using System.Net;
 using System.Net.Http.Json;
 using SaBai.API.Domain;
 using SaBai.Tests.Support;
+using LatestVisitResponse = SaBai.API.Endpoints.Patients.WithLatestVisit.Get.Response;
 using PatientListResponse = SaBai.API.Endpoints.Patients.List.Get.Response;
 using PatientResponse = SaBai.API.Endpoints.Patients.Get.Response;
-using LatestVisitResponse = SaBai.API.Endpoints.Patients.WithLatestVisit.Get.Response;
 using VisitResponse = SaBai.API.Endpoints.Visits.Get.Response;
 
 namespace SaBai.Tests.Patients;
@@ -19,7 +19,12 @@ public sealed class PatientTests(AppFixture fixture)
         var client = fixture.CreateHttpClient("api");
         await client.LoginAsync();
         var code = ClinicSamples.Code();
-        var village = await ClinicSamples.CreateVillageAsync(client, code, colorHex: "#102030", name: $"Reg {code}");
+        var village = await ClinicSamples.CreateVillageAsync(
+            client,
+            code,
+            colorHex: "#102030",
+            name: $"Reg {code}"
+        );
 
         // Act
         var created = await client.PostAsJsonAsync(
@@ -47,10 +52,20 @@ public sealed class PatientTests(AppFixture fixture)
                     heartRate = 72,
                 },
             },
-            ApiJson.Options);
-        var body = await created.Content.ReadFromJsonAsync<SaBai.API.Endpoints.Patients.Create.Post.Response>(ApiJson.Options);
-        var visit = await client.GetFromJsonAsync<VisitResponse>($"/visits/{body!.VisitId}", ApiJson.Options);
-        var patient = await client.GetFromJsonAsync<PatientResponse>($"/patients/{body.Id}", ApiJson.Options);
+            ApiJson.Options
+        );
+        var body =
+            await created.Content.ReadFromJsonAsync<SaBai.API.Endpoints.Patients.Create.Post.Response>(
+                ApiJson.Options
+            );
+        var visit = await client.GetFromJsonAsync<VisitResponse>(
+            $"/visits/{body!.VisitId}",
+            ApiJson.Options
+        );
+        var patient = await client.GetFromJsonAsync<PatientResponse>(
+            $"/patients/{body.Id}",
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(created.StatusCode).IsEqualTo(HttpStatusCode.Created);
@@ -87,13 +102,21 @@ public sealed class PatientTests(AppFixture fixture)
         // Act
         var matched = await client.GetFromJsonAsync<PatientListResponse>(
             $"/patients?name={Uri.EscapeDataString(name.ToLowerInvariant())}&villageCode={Uri.EscapeDataString(code.ToLowerInvariant())}",
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var missed = await client.GetFromJsonAsync<PatientListResponse>(
             $"/patients?name=zz{Guid.NewGuid():N}",
-            ApiJson.Options);
+            ApiJson.Options
+        );
 
         // Assert
-        await Assert.That(matched!.Patients.Any(x => x.Id == patient.Id && x.DisplayId == $"{code}{patient.Id:0000}")).IsTrue();
+        await Assert
+            .That(
+                matched!.Patients.Any(x =>
+                    x.Id == patient.Id && x.DisplayId == $"{code}{patient.Id:0000}"
+                )
+            )
+            .IsTrue();
         await Assert.That(missed!.Patients.Any(x => x.Id == patient.Id)).IsFalse();
     }
 
@@ -114,11 +137,15 @@ public sealed class PatientTests(AppFixture fixture)
         var aged = await client.PatchAsJsonAsync(
             $"/visits/{older.VisitId}",
             new { date = DateTimeOffset.UtcNow.AddDays(-2) },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var removed = await client.DeleteAsync($"/visits/{none.VisitId}");
 
         // Act
-        var listed = await client.GetFromJsonAsync<LatestVisitResponse>("/patients/with-latest-visit", ApiJson.Options);
+        var listed = await client.GetFromJsonAsync<LatestVisitResponse>(
+            "/patients/with-latest-visit",
+            ApiJson.Options
+        );
         var names = listed!.Patients.Select(x => x.Name).ToList();
         var recentRow = listed.Patients.Single(x => x.Id == recent.Id);
 
@@ -140,19 +167,32 @@ public sealed class PatientTests(AppFixture fixture)
         var code = ClinicSamples.Code();
         var village = await ClinicSamples.CreateVillageAsync(client, code);
         var identificationNumber = $"NID-{Guid.NewGuid():N}";
-        await ClinicSamples.RegisterAsync(client, village.Id, $"First {code}", identificationNumber);
-        var second = await ClinicSamples.RegisterAsync(client, village.Id, $"Second {code}", $"NID-{Guid.NewGuid():N}");
+        await ClinicSamples.RegisterAsync(
+            client,
+            village.Id,
+            $"First {code}",
+            identificationNumber
+        );
+        var second = await ClinicSamples.RegisterAsync(
+            client,
+            village.Id,
+            $"Second {code}",
+            $"NID-{Guid.NewGuid():N}"
+        );
 
         // Act
         var conflict = await client.PatchAsJsonAsync(
             $"/patients/{second.Id}",
             new { identificationNumber = $"  {identificationNumber}  " },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var problem = await conflict.Content.ReadAsStringAsync();
 
         // Assert
         await Assert.That(conflict.StatusCode).IsEqualTo(HttpStatusCode.Conflict);
-        await Assert.That(problem).Contains("Another patient already has this identification number.");
+        await Assert
+            .That(problem)
+            .Contains("Another patient already has this identification number.");
     }
 
     [Test]

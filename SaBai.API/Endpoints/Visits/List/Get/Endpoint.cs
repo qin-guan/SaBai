@@ -34,7 +34,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                 x.VillageCode.Code,
                 x.VillageCode.Name,
                 x.VillageCode.ColorHex,
-                x.Status))
+                x.Status
+            ))
             .ToListAsync(ct);
 
         await Send.OkAsync(new Response(visits), ct);

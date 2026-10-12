@@ -27,7 +27,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     public DbSet<Referral> Referrals => Set<Referral>();
 
-    public DbSet<MedicationActiveIngredient> MedicationActiveIngredients => Set<MedicationActiveIngredient>();
+    public DbSet<MedicationActiveIngredient> MedicationActiveIngredients =>
+        Set<MedicationActiveIngredient>();
 
     public DbSet<MedicationBrand> MedicationBrands => Set<MedicationBrand>();
 
@@ -76,7 +77,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.Property(x => x.LatestFaceId).HasColumnName("RekognitionFaceId");
             entity.HasIndex(x => x.Name);
             entity.HasIndex(x => x.IdentificationNumber);
-            entity.HasOne(x => x.VillageCode)
+            entity
+                .HasOne(x => x.VillageCode)
                 .WithMany(x => x.Patients)
                 .HasForeignKey(x => x.VillageCodeId)
                 .OnDelete(DeleteBehavior.Restrict);
@@ -86,11 +88,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         {
             entity.Property(x => x.Status).HasMaxLength(100);
             entity.HasIndex(x => x.Date);
-            entity.HasOne(x => x.Patient)
+            entity
+                .HasOne(x => x.Patient)
                 .WithMany(x => x.Visits)
                 .HasForeignKey(x => x.PatientId)
                 .OnDelete(DeleteBehavior.Restrict);
-            entity.HasOne(x => x.VillageCode)
+            entity
+                .HasOne(x => x.VillageCode)
                 .WithMany(x => x.Visits)
                 .HasForeignKey(x => x.VillageCodeId)
                 .OnDelete(DeleteBehavior.Restrict);
@@ -106,7 +110,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.Property(x => x.BloodGlucoseNonFasting).HasPrecision(5, 2);
             entity.Property(x => x.BloodGlucoseFasting).HasPrecision(5, 2);
             entity.Property(x => x.Hba1c).HasPrecision(5, 2);
-            entity.HasOne(x => x.Visit)
+            entity
+                .HasOne(x => x.Visit)
                 .WithOne(x => x.Vitals)
                 .HasForeignKey<Vitals>(x => x.VisitId)
                 .OnDelete(DeleteBehavior.Cascade);
@@ -115,7 +120,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<Eyesight>(entity =>
         {
             entity.HasIndex(x => x.VisitId).IsUnique();
-            entity.HasOne(x => x.Visit)
+            entity
+                .HasOne(x => x.Visit)
                 .WithOne(x => x.Eyesight)
                 .HasForeignKey<Eyesight>(x => x.VisitId)
                 .OnDelete(DeleteBehavior.Cascade);
@@ -124,7 +130,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<PubertyAssessment>(entity =>
         {
             entity.HasIndex(x => x.VitalsId).IsUnique();
-            entity.HasOne(x => x.Vitals)
+            entity
+                .HasOne(x => x.Vitals)
                 .WithOne(x => x.Puberty)
                 .HasForeignKey<PubertyAssessment>(x => x.VitalsId)
                 .OnDelete(DeleteBehavior.Cascade);
@@ -133,7 +140,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<ChildVitals>(entity =>
         {
             entity.HasIndex(x => x.VitalsId).IsUnique();
-            entity.HasOne(x => x.Vitals)
+            entity
+                .HasOne(x => x.Vitals)
                 .WithOne(x => x.ChildVitals)
                 .HasForeignKey<ChildVitals>(x => x.VitalsId)
                 .OnDelete(DeleteBehavior.Cascade);
@@ -141,11 +149,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
         modelBuilder.Entity<Consult>(entity =>
         {
-            entity.HasOne(x => x.Visit)
+            entity
+                .HasOne(x => x.Visit)
                 .WithMany(x => x.Consults)
                 .HasForeignKey(x => x.VisitId)
                 .OnDelete(DeleteBehavior.Restrict);
-            entity.HasOne(x => x.Doctor)
+            entity
+                .HasOne(x => x.Doctor)
                 .WithMany()
                 .HasForeignKey(x => x.DoctorId)
                 .OnDelete(DeleteBehavior.Restrict);
@@ -154,7 +164,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<Diagnosis>(entity =>
         {
             entity.Property(x => x.Category).HasConversion<string>().HasMaxLength(64);
-            entity.HasOne(x => x.Consult)
+            entity
+                .HasOne(x => x.Consult)
                 .WithMany(x => x.Diagnoses)
                 .HasForeignKey(x => x.ConsultId)
                 .OnDelete(DeleteBehavior.Cascade);
@@ -163,7 +174,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<Referral>(entity =>
         {
             entity.Property(x => x.ReferralState).HasConversion<string>().HasMaxLength(32);
-            entity.HasOne(x => x.Consult)
+            entity
+                .HasOne(x => x.Consult)
                 .WithMany(x => x.Referrals)
                 .HasForeignKey(x => x.ConsultId)
                 .OnDelete(DeleteBehavior.Restrict);
@@ -178,7 +190,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<MedicationBrand>(entity =>
         {
             entity.Property(x => x.Name).HasMaxLength(255);
-            entity.HasOne(x => x.ActiveIngredient)
+            entity
+                .HasOne(x => x.ActiveIngredient)
                 .WithMany(x => x.Brands)
                 .HasForeignKey(x => x.ActiveIngredientId)
                 .OnDelete(DeleteBehavior.Restrict);
@@ -189,7 +202,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.Property(x => x.Location).HasMaxLength(255);
             entity.Property(x => x.StockStatus).HasConversion<string>().HasMaxLength(32);
             entity.HasIndex(x => x.StockStatus);
-            entity.HasOne(x => x.MedicationBrand)
+            entity
+                .HasOne(x => x.MedicationBrand)
                 .WithMany(x => x.Stocks)
                 .HasForeignKey(x => x.MedicationBrandId)
                 .OnDelete(DeleteBehavior.Restrict);
@@ -198,11 +212,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<StockChange>(entity =>
         {
             entity.Property(x => x.Field).HasConversion<string>().HasMaxLength(32);
-            entity.HasOne(x => x.Stock)
+            entity
+                .HasOne(x => x.Stock)
                 .WithMany(x => x.Changes)
                 .HasForeignKey(x => x.StockId)
                 .OnDelete(DeleteBehavior.Restrict);
-            entity.HasOne(x => x.User)
+            entity
+                .HasOne(x => x.User)
                 .WithMany()
                 .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
@@ -212,16 +228,21 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         {
             entity.Property(x => x.Status).HasConversion<string>().HasMaxLength(16);
             entity.HasIndex(x => x.Status);
-            entity.ToTable(table => table.HasCheckConstraint("ck_orders_quantity_positive", "\"Quantity\" > 0"));
-            entity.HasOne(x => x.Consult)
+            entity.ToTable(table =>
+                table.HasCheckConstraint("ck_orders_quantity_positive", "\"Quantity\" > 0")
+            );
+            entity
+                .HasOne(x => x.Consult)
                 .WithMany(x => x.Orders)
                 .HasForeignKey(x => x.ConsultId)
                 .OnDelete(DeleteBehavior.Restrict);
-            entity.HasOne(x => x.MedicationBrand)
+            entity
+                .HasOne(x => x.MedicationBrand)
                 .WithMany(x => x.Orders)
                 .HasForeignKey(x => x.MedicationBrandId)
                 .OnDelete(DeleteBehavior.Restrict);
-            entity.HasOne(x => x.ApprovedBy)
+            entity
+                .HasOne(x => x.ApprovedBy)
                 .WithMany()
                 .HasForeignKey(x => x.ApprovedById)
                 .OnDelete(DeleteBehavior.Restrict);
@@ -230,11 +251,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<OrderItem>(entity =>
         {
             entity.HasKey(x => new { x.OrderId, x.StockChangeId });
-            entity.HasOne(x => x.Order)
+            entity
+                .HasOne(x => x.Order)
                 .WithMany(x => x.Items)
                 .HasForeignKey(x => x.OrderId)
                 .OnDelete(DeleteBehavior.Cascade);
-            entity.HasOne(x => x.StockChange)
+            entity
+                .HasOne(x => x.StockChange)
                 .WithMany(x => x.OrderItems)
                 .HasForeignKey(x => x.StockChangeId)
                 .OnDelete(DeleteBehavior.Restrict);
@@ -245,7 +268,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.Property(x => x.FileName).HasMaxLength(255);
             entity.Property(x => x.StoredFileName).HasMaxLength(255);
             entity.HasIndex(x => new { x.PatientId, x.IsDeleted });
-            entity.HasOne(x => x.Patient)
+            entity
+                .HasOne(x => x.Patient)
                 .WithMany(x => x.Files)
                 .HasForeignKey(x => x.PatientId)
                 .OnDelete(DeleteBehavior.Cascade);

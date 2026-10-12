@@ -16,20 +16,29 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var visit = await db.Visits.FirstOrNotFoundAsync(x => x.Id == req.Id, "Visit was not found.", ct);
+        var visit = await db.Visits.FirstOrNotFoundAsync(
+            x => x.Id == req.Id,
+            "Visit was not found.",
+            ct
+        );
 
         if (req.PatientId is int patientId)
         {
-            await db.Patients.AsNoTracking().FirstOrNotFoundAsync(x => x.Id == patientId, "Patient was not found.", ct);
+            await db
+                .Patients.AsNoTracking()
+                .FirstOrNotFoundAsync(x => x.Id == patientId, "Patient was not found.", ct);
             visit.PatientId = patientId;
         }
 
         if (req.VillageCodeId is int villageCodeId)
         {
-            await db.VillageCodes.AsNoTracking().FirstOrNotFoundAsync(
-                x => x.Id == villageCodeId,
-                "Village code was not found.",
-                ct);
+            await db
+                .VillageCodes.AsNoTracking()
+                .FirstOrNotFoundAsync(
+                    x => x.Id == villageCodeId,
+                    "Village code was not found.",
+                    ct
+                );
             visit.VillageCodeId = villageCodeId;
         }
 
@@ -45,7 +54,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
         await db.SaveChangesAsync(ct);
 
-        var response = await db.Visits.AsNoTracking()
+        var response = await db
+            .Visits.AsNoTracking()
             .Where(x => x.Id == visit.Id)
             .Select(x => new Response(
                 x.Id,
@@ -56,7 +66,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                 x.VillageCode.Code,
                 x.VillageCode.Name,
                 x.VillageCode.ColorHex,
-                x.Status))
+                x.Status
+            ))
             .FirstAsync(ct);
 
         await Send.OkAsync(response, ct);

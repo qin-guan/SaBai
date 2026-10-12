@@ -6,8 +6,12 @@ using SaBai.API.Storage;
 
 namespace SaBai.API.Endpoints.Patients.Photo.Delete;
 
-public sealed class Endpoint(AppDbContext db, IAmazonS3 s3, RustFsSettings storage, ILogger<Endpoint> logger)
-    : Endpoint<Request>
+public sealed class Endpoint(
+    AppDbContext db,
+    IAmazonS3 s3,
+    RustFsSettings storage,
+    ILogger<Endpoint> logger
+) : Endpoint<Request>
 {
     public override void Configure()
     {
@@ -18,7 +22,11 @@ public sealed class Endpoint(AppDbContext db, IAmazonS3 s3, RustFsSettings stora
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var patient = await db.Patients.FirstOrNotFoundAsync(x => x.Id == req.Id, "Patient was not found.", ct);
+        var patient = await db.Patients.FirstOrNotFoundAsync(
+            x => x.Id == req.Id,
+            "Patient was not found.",
+            ct
+        );
 
         var key = patient.PhotoStoredFileName;
         patient.PhotoStoredFileName = null;

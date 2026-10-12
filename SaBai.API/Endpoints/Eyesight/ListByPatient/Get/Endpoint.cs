@@ -16,17 +16,20 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, List<Response>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        _ = await db.Patients
-            .AsNoTracking()
+        _ = await db
+            .Patients.AsNoTracking()
             .FirstOrNotFoundAsync(x => x.Id == req.PatientId, "Patient was not found.", ct);
 
-        var rows = await db.Eyesights
-            .AsNoTracking()
+        var rows = await db
+            .Eyesights.AsNoTracking()
             .Where(x => x.Visit.PatientId == req.PatientId)
             .OrderByDescending(x => x.Visit.Date)
             .ThenByDescending(x => x.Id)
             .ToListAsync(ct);
 
-        await Send.OkAsync([.. rows.Select(global::SaBai.API.Endpoints.Eyesight.ListByPatient.Get.Response.From)], ct);
+        await Send.OkAsync(
+            [.. rows.Select(global::SaBai.API.Endpoints.Eyesight.ListByPatient.Get.Response.From)],
+            ct
+        );
     }
 }

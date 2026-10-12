@@ -14,8 +14,8 @@ public sealed class Endpoint(
     IAmazonS3 s3,
     RustFsSettings storage,
     FaceStore store,
-    ILogger<Endpoint> logger)
-    : Endpoint<Request>
+    ILogger<Endpoint> logger
+) : Endpoint<Request>
 {
     public override void Configure()
     {
@@ -26,7 +26,11 @@ public sealed class Endpoint(
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var patient = await db.Patients.FirstOrNotFoundAsync(x => x.Id == req.Id, "Patient was not found.", ct);
+        var patient = await db.Patients.FirstOrNotFoundAsync(
+            x => x.Id == req.Id,
+            "Patient was not found.",
+            ct
+        );
         if (await db.Visits.AnyAsync(x => x.PatientId == patient.Id, ct))
         {
             throw new ConflictException("Patient has visits and cannot be deleted.");

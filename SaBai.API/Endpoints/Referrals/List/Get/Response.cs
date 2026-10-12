@@ -14,4 +14,5 @@ public sealed record Response(
     DateTimeOffset ConsultDate,
     Guid DoctorId,
     int PatientId,
-    string PatientName);
+    string PatientName
+);

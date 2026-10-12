@@ -16,7 +16,11 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<Response>
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var user = await db.StaffUsers.FirstOrNotFoundAsync(x => x.Id == User.Id(), "Staff user was not found.", ct);
+        var user = await db.StaffUsers.FirstOrNotFoundAsync(
+            x => x.Id == User.Id(),
+            "Staff user was not found.",
+            ct
+        );
         await Send.OkAsync(new Response(UserResponse.From(user)), ct);
     }
 }

@@ -19,11 +19,13 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
         var brand = await db.MedicationBrands.FirstOrNotFoundAsync(
             x => x.Id == req.Id,
             "Medication brand was not found.",
-            ct);
+            ct
+        );
         await db.MedicationActiveIngredients.FirstOrNotFoundAsync(
             x => x.Id == req.ActiveIngredientId,
             "Medication ingredient was not found.",
-            ct);
+            ct
+        );
 
         if (req.Name is not null)
         {
@@ -34,6 +36,9 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
         brand.Remarks = req.Remarks.Trim();
         await db.SaveChangesAsync(ct);
 
-        await Send.OkAsync(new Response(brand.Id, brand.Name, brand.ActiveIngredientId, brand.Remarks), ct);
+        await Send.OkAsync(
+            new Response(brand.Id, brand.Name, brand.ActiveIngredientId, brand.Remarks),
+            ct
+        );
     }
 }

@@ -16,11 +16,20 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var broadcasts = await db.Broadcasts
-            .AsNoTracking()
+        var broadcasts = await db
+            .Broadcasts.AsNoTracking()
             .OrderByDescending(x => x.CreatedAt)
             .ThenByDescending(x => x.Id)
-            .Select(x => new Response(x.Id, x.Title, x.Body, x.Severity, x.CreatedBy, x.CreatedAt, x.PublishedAt, x.Attempts))
+            .Select(x => new Response(
+                x.Id,
+                x.Title,
+                x.Body,
+                x.Severity,
+                x.CreatedBy,
+                x.CreatedAt,
+                x.PublishedAt,
+                x.Attempts
+            ))
             .ToListAsync(ct);
 
         await Send.OkAsync(broadcasts, ct);

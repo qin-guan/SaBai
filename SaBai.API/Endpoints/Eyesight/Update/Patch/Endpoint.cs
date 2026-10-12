@@ -16,7 +16,11 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var entity = await db.Eyesights.FirstOrNotFoundAsync(x => x.Id == req.Id, "Eyesight was not found.", ct);
+        var entity = await db.Eyesights.FirstOrNotFoundAsync(
+            x => x.Id == req.Id,
+            "Eyesight was not found.",
+            ct
+        );
 
         if (req.LeftEyeDegree is not null)
         {
@@ -55,12 +59,16 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
         if (req.LeftPrescribedGlassesDegree is not null)
         {
-            entity.LeftPrescribedGlassesDegree = FreeText.Normalize(req.LeftPrescribedGlassesDegree);
+            entity.LeftPrescribedGlassesDegree = FreeText.Normalize(
+                req.LeftPrescribedGlassesDegree
+            );
         }
 
         if (req.RightPrescribedGlassesDegree is not null)
         {
-            entity.RightPrescribedGlassesDegree = FreeText.Normalize(req.RightPrescribedGlassesDegree);
+            entity.RightPrescribedGlassesDegree = FreeText.Normalize(
+                req.RightPrescribedGlassesDegree
+            );
         }
 
         await db.SaveChangesAsync(ct);

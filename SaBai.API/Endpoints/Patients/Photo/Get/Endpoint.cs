@@ -9,7 +9,8 @@ using SaBai.API.Storage;
 
 namespace SaBai.API.Endpoints.Patients.Photo.Get;
 
-public sealed class Endpoint(AppDbContext db, IAmazonS3 s3, RustFsSettings storage) : Endpoint<Request>
+public sealed class Endpoint(AppDbContext db, IAmazonS3 s3, RustFsSettings storage)
+    : Endpoint<Request>
 {
     public override void Configure()
     {
@@ -20,7 +21,8 @@ public sealed class Endpoint(AppDbContext db, IAmazonS3 s3, RustFsSettings stora
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var patient = await db.Patients.AsNoTracking()
+        var patient = await db
+            .Patients.AsNoTracking()
             .FirstOrNotFoundAsync(x => x.Id == req.Id, "Patient was not found.", ct);
 
         if (string.IsNullOrWhiteSpace(patient.PhotoStoredFileName))
@@ -31,8 +33,13 @@ public sealed class Endpoint(AppDbContext db, IAmazonS3 s3, RustFsSettings stora
         try
         {
             using var obj = await s3.GetObjectAsync(
-                new GetObjectRequest { BucketName = storage.Bucket, Key = patient.PhotoStoredFileName },
-                ct);
+                new GetObjectRequest
+                {
+                    BucketName = storage.Bucket,
+                    Key = patient.PhotoStoredFileName,
+                },
+                ct
+            );
 
             var contentType = string.IsNullOrWhiteSpace(obj.Headers.ContentType)
                 ? "application/octet-stream"
@@ -43,9 +50,11 @@ public sealed class Endpoint(AppDbContext db, IAmazonS3 s3, RustFsSettings stora
                 $"patient-{patient.Id}{Path.GetExtension(patient.PhotoStoredFileName)}",
                 obj.ContentLength,
                 contentType,
-                cancellation: ct);
+                cancellation: ct
+            );
         }
-        catch (AmazonS3Exception exception) when (exception.StatusCode == System.Net.HttpStatusCode.NotFound)
+        catch (AmazonS3Exception exception)
+            when (exception.StatusCode == System.Net.HttpStatusCode.NotFound)
         {
             throw new NotFoundException("Patient photo was not found.");
         }

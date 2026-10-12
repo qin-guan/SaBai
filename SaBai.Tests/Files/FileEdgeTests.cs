@@ -79,7 +79,12 @@ public sealed class FileEdgeTests(AppFixture fixture)
         var client = fixture.CreateHttpClient("api");
         await client.LoginAsync(ClinicApi.PharmacistEmail);
         var patientId = await CreatePatientAsync(client);
-        var fileId = await UploadAsync(client, patientId, $"secret-{ClinicSetup.Suffix()}.txt", "private");
+        var fileId = await UploadAsync(
+            client,
+            patientId,
+            $"secret-{ClinicSetup.Suffix()}.txt",
+            "private"
+        );
         var anonymous = fixture.CreateHttpClient("api");
 
         // Act
@@ -104,7 +109,8 @@ public sealed class FileEdgeTests(AppFixture fixture)
         var patched = await client.PatchAsJsonAsync(
             $"/files/{fileId}",
             new { description },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var fetched = await client.GetAsync($"/files/{fileId}");
         var body = await fetched.Content.ReadAsStringAsync();
 
@@ -146,7 +152,12 @@ public sealed class FileEdgeTests(AppFixture fixture)
         return patientId;
     }
 
-    private static async Task<int> UploadAsync(HttpClient client, int patientId, string fileName, string description)
+    private static async Task<int> UploadAsync(
+        HttpClient client,
+        int patientId,
+        string fileName,
+        string description
+    )
     {
         using var content = Form(patientId, fileName, description);
         var response = await client.PostAsync("/files", content);

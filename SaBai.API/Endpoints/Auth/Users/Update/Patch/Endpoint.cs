@@ -6,7 +6,8 @@ using SaBai.API.Domain;
 
 namespace SaBai.API.Endpoints.Auth.Users.Update.Patch;
 
-public sealed class Endpoint(AppDbContext db, IWorkOsDirectory directory) : Endpoint<Request, UserResponse>
+public sealed class Endpoint(AppDbContext db, IWorkOsDirectory directory)
+    : Endpoint<Request, UserResponse>
 {
     public override void Configure()
     {
@@ -17,7 +18,11 @@ public sealed class Endpoint(AppDbContext db, IWorkOsDirectory directory) : Endp
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var user = await db.StaffUsers.FirstOrNotFoundAsync(x => x.Id == req.Id, "Staff user was not found.", ct);
+        var user = await db.StaffUsers.FirstOrNotFoundAsync(
+            x => x.Id == req.Id,
+            "Staff user was not found.",
+            ct
+        );
 
         if (req.Username is not null)
         {

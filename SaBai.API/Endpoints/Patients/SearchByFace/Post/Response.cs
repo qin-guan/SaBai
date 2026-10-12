@@ -8,6 +8,7 @@ public sealed record PatientFaceMatch(
     string? VillageCode,
     string? VillageColorHex,
     bool HasPhoto,
-    float Similarity);
+    float Similarity
+);
 
 public sealed record Response(IReadOnlyList<PatientFaceMatch> Matches);

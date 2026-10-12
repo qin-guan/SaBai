@@ -16,9 +16,12 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        await db.Patients.AsNoTracking().FirstOrNotFoundAsync(x => x.Id == req.PatientId, "Patient was not found.", ct);
+        await db
+            .Patients.AsNoTracking()
+            .FirstOrNotFoundAsync(x => x.Id == req.PatientId, "Patient was not found.", ct);
 
-        var visits = await db.Visits.AsNoTracking()
+        var visits = await db
+            .Visits.AsNoTracking()
             .Where(x => x.PatientId == req.PatientId)
             .OrderByDescending(x => x.Date)
             .ThenByDescending(x => x.Id)
@@ -31,7 +34,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                 x.VillageCode.Code,
                 x.VillageCode.Name,
                 x.VillageCode.ColorHex,
-                x.Status))
+                x.Status
+            ))
             .ToListAsync(ct);
 
         await Send.OkAsync(new Response(visits), ct);

@@ -25,7 +25,15 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
         var codes = await query
             .OrderByDescending(x => x.CreatedAt)
             .ThenByDescending(x => x.Id)
-            .Select(x => new Item(x.Id, x.Code, x.Name, x.ColorHex, x.IsVisible, x.CreatedAt, x.UpdatedAt))
+            .Select(x => new Item(
+                x.Id,
+                x.Code,
+                x.Name,
+                x.ColorHex,
+                x.IsVisible,
+                x.CreatedAt,
+                x.UpdatedAt
+            ))
             .ToListAsync(ct);
 
         await Send.OkAsync(new Response(codes), ct);

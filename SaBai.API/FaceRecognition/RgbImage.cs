@@ -21,12 +21,18 @@ public sealed class RgbImage
     /// <summary>Decodes an encoded image (JPEG, PNG, WebP, ...) applying its EXIF orientation.</summary>
     public static RgbImage Decode(Stream stream)
     {
-        using var data = SKData.Create(stream)
-            ?? throw new InvalidImageException("Image could not be read.");
-        using var codec = SKCodec.Create(data)
+        using var data =
+            SKData.Create(stream) ?? throw new InvalidImageException("Image could not be read.");
+        using var codec =
+            SKCodec.Create(data)
             ?? throw new InvalidImageException("Unsupported or corrupt image.");
 
-        var info = new SKImageInfo(codec.Info.Width, codec.Info.Height, SKColorType.Rgba8888, SKAlphaType.Unpremul);
+        var info = new SKImageInfo(
+            codec.Info.Width,
+            codec.Info.Height,
+            SKColorType.Rgba8888,
+            SKAlphaType.Unpremul
+        );
         using var decoded = new SKBitmap(info);
         var result = codec.GetPixels(info, decoded.GetPixels());
         if (result is not (SKCodecResult.Success or SKCodecResult.IncompleteInput))
@@ -59,7 +65,8 @@ public sealed class RgbImage
     /// <summary>Remaps pixels so the image is upright according to its EXIF origin.</summary>
     public static RgbImage Orient(RgbImage image, SKEncodedOrigin origin)
     {
-        int w = image.Width, h = image.Height;
+        int w = image.Width,
+            h = image.Height;
         Func<int, int, (int X, int Y)>? map = origin switch
         {
             SKEncodedOrigin.TopRight => (x, y) => (w - 1 - x, y),
@@ -71,16 +78,23 @@ public sealed class RgbImage
             SKEncodedOrigin.LeftBottom => (x, y) => (w - 1 - y, x),
             _ => null,
         };
-        if (map is null) return image;
+        if (map is null)
+            return image;
 
         var swap = origin >= SKEncodedOrigin.LeftTop;
         var result = new RgbImage(swap ? h : w, swap ? w : h);
         for (var y = 0; y < result.Height; y++)
-            for (var x = 0; x < result.Width; x++)
-            {
-                var (sx, sy) = map(x, y);
-                Buffer.BlockCopy(image.Pixels, (sy * w + sx) * 3, result.Pixels, (y * result.Width + x) * 3, 3);
-            }
+        for (var x = 0; x < result.Width; x++)
+        {
+            var (sx, sy) = map(x, y);
+            Buffer.BlockCopy(
+                image.Pixels,
+                (sy * w + sx) * 3,
+                result.Pixels,
+                (y * result.Width + x) * 3,
+                3
+            );
+        }
 
         return result;
     }

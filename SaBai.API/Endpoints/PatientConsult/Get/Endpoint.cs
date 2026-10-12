@@ -23,22 +23,23 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             throw new BadRequestException("visitId must be a positive integer.");
         }
 
-        var visit = await db.Visits
-            .AsNoTracking()
-            .Include(x => x.Patient).ThenInclude(x => x.VillageCode)
+        var visit = await db
+            .Visits.AsNoTracking()
+            .Include(x => x.Patient)
+                .ThenInclude(x => x.VillageCode)
             .Include(x => x.Vitals)
             .FirstOrNotFoundAsync(x => x.Id == req.VisitId, "Visit was not found.", ct);
 
-        var consults = await db.Consults
-            .AsNoTracking()
+        var consults = await db
+            .Consults.AsNoTracking()
             .Where(x => x.VisitId == visit.Id)
             .OrderBy(x => x.Date)
             .ThenBy(x => x.Id)
             .Select(x => new ConsultItem(x.Id, x.Date, x.Doctor.Nickname, x.ReferredFor))
             .ToListAsync(ct);
 
-        var prescriptions = await db.Orders
-            .AsNoTracking()
+        var prescriptions = await db
+            .Orders.AsNoTracking()
             .Where(x => x.Consult.VisitId == visit.Id)
             .OrderBy(x => x.Consult.Date)
             .ThenBy(x => x.Id)
@@ -48,10 +49,12 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                 x.MedicationBrand.Name,
                 x.Quantity,
                 x.Remarks,
-                x.Status))
+                x.Status
+            ))
             .ToListAsync(ct);
 
-        var lastVisit = await db.Visits.AsNoTracking()
+        var lastVisit = await db
+            .Visits.AsNoTracking()
             .Where(x => x.PatientId == visit.PatientId)
             .OrderByDescending(x => x.Date)
             .ThenByDescending(x => x.Id)
@@ -64,11 +67,17 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                 MapVitals(visit.Vitals),
                 visit.Date,
                 consults,
-                prescriptions),
-            ct);
+                prescriptions
+            ),
+            ct
+        );
     }
 
-    private static PatientItem MapPatient(Patient patient, DateTimeOffset? lastVisitDate, int? lastVisitId)
+    private static PatientItem MapPatient(
+        Patient patient,
+        DateTimeOffset? lastVisitDate,
+        int? lastVisitId
+    )
     {
         var code = patient.VillageCode?.Code;
         return new PatientItem(
@@ -88,7 +97,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             Patient.FormatDisplayId(code, patient.Id),
             Patient.FormatFilterString(code, patient.Id, patient.ContactNo, patient.Name),
             lastVisitDate,
-            lastVisitId);
+            lastVisitId
+        );
     }
 
     private static VitalsItem? MapVitals(Domain.Vitals? vitals) =>
@@ -109,5 +119,6 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                 vitals.BloodGlucoseNonFasting,
                 vitals.BloodGlucoseFasting,
                 vitals.Hba1c,
-                vitals.Others);
+                vitals.Others
+            );
 }

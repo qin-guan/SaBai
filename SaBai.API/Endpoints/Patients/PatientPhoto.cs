@@ -14,8 +14,8 @@ public static class PatientPhoto
 
     private const long MaxPixels = 50_000_000;
 
-    public static string BuildKey(int patientId, string? fileName)
-        => $"patients/{patientId}/{Guid.NewGuid():N}{Extension(fileName)}";
+    public static string BuildKey(int patientId, string? fileName) =>
+        $"patients/{patientId}/{Guid.NewGuid():N}{Extension(fileName)}";
 
     public static string Extension(string? fileName)
     {
@@ -24,8 +24,8 @@ public static class PatientPhoto
         return string.IsNullOrEmpty(cleaned) ? ".jpg" : $".{cleaned.ToLowerInvariant()}";
     }
 
-    public static string ContentType(string? contentType, string extension)
-        => !string.IsNullOrWhiteSpace(contentType)
+    public static string ContentType(string? contentType, string extension) =>
+        !string.IsNullOrWhiteSpace(contentType)
             ? contentType
             : extension switch
             {
@@ -44,7 +44,8 @@ public static class PatientPhoto
         IEndpoint endpoint,
         IFormFile? file,
         string property,
-        CancellationToken ct)
+        CancellationToken ct
+    )
     {
         if (file is null || file.Length == 0)
         {
@@ -88,7 +89,8 @@ public static class PatientPhoto
         RustFsSettings storage,
         string? key,
         ILogger logger,
-        CancellationToken ct)
+        CancellationToken ct
+    )
     {
         if (string.IsNullOrWhiteSpace(key))
         {
@@ -99,7 +101,8 @@ public static class PatientPhoto
         {
             await s3.DeleteObjectAsync(
                 new DeleteObjectRequest { BucketName = storage.Bucket, Key = key },
-                ct);
+                ct
+            );
         }
         catch (Exception ex)
         {

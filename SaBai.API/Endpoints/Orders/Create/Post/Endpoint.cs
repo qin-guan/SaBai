@@ -16,11 +16,16 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        await db.Consults.FirstOrNotFoundAsync(x => x.Id == req.ConsultId, "Consult was not found.", ct);
+        await db.Consults.FirstOrNotFoundAsync(
+            x => x.Id == req.ConsultId,
+            "Consult was not found.",
+            ct
+        );
         var brand = await db.MedicationBrands.FirstOrNotFoundAsync(
             x => x.Id == req.MedicationBrandId,
             "Medication brand was not found.",
-            ct);
+            ct
+        );
 
         var order = new SaBai.API.Domain.Order
         {
@@ -48,7 +53,9 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                 order.Remarks,
                 order.ApprovedById,
                 order.ApprovedAt,
-                order.CreatedAt),
-            cancellation: ct);
+                order.CreatedAt
+            ),
+            cancellation: ct
+        );
     }
 }

@@ -16,12 +16,20 @@ public static class ClinicApi
     public static async Task<HttpClient> LoginAsync(
         this HttpClient client,
         string email = AdminEmail,
-        string password = Password)
+        string password = Password
+    )
     {
-        var response = await client.PostAsJsonAsync("/auth/login", new { email, password }, ApiJson.Options);
+        var response = await client.PostAsJsonAsync(
+            "/auth/login",
+            new { email, password },
+            ApiJson.Options
+        );
         response.EnsureSuccessStatusCode();
         var body = await response.Content.ReadFromJsonAsync<Response>(ApiJson.Options);
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", body!.AccessToken);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer",
+            body!.AccessToken
+        );
         return client;
     }
 
@@ -29,7 +37,10 @@ public static class ClinicApi
     {
         var response = await client.GetAsync("/auth/whoami");
         response.EnsureSuccessStatusCode();
-        var body = await response.Content.ReadFromJsonAsync<SaBai.API.Endpoints.Auth.WhoAmI.Get.Response>(ApiJson.Options);
+        var body =
+            await response.Content.ReadFromJsonAsync<SaBai.API.Endpoints.Auth.WhoAmI.Get.Response>(
+                ApiJson.Options
+            );
         return body!.User;
     }
 }

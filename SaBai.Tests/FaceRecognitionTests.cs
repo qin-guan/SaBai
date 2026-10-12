@@ -10,7 +10,9 @@ public class SimilarityTransformTests
     {
         var expected = new SimilarityTransform(0.8 * Math.Cos(0.3), 0.8 * Math.Sin(0.3), 12, -7);
         var src = new PointF[] { new(10, 20), new(60, 25), new(35, 50), new(15, 80), new(55, 82) };
-        var dst = src.Select(p => expected.Apply(p.X, p.Y)).Select(p => new PointF(p.X, p.Y)).ToArray();
+        var dst = src.Select(p => expected.Apply(p.X, p.Y))
+            .Select(p => new PointF(p.X, p.Y))
+            .ToArray();
 
         var actual = SimilarityTransform.Estimate(src, dst);
 
@@ -80,7 +82,9 @@ public class ImageOpsTests
 
         var resized = ImageOps.ResizeBilinear(image, 2, 1);
 
-        await Assert.That(resized.Pixels.SequenceEqual(new byte[] { 50, 50, 50, 220, 220, 220 })).IsTrue();
+        await Assert
+            .That(resized.Pixels.SequenceEqual(new byte[] { 50, 50, 50, 220, 220, 220 }))
+            .IsTrue();
     }
 
     [Test]
@@ -98,16 +102,18 @@ public class ImageOpsTests
     [Test]
     public async Task Resize_FractionalShrink_WeightsPartialPixels()
     {
-        var image = new RgbImage(3, 2,
-        [
-            0, 0, 0, 120, 120, 120, 240, 240, 240,
-            0, 0, 0, 120, 120, 120, 240, 240, 240,
-        ]);
+        var image = new RgbImage(
+            3,
+            2,
+            [0, 0, 0, 120, 120, 120, 240, 240, 240, 0, 0, 0, 120, 120, 120, 240, 240, 240]
+        );
 
         var resized = ImageOps.Resize(image, 2, 1);
 
         // Each output covers 1.5 columns: a whole edge pixel and half the middle pixel.
-        await Assert.That(resized.Pixels.SequenceEqual(new byte[] { 40, 40, 40, 200, 200, 200 })).IsTrue();
+        await Assert
+            .That(resized.Pixels.SequenceEqual(new byte[] { 40, 40, 40, 200, 200, 200 }))
+            .IsTrue();
     }
 
     [Test]
@@ -135,8 +141,8 @@ public class ImageOpsTests
 
 public class FaceQualityTests
 {
-    private static DetectedFace Face() => new(
-        new BoundingBox(0, 0, 112, 112), 0.9f, FaceAligner.ArcFaceTemplate.ToArray());
+    private static DetectedFace Face() =>
+        new(new BoundingBox(0, 0, 112, 112), 0.9f, FaceAligner.ArcFaceTemplate.ToArray());
 
     [Test]
     public async Task IsSuitable_AcceptsWellResolvedFace()
@@ -149,7 +155,9 @@ public class FaceQualityTests
     {
         var face = Face() with { Box = new BoundingBox(0, 0, 39, 112) };
 
-        await Assert.That(FaceQuality.IsSuitable(face, new FaceRecognitionOptions { MinimumFaceSize = 40 })).IsFalse();
+        await Assert
+            .That(FaceQuality.IsSuitable(face, new FaceRecognitionOptions { MinimumFaceSize = 40 }))
+            .IsFalse();
     }
 
     [Test]
@@ -158,7 +166,11 @@ public class FaceQualityTests
         var face = Face();
         face.Landmarks[1] = face.Landmarks[0] with { X = face.Landmarks[0].X + 5 };
 
-        await Assert.That(FaceQuality.IsSuitable(face, new FaceRecognitionOptions { MinimumEyeDistance = 12 })).IsFalse();
+        await Assert
+            .That(
+                FaceQuality.IsSuitable(face, new FaceRecognitionOptions { MinimumEyeDistance = 12 })
+            )
+            .IsFalse();
     }
 
     [Test]
@@ -185,7 +197,9 @@ public class FaceQualityTests
         var face = Face() with
         {
             Box = new BoundingBox(0, 0, 20, 20),
-            Landmarks = FaceAligner.ArcFaceTemplate.Select(p => new PointF(p.X / 10, p.Y / 10)).ToArray(),
+            Landmarks = FaceAligner
+                .ArcFaceTemplate.Select(p => new PointF(p.X / 10, p.Y / 10))
+                .ToArray(),
         };
         var options = new FaceRecognitionOptions { MinimumFaceSize = 0, MinimumEyeDistance = 0 };
 
@@ -199,8 +213,10 @@ public class FaceQualityTests
         var face = Face() with
         {
             Box = new BoundingBox(0, 0, 24, 24),
-            Landmarks = FaceAligner.ArcFaceTemplate.Select(p => transform.Apply(p.X, p.Y))
-                .Select(p => new PointF(p.X, p.Y)).ToArray(),
+            Landmarks = FaceAligner
+                .ArcFaceTemplate.Select(p => transform.Apply(p.X, p.Y))
+                .Select(p => new PointF(p.X, p.Y))
+                .ToArray(),
         };
 
         await Assert.That(FaceQuality.IsSuitable(face, new FaceRecognitionOptions())).IsTrue();
@@ -209,8 +225,8 @@ public class FaceQualityTests
 
 public class BestEffortFaceDetectionTests
 {
-    private static DetectedFace Face(float score = 0.9f) => new(
-        new BoundingBox(0, 0, 112, 112), score, FaceAligner.ArcFaceTemplate.ToArray());
+    private static DetectedFace Face(float score = 0.9f) =>
+        new(new BoundingBox(0, 0, 112, 112), score, FaceAligner.ArcFaceTemplate.ToArray());
 
     [Test]
     public async Task Detect_GoodPrimaryDetectionDoesNotRetry()
@@ -222,8 +238,12 @@ public class BestEffortFaceDetectionTests
             return [Face()];
         }
 
-        var result = BestEffortFaceDetection.Detect(new RgbImage(112, 112),
-            new FaceRecognitionOptions(), Detect, CancellationToken.None);
+        var result = BestEffortFaceDetection.Detect(
+            new RgbImage(112, 112),
+            new FaceRecognitionOptions(),
+            Detect,
+            CancellationToken.None
+        );
 
         await Assert.That(calls).IsEqualTo(1);
         await Assert.That(result.Count).IsEqualTo(1);
@@ -244,7 +264,12 @@ public class BestEffortFaceDetectionTests
         }
 
         var options = new FaceRecognitionOptions();
-        var result = BestEffortFaceDetection.Detect(new RgbImage(112, 112), options, Detect, CancellationToken.None);
+        var result = BestEffortFaceDetection.Detect(
+            new RgbImage(112, 112),
+            options,
+            Detect,
+            CancellationToken.None
+        );
 
         await Assert.That(calls).IsEqualTo(2);
         await Assert.That(lastSize).IsEqualTo(1024);
@@ -267,7 +292,12 @@ public class BestEffortFaceDetectionTests
             return calls < 3 ? [] : [Face()];
         }
 
-        var result = BestEffortFaceDetection.Detect(source, new FaceRecognitionOptions(), Detect, CancellationToken.None);
+        var result = BestEffortFaceDetection.Detect(
+            source,
+            new FaceRecognitionOptions(),
+            Detect,
+            CancellationToken.None
+        );
 
         await Assert.That(calls).IsEqualTo(3);
         await Assert.That(retryPixel > 20).IsTrue();
@@ -285,8 +315,12 @@ public class BestEffortFaceDetectionTests
             return [];
         }
 
-        var result = BestEffortFaceDetection.Detect(new RgbImage(112, 112),
-            new FaceRecognitionOptions { EnableDetectionFallback = false }, Detect, CancellationToken.None);
+        var result = BestEffortFaceDetection.Detect(
+            new RgbImage(112, 112),
+            new FaceRecognitionOptions { EnableDetectionFallback = false },
+            Detect,
+            CancellationToken.None
+        );
 
         await Assert.That(calls).IsEqualTo(1);
         await Assert.That(result.Count).IsEqualTo(0);
@@ -302,8 +336,12 @@ public class BestEffortFaceDetectionTests
             return [];
         }
 
-        var result = BestEffortFaceDetection.Detect(new RgbImage(112, 112),
-            new FaceRecognitionOptions(), Detect, CancellationToken.None);
+        var result = BestEffortFaceDetection.Detect(
+            new RgbImage(112, 112),
+            new FaceRecognitionOptions(),
+            Detect,
+            CancellationToken.None
+        );
 
         await Assert.That(calls).IsEqualTo(5);
         await Assert.That(result.Count).IsEqualTo(0);
@@ -320,8 +358,12 @@ public class BestEffortFaceDetectionTests
             return calls == 1 ? [small] : [];
         }
 
-        var result = BestEffortFaceDetection.Detect(new RgbImage(112, 112),
-            new FaceRecognitionOptions(), Detect, CancellationToken.None);
+        var result = BestEffortFaceDetection.Detect(
+            new RgbImage(112, 112),
+            new FaceRecognitionOptions(),
+            Detect,
+            CancellationToken.None
+        );
 
         await Assert.That(calls).IsEqualTo(2);
         await Assert.That(ReferenceEquals(result[0], small)).IsTrue();
@@ -347,16 +389,29 @@ public class BestEffortFaceDetectionTests
         var face = Face() with
         {
             Box = new BoundingBox(0, 0, rotation.Image.Width, rotation.Image.Height),
-            Landmarks = FaceAligner.ArcFaceTemplate.Select(p => rotation.Transform.Apply(p.X, p.Y))
-                .Select(p => new PointF(p.X, p.Y)).ToArray(),
+            Landmarks = FaceAligner
+                .ArcFaceTemplate.Select(p => rotation.Transform.Apply(p.X, p.Y))
+                .Select(p => new PointF(p.X, p.Y))
+                .ToArray(),
         };
 
-        var mapped = BestEffortFaceDetection.MapToOriginal(face, rotation.Transform.Inverse(), 112, 112);
+        var mapped = BestEffortFaceDetection.MapToOriginal(
+            face,
+            rotation.Transform.Inverse(),
+            112,
+            112
+        );
 
         for (var i = 0; i < 5; i++)
         {
-            await Assert.That(mapped.Landmarks[i].X).IsEqualTo(FaceAligner.ArcFaceTemplate[i].X).Within(1e-3f);
-            await Assert.That(mapped.Landmarks[i].Y).IsEqualTo(FaceAligner.ArcFaceTemplate[i].Y).Within(1e-3f);
+            await Assert
+                .That(mapped.Landmarks[i].X)
+                .IsEqualTo(FaceAligner.ArcFaceTemplate[i].X)
+                .Within(1e-3f);
+            await Assert
+                .That(mapped.Landmarks[i].Y)
+                .IsEqualTo(FaceAligner.ArcFaceTemplate[i].Y)
+                .Within(1e-3f);
         }
         await Assert.That(mapped.Box.X1).IsEqualTo(0f);
         await Assert.That(mapped.Box.X2).IsEqualTo(112f);
@@ -388,8 +443,8 @@ public class RgbImageTests
     {
         var image = new RgbImage(2, 3);
         for (var y = 0; y < 3; y++)
-            for (var x = 0; x < 2; x++)
-                image.Pixels[(y * 2 + x) * 3] = (byte)(10 * y + x);
+        for (var x = 0; x < 2; x++)
+            image.Pixels[(y * 2 + x) * 3] = (byte)(10 * y + x);
         return image;
     }
 
@@ -435,7 +490,8 @@ public class RgbImageTests
     [Test]
     public async Task Decode_RejectsGarbage()
     {
-        await Assert.That(() => RgbImage.Decode(new MemoryStream("not an image"u8.ToArray())))
+        await Assert
+            .That(() => RgbImage.Decode(new MemoryStream("not an image"u8.ToArray())))
             .Throws<InvalidImageException>();
     }
 }

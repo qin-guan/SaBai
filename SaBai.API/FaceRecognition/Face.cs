@@ -12,7 +12,8 @@ public readonly record struct BoundingBox(float X1, float Y1, float X2, float Y2
     {
         var w = MathF.Min(X2, other.X2) - MathF.Max(X1, other.X1);
         var h = MathF.Min(Y2, other.Y2) - MathF.Max(Y1, other.Y1);
-        if (w <= 0 || h <= 0) return 0;
+        if (w <= 0 || h <= 0)
+            return 0;
         var inter = w * h;
         return inter / (Area + other.Area - inter);
     }

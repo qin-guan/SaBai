@@ -38,7 +38,16 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
         await Send.CreatedAtAsync<Get.Endpoint>(
             new { village.Id },
-            new Response(village.Id, village.Code, village.Name, village.ColorHex, village.IsVisible, village.CreatedAt, village.UpdatedAt),
-            cancellation: ct);
+            new Response(
+                village.Id,
+                village.Code,
+                village.Name,
+                village.ColorHex,
+                village.IsVisible,
+                village.CreatedAt,
+                village.UpdatedAt
+            ),
+            cancellation: ct
+        );
     }
 }

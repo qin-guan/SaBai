@@ -5,26 +5,33 @@ using WorkOS;
 
 namespace SaBai.API.Auth;
 
-public sealed class WorkOsDirectory(IOptions<WorkOsSettings> options, ILogger<WorkOsDirectory> logger) : IWorkOsDirectory
+public sealed class WorkOsDirectory(
+    IOptions<WorkOsSettings> options,
+    ILogger<WorkOsDirectory> logger
+) : IWorkOsDirectory
 {
-    private readonly WorkOSClient _client = new(new WorkOSOptions
-    {
-        ApiKey = options.Value.ApiKey,
-        ClientId = options.Value.ClientId,
-    });
+    private readonly WorkOSClient _client = new(
+        new WorkOSOptions { ApiKey = options.Value.ApiKey, ClientId = options.Value.ClientId }
+    );
 
-    public Task<WorkOsIdentity> AuthenticateAsync(string email, string password, CancellationToken cancellationToken) =>
-        CallAsync("authenticate", email, async () =>
-        {
-            var response = await _client.UserManagement.AuthenticateWithPasswordAsync(
-                new AuthenticateWithPasswordOptions
-                {
-                    Email = email,
-                    Password = password,
-                },
-                cancellationToken: cancellationToken);
-            return Map(response.User);
-        }, rejectAsInvalidCredentials: true);
+    public Task<WorkOsIdentity> AuthenticateAsync(
+        string email,
+        string password,
+        CancellationToken cancellationToken
+    ) =>
+        CallAsync(
+            "authenticate",
+            email,
+            async () =>
+            {
+                var response = await _client.UserManagement.AuthenticateWithPasswordAsync(
+                    new AuthenticateWithPasswordOptions { Email = email, Password = password },
+                    cancellationToken: cancellationToken
+                );
+                return Map(response.User);
+            },
+            rejectAsInvalidCredentials: true
+        );
 
     public Task<WorkOsIdentity> CreateUserAsync(
         string email,
@@ -32,41 +39,64 @@ public sealed class WorkOsDirectory(IOptions<WorkOsSettings> options, ILogger<Wo
         string? firstName,
         string? lastName,
         string externalId,
-        CancellationToken cancellationToken) =>
-        CallAsync("create-user", email, async () =>
-        {
-            var created = await _client.UserManagement.CreateAsync(
-                new UserManagementCreateOptions
-                {
-                    Email = email,
-                    FirstName = firstName,
-                    LastName = lastName,
-                    EmailVerified = true,
-                    ExternalId = externalId,
-                    Password = new UserManagementPasswordPlaintext { Password = password },
-                },
-                cancellationToken: cancellationToken);
-            return new WorkOsIdentity(created.Id, created.Email, created.FirstName, created.LastName);
-        }, rejectAsInvalidCredentials: false);
+        CancellationToken cancellationToken
+    ) =>
+        CallAsync(
+            "create-user",
+            email,
+            async () =>
+            {
+                var created = await _client.UserManagement.CreateAsync(
+                    new UserManagementCreateOptions
+                    {
+                        Email = email,
+                        FirstName = firstName,
+                        LastName = lastName,
+                        EmailVerified = true,
+                        ExternalId = externalId,
+                        Password = new UserManagementPasswordPlaintext { Password = password },
+                    },
+                    cancellationToken: cancellationToken
+                );
+                return new WorkOsIdentity(
+                    created.Id,
+                    created.Email,
+                    created.FirstName,
+                    created.LastName
+                );
+            },
+            rejectAsInvalidCredentials: false
+        );
 
-    public Task UpdatePasswordAsync(string workOsUserId, string password, CancellationToken cancellationToken) =>
-        CallAsync("update-password", workOsUserId, async () =>
-        {
-            await _client.UserManagement.UpdateAsync(
-                workOsUserId,
-                new UserManagementUpdateOptions
-                {
-                    Password = new UserManagementPasswordPlaintext { Password = password },
-                },
-                cancellationToken: cancellationToken);
-            return true;
-        }, rejectAsInvalidCredentials: false);
+    public Task UpdatePasswordAsync(
+        string workOsUserId,
+        string password,
+        CancellationToken cancellationToken
+    ) =>
+        CallAsync(
+            "update-password",
+            workOsUserId,
+            async () =>
+            {
+                await _client.UserManagement.UpdateAsync(
+                    workOsUserId,
+                    new UserManagementUpdateOptions
+                    {
+                        Password = new UserManagementPasswordPlaintext { Password = password },
+                    },
+                    cancellationToken: cancellationToken
+                );
+                return true;
+            },
+            rejectAsInvalidCredentials: false
+        );
 
     private async Task<T> CallAsync<T>(
         string operation,
         string subject,
         Func<Task<T>> call,
-        bool rejectAsInvalidCredentials)
+        bool rejectAsInvalidCredentials
+    )
     {
         using var activity = WorkOsTelemetry.Start(operation, subject);
         logger.LogInformation("Calling WorkOS {Operation} for {Subject}", operation, subject);
@@ -86,7 +116,8 @@ public sealed class WorkOsDirectory(IOptions<WorkOsSettings> options, ILogger<Wo
                 subject,
                 activity?.GetTagItem("workos.status_code"),
                 activity?.GetTagItem("workos.error_code"),
-                activity?.GetTagItem("workos.response_body"));
+                activity?.GetTagItem("workos.response_body")
+            );
             if (rejectAsInvalidCredentials && IsRejected(exception))
             {
                 throw new AuthRejectedException();

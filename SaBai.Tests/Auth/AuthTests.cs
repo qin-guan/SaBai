@@ -50,7 +50,8 @@ public sealed class AuthTests(AppFixture fixture)
         var response = await client.PostAsJsonAsync(
             "/auth/login",
             new { email = ClinicApi.AdminEmail, password = "not-the-password" },
-            ApiJson.Options);
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.Unauthorized);
@@ -85,7 +86,8 @@ public sealed class AuthTests(AppFixture fixture)
                 email = $"nope-{Guid.NewGuid():N}@sabai.test",
                 password = ClinicApi.Password,
             },
-            ApiJson.Options);
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.Forbidden);
@@ -112,14 +114,16 @@ public sealed class AuthTests(AppFixture fixture)
                 nickname = "Locked User",
                 role = StaffRole.Member,
             },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var user = await created.Content.ReadFromJsonAsync<UserResponse>(ApiJson.Options);
         var locked = await admin.PostAsync($"/auth/users/{user!.Id}/lock", null);
         var lockedLogin = fixture.CreateHttpClient("api");
         var denied = await lockedLogin.PostAsJsonAsync(
             "/auth/login",
             new { email, password = ClinicApi.Password },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var unlocked = await admin.PostAsync($"/auth/users/{user.Id}/unlock", null);
         var allowed = fixture.CreateHttpClient("api");
         await allowed.LoginAsync(email);

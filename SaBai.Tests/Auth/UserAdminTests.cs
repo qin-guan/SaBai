@@ -57,7 +57,8 @@ public sealed class UserAdminTests(AppFixture fixture)
                 password = ClinicApi.Password,
                 nickname = "Before",
             },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         created.EnsureSuccessStatusCode();
         var createdBody = await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
         var id = createdBody.GetProperty("id").GetGuid();
@@ -66,7 +67,8 @@ public sealed class UserAdminTests(AppFixture fixture)
         var patched = await client.PatchAsJsonAsync(
             $"/auth/users/{id}",
             new { nickname },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var fetched = await client.GetAsync($"/auth/users/{id}");
         var body = await fetched.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
 
@@ -86,7 +88,8 @@ public sealed class UserAdminTests(AppFixture fixture)
         var response = await client.PostAsJsonAsync(
             "/auth/login",
             new { email = ClinicApi.AdminEmail, password = "" },
-            ApiJson.Options);
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
@@ -101,8 +104,13 @@ public sealed class UserAdminTests(AppFixture fixture)
         // Act
         var response = await client.PostAsJsonAsync(
             "/auth/login",
-            new { email = $"missing-{ClinicSetup.Suffix()}@sabai.test", password = ClinicApi.Password },
-            ApiJson.Options);
+            new
+            {
+                email = $"missing-{ClinicSetup.Suffix()}@sabai.test",
+                password = ClinicApi.Password,
+            },
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.Unauthorized);
@@ -138,7 +146,8 @@ public sealed class UserAdminTests(AppFixture fixture)
                 email = ClinicApi.AdminEmail,
                 password = ClinicApi.Password,
             },
-            ApiJson.Options);
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.Conflict);

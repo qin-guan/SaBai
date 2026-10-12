@@ -17,8 +17,8 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var pending = await db.Orders
-            .AsNoTracking()
+        var pending = await db
+            .Orders.AsNoTracking()
             .Where(x => x.Status == OrderStatus.Pending)
             .Select(x => new
             {
@@ -39,16 +39,23 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
             .ToListAsync(ct);
 
         var usable = pending
-            .Where(x => x.VisitId is not null && x.PatientId is not null && !string.IsNullOrWhiteSpace(x.PatientName))
+            .Where(x =>
+                x.VisitId is not null
+                && x.PatientId is not null
+                && !string.IsNullOrWhiteSpace(x.PatientName)
+            )
             .ToList();
 
         var ingredientIds = usable.Select(x => x.IngredientId).Distinct().ToList();
         var activeByIngredient = new Dictionary<int, int>();
         if (ingredientIds.Count > 0)
         {
-            var activeRows = await db.MedicationStocks
-                .AsNoTracking()
-                .Where(x => x.StockStatus == StockStatus.Active && ingredientIds.Contains(x.MedicationBrand.ActiveIngredientId))
+            var activeRows = await db
+                .MedicationStocks.AsNoTracking()
+                .Where(x =>
+                    x.StockStatus == StockStatus.Active
+                    && ingredientIds.Contains(x.MedicationBrand.ActiveIngredientId)
+                )
                 .Select(x => new { x.MedicationBrand.ActiveIngredientId, x.Quantity })
                 .ToListAsync(ct);
             activeByIngredient = activeRows
@@ -60,10 +67,15 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
         var diagnoses = new List<(int VisitId, DiagnosisCategory? Category, string Details)>();
         if (visitIds.Count > 0)
         {
-            var loaded = await db.Diagnoses
-                .AsNoTracking()
+            var loaded = await db
+                .Diagnoses.AsNoTracking()
                 .Where(x => visitIds.Contains(x.Consult.VisitId))
-                .Select(x => new { x.Consult.VisitId, x.Category, x.Details })
+                .Select(x => new
+                {
+                    x.Consult.VisitId,
+                    x.Category,
+                    x.Details,
+                })
                 .ToListAsync(ct);
             diagnoses = [.. loaded.Select(x => (x.VisitId, x.Category, x.Details))];
         }
@@ -88,13 +100,19 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
                                 x.MedicationName,
                                 x.Quantity,
                                 x.FallBelow > activeByIngredient.GetValueOrDefault(x.IngredientId),
-                                x.DosageInstructions))
+                                x.DosageInstructions
+                            ))
                             .ToList();
                         var visitDiagnoses = diagnoses
                             .Where(x => x.VisitId == visit.VisitId)
                             .Select(x => new DiagnosisItem(x.Category, x.Details))
                             .ToList();
-                        return new VisitBundle(visit.VisitId!.Value, visit.VisitDate!.Value, orders, visitDiagnoses);
+                        return new VisitBundle(
+                            visit.VisitId!.Value,
+                            visit.VisitDate!.Value,
+                            orders,
+                            visitDiagnoses
+                        );
                     })
                     .ToList();
 
@@ -102,8 +120,10 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
                     new PatientHeader(
                         Patient.FormatDisplayId(header.VillageCode, header.PatientId!.Value),
                         header.PatientName!,
-                        header.VillageCode),
-                    visits);
+                        header.VillageCode
+                    ),
+                    visits
+                );
             })
             .ToList();
 

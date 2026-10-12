@@ -9,14 +9,16 @@ public sealed class Validator : Validator<Request>
     {
         RuleFor(x => x.VisitId).GreaterThan(0);
         RuleFor(x => x.Diagnoses).NotEmpty();
-        RuleForEach(x => x.Diagnoses).ChildRules(diagnosis =>
-        {
-            diagnosis.RuleFor(x => x.Details).NotEmpty();
-        });
-        RuleForEach(x => x.Orders).ChildRules(order =>
-        {
-            order.RuleFor(x => x.MedicationBrandId).GreaterThan(0);
-            order.RuleFor(x => x.Quantity).GreaterThan(0);
-        });
+        RuleForEach(x => x.Diagnoses)
+            .ChildRules(diagnosis =>
+            {
+                diagnosis.RuleFor(x => x.Details).NotEmpty();
+            });
+        RuleForEach(x => x.Orders)
+            .ChildRules(order =>
+            {
+                order.RuleFor(x => x.MedicationBrandId).GreaterThan(0);
+                order.RuleFor(x => x.Quantity).GreaterThan(0);
+            });
     }
 }

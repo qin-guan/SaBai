@@ -53,8 +53,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             .ToListAsync(ct);
         var latest = await LatestVisitsAsync([.. rows.Select(x => x.Id)], ct);
 
-        var patients = rows
-            .Select(x =>
+        var patients = rows.Select(x =>
             {
                 latest.TryGetValue(x.Id, out var last);
                 return new Item(
@@ -76,21 +75,26 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                     last?.Date,
                     last?.Id,
                     x.PhotoStoredFileName != null,
-                    x.LatestFaceId != null);
+                    x.LatestFaceId != null
+                );
             })
             .ToList();
 
         await Send.OkAsync(new Response(patients), ct);
     }
 
-    private async Task<Dictionary<int, LatestVisit>> LatestVisitsAsync(int[] patientIds, CancellationToken ct)
+    private async Task<Dictionary<int, LatestVisit>> LatestVisitsAsync(
+        int[] patientIds,
+        CancellationToken ct
+    )
     {
         if (patientIds.Length == 0)
         {
             return [];
         }
 
-        var visits = await db.Visits.AsNoTracking()
+        var visits = await db
+            .Visits.AsNoTracking()
             .Where(x => patientIds.Contains(x.PatientId))
             .Select(x => new LatestVisit(x.Id, x.PatientId, x.Date))
             .ToListAsync(ct);
@@ -99,7 +103,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             .GroupBy(x => x.PatientId)
             .ToDictionary(
                 g => g.Key,
-                g => g.OrderByDescending(x => x.Date).ThenByDescending(x => x.Id).First());
+                g => g.OrderByDescending(x => x.Date).ThenByDescending(x => x.Id).First()
+            );
     }
 
     private sealed record LatestVisit(int Id, int PatientId, DateTimeOffset Date);

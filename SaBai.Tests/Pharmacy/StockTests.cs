@@ -21,7 +21,8 @@ public sealed class StockTests(AppFixture fixture)
         var adjusted = await client.PostAsJsonAsync(
             $"/medication-stock/{stockId}/adjustments",
             new { quantityChange = 2 },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var listed = await client.GetAsync("/medication-stock");
         var body = await listed.Content.ReadAsStringAsync();
         var lot = FindLot(body, stockId);
@@ -47,7 +48,8 @@ public sealed class StockTests(AppFixture fixture)
         var adjusted = await client.PostAsJsonAsync(
             $"/medication-stock/{stockId}/adjustments",
             new { quantityChange = -4 },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var listed = await client.GetAsync("/medication-stock");
         var body = await listed.Content.ReadAsStringAsync();
         var lot = FindLot(body, stockId);
@@ -78,7 +80,8 @@ public sealed class StockTests(AppFixture fixture)
                 location,
                 stockStatus = "active",
             },
-            ApiJson.Options);
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.NotFound);
@@ -95,7 +98,8 @@ public sealed class StockTests(AppFixture fixture)
         var response = await client.PatchAsJsonAsync(
             "/medication-stock/99999999",
             new { location = $"missing-{ClinicSetup.Suffix()}" },
-            ApiJson.Options);
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.NotFound);
@@ -117,10 +121,16 @@ public sealed class StockTests(AppFixture fixture)
             {
                 splits = new object[]
                 {
-                    new { quantity = 1, location = $"only-{suffix}", stockStatus = "active" },
+                    new
+                    {
+                        quantity = 1,
+                        location = $"only-{suffix}",
+                        stockStatus = "active",
+                    },
                 },
             },
-            ApiJson.Options);
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
@@ -140,7 +150,8 @@ public sealed class StockTests(AppFixture fixture)
         var patched = await client.PatchAsJsonAsync(
             $"/medication-stock/{stockId}",
             new { location = updatedLocation },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var listed = await client.GetAsync("/medication-stock");
         var body = await listed.Content.ReadAsStringAsync();
         var lot = FindLot(body, stockId);
@@ -152,20 +163,43 @@ public sealed class StockTests(AppFixture fixture)
         await Assert.That(lot.Location).IsEqualTo(updatedLocation);
     }
 
-    private static async Task<int> CreateStockAsync(HttpClient client, string suffix, int quantity, string location)
+    private static async Task<int> CreateStockAsync(
+        HttpClient client,
+        string suffix,
+        int quantity,
+        string location
+    )
     {
         var ingredient = await client.PostAsJsonAsync(
             "/medication-ingredients",
-            new { name = $"Stock ingredient {suffix}", unitOfMeasurement = "tablets", fallBelow = 5 },
-            ApiJson.Options);
+            new
+            {
+                name = $"Stock ingredient {suffix}",
+                unitOfMeasurement = "tablets",
+                fallBelow = 5,
+            },
+            ApiJson.Options
+        );
         ingredient.EnsureSuccessStatusCode();
-        var ingredientId = ClinicSetup.ReadInt(await ingredient.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options), "id");
+        var ingredientId = ClinicSetup.ReadInt(
+            await ingredient.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
+            "id"
+        );
         var brand = await client.PostAsJsonAsync(
             "/medication-brands",
-            new { name = $"Stock brand {suffix}", activeIngredientId = ingredientId, remarks = "" },
-            ApiJson.Options);
+            new
+            {
+                name = $"Stock brand {suffix}",
+                activeIngredientId = ingredientId,
+                remarks = "",
+            },
+            ApiJson.Options
+        );
         brand.EnsureSuccessStatusCode();
-        var brandId = ClinicSetup.ReadInt(await brand.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options), "id");
+        var brandId = ClinicSetup.ReadInt(
+            await brand.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
+            "id"
+        );
         var stock = await client.PostAsJsonAsync(
             "/medication-stock",
             new
@@ -176,14 +210,19 @@ public sealed class StockTests(AppFixture fixture)
                 location,
                 stockStatus = "active",
             },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         stock.EnsureSuccessStatusCode();
-        return ClinicSetup.ReadInt(await stock.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options), "id");
+        return ClinicSetup.ReadInt(
+            await stock.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
+            "id"
+        );
     }
 
     private static StockLot FindLot(string body, int stockId)
     {
-        var stocks = JsonSerializer.Deserialize<List<StockLot>>(body, ApiJson.Options)
+        var stocks =
+            JsonSerializer.Deserialize<List<StockLot>>(body, ApiJson.Options)
             ?? throw new InvalidOperationException($"Stock list was not JSON: {body}");
         return stocks.SingleOrDefault(x => x.Id == stockId)
             ?? throw new InvalidOperationException($"Stock {stockId} was not listed: {body}");

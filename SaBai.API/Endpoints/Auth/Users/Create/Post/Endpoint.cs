@@ -6,7 +6,8 @@ using SaBai.API.Domain;
 
 namespace SaBai.API.Endpoints.Auth.Users.Create.Post;
 
-public sealed class Endpoint(AppDbContext db, IWorkOsDirectory directory) : Endpoint<Request, UserResponse>
+public sealed class Endpoint(AppDbContext db, IWorkOsDirectory directory)
+    : Endpoint<Request, UserResponse>
 {
     public override void Configure()
     {
@@ -25,7 +26,14 @@ public sealed class Endpoint(AppDbContext db, IWorkOsDirectory directory) : Endp
         }
 
         var id = Guid.CreateVersion7();
-        var identity = await directory.CreateUserAsync(email, req.Password, req.Nickname, null, id.ToString(), ct);
+        var identity = await directory.CreateUserAsync(
+            email,
+            req.Password,
+            req.Nickname,
+            null,
+            id.ToString(),
+            ct
+        );
         var user = new StaffUser
         {
             Id = id,
@@ -39,6 +47,10 @@ public sealed class Endpoint(AppDbContext db, IWorkOsDirectory directory) : Endp
         db.StaffUsers.Add(user);
         await db.SaveChangesAsync(ct);
 
-        await Send.CreatedAtAsync<Get.Endpoint>(new { user.Id }, UserResponse.From(user), cancellation: ct);
+        await Send.CreatedAtAsync<Get.Endpoint>(
+            new { user.Id },
+            UserResponse.From(user),
+            cancellation: ct
+        );
     }
 }

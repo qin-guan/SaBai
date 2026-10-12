@@ -11,8 +11,18 @@ public sealed record UserResponse(
     string Nickname,
     StaffRole Role,
     bool IsLocked,
-    DateTimeOffset CreatedAt)
+    DateTimeOffset CreatedAt
+)
 {
     public static UserResponse From(StaffUser user) =>
-        new(user.Id, user.WorkOsUserId, user.Username, user.Email, user.Nickname, user.Role, user.IsLocked, user.CreatedAt);
+        new(
+            user.Id,
+            user.WorkOsUserId,
+            user.Username,
+            user.Email,
+            user.Nickname,
+            user.Role,
+            user.IsLocked,
+            user.CreatedAt
+        );
 }

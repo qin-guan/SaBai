@@ -15,7 +15,8 @@ public sealed record ConsultPdfContent(
     string? TreatmentPlan,
     string? ReferredFor,
     string? ReferralNotes,
-    string? Remarks);
+    string? Remarks
+);
 
 /// <summary>One diagnosis line on a consult PDF.</summary>
 public sealed record ConsultPdfDiagnosis(string? Category, string Details);
@@ -25,66 +26,82 @@ public static class PdfDocument
 {
     public static byte[] Create(ConsultPdfContent content)
     {
-        return Document.Create(container =>
-        {
-            container.Page(page =>
+        return Document
+            .Create(container =>
             {
-                page.Size(PageSizes.A4);
-                page.Margin(2, Unit.Centimetre);
-                page.PageColor(Colors.White);
-                page.DefaultTextStyle(style => style.FontSize(11));
-
-                page.Header().Column(header =>
+                container.Page(page =>
                 {
-                    header.Item().Text("Consultation report").SemiBold().FontSize(18);
-                    header.Item().Text($"{content.PatientDisplayId}  ·  {content.PatientName}").FontColor(Colors.Grey.Darken2);
-                    header.Item().PaddingTop(6).LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
-                });
+                    page.Size(PageSizes.A4);
+                    page.Margin(2, Unit.Centimetre);
+                    page.PageColor(Colors.White);
+                    page.DefaultTextStyle(style => style.FontSize(11));
 
-                page.Content().PaddingVertical(12).Column(column =>
-                {
-                    column.Spacing(10);
-                    column.Item().Text(text =>
-                    {
-                        text.Span("Doctor: ").SemiBold();
-                        text.Span(content.DoctorNickname);
-                    });
-
-                    Section(column, "Past medical history", content.PastMedicalHistory);
-                    Section(column, "Consultation", content.Consultation);
-
-                    column.Item().Text("Diagnoses").SemiBold();
-                    if (content.Diagnoses.Count == 0)
-                    {
-                        column.Item().Text("—").FontColor(Colors.Grey.Darken1);
-                    }
-                    else
-                    {
-                        foreach (var diagnosis in content.Diagnoses)
+                    page.Header()
+                        .Column(header =>
                         {
-                            var category = string.IsNullOrWhiteSpace(diagnosis.Category)
-                                ? "Uncategorised"
-                                : diagnosis.Category;
-                            column.Item().Text($"{category}: {diagnosis.Details}");
-                        }
-                    }
+                            header.Item().Text("Consultation report").SemiBold().FontSize(18);
+                            header
+                                .Item()
+                                .Text($"{content.PatientDisplayId}  ·  {content.PatientName}")
+                                .FontColor(Colors.Grey.Darken2);
+                            header
+                                .Item()
+                                .PaddingTop(6)
+                                .LineHorizontal(1)
+                                .LineColor(Colors.Grey.Lighten2);
+                        });
 
-                    Section(column, "Treatment plan", content.TreatmentPlan);
-                    Section(column, "Referred for", content.ReferredFor);
-                    Section(column, "Referral notes", content.ReferralNotes);
-                    Section(column, "Remarks", content.Remarks);
-                });
+                    page.Content()
+                        .PaddingVertical(12)
+                        .Column(column =>
+                        {
+                            column.Spacing(10);
+                            column
+                                .Item()
+                                .Text(text =>
+                                {
+                                    text.Span("Doctor: ").SemiBold();
+                                    text.Span(content.DoctorNickname);
+                                });
 
-                page.Footer().AlignRight().Text(text =>
-                {
-                    text.Span(content.PatientDisplayId);
-                    text.Span("  ·  ");
-                    text.CurrentPageNumber();
-                    text.Span(" / ");
-                    text.TotalPages();
+                            Section(column, "Past medical history", content.PastMedicalHistory);
+                            Section(column, "Consultation", content.Consultation);
+
+                            column.Item().Text("Diagnoses").SemiBold();
+                            if (content.Diagnoses.Count == 0)
+                            {
+                                column.Item().Text("—").FontColor(Colors.Grey.Darken1);
+                            }
+                            else
+                            {
+                                foreach (var diagnosis in content.Diagnoses)
+                                {
+                                    var category = string.IsNullOrWhiteSpace(diagnosis.Category)
+                                        ? "Uncategorised"
+                                        : diagnosis.Category;
+                                    column.Item().Text($"{category}: {diagnosis.Details}");
+                                }
+                            }
+
+                            Section(column, "Treatment plan", content.TreatmentPlan);
+                            Section(column, "Referred for", content.ReferredFor);
+                            Section(column, "Referral notes", content.ReferralNotes);
+                            Section(column, "Remarks", content.Remarks);
+                        });
+
+                    page.Footer()
+                        .AlignRight()
+                        .Text(text =>
+                        {
+                            text.Span(content.PatientDisplayId);
+                            text.Span("  ·  ");
+                            text.CurrentPageNumber();
+                            text.Span(" / ");
+                            text.TotalPages();
+                        });
                 });
-            });
-        }).GeneratePdf();
+            })
+            .GeneratePdf();
     }
 
     private static void Section(ColumnDescriptor column, string title, string? body)

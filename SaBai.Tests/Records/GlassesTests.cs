@@ -18,8 +18,14 @@ public sealed class GlassesTests(AppFixture fixture)
         // Act
         var created = await client.PostAsJsonAsync(
             "/glasses",
-            new { visitId, leftGlassesDegree = "6/12", notes = "trial" },
-            ApiJson.Options);
+            new
+            {
+                visitId,
+                leftGlassesDegree = "6/12",
+                notes = "trial",
+            },
+            ApiJson.Options
+        );
         var fetched = await client.GetAsync($"/glasses?visitId={visitId}");
         var body = await fetched.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
 
@@ -40,8 +46,14 @@ public sealed class GlassesTests(AppFixture fixture)
         // Act
         var response = await client.PostAsJsonAsync(
             "/glasses",
-            new { visitId = 99999999, leftGlassesDegree = "6/12", notes = "trial" },
-            ApiJson.Options);
+            new
+            {
+                visitId = 99999999,
+                leftGlassesDegree = "6/12",
+                notes = "trial",
+            },
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.NotFound);
@@ -71,21 +83,32 @@ public sealed class GlassesTests(AppFixture fixture)
         var (_, visitId) = await RegisterAsync(client);
         var created = await client.PostAsJsonAsync(
             "/glasses",
-            new { visitId, leftGlassesDegree = "6/12", notes = "trial" },
-            ApiJson.Options);
+            new
+            {
+                visitId,
+                leftGlassesDegree = "6/12",
+                notes = "trial",
+            },
+            ApiJson.Options
+        );
         created.EnsureSuccessStatusCode();
-        var id = ClinicSetup.ReadInt(await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options), "id");
+        var id = ClinicSetup.ReadInt(
+            await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
+            "id"
+        );
 
         // Act
         var patched = await client.PatchAsJsonAsync(
             $"/glasses/{id}",
             new { notes = "" },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var body = await patched.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
 
         // Assert
         await Assert.That(patched.StatusCode).IsEqualTo(HttpStatusCode.OK);
-        var cleared = !body.TryGetProperty("notes", out var notes)
+        var cleared =
+            !body.TryGetProperty("notes", out var notes)
             || notes.ValueKind == JsonValueKind.Null
             || notes.GetString() is null or "";
         await Assert.That(cleared).IsTrue();

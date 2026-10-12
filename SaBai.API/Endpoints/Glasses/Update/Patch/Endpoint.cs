@@ -15,7 +15,11 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var eyesight = await db.Eyesights.FirstOrNotFoundAsync(x => x.Id == req.Id, "Glasses were not found.", ct);
+        var eyesight = await db.Eyesights.FirstOrNotFoundAsync(
+            x => x.Id == req.Id,
+            "Glasses were not found.",
+            ct
+        );
 
         if (req.LeftGlassesDegree is not null)
         {

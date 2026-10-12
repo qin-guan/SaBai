@@ -29,7 +29,8 @@ public sealed class PharmacyTests(AppFixture fixture)
                 stockStatus = "active",
                 remarks = "parent lot",
             },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var parent = await created.Content.ReadFromJsonAsync<StockDto>(ApiJson.Options);
 
         // Act
@@ -39,13 +40,32 @@ public sealed class PharmacyTests(AppFixture fixture)
             {
                 splits = new object[]
                 {
-                    new { quantity = 6, location = $"child-a-{suffix}", stockStatus = "active", remarks = "a" },
-                    new { quantity = 4, location = $"child-b-{suffix}", stockStatus = "reserved", remarks = "b" },
+                    new
+                    {
+                        quantity = 6,
+                        location = $"child-a-{suffix}",
+                        stockStatus = "active",
+                        remarks = "a",
+                    },
+                    new
+                    {
+                        quantity = 4,
+                        location = $"child-b-{suffix}",
+                        stockStatus = "reserved",
+                        remarks = "b",
+                    },
                 },
             },
-            ApiJson.Options);
-        var listed = await client.GetFromJsonAsync<List<StockDto>>("/medication-stock", ApiJson.Options);
-        var withBrand = await client.GetFromJsonAsync<List<StockWithBrandDto>>("/medication-stock/with-brand", ApiJson.Options);
+            ApiJson.Options
+        );
+        var listed = await client.GetFromJsonAsync<List<StockDto>>(
+            "/medication-stock",
+            ApiJson.Options
+        );
+        var withBrand = await client.GetFromJsonAsync<List<StockWithBrandDto>>(
+            "/medication-stock/with-brand",
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(created.StatusCode).IsEqualTo(HttpStatusCode.Created);
@@ -54,9 +74,21 @@ public sealed class PharmacyTests(AppFixture fixture)
         await Assert.That(splitBody!.Success).IsTrue();
         await Assert.That(listed).IsNotNull();
         await Assert.That(listed.Any(x => x.Id == parent.Id)).IsFalse();
-        await Assert.That(listed.Any(x => x.Location == $"child-a-{suffix}" && x.Quantity == 6)).IsTrue();
-        await Assert.That(listed.Any(x => x.Location == $"child-b-{suffix}" && x.Quantity == 4)).IsTrue();
-        await Assert.That(withBrand!.Any(x => x.Location == $"child-a-{suffix}" && x.BrandName == $"Brand {suffix}" && x.IngredientName == $"Ingredient {suffix}")).IsTrue();
+        await Assert
+            .That(listed.Any(x => x.Location == $"child-a-{suffix}" && x.Quantity == 6))
+            .IsTrue();
+        await Assert
+            .That(listed.Any(x => x.Location == $"child-b-{suffix}" && x.Quantity == 4))
+            .IsTrue();
+        await Assert
+            .That(
+                withBrand!.Any(x =>
+                    x.Location == $"child-a-{suffix}"
+                    && x.BrandName == $"Brand {suffix}"
+                    && x.IngredientName == $"Ingredient {suffix}"
+                )
+            )
+            .IsTrue();
     }
 
     [Test]
@@ -78,7 +110,8 @@ public sealed class PharmacyTests(AppFixture fixture)
                 location = $"mismatch-{suffix}",
                 stockStatus = "active",
             },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var parent = await created.Content.ReadFromJsonAsync<StockDto>(ApiJson.Options);
 
         // Act
@@ -88,17 +121,33 @@ public sealed class PharmacyTests(AppFixture fixture)
             {
                 splits = new object[]
                 {
-                    new { quantity = 3, location = $"bad-a-{suffix}", stockStatus = "active" },
-                    new { quantity = 3, location = $"bad-b-{suffix}", stockStatus = "active" },
+                    new
+                    {
+                        quantity = 3,
+                        location = $"bad-a-{suffix}",
+                        stockStatus = "active",
+                    },
+                    new
+                    {
+                        quantity = 3,
+                        location = $"bad-b-{suffix}",
+                        stockStatus = "active",
+                    },
                 },
             },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var body = await split.Content.ReadAsStringAsync();
-        var listed = await client.GetFromJsonAsync<List<StockDto>>("/medication-stock", ApiJson.Options);
+        var listed = await client.GetFromJsonAsync<List<StockDto>>(
+            "/medication-stock",
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(split.StatusCode).IsEqualTo(HttpStatusCode.Conflict);
-        await Assert.That(body).Contains("Child stock quantity does not equal parent stock quantity!");
+        await Assert
+            .That(body)
+            .Contains("Child stock quantity does not equal parent stock quantity!");
         await Assert.That(listed!.Single(x => x.Id == parent.Id).Quantity).IsEqualTo(10);
     }
 
@@ -109,7 +158,11 @@ public sealed class PharmacyTests(AppFixture fixture)
         var client = fixture.CreateHttpClient("api");
         await client.LoginAsync(ClinicApi.PharmacistEmail);
         var suffix = Guid.NewGuid().ToString("N")[..8];
-        var ingredient = await CreateIngredientAsync(client, $"Order ingredient {suffix}", fallBelow: 50);
+        var ingredient = await CreateIngredientAsync(
+            client,
+            $"Order ingredient {suffix}",
+            fallBelow: 50
+        );
         var brand = await CreateBrandAsync(client, $"Order brand {suffix}", ingredient.Id);
         var stockResponse = await client.PostAsJsonAsync(
             "/medication-stock",
@@ -121,7 +174,8 @@ public sealed class PharmacyTests(AppFixture fixture)
                 location = $"order-{suffix}",
                 stockStatus = "active",
             },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var stock = await stockResponse.Content.ReadFromJsonAsync<StockDto>(ApiJson.Options);
         var visit = await CreateVisitAsync(client, suffix);
         var consultResponse = await client.PostAsJsonAsync(
@@ -131,9 +185,13 @@ public sealed class PharmacyTests(AppFixture fixture)
                 visitId = visit.VisitId,
                 diagnoses = new[] { new { details = "cough", category = "Respiratory" } },
             },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         consultResponse.EnsureSuccessStatusCode();
-        var consultId = ReadInt(await consultResponse.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options), "id");
+        var consultId = ReadInt(
+            await consultResponse.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
+            "id"
+        );
 
         // Act
         var created = await client.PostAsJsonAsync(
@@ -146,7 +204,8 @@ public sealed class PharmacyTests(AppFixture fixture)
                 dosageInstructions = "1 tablet daily",
                 remarks = "with food",
             },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var order = await created.Content.ReadFromJsonAsync<OrderDto>(ApiJson.Options);
         var quantityAfterCreate = await StockQuantityAsync(client, stock!.Id);
         var queue = await client.GetAsync("/pharmacy-orders");
@@ -155,7 +214,8 @@ public sealed class PharmacyTests(AppFixture fixture)
         var approved = await client.PatchAsJsonAsync(
             $"/orders/{order!.Id}",
             new { status = "APPROVED" },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var quantityAfterApprove = await StockQuantityAsync(client, stock.Id);
 
         var tooLarge = await client.PostAsJsonAsync(
@@ -167,12 +227,14 @@ public sealed class PharmacyTests(AppFixture fixture)
                 quantity = 100,
                 dosageInstructions = "too much",
             },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var tooLargeOrder = await tooLarge.Content.ReadFromJsonAsync<OrderDto>(ApiJson.Options);
         var overApprove = await client.PatchAsJsonAsync(
             $"/orders/{tooLargeOrder!.Id}",
             new { status = "APPROVED" },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var overBody = await overApprove.Content.ReadAsStringAsync();
         var quantityAfterOver = await StockQuantityAsync(client, stock.Id);
 
@@ -185,18 +247,21 @@ public sealed class PharmacyTests(AppFixture fixture)
                 quantity = 2,
                 dosageInstructions = "cancel me",
             },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var cancelOrder = await toCancel.Content.ReadFromJsonAsync<OrderDto>(ApiJson.Options);
         var cancelled = await client.PatchAsJsonAsync(
             $"/orders/{cancelOrder!.Id}",
             new { status = "CANCELLED" },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var quantityAfterCancel = await StockQuantityAsync(client, stock.Id);
 
         var secondApprove = await client.PatchAsJsonAsync(
             $"/orders/{order.Id}",
             new { status = "APPROVED" },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var secondBody = await secondApprove.Content.ReadAsStringAsync();
 
         // Assert
@@ -232,29 +297,53 @@ public sealed class PharmacyTests(AppFixture fixture)
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
     }
 
-    private static async Task<IngredientDto> CreateIngredientAsync(HttpClient client, string name, int fallBelow)
+    private static async Task<IngredientDto> CreateIngredientAsync(
+        HttpClient client,
+        string name,
+        int fallBelow
+    )
     {
         var response = await client.PostAsJsonAsync(
             "/medication-ingredients",
-            new { name, unitOfMeasurement = "tablet", fallBelow, remarks = "test" },
-            ApiJson.Options);
+            new
+            {
+                name,
+                unitOfMeasurement = "tablet",
+                fallBelow,
+                remarks = "test",
+            },
+            ApiJson.Options
+        );
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<IngredientDto>(ApiJson.Options))!;
     }
 
-    private static async Task<BrandDto> CreateBrandAsync(HttpClient client, string name, int ingredientId)
+    private static async Task<BrandDto> CreateBrandAsync(
+        HttpClient client,
+        string name,
+        int ingredientId
+    )
     {
         var response = await client.PostAsJsonAsync(
             "/medication-brands",
-            new { name, activeIngredientId = ingredientId, remarks = "" },
-            ApiJson.Options);
+            new
+            {
+                name,
+                activeIngredientId = ingredientId,
+                remarks = "",
+            },
+            ApiJson.Options
+        );
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<BrandDto>(ApiJson.Options))!;
     }
 
     private static async Task<int> StockQuantityAsync(HttpClient client, int stockId)
     {
-        var stocks = await client.GetFromJsonAsync<List<StockDto>>("/medication-stock", ApiJson.Options);
+        var stocks = await client.GetFromJsonAsync<List<StockDto>>(
+            "/medication-stock",
+            ApiJson.Options
+        );
         return stocks!.Single(x => x.Id == stockId).Quantity;
     }
 
@@ -263,10 +352,19 @@ public sealed class PharmacyTests(AppFixture fixture)
         var code = $"V{suffix.ToUpperInvariant()}";
         var village = await client.PostAsJsonAsync(
             "/village-codes",
-            new { code, name = $"Village {suffix}", colorHex = "#112233" },
-            ApiJson.Options);
+            new
+            {
+                code,
+                name = $"Village {suffix}",
+                colorHex = "#112233",
+            },
+            ApiJson.Options
+        );
         village.EnsureSuccessStatusCode();
-        var villageId = ReadInt(await village.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options), "id");
+        var villageId = ReadInt(
+            await village.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
+            "id"
+        );
         var patientName = $"Patient {suffix}";
         var patient = await client.PostAsJsonAsync(
             "/patients",
@@ -281,13 +379,16 @@ public sealed class PharmacyTests(AppFixture fixture)
                 hasSabaiCard = false,
                 villageCodeId = villageId,
             },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         patient.EnsureSuccessStatusCode();
         var patientBody = await patient.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
         var patientId = ReadInt(patientBody, "id");
-        var displayId = patientBody.TryGetProperty("displayId", out var display) && display.ValueKind == JsonValueKind.String
-            ? display.GetString()!
-            : Patient.FormatDisplayId(code, patientId);
+        var displayId =
+            patientBody.TryGetProperty("displayId", out var display)
+            && display.ValueKind == JsonValueKind.String
+                ? display.GetString()!
+                : Patient.FormatDisplayId(code, patientId);
         return new VisitContext(patientId, ReadInt(patientBody, "visitId"), patientName, displayId);
     }
 
@@ -307,11 +408,21 @@ public sealed class PharmacyTests(AppFixture fixture)
 
     private sealed record StockDto(int Id, int Quantity, string Location);
 
-    private sealed record StockWithBrandDto(int Id, string Location, string BrandName, string IngredientName);
+    private sealed record StockWithBrandDto(
+        int Id,
+        string Location,
+        string BrandName,
+        string IngredientName
+    );
 
     private sealed record SplitDto(bool Success);
 
     private sealed record OrderDto(int Id, OrderStatus Status, int Quantity);
 
-    private sealed record VisitContext(int PatientId, int VisitId, string PatientName, string DisplayId);
+    private sealed record VisitContext(
+        int PatientId,
+        int VisitId,
+        string PatientName,
+        string DisplayId
+    );
 }

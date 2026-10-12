@@ -17,8 +17,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        _ = await db.Visits
-            .AsNoTracking()
+        _ = await db
+            .Visits.AsNoTracking()
             .FirstOrNotFoundAsync(x => x.Id == req.VisitId, "Visit was not found.", ct);
 
         var eyesight = await db.Eyesights.FirstOrDefaultAsync(x => x.VisitId == req.VisitId, ct);
@@ -36,10 +36,17 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             {
                 await db.SaveChangesAsync(ct);
             }
-            catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+            catch (DbUpdateException ex)
+                when (ex.InnerException
+                        is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation }
+                )
             {
                 db.ChangeTracker.Clear();
-                eyesight = await db.Eyesights.FirstOrNotFoundAsync(x => x.VisitId == req.VisitId, "Glasses were not found.", ct);
+                eyesight = await db.Eyesights.FirstOrNotFoundAsync(
+                    x => x.VisitId == req.VisitId,
+                    "Glasses were not found.",
+                    ct
+                );
                 ApplyProvided(eyesight, req);
                 await db.SaveChangesAsync(ct);
             }
@@ -50,7 +57,11 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             await db.SaveChangesAsync(ct);
         }
 
-        await Send.CreatedAtAsync<Get.Endpoint>(new { eyesight.Id }, Response.From(eyesight), cancellation: ct);
+        await Send.CreatedAtAsync<Get.Endpoint>(
+            new { eyesight.Id },
+            Response.From(eyesight),
+            cancellation: ct
+        );
     }
 
     private static void ApplyProvided(global::SaBai.API.Domain.Eyesight eyesight, Request req)

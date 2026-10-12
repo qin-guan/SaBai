@@ -16,8 +16,8 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var referrals = await db.Referrals
-            .AsNoTracking()
+        var referrals = await db
+            .Referrals.AsNoTracking()
             .OrderByDescending(x => x.CreatedAt)
             .ThenByDescending(x => x.Id)
             .Select(x => new Response(
@@ -31,7 +31,8 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
                 x.Consult.Date,
                 x.Consult.DoctorId,
                 x.Consult.Visit.PatientId,
-                x.Consult.Visit.Patient.Name))
+                x.Consult.Visit.Patient.Name
+            ))
             .ToListAsync(ct);
 
         await Send.OkAsync(referrals, ct);

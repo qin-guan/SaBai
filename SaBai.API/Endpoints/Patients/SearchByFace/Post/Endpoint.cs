@@ -13,8 +13,8 @@ public sealed class Endpoint(
     AppDbContext db,
     FaceAnalyzer analyzer,
     FaceStore store,
-    IOptions<FaceRecognitionOptions> options)
-    : Endpoint<Request, Response>
+    IOptions<FaceRecognitionOptions> options
+) : Endpoint<Request, Response>
 {
     public override void Configure()
     {
@@ -49,8 +49,10 @@ public sealed class Endpoint(
             var matches = await store.SearchAsync(face.Embedding, threshold, req.MaxMatches, ct);
             foreach (var match in matches)
             {
-                if (PatientFaceIdentity.TryParse(match.PersonId, out var patientId)
-                    && (!best.TryGetValue(patientId, out var current) || match.Similarity > current))
+                if (
+                    PatientFaceIdentity.TryParse(match.PersonId, out var patientId)
+                    && (!best.TryGetValue(patientId, out var current) || match.Similarity > current)
+                )
                 {
                     best[patientId] = match.Similarity;
                 }
@@ -64,7 +66,8 @@ public sealed class Endpoint(
         }
 
         var ids = best.Keys.ToArray();
-        var rows = await db.Patients.AsNoTracking()
+        var rows = await db
+            .Patients.AsNoTracking()
             .Where(x => ids.Contains(x.Id))
             .Select(x => new
             {
@@ -76,15 +79,15 @@ public sealed class Endpoint(
             })
             .ToListAsync(ct);
 
-        var results = rows
-            .Select(x => new PatientFaceMatch(
+        var results = rows.Select(x => new PatientFaceMatch(
                 x.Id,
                 x.Name,
                 Patient.FormatDisplayId(x.VillageCode, x.Id),
                 x.VillageCode,
                 x.VillageColorHex,
                 x.PhotoStoredFileName != null,
-                best[x.Id]))
+                best[x.Id]
+            ))
             .OrderByDescending(m => m.Similarity)
             .Take(req.MaxMatches)
             .ToList();

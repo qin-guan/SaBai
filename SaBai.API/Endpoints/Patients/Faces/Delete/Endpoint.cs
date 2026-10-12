@@ -17,7 +17,11 @@ public sealed class Endpoint(AppDbContext db, FaceStore store) : Endpoint<Reques
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var patient = await db.Patients.FirstOrNotFoundAsync(x => x.Id == req.Id, "Patient was not found.", ct);
+        var patient = await db.Patients.FirstOrNotFoundAsync(
+            x => x.Id == req.Id,
+            "Patient was not found.",
+            ct
+        );
 
         var faces = await store.ListAsync(PatientFaceIdentity.ForPatient(patient.Id), ct);
         if (faces.All(f => f.FaceId != req.FaceId))
@@ -32,7 +36,8 @@ public sealed class Endpoint(AppDbContext db, FaceStore store) : Endpoint<Reques
             patient.LatestFaceId = faces
                 .Where(f => f.FaceId != req.FaceId)
                 .OrderBy(f => f.CreatedAt)
-                .LastOrDefault()?.FaceId.ToString();
+                .LastOrDefault()
+                ?.FaceId.ToString();
             await db.SaveChangesAsync(ct);
         }
 

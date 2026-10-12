@@ -19,13 +19,14 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var current = await db.Orders.AsNoTracking().FirstOrNotFoundAsync(
-            x => x.Id == req.Id,
-            "Order was not found.",
-            ct);
+        var current = await db
+            .Orders.AsNoTracking()
+            .FirstOrNotFoundAsync(x => x.Id == req.Id, "Order was not found.", ct);
         if (current.Status is OrderStatus.Approved or OrderStatus.Cancelled)
         {
-            throw new BadRequestException($"Order is already {current.Status.ToString().ToUpperInvariant()}.");
+            throw new BadRequestException(
+                $"Order is already {current.Status.ToString().ToUpperInvariant()}."
+            );
         }
 
         if (req.Status == OrderStatus.Approved)
@@ -37,8 +38,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             await UpdateOpenOrderAsync(req, ct);
         }
 
-        var order = await db.Orders
-            .AsNoTracking()
+        var order = await db
+            .Orders.AsNoTracking()
             .Where(x => x.Id == req.Id)
             .Select(x => new Response(
                 x.Id,
@@ -51,17 +52,24 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                 x.Remarks,
                 x.ApprovedById,
                 x.ApprovedAt,
-                x.CreatedAt))
+                x.CreatedAt
+            ))
             .FirstAsync(ct);
         await Send.OkAsync(order, ct);
     }
 
     private async Task UpdateOpenOrderAsync(Request req, CancellationToken ct)
     {
-        var order = await db.Orders.FirstOrNotFoundAsync(x => x.Id == req.Id, "Order was not found.", ct);
+        var order = await db.Orders.FirstOrNotFoundAsync(
+            x => x.Id == req.Id,
+            "Order was not found.",
+            ct
+        );
         if (order.Status is OrderStatus.Approved or OrderStatus.Cancelled)
         {
-            throw new BadRequestException($"Order is already {order.Status.ToString().ToUpperInvariant()}.");
+            throw new BadRequestException(
+                $"Order is already {order.Status.ToString().ToUpperInvariant()}."
+            );
         }
 
         ApplyNotes(order, req);
@@ -81,17 +89,25 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
         {
             db.ChangeTracker.Clear();
             await using var transaction = await db.Database.BeginTransactionAsync(ct);
-            var order = await db.Orders.FirstOrNotFoundAsync(x => x.Id == req.Id, "Order was not found.", ct);
+            var order = await db.Orders.FirstOrNotFoundAsync(
+                x => x.Id == req.Id,
+                "Order was not found.",
+                ct
+            );
             if (order.Status is OrderStatus.Approved or OrderStatus.Cancelled)
             {
-                throw new BadRequestException($"Order is already {order.Status.ToString().ToUpperInvariant()}.");
+                throw new BadRequestException(
+                    $"Order is already {order.Status.ToString().ToUpperInvariant()}."
+                );
             }
 
             ApplyNotes(order, req);
-            var lots = await db.MedicationStocks
-                .Where(x => x.MedicationBrandId == order.MedicationBrandId
+            var lots = await db
+                .MedicationStocks.Where(x =>
+                    x.MedicationBrandId == order.MedicationBrandId
                     && x.StockStatus == StockStatus.Active
-                    && x.Quantity > 0)
+                    && x.Quantity > 0
+                )
                 .OrderBy(x => x.Expiry)
                 .ThenBy(x => x.Id)
                 .ToListAsync(ct);
@@ -136,11 +152,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             await db.SaveChangesAsync(ct);
             foreach (var change in changes)
             {
-                db.OrderItems.Add(new OrderItem
-                {
-                    OrderId = order.Id,
-                    StockChangeId = change.Id,
-                });
+                db.OrderItems.Add(new OrderItem { OrderId = order.Id, StockChangeId = change.Id });
             }
 
             order.Status = OrderStatus.Approved;

@@ -10,4 +10,5 @@ public sealed record Response(
     ReferralState ReferralState,
     string? ReferralOutcome,
     int ConsultId,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt
+);

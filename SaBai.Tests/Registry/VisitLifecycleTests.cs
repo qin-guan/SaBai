@@ -15,13 +15,18 @@ public sealed class VisitLifecycleTests(AppFixture fixture)
         await client.LoginAsync();
         var suffix = ClinicSetup.Suffix();
         var villageId = await ClinicSetup.CreateVillageAsync(client, $"V{suffix}");
-        var (_, visitId) = await ClinicSetup.RegisterPatientAsync(client, villageId, $"Patient {suffix}");
+        var (_, visitId) = await ClinicSetup.RegisterPatientAsync(
+            client,
+            villageId,
+            $"Patient {suffix}"
+        );
 
         // Act
         var patched = await client.PatchAsJsonAsync(
             $"/visits/{visitId}",
             new { status = "completed" },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var fetched = await client.GetAsync($"/visits/{visitId}");
         var body = await fetched.Content.ReadAsStringAsync();
 
@@ -39,7 +44,11 @@ public sealed class VisitLifecycleTests(AppFixture fixture)
         await client.LoginAsync();
         var suffix = ClinicSetup.Suffix();
         var villageId = await ClinicSetup.CreateVillageAsync(client, $"V{suffix}");
-        var (patientId, visitId) = await ClinicSetup.RegisterPatientAsync(client, villageId, $"Patient {suffix}");
+        var (patientId, visitId) = await ClinicSetup.RegisterPatientAsync(
+            client,
+            villageId,
+            $"Patient {suffix}"
+        );
 
         // Act
         var response = await client.GetAsync($"/patients/{patientId}/visits");
@@ -47,7 +56,13 @@ public sealed class VisitLifecycleTests(AppFixture fixture)
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.OK);
-        await Assert.That(body.GetProperty("visits").EnumerateArray().Any(x => ClinicSetup.ReadInt(x, "id") == visitId)).IsTrue();
+        await Assert
+            .That(
+                body.GetProperty("visits")
+                    .EnumerateArray()
+                    .Any(x => ClinicSetup.ReadInt(x, "id") == visitId)
+            )
+            .IsTrue();
     }
 
     [Test]
@@ -62,7 +77,8 @@ public sealed class VisitLifecycleTests(AppFixture fixture)
         var response = await client.PostAsJsonAsync(
             "/visits",
             new { patientId = 99999999, villageCodeId = villageId },
-            ApiJson.Options);
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.NotFound);
@@ -90,7 +106,11 @@ public sealed class VisitLifecycleTests(AppFixture fixture)
         await client.LoginAsync();
         var suffix = ClinicSetup.Suffix();
         var villageId = await ClinicSetup.CreateVillageAsync(client, $"V{suffix}");
-        var (_, visitId) = await ClinicSetup.RegisterPatientAsync(client, villageId, $"Patient {suffix}");
+        var (_, visitId) = await ClinicSetup.RegisterPatientAsync(
+            client,
+            villageId,
+            $"Patient {suffix}"
+        );
         await ClinicSetup.CreateConsultAsync(client, visitId);
 
         // Act
@@ -110,7 +130,8 @@ public sealed class VisitLifecycleTests(AppFixture fixture)
         var response = await client.PostAsJsonAsync(
             "/visits",
             new { patientId = 1, villageCodeId = 1 },
-            ApiJson.Options);
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.Unauthorized);

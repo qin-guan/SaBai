@@ -16,8 +16,11 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        await db.Visits.AsNoTracking().FirstOrNotFoundAsync(x => x.Id == req.Id, "Visit was not found.", ct);
-        var visit = await db.Visits.AsNoTracking()
+        await db
+            .Visits.AsNoTracking()
+            .FirstOrNotFoundAsync(x => x.Id == req.Id, "Visit was not found.", ct);
+        var visit = await db
+            .Visits.AsNoTracking()
             .Where(x => x.Id == req.Id)
             .Select(x => new Response(
                 x.Id,
@@ -28,7 +31,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                 x.VillageCode.Code,
                 x.VillageCode.Name,
                 x.VillageCode.ColorHex,
-                x.Status))
+                x.Status
+            ))
             .FirstAsync(ct);
 
         await Send.OkAsync(visit, ct);

@@ -15,7 +15,11 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var entity = await db.PubertyAssessments.FirstOrNotFoundAsync(x => x.Id == req.Id, "Puberty assessment was not found.", ct);
+        var entity = await db.PubertyAssessments.FirstOrNotFoundAsync(
+            x => x.Id == req.Id,
+            "Puberty assessment was not found.",
+            ct
+        );
         db.PubertyAssessments.Remove(entity);
         await db.SaveChangesAsync(ct);
         await Send.NoContentAsync(ct);

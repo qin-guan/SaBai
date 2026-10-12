@@ -8,7 +8,8 @@ public sealed record Response(
     VitalsItem? Vitals,
     DateTimeOffset VisitDate,
     IReadOnlyList<ConsultItem> Consults,
-    IReadOnlyList<PrescriptionItem> Prescriptions);
+    IReadOnlyList<PrescriptionItem> Prescriptions
+);
 
 /// <summary>Patient identity shown on a visit chart.</summary>
 public sealed record PatientItem(
@@ -28,7 +29,8 @@ public sealed record PatientItem(
     string DisplayId,
     string FilterString,
     DateTimeOffset? LastVisitDate,
-    int? LastVisitId);
+    int? LastVisitId
+);
 
 /// <summary>Vitals recorded for the visit, or null when none exist.</summary>
 public sealed record VitalsItem(
@@ -46,10 +48,16 @@ public sealed record VitalsItem(
     decimal? BloodGlucoseNonFasting,
     decimal? BloodGlucoseFasting,
     decimal? Hba1c,
-    string? Others);
+    string? Others
+);
 
 /// <summary>Consult summary ordered by date then id, including the doctor nickname.</summary>
-public sealed record ConsultItem(int Id, DateTimeOffset Date, string DoctorNickname, string? ReferredFor);
+public sealed record ConsultItem(
+    int Id,
+    DateTimeOffset Date,
+    string DoctorNickname,
+    string? ReferredFor
+);
 
 /// <summary>Prescription on a consult of this visit. Notes are the order remarks.</summary>
 public sealed record PrescriptionItem(
@@ -58,4 +66,5 @@ public sealed record PrescriptionItem(
     string MedicationName,
     int Quantity,
     string? Notes,
-    OrderStatus Status);
+    OrderStatus Status
+);

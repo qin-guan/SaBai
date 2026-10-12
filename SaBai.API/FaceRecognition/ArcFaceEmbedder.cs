@@ -25,15 +25,18 @@ public sealed class ArcFaceEmbedder : IDisposable
         // Some exports declare a dynamic input batch but a fixed output batch of 1.
         _supportsBatching = input.Value.Dimensions[0] < 0 && output.Dimensions[0] < 0;
         Dimensions = output.Dimensions[^1];
-        if (Dimensions <= 0) throw new NotSupportedException("Recognition model has a dynamic embedding size.");
+        if (Dimensions <= 0)
+            throw new NotSupportedException("Recognition model has a dynamic embedding size.");
     }
 
     public int Dimensions { get; }
 
     public IReadOnlyList<float[]> Embed(IReadOnlyList<RgbImage> alignedFaces)
     {
-        if (alignedFaces.Count == 0) return [];
-        if (_supportsBatching) return Run(alignedFaces);
+        if (alignedFaces.Count == 0)
+            return [];
+        if (_supportsBatching)
+            return Run(alignedFaces);
         return alignedFaces.SelectMany(face => Run([face])).ToList();
     }
 
@@ -61,7 +64,8 @@ public sealed class ArcFaceEmbedder : IDisposable
         for (var n = 0; n < faces.Count; n++)
         {
             var embedding = new float[Dimensions];
-            for (var i = 0; i < Dimensions; i++) embedding[i] = output.GetValue(n * Dimensions + i);
+            for (var i = 0; i < Dimensions; i++)
+                embedding[i] = output.GetValue(n * Dimensions + i);
             embeddings.Add(Normalize(embedding));
         }
 
@@ -72,7 +76,8 @@ public sealed class ArcFaceEmbedder : IDisposable
     {
         var norm = MathF.Sqrt(vector.Sum(v => v * v));
         if (norm > 0)
-            for (var i = 0; i < vector.Length; i++) vector[i] /= norm;
+            for (var i = 0; i < vector.Length; i++)
+                vector[i] /= norm;
         return vector;
     }
 
@@ -80,7 +85,8 @@ public sealed class ArcFaceEmbedder : IDisposable
     public static float Similarity(ReadOnlySpan<float> a, ReadOnlySpan<float> b)
     {
         var dot = 0f;
-        for (var i = 0; i < a.Length; i++) dot += a[i] * b[i];
+        for (var i = 0; i < a.Length; i++)
+            dot += a[i] * b[i];
         return dot;
     }
 

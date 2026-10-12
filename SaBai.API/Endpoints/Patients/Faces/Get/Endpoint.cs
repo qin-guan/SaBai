@@ -17,7 +17,8 @@ public sealed class Endpoint(AppDbContext db, FaceStore store) : Endpoint<Reques
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var patient = await db.Patients.AsNoTracking()
+        var patient = await db
+            .Patients.AsNoTracking()
             .FirstOrNotFoundAsync(x => x.Id == req.Id, "Patient was not found.", ct);
 
         var faces = await store.ListAsync(PatientFaceIdentity.ForPatient(patient.Id), ct);

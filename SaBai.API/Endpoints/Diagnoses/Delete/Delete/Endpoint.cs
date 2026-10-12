@@ -15,7 +15,11 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var diagnosis = await db.Diagnoses.FirstOrNotFoundAsync(x => x.Id == req.Id, "Diagnosis was not found.", ct);
+        var diagnosis = await db.Diagnoses.FirstOrNotFoundAsync(
+            x => x.Id == req.Id,
+            "Diagnosis was not found.",
+            ct
+        );
         db.Diagnoses.Remove(diagnosis);
         await db.SaveChangesAsync(ct);
         await Send.NoContentAsync(ct);

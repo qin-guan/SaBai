@@ -19,7 +19,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
         await db.MedicationActiveIngredients.FirstOrNotFoundAsync(
             x => x.Id == req.ActiveIngredientId,
             "Medication ingredient was not found.",
-            ct);
+            ct
+        );
 
         var brand = new MedicationBrand
         {
@@ -33,6 +34,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
         await Send.CreatedAtAsync<List.Get.Endpoint>(
             new { },
             new Response(brand.Id, brand.Name, brand.ActiveIngredientId, brand.Remarks),
-            cancellation: ct);
+            cancellation: ct
+        );
     }
 }

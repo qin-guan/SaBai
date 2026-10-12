@@ -19,12 +19,19 @@ public sealed class VitalsEndpointTests(AppFixture fixture)
         // Act
         var created = await client.PostAsJsonAsync(
             "/vitals",
-            new { visitId = seed.VisitId, height = 160m, weight = 50m },
-            ApiJson.Options);
+            new
+            {
+                visitId = seed.VisitId,
+                height = 160m,
+                weight = 50m,
+            },
+            ApiJson.Options
+        );
         var again = await client.PostAsJsonAsync(
             "/vitals",
             new { visitId = seed.VisitId, height = 161m },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var body = await created.Content.ReadFromJsonAsync<VitalsBody>(ApiJson.Options);
 
         // Assert
@@ -44,8 +51,14 @@ public sealed class VitalsEndpointTests(AppFixture fixture)
         var seed = await SeedVisitAsync(client);
         var created = await client.PostAsJsonAsync(
             "/vitals",
-            new { visitId = seed.VisitId, heartRate = 72, urineTest = "clear" },
-            ApiJson.Options);
+            new
+            {
+                visitId = seed.VisitId,
+                heartRate = 72,
+                urineTest = "clear",
+            },
+            ApiJson.Options
+        );
         var saved = await created.Content.ReadFromJsonAsync<VitalsBody>(ApiJson.Options);
 
         // Act
@@ -74,15 +87,22 @@ public sealed class VitalsEndpointTests(AppFixture fixture)
         var seed = await SeedVisitAsync(client);
         var created = await client.PostAsJsonAsync(
             "/vitals",
-            new { visitId = seed.VisitId, height = 150m, weight = 40m },
-            ApiJson.Options);
+            new
+            {
+                visitId = seed.VisitId,
+                height = 150m,
+                weight = 40m,
+            },
+            ApiJson.Options
+        );
         var saved = await created.Content.ReadFromJsonAsync<VitalsBody>(ApiJson.Options);
 
         // Act
         var patched = await client.PatchAsJsonAsync(
             $"/vitals/{saved!.Id}",
             new { height = 151m },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var body = await patched.Content.ReadFromJsonAsync<VitalsBody>(ApiJson.Options);
 
         // Assert
@@ -102,7 +122,8 @@ public sealed class VitalsEndpointTests(AppFixture fixture)
         var created = await client.PostAsJsonAsync(
             "/vitals",
             new { visitId = seed.VisitId, temperature = 36.6m },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var saved = await created.Content.ReadFromJsonAsync<VitalsBody>(ApiJson.Options);
 
         // Act
@@ -126,7 +147,8 @@ public sealed class VitalsEndpointTests(AppFixture fixture)
         var response = await client.PostAsJsonAsync(
             "/eyesight",
             new { visitId = seed.VisitId, leftEyeDegree = "20/20" },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var detail = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -152,7 +174,8 @@ public sealed class VitalsEndpointTests(AppFixture fixture)
                 rightEyeDegree = "cf",
                 leftEyePinhole = "ni",
             },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var fetched = await client.GetAsync($"/visits/{seed.VisitId}/eyesight");
         var body = await fetched.Content.ReadFromJsonAsync<EyesightBody>(ApiJson.Options);
 
@@ -171,19 +194,35 @@ public sealed class VitalsEndpointTests(AppFixture fixture)
         var client = fixture.CreateHttpClient("api");
         await client.LoginAsync();
         var seed = await SeedVisitAsync(client);
-        var vitals = await client.PostAsJsonAsync("/vitals", new { visitId = seed.VisitId }, ApiJson.Options);
+        var vitals = await client.PostAsJsonAsync(
+            "/vitals",
+            new { visitId = seed.VisitId },
+            ApiJson.Options
+        );
         var saved = await vitals.Content.ReadFromJsonAsync<VitalsBody>(ApiJson.Options);
 
         // Act
         var denied = await client.PostAsJsonAsync(
             "/puberty",
-            new { vitalsId = saved!.Id, pubarche = false, pubarcheAge = 12 },
-            ApiJson.Options);
+            new
+            {
+                vitalsId = saved!.Id,
+                pubarche = false,
+                pubarcheAge = 12,
+            },
+            ApiJson.Options
+        );
         var detail = await denied.Content.ReadAsStringAsync();
         var created = await client.PostAsJsonAsync(
             "/puberty",
-            new { vitalsId = saved.Id, pubarche = true, pubarcheAge = 12 },
-            ApiJson.Options);
+            new
+            {
+                vitalsId = saved.Id,
+                pubarche = true,
+                pubarcheAge = 12,
+            },
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(denied.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
@@ -209,7 +248,8 @@ public sealed class VitalsEndpointTests(AppFixture fixture)
                 rightGlassesDegree = "-0.75",
                 notes = "distance",
             },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var vision = await client.GetAsync($"/vision?visitId={seed.VisitId}");
         var body = await vision.Content.ReadFromJsonAsync<VisionBody>(ApiJson.Options);
 
@@ -218,7 +258,9 @@ public sealed class VitalsEndpointTests(AppFixture fixture)
         await Assert.That(vision.StatusCode).IsEqualTo(HttpStatusCode.OK);
         await Assert.That(body!.Patient.Id).IsEqualTo(seed.PatientId);
         await Assert.That(body.Patient.Name).IsEqualTo(seed.PatientName);
-        await Assert.That(body.Patient.DisplayId).IsEqualTo($"{seed.VillageCode}{seed.PatientId:0000}");
+        await Assert
+            .That(body.Patient.DisplayId)
+            .IsEqualTo($"{seed.VillageCode}{seed.PatientId:0000}");
         await Assert.That(body.Patient.Gender).IsEqualTo(Gender.Male);
         await Assert.That(body.Vision).IsNotNull();
         await Assert.That(body.Vision!.VisitId).IsEqualTo(seed.VisitId);
@@ -241,7 +283,8 @@ public sealed class VitalsEndpointTests(AppFixture fixture)
                 colorHex = "#336699",
                 isVisible = true,
             },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var villageBody = await ReadCreatedAsync(village, "Create village code");
         var patient = await client.PostAsJsonAsync(
             "/patients",
@@ -256,21 +299,28 @@ public sealed class VitalsEndpointTests(AppFixture fixture)
                 hasSabaiCard = false,
                 villageCodeId = villageBody.GetProperty("id").GetInt32(),
             },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var patientBody = await ReadCreatedAsync(patient, "Create patient");
         return new Seed(
             patientBody.GetProperty("id").GetInt32(),
             patientBody.GetProperty("visitId").GetInt32(),
             code,
-            name);
+            name
+        );
     }
 
-    private static async Task<JsonElement> ReadCreatedAsync(HttpResponseMessage response, string action)
+    private static async Task<JsonElement> ReadCreatedAsync(
+        HttpResponseMessage response,
+        string action
+    )
     {
         if (response.StatusCode != HttpStatusCode.Created)
         {
             var error = await response.Content.ReadAsStringAsync();
-            throw new InvalidOperationException($"{action} returned {(int)response.StatusCode}: {error}");
+            throw new InvalidOperationException(
+                $"{action} returned {(int)response.StatusCode}: {error}"
+            );
         }
 
         return (await response.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options))!;
@@ -285,34 +335,43 @@ public sealed class VitalsEndpointTests(AppFixture fixture)
         decimal? Weight,
         decimal? Temperature,
         int? HeartRate,
-        string? UrineTest);
+        string? UrineTest
+    );
 
     private sealed record EyesightBody(
         int Id,
         int VisitId,
         string? LeftEyeDegree,
         string? RightEyeDegree,
-        string? LeftEyePinhole);
+        string? LeftEyePinhole
+    );
 
-    private sealed record VisionBody(VisionPatient Patient, GlassesBody? Vision, AcuityBody? Vitals);
+    private sealed record VisionBody(
+        VisionPatient Patient,
+        GlassesBody? Vision,
+        AcuityBody? Vitals
+    );
 
     private sealed record VisionPatient(
         int Id,
         string Name,
         string DisplayId,
         Gender Gender,
-        DateTimeOffset DateOfBirth);
+        DateTimeOffset DateOfBirth
+    );
 
     private sealed record GlassesBody(
         int Id,
         int VisitId,
         string? LeftGlassesDegree,
         string? RightGlassesDegree,
-        string? Notes);
+        string? Notes
+    );
 
     private sealed record AcuityBody(
         string? LeftEyeDegree,
         string? RightEyeDegree,
         string? LeftEyePinhole,
-        string? RightEyePinhole);
+        string? RightEyePinhole
+    );
 }

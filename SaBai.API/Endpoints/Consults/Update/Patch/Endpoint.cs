@@ -17,8 +17,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var consult = await db.Consults
-            .Include(x => x.Doctor)
+        var consult = await db
+            .Consults.Include(x => x.Doctor)
             .Include(x => x.Diagnoses)
             .FirstOrNotFoundAsync(x => x.Id == req.Id, "Consult was not found.", ct);
 

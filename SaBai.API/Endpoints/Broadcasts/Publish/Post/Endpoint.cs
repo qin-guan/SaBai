@@ -15,7 +15,11 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var broadcast = await db.Broadcasts.FirstOrNotFoundAsync(x => x.Id == req.Id, "Broadcast was not found.", ct);
+        var broadcast = await db.Broadcasts.FirstOrNotFoundAsync(
+            x => x.Id == req.Id,
+            "Broadcast was not found.",
+            ct
+        );
         if (broadcast.PublishedAt is null)
         {
             broadcast.PublishedAt = DateTimeOffset.UtcNow;
@@ -31,7 +35,9 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                 broadcast.CreatedBy,
                 broadcast.CreatedAt,
                 broadcast.PublishedAt,
-                broadcast.Attempts),
-            ct);
+                broadcast.Attempts
+            ),
+            ct
+        );
     }
 }

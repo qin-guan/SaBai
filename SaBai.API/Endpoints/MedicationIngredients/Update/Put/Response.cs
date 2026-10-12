@@ -6,4 +6,5 @@ public sealed record Response(
     string Name,
     string UnitOfMeasurement,
     int FallBelow,
-    string? Remarks);
+    string? Remarks
+);

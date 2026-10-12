@@ -17,17 +17,25 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var patient = await db.Patients.AsNoTracking()
+        var patient = await db
+            .Patients.AsNoTracking()
             .FirstOrNotFoundAsync(x => x.Id == req.PatientId, "Patient was not found.", ct);
-        var village = await db.VillageCodes.AsNoTracking()
-            .FirstOrNotFoundAsync(x => x.Id == req.VillageCodeId, "Village code was not found.", ct);
+        var village = await db
+            .VillageCodes.AsNoTracking()
+            .FirstOrNotFoundAsync(
+                x => x.Id == req.VillageCodeId,
+                "Village code was not found.",
+                ct
+            );
 
         var visit = new Visit
         {
             PatientId = patient.Id,
             VillageCodeId = village.Id,
             Date = req.Date ?? DateTimeOffset.UtcNow,
-            Status = string.IsNullOrWhiteSpace(req.Status) ? Visit.StartedStatus : req.Status.Trim(),
+            Status = string.IsNullOrWhiteSpace(req.Status)
+                ? Visit.StartedStatus
+                : req.Status.Trim(),
         };
         db.Visits.Add(visit);
         await db.SaveChangesAsync(ct);
@@ -43,7 +51,9 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                 village.Code,
                 village.Name,
                 village.ColorHex,
-                visit.Status),
-            cancellation: ct);
+                visit.Status
+            ),
+            cancellation: ct
+        );
     }
 }

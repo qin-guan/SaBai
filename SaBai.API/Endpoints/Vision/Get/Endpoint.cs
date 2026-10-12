@@ -22,8 +22,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             throw new BadRequestException("visitId is required and must be a positive integer.");
         }
 
-        var visit = await db.Visits
-            .AsNoTracking()
+        var visit = await db
+            .Visits.AsNoTracking()
             .Include(x => x.Patient)
             .Include(x => x.VillageCode)
             .Include(x => x.Eyesight)
@@ -37,7 +37,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                     visit.Patient.Name,
                     Patient.FormatDisplayId(visit.VillageCode.Code, visit.Patient.Id),
                     visit.Patient.Gender,
-                    visit.Patient.DateOfBirth),
+                    visit.Patient.DateOfBirth
+                ),
                 eyesight is null
                     ? null
                     : new GlassesResponse(
@@ -45,14 +46,18 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                         eyesight.VisitId,
                         eyesight.LeftPrescribedGlassesDegree,
                         eyesight.RightPrescribedGlassesDegree,
-                        eyesight.Comments),
+                        eyesight.Comments
+                    ),
                 eyesight is null
                     ? null
                     : new AcuityResponse(
                         eyesight.LeftEyeDegree,
                         eyesight.RightEyeDegree,
                         eyesight.LeftEyePinhole,
-                        eyesight.RightEyePinhole)),
-            ct);
+                        eyesight.RightEyePinhole
+                    )
+            ),
+            ct
+        );
     }
 }

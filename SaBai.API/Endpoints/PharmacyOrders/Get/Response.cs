@@ -13,7 +13,8 @@ public sealed record VisitBundle(
     int VisitId,
     DateTimeOffset VisitDate,
     IReadOnlyList<PharmacyOrderItem> Orders,
-    IReadOnlyList<DiagnosisItem> Diagnoses);
+    IReadOnlyList<DiagnosisItem> Diagnoses
+);
 
 /// <summary>A pending medication order waiting to be dispensed.</summary>
 public sealed record PharmacyOrderItem(
@@ -21,7 +22,8 @@ public sealed record PharmacyOrderItem(
     string MedicationName,
     int Quantity,
     bool IsLowStock,
-    string DosageInstructions);
+    string DosageInstructions
+);
 
 /// <summary>Diagnosis recorded on one of the visit's consults.</summary>
 public sealed record DiagnosisItem(DiagnosisCategory? Category, string Details);

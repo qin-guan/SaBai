@@ -22,7 +22,11 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             throw new BadRequestException("referralState is required.");
         }
 
-        var referral = await db.Referrals.FirstOrNotFoundAsync(x => x.Id == req.Id, "Referral was not found.", ct);
+        var referral = await db.Referrals.FirstOrNotFoundAsync(
+            x => x.Id == req.Id,
+            "Referral was not found.",
+            ct
+        );
         referral.ReferralState = state;
         if (req.ReferralOutcome is not null)
         {
@@ -31,8 +35,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
         await db.SaveChangesAsync(ct);
 
-        var updated = await db.Referrals
-            .AsNoTracking()
+        var updated = await db
+            .Referrals.AsNoTracking()
             .Where(x => x.Id == referral.Id)
             .Select(x => new Response(
                 x.Id,
@@ -46,7 +50,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                 x.Consult.DoctorId,
                 x.Consult.Visit.PatientId,
                 x.Consult.Visit.Patient.Name,
-                x.Consult.Doctor.Nickname))
+                x.Consult.Doctor.Nickname
+            ))
             .FirstAsync(ct);
 
         await Send.OkAsync(updated, ct);

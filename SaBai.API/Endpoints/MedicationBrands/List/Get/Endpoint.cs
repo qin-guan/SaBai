@@ -16,8 +16,8 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var brands = await db.MedicationBrands
-            .AsNoTracking()
+        var brands = await db
+            .MedicationBrands.AsNoTracking()
             .OrderBy(x => x.Id)
             .Select(x => new Response(x.Id, x.Name, x.ActiveIngredientId, x.Remarks))
             .ToListAsync(ct);

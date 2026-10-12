@@ -16,9 +16,11 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, List<Response>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        _ = await db.Visits.AsNoTracking().FirstOrNotFoundAsync(x => x.Id == req.VisitId, "Visit was not found.", ct);
-        var consults = await db.Consults
-            .AsNoTracking()
+        _ = await db
+            .Visits.AsNoTracking()
+            .FirstOrNotFoundAsync(x => x.Id == req.VisitId, "Visit was not found.", ct);
+        var consults = await db
+            .Consults.AsNoTracking()
             .Include(x => x.Doctor)
             .Include(x => x.Diagnoses)
             .Where(x => x.VisitId == req.VisitId)
@@ -26,6 +28,13 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, List<Response>
             .ThenByDescending(x => x.Id)
             .ToListAsync(ct);
 
-        await Send.OkAsync([.. consults.Select(global::SaBai.API.Endpoints.Consults.ListByVisit.Get.Response.From)], ct);
+        await Send.OkAsync(
+            [
+                .. consults.Select(
+                    global::SaBai.API.Endpoints.Consults.ListByVisit.Get.Response.From
+                ),
+            ],
+            ct
+        );
     }
 }

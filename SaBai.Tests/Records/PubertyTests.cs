@@ -19,8 +19,14 @@ public sealed class PubertyTests(AppFixture fixture)
         // Act
         var created = await client.PostAsJsonAsync(
             "/puberty",
-            new { vitalsId, pubarche = true, pubarcheAge = 12 },
-            ApiJson.Options);
+            new
+            {
+                vitalsId,
+                pubarche = true,
+                pubarcheAge = 12,
+            },
+            ApiJson.Options
+        );
         var fetched = await client.GetAsync($"/vitals/{vitalsId}/puberty");
         var body = await fetched.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
 
@@ -40,8 +46,14 @@ public sealed class PubertyTests(AppFixture fixture)
         // Act
         var response = await client.PostAsJsonAsync(
             "/puberty",
-            new { vitalsId = 99999999, pubarche = true, pubarcheAge = 12 },
-            ApiJson.Options);
+            new
+            {
+                vitalsId = 99999999,
+                pubarche = true,
+                pubarcheAge = 12,
+            },
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.NotFound);
@@ -57,15 +69,27 @@ public sealed class PubertyTests(AppFixture fixture)
         var vitalsId = await CreateVitalsAsync(client, visitId);
         var created = await client.PostAsJsonAsync(
             "/puberty",
-            new { vitalsId, pubarche = true, pubarcheAge = 12 },
-            ApiJson.Options);
+            new
+            {
+                vitalsId,
+                pubarche = true,
+                pubarcheAge = 12,
+            },
+            ApiJson.Options
+        );
         created.EnsureSuccessStatusCode();
 
         // Act
         var again = await client.PostAsJsonAsync(
             "/puberty",
-            new { vitalsId, pubarche = true, pubarcheAge = 13 },
-            ApiJson.Options);
+            new
+            {
+                vitalsId,
+                pubarche = true,
+                pubarcheAge = 13,
+            },
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(again.StatusCode).IsEqualTo(HttpStatusCode.Conflict);
@@ -81,16 +105,26 @@ public sealed class PubertyTests(AppFixture fixture)
         var vitalsId = await CreateVitalsAsync(client, visitId);
         var created = await client.PostAsJsonAsync(
             "/puberty",
-            new { vitalsId, pubarche = true, pubarcheAge = 12 },
-            ApiJson.Options);
+            new
+            {
+                vitalsId,
+                pubarche = true,
+                pubarcheAge = 12,
+            },
+            ApiJson.Options
+        );
         created.EnsureSuccessStatusCode();
-        var id = ClinicSetup.ReadInt(await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options), "id");
+        var id = ClinicSetup.ReadInt(
+            await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
+            "id"
+        );
 
         // Act
         var patched = await client.PatchAsJsonAsync(
             $"/puberty/{id}",
             new { pubarche = false, pubarcheAge = 10 },
-            ApiJson.Options);
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(patched.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
@@ -106,10 +140,19 @@ public sealed class PubertyTests(AppFixture fixture)
         var vitalsId = await CreateVitalsAsync(client, visitId);
         var created = await client.PostAsJsonAsync(
             "/puberty",
-            new { vitalsId, pubarche = true, pubarcheAge = 12 },
-            ApiJson.Options);
+            new
+            {
+                vitalsId,
+                pubarche = true,
+                pubarcheAge = 12,
+            },
+            ApiJson.Options
+        );
         created.EnsureSuccessStatusCode();
-        var id = ClinicSetup.ReadInt(await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options), "id");
+        var id = ClinicSetup.ReadInt(
+            await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
+            "id"
+        );
 
         // Act
         var deleted = await client.DeleteAsync($"/puberty/{id}");
@@ -130,8 +173,12 @@ public sealed class PubertyTests(AppFixture fixture)
         var response = await client.PostAsJsonAsync(
             "/vitals",
             new { visitId, temperature = 36.5m },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         response.EnsureSuccessStatusCode();
-        return ClinicSetup.ReadInt(await response.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options), "id");
+        return ClinicSetup.ReadInt(
+            await response.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
+            "id"
+        );
     }
 }

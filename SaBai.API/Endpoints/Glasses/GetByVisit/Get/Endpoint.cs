@@ -16,8 +16,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var eyesight = await db.Eyesights
-            .AsNoTracking()
+        var eyesight = await db
+            .Eyesights.AsNoTracking()
             .OrderByDescending(x => x.Id)
             .FirstOrNotFoundAsync(x => x.VisitId == req.VisitId, "Glasses were not found.", ct);
         await Send.OkAsync(Response.From(eyesight), ct);

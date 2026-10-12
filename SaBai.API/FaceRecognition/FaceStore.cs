@@ -15,7 +15,8 @@ public sealed class FaceStore(
     QdrantClient qdrant,
     FaceAnalyzer analyzer,
     IOptions<FaceRecognitionOptions> options,
-    ILogger<FaceStore> logger) : IDisposable
+    ILogger<FaceStore> logger
+) : IDisposable
 {
     private const string PersonIdField = "person_id";
     private const string CreatedAtField = "created_at";
@@ -27,12 +28,14 @@ public sealed class FaceStore(
     /// <summary>Creates the collection (sized to the recognition model) if it does not exist yet.</summary>
     public async Task InitializeAsync(CancellationToken ct)
     {
-        if (_initialized) return;
+        if (_initialized)
+            return;
 
         await _initLock.WaitAsync(ct);
         try
         {
-            if (_initialized) return;
+            if (_initialized)
+                return;
             await EnsureCollectionAsync(await analyzer.GetEmbeddingSizeAsync(ct), ct);
             _initialized = true;
         }
@@ -50,40 +53,59 @@ public sealed class FaceStore(
             var size = info.Config.Params.VectorsConfig.Params?.Size;
             if (size != (ulong)dimensions)
                 throw new InvalidOperationException(
-                    $"Qdrant collection '{_collection}' has vector size {size}, but the recognition model produces {dimensions}.");
+                    $"Qdrant collection '{_collection}' has vector size {size}, but the recognition model produces {dimensions}."
+                );
             return;
         }
 
-        logger.LogInformation("Creating Qdrant collection {Collection} ({Dimensions}-d, cosine)", _collection, dimensions);
+        logger.LogInformation(
+            "Creating Qdrant collection {Collection} ({Dimensions}-d, cosine)",
+            _collection,
+            dimensions
+        );
         await qdrant.CreateCollectionAsync(
             _collection,
             new VectorParams { Size = (ulong)dimensions, Distance = Distance.Cosine },
-            cancellationToken: ct);
-        await qdrant.CreatePayloadIndexAsync(_collection, PersonIdField, PayloadSchemaType.Keyword, cancellationToken: ct);
+            cancellationToken: ct
+        );
+        await qdrant.CreatePayloadIndexAsync(
+            _collection,
+            PersonIdField,
+            PayloadSchemaType.Keyword,
+            cancellationToken: ct
+        );
     }
 
     public async Task<StoredFace> AddAsync(string personId, float[] embedding, CancellationToken ct)
     {
         await InitializeAsync(ct);
         var face = new StoredFace(Guid.NewGuid(), personId, DateTimeOffset.UtcNow);
-        await qdrant.UpsertAsync(_collection,
-        [
-            new PointStruct
-            {
-                Id = face.FaceId,
-                Vectors = embedding,
-                Payload =
+        await qdrant.UpsertAsync(
+            _collection,
+            [
+                new PointStruct
                 {
-                    [PersonIdField] = personId,
-                    [CreatedAtField] = face.CreatedAt.ToString("O"),
+                    Id = face.FaceId,
+                    Vectors = embedding,
+                    Payload =
+                    {
+                        [PersonIdField] = personId,
+                        [CreatedAtField] = face.CreatedAt.ToString("O"),
+                    },
                 },
-            },
-        ], cancellationToken: ct);
+            ],
+            cancellationToken: ct
+        );
         return face;
     }
 
     /// <summary>Returns the best match per person, most similar first.</summary>
-    public async Task<IReadOnlyList<FaceMatch>> SearchAsync(float[] embedding, float minSimilarity, int limit, CancellationToken ct)
+    public async Task<IReadOnlyList<FaceMatch>> SearchAsync(
+        float[] embedding,
+        float minSimilarity,
+        int limit,
+        CancellationToken ct
+    )
     {
         await InitializeAsync(ct);
         // A longitudinal photo history can have far more than five references per person.
@@ -97,19 +119,36 @@ public sealed class FaceStore(
                 query: embedding,
                 limit: (ulong)candidateLimit,
                 scoreThreshold: minSimilarity,
-                payloadSelector: new WithPayloadSelector { Include = new PayloadIncludeSelector { Fields = { PersonIdField } } },
-                cancellationToken: ct);
+                payloadSelector: new WithPayloadSelector
+                {
+                    Include = new PayloadIncludeSelector { Fields = { PersonIdField } },
+                },
+                cancellationToken: ct
+            );
 
-            var matches = BestMatches(points.Select(p =>
-                new FaceMatch(Guid.Parse(p.Id.Uuid), p.Payload[PersonIdField].StringValue, p.Score)), limit);
-            if (matches.Count >= limit || points.Count < candidateLimit || candidateLimit >= maximumCandidates)
+            var matches = BestMatches(
+                points.Select(p => new FaceMatch(
+                    Guid.Parse(p.Id.Uuid),
+                    p.Payload[PersonIdField].StringValue,
+                    p.Score
+                )),
+                limit
+            );
+            if (
+                matches.Count >= limit
+                || points.Count < candidateLimit
+                || candidateLimit >= maximumCandidates
+            )
                 return matches;
 
             candidateLimit = Math.Min(candidateLimit * 2, maximumCandidates);
         }
     }
 
-    internal static IReadOnlyList<FaceMatch> BestMatches(IEnumerable<FaceMatch> matches, int limit) =>
+    internal static IReadOnlyList<FaceMatch> BestMatches(
+        IEnumerable<FaceMatch> matches,
+        int limit
+    ) =>
         matches
             .GroupBy(m => m.PersonId)
             .Select(g => g.MaxBy(m => m.Similarity)!)
@@ -124,8 +163,14 @@ public sealed class FaceStore(
         PointId? offset = null;
         do
         {
-            var page = await qdrant.ScrollAsync(_collection, MatchKeyword(PersonIdField, personId),
-                limit: 256, offset: offset, payloadSelector: true, cancellationToken: ct);
+            var page = await qdrant.ScrollAsync(
+                _collection,
+                MatchKeyword(PersonIdField, personId),
+                limit: 256,
+                offset: offset,
+                payloadSelector: true,
+                cancellationToken: ct
+            );
             faces.AddRange(page.Result.Select(p => ToStoredFace(p.Id, p.Payload)));
             offset = page.NextPageOffset;
         } while (offset is not null);
@@ -136,8 +181,14 @@ public sealed class FaceStore(
     public async Task<bool> DeleteFaceAsync(Guid faceId, CancellationToken ct)
     {
         await InitializeAsync(ct);
-        var existing = await qdrant.RetrieveAsync(_collection, faceId, withPayload: false, cancellationToken: ct);
-        if (existing.Count == 0) return false;
+        var existing = await qdrant.RetrieveAsync(
+            _collection,
+            faceId,
+            withPayload: false,
+            cancellationToken: ct
+        );
+        if (existing.Count == 0)
+            return false;
         await qdrant.DeleteAsync(_collection, faceId, cancellationToken: ct);
         return true;
     }
@@ -146,15 +197,23 @@ public sealed class FaceStore(
     {
         await InitializeAsync(ct);
         var filter = MatchKeyword(PersonIdField, personId);
-        var count = await qdrant.CountAsync(_collection, filter, exact: true, cancellationToken: ct);
-        if (count > 0) await qdrant.DeleteAsync(_collection, filter, cancellationToken: ct);
+        var count = await qdrant.CountAsync(
+            _collection,
+            filter,
+            exact: true,
+            cancellationToken: ct
+        );
+        if (count > 0)
+            await qdrant.DeleteAsync(_collection, filter, cancellationToken: ct);
         return count;
     }
 
-    private static StoredFace ToStoredFace(PointId id, MapField<string, Value> payload) => new(
-        Guid.Parse(id.Uuid),
-        payload[PersonIdField].StringValue,
-        DateTimeOffset.Parse(payload[CreatedAtField].StringValue));
+    private static StoredFace ToStoredFace(PointId id, MapField<string, Value> payload) =>
+        new(
+            Guid.Parse(id.Uuid),
+            payload[PersonIdField].StringValue,
+            DateTimeOffset.Parse(payload[CreatedAtField].StringValue)
+        );
 
     public void Dispose() => _initLock.Dispose();
 }

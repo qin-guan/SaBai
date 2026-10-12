@@ -11,7 +11,8 @@ namespace SaBai.API.FaceRecognition;
 public sealed class FaceAnalyzer(
     FaceModelProvisioner provisioner,
     IOptions<FaceRecognitionOptions> options,
-    ILogger<FaceAnalyzer> logger) : IDisposable
+    ILogger<FaceAnalyzer> logger
+) : IDisposable
 {
     private readonly FaceRecognitionOptions _options = options.Value;
     private readonly SemaphoreSlim _initLock = new(1, 1);
@@ -22,7 +23,8 @@ public sealed class FaceAnalyzer(
     public bool IsReady => _models is not null;
 
     /// <summary>Embedding dimensionality of the loaded recognition model.</summary>
-    public async Task<int> GetEmbeddingSizeAsync(CancellationToken ct) => (await GetModelsAsync(ct)).Embedder.Dimensions;
+    public async Task<int> GetEmbeddingSizeAsync(CancellationToken ct) =>
+        (await GetModelsAsync(ct)).Embedder.Dimensions;
 
     public async Task<IReadOnlyList<DetectedFace>> DetectAsync(RgbImage image, CancellationToken ct)
     {
@@ -30,31 +32,41 @@ public sealed class FaceAnalyzer(
         return BestEffortFaceDetection.Detect(image, _options, models.Detector.Detect, ct);
     }
 
-    public async Task<IReadOnlyList<AnalyzedFace>> AnalyzeAsync(RgbImage image, CancellationToken ct)
+    public async Task<IReadOnlyList<AnalyzedFace>> AnalyzeAsync(
+        RgbImage image,
+        CancellationToken ct
+    )
     {
         var models = await GetModelsAsync(ct);
         var faces = BestEffortFaceDetection.Detect(image, _options, models.Detector.Detect, ct);
         faces = faces.Where(f => FaceQuality.IsSuitable(f, _options)).ToList();
         var aligned = faces.Select(f => FaceAligner.Align(image, f.Landmarks)).ToList();
         var embeddings = models.Embedder.Embed(aligned);
-        return faces.Zip(embeddings, (face, embedding) => new AnalyzedFace(face, embedding)).ToList();
+        return faces
+            .Zip(embeddings, (face, embedding) => new AnalyzedFace(face, embedding))
+            .ToList();
     }
 
     public Task WarmUpAsync(CancellationToken ct) => GetModelsAsync(ct);
 
     private async Task<Models> GetModelsAsync(CancellationToken ct)
     {
-        if (_models is { } loaded) return loaded;
+        if (_models is { } loaded)
+            return loaded;
 
         await _initLock.WaitAsync(ct);
         try
         {
-            if (_models is not null) return _models;
+            if (_models is not null)
+                return _models;
 
             await provisioner.EnsureModelsAsync(ct);
             var detector = new ScrfdFaceDetector(CreateSession(provisioner.DetectorPath));
             var embedder = new ArcFaceEmbedder(CreateSession(provisioner.RecognizerPath));
-            logger.LogInformation("Face models loaded ({Dimensions}-d embeddings)", embedder.Dimensions);
+            logger.LogInformation(
+                "Face models loaded ({Dimensions}-d embeddings)",
+                embedder.Dimensions
+            );
             return _models = new Models(detector, embedder);
         }
         finally
@@ -65,7 +77,10 @@ public sealed class FaceAnalyzer(
 
     private InferenceSession CreateSession(string path)
     {
-        var sessionOptions = new SessionOptions { GraphOptimizationLevel = GraphOptimizationLevel.ORT_ENABLE_ALL };
+        var sessionOptions = new SessionOptions
+        {
+            GraphOptimizationLevel = GraphOptimizationLevel.ORT_ENABLE_ALL,
+        };
         if (_options.UseCuda)
         {
             try

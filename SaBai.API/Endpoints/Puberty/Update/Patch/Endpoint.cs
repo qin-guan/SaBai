@@ -15,7 +15,11 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var entity = await db.PubertyAssessments.FirstOrNotFoundAsync(x => x.Id == req.Id, "Puberty assessment was not found.", ct);
+        var entity = await db.PubertyAssessments.FirstOrNotFoundAsync(
+            x => x.Id == req.Id,
+            "Puberty assessment was not found.",
+            ct
+        );
 
         PubertyRules.EnsureAges(
             req.Pubarche,
@@ -27,7 +31,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             req.VoiceChange,
             req.VoiceChangeAge,
             req.TesticularGrowth,
-            req.TesticularGrowthAge);
+            req.TesticularGrowthAge
+        );
 
         if (req.Pubarche is { } pubarche)
         {

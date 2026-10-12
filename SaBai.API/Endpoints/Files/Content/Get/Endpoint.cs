@@ -8,7 +8,8 @@ using SaBai.API.Storage;
 
 namespace SaBai.API.Endpoints.Files.Content.Get;
 
-public sealed class Endpoint(AppDbContext db, IAmazonS3 s3, RustFsSettings storage) : Endpoint<Request>
+public sealed class Endpoint(AppDbContext db, IAmazonS3 s3, RustFsSettings storage)
+    : Endpoint<Request>
 {
     public override void Configure()
     {
@@ -19,16 +20,18 @@ public sealed class Endpoint(AppDbContext db, IAmazonS3 s3, RustFsSettings stora
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var file = await db.ClinicalFiles
-            .FirstOrNotFoundAsync(x => x.Id == req.Id && !x.IsDeleted, "File was not found.", ct);
+        var file = await db.ClinicalFiles.FirstOrNotFoundAsync(
+            x => x.Id == req.Id && !x.IsDeleted,
+            "File was not found.",
+            ct
+        );
 
         try
         {
-            var obj = await s3.GetObjectAsync(new GetObjectRequest
-            {
-                BucketName = storage.Bucket,
-                Key = file.StoredFileName,
-            }, ct);
+            var obj = await s3.GetObjectAsync(
+                new GetObjectRequest { BucketName = storage.Bucket, Key = file.StoredFileName },
+                ct
+            );
 
             await Send.StreamAsync(
                 obj.ResponseStream,
@@ -40,7 +43,8 @@ public sealed class Endpoint(AppDbContext db, IAmazonS3 s3, RustFsSettings stora
                 cancellation: ct
             );
         }
-        catch (AmazonS3Exception exception) when (exception.StatusCode == System.Net.HttpStatusCode.NotFound)
+        catch (AmazonS3Exception exception)
+            when (exception.StatusCode == System.Net.HttpStatusCode.NotFound)
         {
             throw new NotFoundException("File content was not found.");
         }

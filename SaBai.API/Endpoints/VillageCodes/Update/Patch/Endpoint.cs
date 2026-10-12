@@ -17,7 +17,11 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var village = await db.VillageCodes.FirstOrNotFoundAsync(x => x.Id == req.Id, "Village code was not found.", ct);
+        var village = await db.VillageCodes.FirstOrNotFoundAsync(
+            x => x.Id == req.Id,
+            "Village code was not found.",
+            ct
+        );
 
         if (req.Code is not null)
         {
@@ -49,7 +53,16 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
         await db.SaveChangesAsync(ct);
 
         await Send.OkAsync(
-            new Response(village.Id, village.Code, village.Name, village.ColorHex, village.IsVisible, village.CreatedAt, village.UpdatedAt),
-            ct);
+            new Response(
+                village.Id,
+                village.Code,
+                village.Name,
+                village.ColorHex,
+                village.IsVisible,
+                village.CreatedAt,
+                village.UpdatedAt
+            ),
+            ct
+        );
     }
 }

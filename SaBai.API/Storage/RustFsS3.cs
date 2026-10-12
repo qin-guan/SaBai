@@ -8,8 +8,11 @@ public static class RustFsS3
 {
     public static RustFsSettings Read(IConfiguration configuration)
     {
-        var settings = configuration.GetSection(RustFsSettings.SectionName).Get<RustFsSettings>() ?? new RustFsSettings();
-        var connectionString = configuration.GetConnectionString("fs-sabai")
+        var settings =
+            configuration.GetSection(RustFsSettings.SectionName).Get<RustFsSettings>()
+            ?? new RustFsSettings();
+        var connectionString =
+            configuration.GetConnectionString("fs-sabai")
             ?? configuration.GetConnectionString("fs");
 
         if (string.IsNullOrWhiteSpace(connectionString))
@@ -27,28 +30,40 @@ public static class RustFsS3
 
     public static IAmazonS3 CreateClient(RustFsSettings settings)
     {
-        if (string.IsNullOrWhiteSpace(settings.Endpoint)
+        if (
+            string.IsNullOrWhiteSpace(settings.Endpoint)
             || string.IsNullOrWhiteSpace(settings.AccessKey)
-            || string.IsNullOrWhiteSpace(settings.SecretKey))
+            || string.IsNullOrWhiteSpace(settings.SecretKey)
+        )
         {
             throw new InvalidOperationException(
-                "RustFS connection string 'fs-sabai' is missing Endpoint, AccessKey, or SecretKey.");
+                "RustFS connection string 'fs-sabai' is missing Endpoint, AccessKey, or SecretKey."
+            );
         }
 
         var config = new AmazonS3Config
         {
             ServiceURL = settings.Endpoint,
             ForcePathStyle = true,
-            AuthenticationRegion = string.IsNullOrWhiteSpace(settings.Region) ? "us-east-1" : settings.Region,
+            AuthenticationRegion = string.IsNullOrWhiteSpace(settings.Region)
+                ? "us-east-1"
+                : settings.Region,
             UseHttp = settings.Endpoint.StartsWith("http://", StringComparison.OrdinalIgnoreCase),
             RequestChecksumCalculation = RequestChecksumCalculation.WHEN_REQUIRED,
             ResponseChecksumValidation = ResponseChecksumValidation.WHEN_REQUIRED,
         };
 
-        return new AmazonS3Client(new BasicAWSCredentials(settings.AccessKey, settings.SecretKey), config);
+        return new AmazonS3Client(
+            new BasicAWSCredentials(settings.AccessKey, settings.SecretKey),
+            config
+        );
     }
 
-    public static async Task EnsureBucketAsync(IAmazonS3 s3, RustFsSettings settings, CancellationToken cancellationToken)
+    public static async Task EnsureBucketAsync(
+        IAmazonS3 s3,
+        RustFsSettings settings,
+        CancellationToken cancellationToken
+    )
     {
         for (var attempt = 1; ; attempt++)
         {
@@ -57,7 +72,8 @@ public static class RustFsS3
                 await s3.PutBucketAsync(settings.Bucket, cancellationToken);
                 return;
             }
-            catch (AmazonS3Exception exception) when (exception.ErrorCode is "BucketAlreadyOwnedByYou" or "BucketAlreadyExists")
+            catch (AmazonS3Exception exception)
+                when (exception.ErrorCode is "BucketAlreadyOwnedByYou" or "BucketAlreadyExists")
             {
                 return;
             }

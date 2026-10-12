@@ -33,8 +33,14 @@ internal static class BareConstOpenApiCleanup
     private const string FlagBackingFieldName = "<" + FlagPropertyName + ">k__BackingField";
 
     private static readonly FieldInfo? FlagField =
-        typeof(OpenApiSchema).GetField(FlagBackingFieldName, BindingFlags.Instance | BindingFlags.NonPublic) ??
-        typeof(OpenApiSchema).GetField(FlagPropertyName, BindingFlags.Instance | BindingFlags.NonPublic);
+        typeof(OpenApiSchema).GetField(
+            FlagBackingFieldName,
+            BindingFlags.Instance | BindingFlags.NonPublic
+        )
+        ?? typeof(OpenApiSchema).GetField(
+            FlagPropertyName,
+            BindingFlags.Instance | BindingFlags.NonPublic
+        );
 
     /// <summary>Registers the cleanup transformer on the OpenAPI options.</summary>
     public static void Register(OpenApiOptions options)
@@ -44,18 +50,20 @@ internal static class BareConstOpenApiCleanup
         if (FlagField is null)
             return;
 
-        options.AddDocumentTransformer((document, _, _) =>
-        {
-            if (document.Components?.Schemas is { } schemas)
+        options.AddDocumentTransformer(
+            (document, _, _) =>
             {
-                var visited = new HashSet<IOpenApiSchema>(ReferenceComparer.Instance);
+                if (document.Components?.Schemas is { } schemas)
+                {
+                    var visited = new HashSet<IOpenApiSchema>(ReferenceComparer.Instance);
 
-                foreach (var schema in schemas.Values)
-                    ClearBareConst(schema, visited);
+                    foreach (var schema in schemas.Values)
+                        ClearBareConst(schema, visited);
+                }
+
+                return Task.CompletedTask;
             }
-
-            return Task.CompletedTask;
-        });
+        );
     }
 
     private static void ClearBareConst(IOpenApiSchema? schema, HashSet<IOpenApiSchema> visited)
@@ -100,6 +108,7 @@ internal static class BareConstOpenApiCleanup
 
         public bool Equals(IOpenApiSchema? x, IOpenApiSchema? y) => ReferenceEquals(x, y);
 
-        public int GetHashCode(IOpenApiSchema obj) => System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(obj);
+        public int GetHashCode(IOpenApiSchema obj) =>
+            System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(obj);
     }
 }

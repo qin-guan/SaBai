@@ -17,12 +17,23 @@ public sealed class VisitTests(AppFixture fixture)
         var client = fixture.CreateHttpClient("api");
         await client.LoginAsync();
         var code = ClinicSamples.Code();
-        var village = await ClinicSamples.CreateVillageAsync(client, code, colorHex: "#778899", name: $"Seen {code}");
+        var village = await ClinicSamples.CreateVillageAsync(
+            client,
+            code,
+            colorHex: "#778899",
+            name: $"Seen {code}"
+        );
         var patient = await ClinicSamples.RegisterAsync(client, village.Id, $"Visited {code}");
 
         // Act
-        var listed = await client.GetFromJsonAsync<VisitListResponse>($"/visits?patientId={patient.Id}", ApiJson.Options);
-        var byPatient = await client.GetFromJsonAsync<PatientVisitsResponse>($"/patients/{patient.Id}/visits", ApiJson.Options);
+        var listed = await client.GetFromJsonAsync<VisitListResponse>(
+            $"/visits?patientId={patient.Id}",
+            ApiJson.Options
+        );
+        var byPatient = await client.GetFromJsonAsync<PatientVisitsResponse>(
+            $"/patients/{patient.Id}/visits",
+            ApiJson.Options
+        );
         var visit = listed!.Visits.Single(x => x.Id == patient.VisitId);
         var nested = byPatient!.Visits.Single(x => x.Id == patient.VisitId);
 
@@ -45,7 +56,12 @@ public sealed class VisitTests(AppFixture fixture)
         await client.LoginAsync();
         var code = ClinicSamples.Code();
         var village = await ClinicSamples.CreateVillageAsync(client, code);
-        var patient = await ClinicSamples.RegisterAsync(client, village.Id, $"Closable {code}", withVitals: true);
+        var patient = await ClinicSamples.RegisterAsync(
+            client,
+            village.Id,
+            $"Closable {code}",
+            withVitals: true
+        );
 
         // Act
         var deleted = await client.DeleteAsync($"/visits/{patient.VisitId}");

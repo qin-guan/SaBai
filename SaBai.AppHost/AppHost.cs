@@ -5,7 +5,20 @@ using Projects;
 var builder = DistributedApplication.CreateBuilder(args);
 
 var qdrant = builder.AddQdrant("qdrant").WithDataVolume();
-var postgres = builder.AddPostgres("postgres").WithDataVolume().WithPgAdmin();
+var postgres = builder.AddPostgres("postgres").WithDataVolume().WithPgAdmin(pgAdmin =>
+{
+    if (builder.ExecutionContext.IsPublishMode)
+    {
+        // WithPgAdmin excludes this development tool from publishing by default.
+        pgAdmin.PublishAsContainer()
+            .PublishAsDockerComposeService((_, service) =>
+            {
+                service.Name = "pgadmin";
+                // Aspire's pgAdmin configuration disables authentication.
+                service.Ports = ["5050:5050"];
+            });
+    }
+});
 var db = postgres.AddDatabase("sabai");
 
 var rustFsAccessKey = builder.AddParameter("rustFsAccessKey", "rustfsadmin");
@@ -66,12 +79,13 @@ if (builder.ExecutionContext.IsPublishMode)
         .WaitFor(api);
 
     builder.AddDockerComposeEnvironment("compose")
-        .WithProperties(env => { env.DashboardEnabled = true; });
+        .WithProperties(env => { env.DashboardEnabled = true; })
+        .WithDashboard(dashboard => dashboard.WithHostPort(18888));
 
     qdrant.PublishAsDockerComposeService((_, service) =>
     {
         service.Name = "qdrant";
-        service.Ports = ["9000:9000"];
+        service.Ports = ["6333:6333", "6334:6334"];
     });
 
     postgres.PublishAsDockerComposeService((_, service) =>

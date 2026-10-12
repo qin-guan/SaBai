@@ -2,7 +2,7 @@ services:
   compose-dashboard:
     image: "mcr.microsoft.com/dotnet/nightly/aspire-dashboard:13.6"
     ports:
-      - "18888"
+      - "18888:18888"
     expose:
       - "18889"
       - "18890"
@@ -15,7 +15,8 @@ services:
       QDRANT__SERVICE__API_KEY: "${QDRANT_KEY}"
       QDRANT__SERVICE__ENABLE_STATIC_CONTENT: "0"
     ports:
-      - "9000:9000"
+      - "6333:6333"
+      - "6334:6334"
     expose:
       - "6334"
       - "6333"
@@ -43,6 +44,23 @@ services:
         read_only: false
     networks:
       - "aspire"
+  pgadmin:
+    image: "docker.io/dpage/pgadmin4:9.15.0"
+    environment:
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_DEFAULT_EMAIL: "admin@domain.com"
+      PGADMIN_DEFAULT_PASSWORD: "admin"
+    ports:
+      - "5050:5050"
+    expose:
+      - "80"
+    networks:
+      - "aspire"
+    configs:
+      - source: "pgadmin__pgadmin4_servers.json"
+        target: "/pgadmin4/servers.json"
+        mode: 0644
   fs:
     image: "rustfs/rustfs:latest"
     environment:
@@ -148,3 +166,6 @@ volumes:
     driver: "local"
   fs-logs:
     driver: "local"
+configs:
+  pgadmin__pgadmin4_servers.json:
+    content: "{\n  \"Servers\": {\n    \"1\": {\n      \"Name\": \"postgres\",\n      \"Group\": \"Servers\",\n      \"Host\": \"postgres\",\n      \"Port\": 5432,\n      \"Username\": \"postgres\",\n      \"SSLMode\": \"prefer\",\n      \"MaintenanceDB\": \"postgres\",\n      \"PasswordExecCommand\": \"echo \\u0027~y(9Sy3QdYYT~)BUKrc9*)\\u0027\"\n    }\n  }\n}"

@@ -1,3 +1,4 @@
+using Aspire.Hosting.Docker.Resources.ServiceNodes;
 using Projects;
 
 var builder = DistributedApplication.CreateBuilder(args);
@@ -35,7 +36,7 @@ var api = builder.AddProject<SaBai_API>("api")
     .WithHttpHealthCheck("/health");
 
 var useFakeWorkOs = !builder.ExecutionContext.IsPublishMode
-    && builder.Configuration["WorkOS:UseFake"] is "true" or "1";
+                    && builder.Configuration["WorkOS:UseFake"] is "true" or "1";
 api.WithEnvironment("WorkOS__UseFake", useFakeWorkOs ? "true" : "false");
 if (!useFakeWorkOs)
 {
@@ -52,15 +53,52 @@ var frontend = builder.AddNextJsApp("frontend", "../SaBai.Web")
 if (builder.ExecutionContext.IsPublishMode)
 {
     builder.AddDockerComposeEnvironment("compose")
-        .WithProperties(env => { env.DashboardEnabled = true; });
-    qdrant.PublishAsDockerComposeService((_, service) => { service.Name = "qdrant"; });
+        .WithProperties(env =>
+        {
+            env.DashboardEnabled = true;
+        });
+
+    qdrant.PublishAsDockerComposeService((_, service) =>
+    {
+        service.Name = "qdrant";
+        service.Ports = ["9000:9000"];
+    });
+
     postgres.PublishAsDockerComposeService((_, service) =>
     {
         service.Name = "postgres";
         service.AddEnvironmentalVariable("POSTGRES_DB", "sabai");
     });
-    rustFs.PublishAsDockerComposeService((_, service) => { service.Name = "fs"; });
-    api.PublishAsDockerComposeService((_, service) => { service.Name = "api"; });
+
+    rustFs.PublishAsDockerComposeService((_, service) =>
+    {
+        service.Name = "fs";
+        service.Ports = ["9001:9001"];
+    });
+
+    api.PublishAsDockerComposeService((_, service) =>
+    {
+        service.Name = "api";
+        service.Image = null;
+        service.Ports = ["8080:8080"];
+        service.Build = new Build
+        {
+            Context = ".",
+            Dockerfile = "Sabai.API/Dockerfile",
+        };
+    });
+
+    frontend.PublishAsDockerComposeService((_, service) =>
+    {
+        service.Name = "frontend";
+        service.Image = null;
+        service.Ports = ["3000:3000"];
+        service.Build = new Build
+        {
+            Context = ".",
+            Dockerfile = "./SaBai.AppHost/aspire-output/frontend.Dockerfile",
+        };
+    });
 }
 
 builder.Build().Run();

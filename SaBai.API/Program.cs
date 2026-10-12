@@ -35,7 +35,8 @@ builder.Services.Configure<WorkOsSettings>(builder.Configuration.GetSection(Work
 builder.Services.Configure<AuthSettings>(builder.Configuration.GetSection(AuthSettings.SectionName));
 
 builder.Services.AddSingleton(sp => RustFsS3.Read(sp.GetRequiredService<IConfiguration>()));
-builder.Services.AddSingleton<Amazon.S3.IAmazonS3>(sp => RustFsS3.CreateClient(sp.GetRequiredService<RustFsSettings>()));
+builder.Services.AddSingleton<Amazon.S3.IAmazonS3>(sp =>
+    RustFsS3.CreateClient(sp.GetRequiredService<RustFsSettings>()));
 
 var auth = builder.Configuration.GetSection(AuthSettings.SectionName).Get<AuthSettings>() ?? new AuthSettings();
 var workOs = builder.Configuration.GetSection(WorkOsSettings.SectionName).Get<WorkOsSettings>() ?? new WorkOsSettings();
@@ -52,7 +53,8 @@ else
 {
     if (string.IsNullOrWhiteSpace(workOs.ApiKey) || string.IsNullOrWhiteSpace(workOs.ClientId))
     {
-        throw new InvalidOperationException("WorkOS:ApiKey and WorkOS:ClientId are required when WorkOS:UseFake is false.");
+        throw new InvalidOperationException(
+            "WorkOS:ApiKey and WorkOS:ClientId are required when WorkOS:UseFake is false.");
     }
 
     builder.Services.AddSingleton<IWorkOsDirectory, WorkOsDirectory>();
@@ -67,7 +69,7 @@ builder.Services
 // environment; the local Next.js dev server is allowed by default.
 const string webCorsPolicy = "web";
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
-    ?? ["http://localhost:3000"];
+                     ?? ["http://localhost:3000"];
 builder.Services.AddCors(options => options.AddPolicy(
     webCorsPolicy,
     policy => policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod()));
@@ -80,8 +82,10 @@ var app = builder.Build();
 var storage = app.Services.GetRequiredService<RustFsSettings>();
 if (!string.IsNullOrWhiteSpace(storage.Endpoint))
 {
-    await RustFsS3.EnsureBucketAsync(app.Services.GetRequiredService<Amazon.S3.IAmazonS3>(), storage, CancellationToken.None);
+    await RustFsS3.EnsureBucketAsync(app.Services.GetRequiredService<Amazon.S3.IAmazonS3>(), storage,
+        CancellationToken.None);
 }
+
 app.Logger.LogInformation(
     "WorkOS UseFake={UseFake}; ClientId is {ClientIdState}; ApiKey is {ApiKeyState}",
     workOs.UseFake,
@@ -90,18 +94,18 @@ app.Logger.LogInformation(
 
 app.UseExceptionHandler();
 
-if (app.Environment.IsDevelopment())
-{
-    await using var scope = app.Services.CreateAsyncScope();
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await db.Database.MigrateAsync();
-    if (workOs.UseFake)
-    {
-        await AuthSeeder.EnsureAsync(db, scope.ServiceProvider.GetRequiredService<FakeWorkOsDirectory>(), CancellationToken.None);
-    }
+await using var scope = app.Services.CreateAsyncScope();
+var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+await db.Database.EnsureCreatedAsync();
+await db.Database.MigrateAsync();
 
-    app.MapOpenApi();
+if (workOs.UseFake)
+{
+    await AuthSeeder.EnsureAsync(db, scope.ServiceProvider.GetRequiredService<FakeWorkOsDirectory>(),
+        CancellationToken.None);
 }
+
+app.MapOpenApi();
 
 app.MapDefaultEndpoints();
 app.MapScalarApiReference(options =>

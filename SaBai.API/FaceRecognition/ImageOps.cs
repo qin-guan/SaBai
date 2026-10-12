@@ -78,6 +78,16 @@ internal static class ImageOps
             return output;
         }
 
+        return ResizeBilinear(image, width, height);
+    }
+
+    /// <summary>Half-pixel bilinear resize, including when shrinking, as used by the SCRFD reference pipeline.</summary>
+    public static RgbImage ResizeBilinear(RgbImage image, int width, int height)
+    {
+        if (width == image.Width && height == image.Height) return image;
+        var output = new RgbImage(width, height);
+        var scaleX = (float)image.Width / width;
+        var scaleY = (float)image.Height / height;
         for (var y = 0; y < height; y++)
         {
             var sy = Math.Clamp((y + 0.5f) * scaleY - 0.5f, 0, image.Height - 1);
@@ -89,5 +99,46 @@ internal static class ImageOps
         }
 
         return output;
+    }
+
+    /// <summary>Lift shadows for detection only, retaining RGB ratios and limiting noise amplification.</summary>
+    public static RgbImage BrightenShadows(RgbImage image)
+    {
+        var output = new RgbImage(image.Width, image.Height);
+        for (var i = 0; i < image.Pixels.Length; i += 3)
+        {
+            var luminance = (0.2126 * image.Pixels[i] + 0.7152 * image.Pixels[i + 1] +
+                0.0722 * image.Pixels[i + 2]) / 255;
+            var gain = luminance > 0 ? Math.Min(3, Math.Pow(luminance, -0.35)) : 1;
+            for (var c = 0; c < 3; c++)
+                output.Pixels[i + c] = (byte)Math.Clamp(Math.Round(image.Pixels[i + c] * gain), 0, 255);
+        }
+
+        return output;
+    }
+
+    /// <summary>Rotate on an expanded canvas. The returned transform maps original to rotated coordinates.</summary>
+    public static (RgbImage Image, SimilarityTransform Transform) Rotate(RgbImage image, double degrees)
+    {
+        var angle = degrees * Math.PI / 180;
+        var a = Math.Cos(angle);
+        var b = Math.Sin(angle);
+        var width = (int)Math.Ceiling(Math.Abs(a) * (image.Width - 1) + Math.Abs(b) * (image.Height - 1)) + 1;
+        var height = (int)Math.Ceiling(Math.Abs(b) * (image.Width - 1) + Math.Abs(a) * (image.Height - 1)) + 1;
+        var cx = (image.Width - 1) / 2.0;
+        var cy = (image.Height - 1) / 2.0;
+        var transform = new SimilarityTransform(a, b,
+            (width - 1) / 2.0 - a * cx + b * cy,
+            (height - 1) / 2.0 - b * cx - a * cy);
+        var inverse = transform.Inverse();
+        var output = new RgbImage(width, height);
+        for (var y = 0; y < height; y++)
+        for (var x = 0; x < width; x++)
+        {
+            var (sx, sy) = inverse.Apply(x, y);
+            SampleBilinear(image, sx, sy, output.Pixels.AsSpan((y * width + x) * 3, 3));
+        }
+
+        return (output, transform);
     }
 }

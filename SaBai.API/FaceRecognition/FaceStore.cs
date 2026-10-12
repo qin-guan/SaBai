@@ -86,23 +86,36 @@ public sealed class FaceStore(
     public async Task<IReadOnlyList<FaceMatch>> SearchAsync(float[] embedding, float minSimilarity, int limit, CancellationToken ct)
     {
         await InitializeAsync(ct);
-        // Over-fetch so several enrolled faces of the same person don't crowd out other people.
-        var points = await qdrant.QueryAsync(
-            _collection,
-            query: embedding,
-            limit: (ulong)(limit * 5),
-            scoreThreshold: minSimilarity,
-            payloadSelector: new WithPayloadSelector { Include = new PayloadIncludeSelector { Fields = { PersonIdField } } },
-            cancellationToken: ct);
+        // A longitudinal photo history can have far more than five references per person.
+        // Expand retrieval only when duplicate identities crowd out requested candidates.
+        const int maximumCandidates = 4096;
+        var candidateLimit = Math.Clamp((long)limit * 5, 5, maximumCandidates);
+        while (true)
+        {
+            var points = await qdrant.QueryAsync(
+                _collection,
+                query: embedding,
+                limit: (ulong)candidateLimit,
+                scoreThreshold: minSimilarity,
+                payloadSelector: new WithPayloadSelector { Include = new PayloadIncludeSelector { Fields = { PersonIdField } } },
+                cancellationToken: ct);
 
-        return points
-            .Select(p => new FaceMatch(Guid.Parse(p.Id.Uuid), p.Payload[PersonIdField].StringValue, p.Score))
+            var matches = BestMatches(points.Select(p =>
+                new FaceMatch(Guid.Parse(p.Id.Uuid), p.Payload[PersonIdField].StringValue, p.Score)), limit);
+            if (matches.Count >= limit || points.Count < candidateLimit || candidateLimit >= maximumCandidates)
+                return matches;
+
+            candidateLimit = Math.Min(candidateLimit * 2, maximumCandidates);
+        }
+    }
+
+    internal static IReadOnlyList<FaceMatch> BestMatches(IEnumerable<FaceMatch> matches, int limit) =>
+        matches
             .GroupBy(m => m.PersonId)
             .Select(g => g.MaxBy(m => m.Similarity)!)
             .OrderByDescending(m => m.Similarity)
             .Take(limit)
             .ToList();
-    }
 
     public async Task<IReadOnlyList<StoredFace>> ListAsync(string personId, CancellationToken ct)
     {

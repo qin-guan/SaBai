@@ -27,13 +27,13 @@ public sealed class FaceAnalyzer(
     public async Task<IReadOnlyList<DetectedFace>> DetectAsync(RgbImage image, CancellationToken ct)
     {
         var models = await GetModelsAsync(ct);
-        return models.Detector.Detect(image, _options.DetectionSize, _options.DetectionThreshold, _options.NmsThreshold);
+        return BestEffortFaceDetection.Detect(image, _options, models.Detector.Detect, ct);
     }
 
     public async Task<IReadOnlyList<AnalyzedFace>> AnalyzeAsync(RgbImage image, CancellationToken ct)
     {
         var models = await GetModelsAsync(ct);
-        var faces = models.Detector.Detect(image, _options.DetectionSize, _options.DetectionThreshold, _options.NmsThreshold);
+        var faces = BestEffortFaceDetection.Detect(image, _options, models.Detector.Detect, ct);
         faces = faces.Where(f => FaceQuality.IsSuitable(f, _options)).ToList();
         var aligned = faces.Select(f => FaceAligner.Align(image, f.Landmarks)).ToList();
         var embeddings = models.Embedder.Embed(aligned);

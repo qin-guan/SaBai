@@ -32,7 +32,7 @@ public sealed class Endpoint(AppDbContext db, FaceAnalyzer analyzer, FaceStore s
         var face = FaceImages.Largest(faces);
         if (face is null)
         {
-            ThrowError(r => r.Image, "No face detected.", StatusCodes.Status422UnprocessableEntity);
+            ThrowError(r => r.Image, "No usable face detected. Use a closer, sharp, well-lit photo.", StatusCodes.Status422UnprocessableEntity);
         }
 
         var stored = await store.AddAsync(PatientFaceIdentity.ForPatient(patient.Id), face.Embedding, ct);

@@ -31,54 +31,54 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
     private async Task<Consult> InsertConsultAsync(Request req, Guid doctorId, CancellationToken ct)
     {
         _ = await db.Visits.FirstOrNotFoundAsync(x => x.Id == req.VisitId, "Visit was not found.", ct);
-            if (req.Diagnoses is not { Count: > 0 })
+        if (req.Diagnoses is not { Count: > 0 })
+        {
+            throw new BadRequestException("At least one diagnosis is required.");
+        }
+
+        await EnsureOrdersAsync(req, ct);
+
+        var now = DateTimeOffset.UtcNow;
+        var consult = new Consult
+        {
+            Date = now,
+            PastMedicalHistory = req.PastMedicalHistory,
+            Consultation = req.Consultation,
+            TreatmentPlan = req.TreatmentPlan,
+            ReferredFor = req.ReferredFor,
+            ReferralNotes = req.ReferralNotes,
+            Remarks = req.Remarks,
+            DoctorId = doctorId,
+            VisitId = req.VisitId,
+        };
+
+        foreach (var diagnosis in req.Diagnoses)
+        {
+            var details = diagnosis.Details.Trim();
+            if (details.Length == 0)
             {
-                throw new BadRequestException("At least one diagnosis is required.");
+                throw new BadRequestException("Diagnosis details are required.");
             }
 
-            await EnsureOrdersAsync(req, ct);
-
-            var now = DateTimeOffset.UtcNow;
-            var consult = new Consult
+            consult.Diagnoses.Add(new Diagnosis
             {
-                Date = now,
-                PastMedicalHistory = req.PastMedicalHistory,
-                Consultation = req.Consultation,
-                TreatmentPlan = req.TreatmentPlan,
-                ReferredFor = req.ReferredFor,
-                ReferralNotes = req.ReferralNotes,
-                Remarks = req.Remarks,
-                DoctorId = doctorId,
-                VisitId = req.VisitId,
-            };
+                Details = details,
+                Category = diagnosis.Category,
+            });
+        }
 
-            foreach (var diagnosis in req.Diagnoses)
+        foreach (var order in req.Orders ?? [])
+        {
+            consult.Orders.Add(new SaBai.API.Domain.Order
             {
-                var details = diagnosis.Details.Trim();
-                if (details.Length == 0)
-                {
-                    throw new BadRequestException("Diagnosis details are required.");
-                }
-
-                consult.Diagnoses.Add(new Diagnosis
-                {
-                    Details = details,
-                    Category = diagnosis.Category,
-                });
-            }
-
-            foreach (var order in req.Orders ?? [])
-            {
-                consult.Orders.Add(new SaBai.API.Domain.Order
-                {
-                    MedicationBrandId = order.MedicationBrandId,
-                    DosageInstructions = order.DosageInstructions ?? "",
-                    Remarks = order.Remarks,
-                    Status = OrderStatus.Pending,
-                    Quantity = order.Quantity,
-                    CreatedAt = now,
-                });
-            }
+                MedicationBrandId = order.MedicationBrandId,
+                DosageInstructions = order.DosageInstructions ?? "",
+                Remarks = order.Remarks,
+                Status = OrderStatus.Pending,
+                Quantity = order.Quantity,
+                CreatedAt = now,
+            });
+        }
 
         db.Consults.Add(consult);
         await db.SaveChangesAsync(ct);

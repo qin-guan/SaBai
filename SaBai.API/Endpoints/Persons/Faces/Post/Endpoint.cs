@@ -35,7 +35,7 @@ public class Endpoint(FaceAnalyzer analyzer, FaceStore store) : Endpoint<Request
 
         var faces = await analyzer.AnalyzeAsync(image!, ct);
         var face = FaceImages.Largest(faces);
-        if (face is null) ThrowError(r => r.Image, "No face detected.", StatusCodes.Status422UnprocessableEntity);
+        if (face is null) ThrowError(r => r.Image, "No usable face detected. Use a closer, sharp, well-lit photo.", StatusCodes.Status422UnprocessableEntity);
 
         var stored = await store.AddAsync(req.PersonId, face.Embedding, ct);
         await Send.ResponseAsync(

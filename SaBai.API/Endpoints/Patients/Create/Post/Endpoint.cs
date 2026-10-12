@@ -28,35 +28,35 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                 x => x.Id == req.VillageCodeId,
                 "Village code was not found.",
                 ct);
-            var now = DateTimeOffset.UtcNow;
-            var patient = new Patient
-            {
-                Name = req.Name.Trim(),
-                IdentificationNumber = Normalize(req.IdentificationNumber),
-                ContactNo = Normalize(req.ContactNo),
-                Gender = req.Gender ?? throw new BadRequestException("Gender is required."),
-                DateOfBirth = req.DateOfBirth ?? throw new BadRequestException("Date of birth is required."),
-                DrugAllergy = req.DrugAllergy.Trim(),
-                HasPoorCard = req.HasPoorCard,
-                HasBS2Card = req.HasBS2Card,
-                HasSabaiCard = req.HasSabaiCard,
-                ToGetReport = req.ToGetReport,
-                VillageCodeId = village.Id,
-                CreatedAt = now,
-            };
-            var visit = new Visit
-            {
-                Patient = patient,
-                VillageCodeId = village.Id,
-                Date = now,
-                Status = Visit.StartedStatus,
-            };
-            if (req.Vitals is not null)
-            {
-                visit.Vitals = ToVitals(req.Vitals);
-            }
+        var now = DateTimeOffset.UtcNow;
+        var patient = new Patient
+        {
+            Name = req.Name.Trim(),
+            IdentificationNumber = Normalize(req.IdentificationNumber),
+            ContactNo = Normalize(req.ContactNo),
+            Gender = req.Gender ?? throw new BadRequestException("Gender is required."),
+            DateOfBirth = req.DateOfBirth ?? throw new BadRequestException("Date of birth is required."),
+            DrugAllergy = req.DrugAllergy.Trim(),
+            HasPoorCard = req.HasPoorCard,
+            HasBS2Card = req.HasBS2Card,
+            HasSabaiCard = req.HasSabaiCard,
+            ToGetReport = req.ToGetReport,
+            VillageCodeId = village.Id,
+            CreatedAt = now,
+        };
+        var visit = new Visit
+        {
+            Patient = patient,
+            VillageCodeId = village.Id,
+            Date = now,
+            Status = Visit.StartedStatus,
+        };
+        if (req.Vitals is not null)
+        {
+            visit.Vitals = ToVitals(req.Vitals);
+        }
 
-            patient.Visits.Add(visit);
+        patient.Visits.Add(visit);
         db.Patients.Add(patient);
         await db.SaveChangesAsync(ct);
 

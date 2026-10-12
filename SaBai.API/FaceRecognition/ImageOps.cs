@@ -11,6 +11,7 @@ internal static class ImageOps
         var fy = y - y0;
 
         Span<float> acc = stackalloc float[3];
+        acc.Clear();
         Accumulate(image, x0, y0, (1 - fx) * (1 - fy), acc);
         Accumulate(image, x0 + 1, y0, fx * (1 - fy), acc);
         Accumulate(image, x0, y0 + 1, (1 - fx) * fy, acc);
@@ -51,23 +52,26 @@ internal static class ImageOps
                 {
                     var sx0 = (int)(x * scaleX);
                     var sx1 = Math.Max(sx0 + 1, Math.Min(image.Width, (int)MathF.Ceiling((x + 1) * scaleX)));
-                    int r = 0, g = 0, b = 0;
+                    double r = 0, g = 0, b = 0, totalWeight = 0;
                     for (var sy = sy0; sy < sy1; sy++)
                     {
+                        var wy = MathF.Min(sy + 1, (y + 1) * scaleY) - MathF.Max(sy, y * scaleY);
                         var i = (sy * image.Width + sx0) * 3;
                         for (var sx = sx0; sx < sx1; sx++, i += 3)
                         {
-                            r += image.Pixels[i];
-                            g += image.Pixels[i + 1];
-                            b += image.Pixels[i + 2];
+                            var wx = MathF.Min(sx + 1, (x + 1) * scaleX) - MathF.Max(sx, x * scaleX);
+                            var weight = MathF.Max(0, wx) * MathF.Max(0, wy);
+                            r += image.Pixels[i] * weight;
+                            g += image.Pixels[i + 1] * weight;
+                            b += image.Pixels[i + 2] * weight;
+                            totalWeight += weight;
                         }
                     }
 
-                    var n = (sy1 - sy0) * (sx1 - sx0);
                     var o = (y * width + x) * 3;
-                    output.Pixels[o] = (byte)((r + n / 2) / n);
-                    output.Pixels[o + 1] = (byte)((g + n / 2) / n);
-                    output.Pixels[o + 2] = (byte)((b + n / 2) / n);
+                    output.Pixels[o] = (byte)Math.Clamp(Math.Round(r / totalWeight), 0, 255);
+                    output.Pixels[o + 1] = (byte)Math.Clamp(Math.Round(g / totalWeight), 0, 255);
+                    output.Pixels[o + 2] = (byte)Math.Clamp(Math.Round(b / totalWeight), 0, 255);
                 }
             }
 

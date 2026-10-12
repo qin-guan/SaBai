@@ -37,4 +37,8 @@
       <ProjectReference Include="..\SaBai.ServiceDefaults\SaBai.ServiceDefaults.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <InternalsVisibleTo Include="SaBai.Tests" />
+    </ItemGroup>
+
 </Project>

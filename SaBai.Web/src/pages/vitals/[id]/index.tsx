@@ -35,6 +35,11 @@ import Modal from "@/components/interactive/Modal";
 import EditPatientForm from "@/components/patient/EditPatientForm";
 import { HeightWeightChart } from "@/components/vitals/HeightWeightChart";
 import clsx from "clsx";
+import { HiExclamationTriangle } from "react-icons/hi2";
+import {
+  classifyBloodPressure,
+  describeBloodPressureThreshold,
+} from "@/lib/utils/vitals";
 
 type VitalsFormValues = {
   height?: string | number | null;
@@ -236,6 +241,16 @@ function VitalsForm({
   const chartWeight = weightValue ? parseFloat(String(weightValue)) : null;
   const showChart = patientAge >= 2 && patientAge <= 18;
 
+  const systolicValue = useWatch({ control, name: "systolic" });
+  const diastolicValue = useWatch({ control, name: "diastolic" });
+  const bloodPressureStatus =
+    systolicValue != null &&
+    systolicValue !== "" &&
+    diastolicValue != null &&
+    diastolicValue !== ""
+      ? classifyBloodPressure(Number(systolicValue), Number(diastolicValue))
+      : null;
+
   // Fetch the visit's vitals. The API responds 400 when the visit has no vitals
   // yet; that is an expected "empty form" state, so disable retries and let the
   // error fall through to a blank form.
@@ -431,6 +446,28 @@ function VitalsForm({
           />
           <RHFInput name="heartRate" label="Heart Rate (BPM)" type="number" />
         </div>
+
+        {bloodPressureStatus && (
+          <div className="mt-4 flex items-center gap-2">
+            <span
+              className={clsx(
+                "inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset",
+                bloodPressureStatus === "Pre-HTN"
+                  ? "bg-warning-subtle text-warning"
+                  : "bg-danger-subtle text-danger",
+              )}
+            >
+              <HiExclamationTriangle
+                aria-hidden="true"
+                className="mr-1 h-4 w-4"
+              />
+              {bloodPressureStatus}
+            </span>
+            <span className="text-xs text-text-muted">
+              {describeBloodPressureThreshold(bloodPressureStatus)}
+            </span>
+          </div>
+        )}
       </FormSection>
 
       {/* Blood & metabolic */}

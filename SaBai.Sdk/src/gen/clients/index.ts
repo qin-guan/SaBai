@@ -114,6 +114,7 @@ export { saBaiAPIEndpointsVisionGetEndpoint } from './saBaiAPIEndpointsVisionGet
 export { saBaiAPIEndpointsVisitsCreatePostEndpoint } from './saBaiAPIEndpointsVisitsCreatePostEndpoint'
 export { saBaiAPIEndpointsVisitsDeleteDeleteEndpoint } from './saBaiAPIEndpointsVisitsDeleteDeleteEndpoint'
 export { saBaiAPIEndpointsVisitsGetEndpoint } from './saBaiAPIEndpointsVisitsGetEndpoint'
+export { saBaiAPIEndpointsVisitsHasRecentGetEndpoint } from './saBaiAPIEndpointsVisitsHasRecentGetEndpoint'
 export { saBaiAPIEndpointsVisitsListGetEndpoint } from './saBaiAPIEndpointsVisitsListGetEndpoint'
 export { saBaiAPIEndpointsVisitsUpdatePatchEndpoint } from './saBaiAPIEndpointsVisitsUpdatePatchEndpoint'
 export { saBaiAPIEndpointsVitalsCreatePostEndpoint } from './saBaiAPIEndpointsVitalsCreatePostEndpoint'

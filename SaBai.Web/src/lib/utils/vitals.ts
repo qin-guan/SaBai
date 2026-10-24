@@ -37,3 +37,58 @@ export function formatDiabetes(value: boolean | null): string {
   }
   return value ? "Yes" : "No";
 }
+
+/**
+ * Blood pressure thresholds to categorise readings.
+ */
+export const BP_THRESHOLDS = {
+  preHypertension: { systolic: 130, diastolic: 80 },
+  hypertension: { systolic: 140, diastolic: 90 },
+} as const;
+
+export type BloodPressureStatus = "Pre-HTN" | "HTN" | null;
+
+/**
+ * Classifies systolic/diastolic readings as "Pre-HTN" or "HTN" when either
+ * reading reaches its threshold. Returns null when neither threshold is reached.
+ */
+export function classifyBloodPressure(
+  systolic: number,
+  diastolic: number,
+): BloodPressureStatus {
+  if (
+    systolic >= BP_THRESHOLDS.hypertension.systolic ||
+    diastolic >= BP_THRESHOLDS.hypertension.diastolic
+  ) {
+    return "HTN";
+  }
+
+  if (
+    systolic >= BP_THRESHOLDS.preHypertension.systolic ||
+    diastolic >= BP_THRESHOLDS.preHypertension.diastolic
+  ) {
+    return "Pre-HTN";
+  }
+
+  return null;
+}
+
+/**
+ * Explains which thresholds triggered a blood pressure flag.
+ */
+export function describeBloodPressureThreshold(
+  status: BloodPressureStatus,
+): string | null {
+  if (status === null) return null;
+
+  const { systolic: preSystolic, diastolic: preDiastolic } =
+    BP_THRESHOLDS.preHypertension;
+  const { systolic: htnSystolic, diastolic: htnDiastolic } =
+    BP_THRESHOLDS.hypertension;
+
+  if (status === "HTN") {
+    return `Flagged when systolic ≥ ${htnSystolic} mmHg or diastolic ≥ ${htnDiastolic} mmHg`;
+  }
+
+  return `Flagged when systolic is ≥ ${preSystolic} and < ${htnSystolic} mmHg or diastolic is ≥ ${preDiastolic} and < ${htnDiastolic} mmHg`;
+}

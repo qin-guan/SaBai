@@ -57,7 +57,10 @@ if (auth.JwtSigningKey.Length < 32)
 
 if (workOs.UseFake)
 {
-    builder.Services.AddSingleton<IWorkOsDirectory, FakeWorkOsDirectory>();
+    builder.Services.AddSingleton<FakeWorkOsDirectory>();
+    builder.Services.AddSingleton<IWorkOsDirectory>(sp =>
+        sp.GetRequiredService<FakeWorkOsDirectory>()
+    );
 }
 else
 {

@@ -16,10 +16,13 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var referral = await db.Referrals
-            .AsNoTracking()
-            .Include(x => x.Consult).ThenInclude(x => x.Doctor)
-            .Include(x => x.Consult).ThenInclude(x => x.Visit).ThenInclude(x => x.Patient)
+        var referral = await db
+            .Referrals.AsNoTracking()
+            .Include(x => x.Consult)
+                .ThenInclude(x => x.Doctor)
+            .Include(x => x.Consult)
+                .ThenInclude(x => x.Visit)
+                    .ThenInclude(x => x.Patient)
             .FirstOrNotFoundAsync(x => x.Id == req.Id, "Referral was not found.", ct);
 
         await Send.OkAsync(
@@ -35,7 +38,9 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                 referral.Consult.DoctorId,
                 referral.Consult.Visit.PatientId,
                 referral.Consult.Visit.Patient.Name,
-                referral.Consult.Doctor.Nickname),
-            ct);
+                referral.Consult.Doctor.Nickname
+            ),
+            ct
+        );
     }
 }

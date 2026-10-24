@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "declarationMap": true
+  },
+  "include": [
+    "./src/gen"
+  ]
+}

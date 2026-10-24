@@ -15,7 +15,11 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var diagnosis = await db.Diagnoses.FirstOrNotFoundAsync(x => x.Id == req.Id, "Diagnosis was not found.", ct);
+        var diagnosis = await db.Diagnoses.FirstOrNotFoundAsync(
+            x => x.Id == req.Id,
+            "Diagnosis was not found.",
+            ct
+        );
         if (req.Details is not null)
         {
             diagnosis.Details = req.Details.Trim();
@@ -27,6 +31,9 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
         }
 
         await db.SaveChangesAsync(ct);
-        await Send.OkAsync(new Response(diagnosis.Id, diagnosis.ConsultId, diagnosis.Details, diagnosis.Category), ct);
+        await Send.OkAsync(
+            new Response(diagnosis.Id, diagnosis.ConsultId, diagnosis.Details, diagnosis.Category),
+            ct
+        );
     }
 }

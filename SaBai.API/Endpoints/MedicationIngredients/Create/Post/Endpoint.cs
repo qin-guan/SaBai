@@ -31,7 +31,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             ingredient.Name,
             ingredient.UnitOfMeasurement,
             ingredient.FallBelow,
-            ingredient.Remarks);
+            ingredient.Remarks
+        );
         await Send.CreatedAtAsync<List.Get.Endpoint>(new { }, response, cancellation: ct);
     }
 }

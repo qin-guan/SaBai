@@ -9,4 +9,5 @@ public sealed record Response(
     string Description,
     long SizeBytes,
     bool IsDeleted,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt
+);

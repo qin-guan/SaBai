@@ -20,7 +20,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request>
         var ingredient = await db.MedicationActiveIngredients.FirstOrNotFoundAsync(
             x => x.Id == req.Id,
             "Medication ingredient was not found.",
-            ct);
+            ct
+        );
 
         if (await db.MedicationBrands.AnyAsync(x => x.ActiveIngredientId == ingredient.Id, ct))
         {

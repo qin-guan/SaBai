@@ -24,13 +24,15 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, List<Response>
         }
 
         var brandId = req.BrandId.Value;
-        var quantityRemaining = await db.MedicationStocks
-            .AsNoTracking()
-            .Where(x => x.MedicationBrandId == brandId && x.StockStatus == StockStatus.Active)
-            .SumAsync(x => (int?)x.Quantity, ct) ?? 0;
+        var quantityRemaining =
+            await db
+                .MedicationStocks.AsNoTracking()
+                .Where(x => x.MedicationBrandId == brandId && x.StockStatus == StockStatus.Active)
+                .SumAsync(x => (int?)x.Quantity, ct)
+            ?? 0;
 
-        var orders = await db.Orders
-            .AsNoTracking()
+        var orders = await db
+            .Orders.AsNoTracking()
             .Where(x => x.MedicationBrandId == brandId && x.Status == OrderStatus.Approved)
             .Select(x => new
             {
@@ -41,9 +43,11 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, List<Response>
             })
             .ToListAsync(ct);
 
-        var changes = await db.StockChanges
-            .AsNoTracking()
-            .Where(x => x.Stock.MedicationBrandId == brandId && x.Field == StockChangeField.Quantity)
+        var changes = await db
+            .StockChanges.AsNoTracking()
+            .Where(x =>
+                x.Stock.MedicationBrandId == brandId && x.Field == StockChangeField.Quantity
+            )
             .Select(x => new
             {
                 x.PreviousValue,
@@ -60,14 +64,18 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, List<Response>
                 NameOrDash(x.Patient),
                 -x.Quantity,
                 quantityRemaining,
-                x.Date))
-            .Concat(changes.Select(x => new Response(
-                "adjustment",
-                NameOrDash(x.Actor),
-                "-",
-                ParseChange(x.NewValue) - ParseChange(x.PreviousValue),
-                quantityRemaining,
-                x.CreatedAt)))
+                x.Date
+            ))
+            .Concat(
+                changes.Select(x => new Response(
+                    "adjustment",
+                    NameOrDash(x.Actor),
+                    "-",
+                    ParseChange(x.NewValue) - ParseChange(x.PreviousValue),
+                    quantityRemaining,
+                    x.CreatedAt
+                ))
+            )
             .OrderByDescending(x => x.Date)
             .ThenBy(x => x.Kind)
             .ToList();
@@ -75,9 +83,10 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, List<Response>
         await Send.OkAsync(history, ct);
     }
 
-    private static string NameOrDash(string? name) =>
-        string.IsNullOrWhiteSpace(name) ? "-" : name;
+    private static string NameOrDash(string? name) => string.IsNullOrWhiteSpace(name) ? "-" : name;
 
     private static int ParseChange(string value) =>
-        int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed) ? parsed : 0;
+        int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed)
+            ? parsed
+            : 0;
 }

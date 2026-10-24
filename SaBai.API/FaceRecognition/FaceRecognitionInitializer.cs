@@ -3,7 +3,8 @@ namespace SaBai.API.FaceRecognition;
 /// <summary>Loads the models and prepares the Qdrant collection in the background at startup.</summary>
 public sealed class FaceRecognitionInitializer(
     FaceStore store,
-    ILogger<FaceRecognitionInitializer> logger) : BackgroundService
+    ILogger<FaceRecognitionInitializer> logger
+) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -12,9 +13,7 @@ public sealed class FaceRecognitionInitializer(
             // Loads (and if needed downloads) the models, then prepares the collection.
             await store.InitializeAsync(stoppingToken);
         }
-        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
-        {
-        }
+        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { }
         catch (Exception ex)
         {
             // Not fatal: requests retry initialisation and surface the error.

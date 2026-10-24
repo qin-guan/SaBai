@@ -5,9 +5,15 @@ public sealed class FaceRecognitionOptions
     public const string SectionName = "FaceRecognition";
 
     /// <summary>Directory holding the ONNX models. Defaults to a per-user data directory.</summary>
-    public string ModelsDirectory { get; set; } = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData, Environment.SpecialFolderOption.Create),
-        "sabai", "models");
+    public string ModelsDirectory { get; set; } =
+        Path.Combine(
+            Environment.GetFolderPath(
+                Environment.SpecialFolder.LocalApplicationData,
+                Environment.SpecialFolderOption.Create
+            ),
+            "sabai",
+            "models"
+        );
 
     /// <summary>File name of the SCRFD face detection model inside <see cref="ModelsDirectory"/>.</summary>
     public string DetectorModel { get; set; } = "det_10g.onnx";
@@ -28,8 +34,23 @@ public sealed class FaceRecognitionOptions
     /// <summary>Minimum detector confidence for a face to be kept.</summary>
     public float DetectionThreshold { get; set; } = 0.5f;
 
+    /// <summary>Retry missed or small faces at higher resolution, with shadow lifting and roll correction.</summary>
+    public bool EnableDetectionFallback { get; set; } = true;
+
+    /// <summary>Square detector size for best-effort retries; fixed-size ONNX exports retain their declared size.</summary>
+    public int DetectionFallbackSize { get; set; } = 1024;
+
+    /// <summary>Detector confidence for retries only. This does not lower the identity-match threshold.</summary>
+    public float DetectionFallbackThreshold { get; set; } = 0.35f;
+
     /// <summary>IoU threshold for non-maximum suppression.</summary>
     public float NmsThreshold { get; set; } = 0.4f;
+
+    /// <summary>Minimum face width and height in source pixels for recognition; zero disables the size guard.</summary>
+    public int MinimumFaceSize { get; set; }
+
+    /// <summary>Minimum distance between the eyes in source pixels; zero disables the resolution guard.</summary>
+    public float MinimumEyeDistance { get; set; }
 
     /// <summary>Cosine similarity at or above which two faces are considered the same person.</summary>
     public float MatchThreshold { get; set; } = 0.4f;

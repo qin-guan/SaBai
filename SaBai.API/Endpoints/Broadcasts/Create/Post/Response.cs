@@ -11,4 +11,5 @@ public sealed record Response(
     string? CreatedBy,
     DateTimeOffset CreatedAt,
     DateTimeOffset? PublishedAt,
-    int Attempts);
+    int Attempts
+);

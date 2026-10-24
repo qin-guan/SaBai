@@ -31,30 +31,37 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             var parent = await db.MedicationStocks.FirstOrNotFoundAsync(
                 x => x.Id == req.Id,
                 "Medication stock was not found.",
-                ct);
+                ct
+            );
 
             if (parent.Quantity == 0)
             {
                 throw new ConflictException("The parent stock has already split.");
             }
 
-            var children = req.Splits
-                .Select(split => new
+            var children = req
+                .Splits.Select(split => new
                 {
                     split.Quantity,
                     Location = split.Location.Trim(),
                     split.StockStatus,
-                    Remarks = string.IsNullOrWhiteSpace(split.Remarks) ? null : split.Remarks.Trim(),
+                    Remarks = string.IsNullOrWhiteSpace(split.Remarks)
+                        ? null
+                        : split.Remarks.Trim(),
                 })
                 .ToList();
 
             if (children.Sum(x => x.Quantity) != parent.Quantity)
             {
-                throw new ConflictException("Child stock quantity does not equal parent stock quantity!");
+                throw new ConflictException(
+                    "Child stock quantity does not equal parent stock quantity!"
+                );
             }
 
             var distinct = children
-                .Select(x => $"{x.Location}\u001f{x.StockStatus}\u001f{x.Quantity}\u001f{x.Remarks ?? ""}")
+                .Select(x =>
+                    $"{x.Location}\u001f{x.StockStatus}\u001f{x.Quantity}\u001f{x.Remarks ?? ""}"
+                )
                 .Distinct(StringComparer.Ordinal)
                 .Count();
             if (distinct != children.Count)
@@ -64,15 +71,17 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
             foreach (var child in children)
             {
-                db.MedicationStocks.Add(new SaBai.API.Domain.MedicationStock
-                {
-                    MedicationBrandId = parent.MedicationBrandId,
-                    Quantity = child.Quantity,
-                    Expiry = parent.Expiry,
-                    Location = child.Location,
-                    StockStatus = child.StockStatus,
-                    Remarks = child.Remarks,
-                });
+                db.MedicationStocks.Add(
+                    new SaBai.API.Domain.MedicationStock
+                    {
+                        MedicationBrandId = parent.MedicationBrandId,
+                        Quantity = child.Quantity,
+                        Expiry = parent.Expiry,
+                        Location = child.Location,
+                        StockStatus = child.StockStatus,
+                        Remarks = child.Remarks,
+                    }
+                );
             }
 
             parent.Quantity = 0;

@@ -6,7 +6,9 @@ namespace SaBai.API.Auth;
 
 public sealed class FakeWorkOsDirectory(ILogger<FakeWorkOsDirectory> logger) : IWorkOsDirectory
 {
-    private readonly ConcurrentDictionary<string, FakeUser> _byEmail = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, FakeUser> _byEmail = new(
+        StringComparer.OrdinalIgnoreCase
+    );
     private readonly ConcurrentDictionary<string, FakeUser> _byId = new(StringComparer.Ordinal);
 
     public void Remember(string id, string email, string password)
@@ -19,7 +21,8 @@ public sealed class FakeWorkOsDirectory(ILogger<FakeWorkOsDirectory> logger) : I
     public Task<WorkOsIdentity> AuthenticateAsync(
         string email,
         string password,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         using var activity = WorkOsTelemetry.Start("authenticate", email);
         activity?.SetTag("workos.fake", true);
@@ -27,12 +30,18 @@ public sealed class FakeWorkOsDirectory(ILogger<FakeWorkOsDirectory> logger) : I
         {
             var rejected = new AuthRejectedException();
             WorkOsTelemetry.Fail(activity, rejected);
-            logger.LogWarning("Fake WorkOS rejected {Email}. The API is not calling WorkOS.", email);
+            logger.LogWarning(
+                "Fake WorkOS rejected {Email}. The API is not calling WorkOS.",
+                email
+            );
             throw rejected;
         }
 
         activity?.SetStatus(ActivityStatusCode.Ok);
-        logger.LogInformation("Fake WorkOS accepted {Email}. The API is not calling WorkOS.", email);
+        logger.LogInformation(
+            "Fake WorkOS accepted {Email}. The API is not calling WorkOS.",
+            email
+        );
         return Task.FromResult(new WorkOsIdentity(user.Id, user.Email, null, null));
     }
 
@@ -42,7 +51,8 @@ public sealed class FakeWorkOsDirectory(ILogger<FakeWorkOsDirectory> logger) : I
         string? firstName,
         string? lastName,
         string externalId,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         if (_byEmail.ContainsKey(email))
         {
@@ -54,7 +64,11 @@ public sealed class FakeWorkOsDirectory(ILogger<FakeWorkOsDirectory> logger) : I
         return Task.FromResult(new WorkOsIdentity(id, email, firstName, lastName));
     }
 
-    public Task UpdatePasswordAsync(string workOsUserId, string password, CancellationToken cancellationToken)
+    public Task UpdatePasswordAsync(
+        string workOsUserId,
+        string password,
+        CancellationToken cancellationToken
+    )
     {
         if (!_byId.TryGetValue(workOsUserId, out var user))
         {

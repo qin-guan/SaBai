@@ -6,7 +6,8 @@ namespace SaBai.API.Endpoints.Vision.Get;
 public sealed record Response(
     PatientResponse Patient,
     GlassesResponse? Vision,
-    AcuityResponse? Vitals);
+    AcuityResponse? Vitals
+);
 
 /// <summary>Patient identity shown with a vision record.</summary>
 public sealed record PatientResponse(
@@ -14,7 +15,8 @@ public sealed record PatientResponse(
     string Name,
     string DisplayId,
     Gender Gender,
-    DateTimeOffset DateOfBirth);
+    DateTimeOffset DateOfBirth
+);
 
 /// <summary>Prescribed glasses degrees for a visit.</summary>
 public sealed record GlassesResponse(
@@ -22,11 +24,13 @@ public sealed record GlassesResponse(
     int VisitId,
     string? LeftGlassesDegree,
     string? RightGlassesDegree,
-    string? Notes);
+    string? Notes
+);
 
 /// <summary>Unaided acuity and pinhole readings for a visit.</summary>
 public sealed record AcuityResponse(
     string? LeftEyeDegree,
     string? RightEyeDegree,
     string? LeftEyePinhole,
-    string? RightEyePinhole);
+    string? RightEyePinhole
+);

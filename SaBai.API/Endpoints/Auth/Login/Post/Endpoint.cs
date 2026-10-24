@@ -14,8 +14,8 @@ public sealed class Endpoint(
     AppDbContext db,
     IWorkOsDirectory directory,
     IOptions<AuthSettings> auth,
-    ILogger<Endpoint> logger)
-    : Endpoint<Request, Response>
+    ILogger<Endpoint> logger
+) : Endpoint<Request, Response>
 {
     public override void Configure()
     {
@@ -31,17 +31,24 @@ public sealed class Endpoint(
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
         var identity = await directory.AuthenticateAsync(req.Email, req.Password, ct);
-        var user = await db.StaffUsers.FirstOrDefaultAsync(x => x.WorkOsUserId == identity.Id || x.Email == identity.Email, ct);
+        var user = await db.StaffUsers.FirstOrDefaultAsync(
+            x => x.WorkOsUserId == identity.Id || x.Email == identity.Email,
+            ct
+        );
         if (user is null)
         {
-            Activity.Current?.SetStatus(ActivityStatusCode.Error, "No staff row for the WorkOS user.");
+            Activity.Current?.SetStatus(
+                ActivityStatusCode.Error,
+                "No staff row for the WorkOS user."
+            );
             Activity.Current?.SetTag("auth.failure", "staff_user_missing");
             Activity.Current?.SetTag("workos.user_id", identity.Id);
             Activity.Current?.SetTag("workos.email", identity.Email);
             logger.LogWarning(
                 "WorkOS accepted {Email} as {WorkOsUserId}, but no staff row matched that id or email.",
                 identity.Email,
-                identity.Id);
+                identity.Id
+            );
             throw new AuthRejectedException();
         }
 

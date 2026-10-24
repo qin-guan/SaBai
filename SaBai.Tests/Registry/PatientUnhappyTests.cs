@@ -47,7 +47,8 @@ public sealed class PatientUnhappyTests(AppFixture fixture)
                 villageCodeId = 99999999,
                 dateOfBirth = new DateTimeOffset(1991, 3, 4, 0, 0, 0, TimeSpan.Zero),
             },
-            ApiJson.Options);
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.NotFound);
@@ -71,7 +72,8 @@ public sealed class PatientUnhappyTests(AppFixture fixture)
                 villageCodeId = villageId,
                 dateOfBirth = new DateTimeOffset(1991, 3, 4, 0, 0, 0, TimeSpan.Zero),
             },
-            ApiJson.Options);
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
@@ -102,7 +104,8 @@ public sealed class PatientUnhappyTests(AppFixture fixture)
         var response = await client.PatchAsJsonAsync(
             "/patients/99999999",
             new { name = "Missing" },
-            ApiJson.Options);
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.NotFound);

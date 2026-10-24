@@ -1,0 +1,81 @@
+import { useQuery } from "@tanstack/react-query";
+import { saBaiAPIEndpointsMedicationIngredientsListGetEndpointQueryOptions } from "@sabai/sdk/hooks";
+import { apiConfig } from "@/lib/api/config";
+import PageHeader from "@/components/PageHeader";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import TableHeader from "@/components/TableHeader";
+import AddIngredientModal from "@/components/medication-active-ingredients/AddIngredientModal";
+import IngredientRow from "@/components/medication-active-ingredients/IngredientRow";
+
+function MedicationActiveIngredientsBasePage() {
+  const {
+    data: ingredients,
+    isLoading,
+    isError,
+  } = useQuery(
+    saBaiAPIEndpointsMedicationIngredientsListGetEndpointQueryOptions(apiConfig),
+  );
+
+  function renderContent() {
+    if (isError) {
+      return <h1 className="text-red-500">An error has occurred!</h1>;
+    }
+
+    if (isLoading) {
+      return (
+        <LoadingSpinner
+          message="Loading active ingredients..."
+          className="p-12"
+        />
+      );
+    }
+
+    if (!ingredients || ingredients.length === 0) {
+      return (
+        <div className="p-12 text-center text-slate-500">
+          No active ingredient found. Seed the database or add a new record.
+        </div>
+      );
+    }
+
+    return (
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-slate-200">
+          <TableHeader
+            headers={[
+              "Active Ingredient ID",
+              "Active Ingredient Name",
+              "Unit of Measurement",
+              "Fall Below",
+              "Remarks",
+              "Actions",
+            ]}
+          />
+          <tbody className="bg-white divide-y divide-slate-200">
+            {ingredients.map((ingredient) => (
+              <IngredientRow key={ingredient.id} {...ingredient} />
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex-1 p-8">
+      <PageHeader
+        breadcrumbs={[
+          { label: "Home", href: "/" },
+          { label: "Medication Stock", href: "/medication-stock" },
+          { label: "Medication Active Ingredients" },
+        ]}
+        title="Medication Active Ingredient"
+        description="Manage medication active ingredients."
+        actions={<AddIngredientModal />}
+      />
+      {renderContent()}
+    </div>
+  );
+}
+
+export default MedicationActiveIngredientsBasePage;

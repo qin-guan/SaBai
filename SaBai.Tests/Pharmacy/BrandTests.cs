@@ -21,8 +21,14 @@ public sealed class BrandTests(AppFixture fixture)
         // Act
         var created = await client.PostAsJsonAsync(
             "/medication-brands",
-            new { name = brandName, activeIngredientId = ingredientId, remarks = "" },
-            ApiJson.Options);
+            new
+            {
+                name = brandName,
+                activeIngredientId = ingredientId,
+                remarks = "",
+            },
+            ApiJson.Options
+        );
         var listed = await client.GetAsync("/medication-brands/with-ingredient");
         var body = await listed.Content.ReadAsStringAsync();
 
@@ -44,8 +50,14 @@ public sealed class BrandTests(AppFixture fixture)
         // Act
         var response = await client.PostAsJsonAsync(
             "/medication-brands",
-            new { name, activeIngredientId = 99999999, remarks = "" },
-            ApiJson.Options);
+            new
+            {
+                name,
+                activeIngredientId = 99999999,
+                remarks = "",
+            },
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.NotFound);
@@ -87,20 +99,42 @@ public sealed class BrandTests(AppFixture fixture)
     {
         var response = await client.PostAsJsonAsync(
             "/medication-ingredients",
-            new { name, unitOfMeasurement = "tablets", fallBelow = 5 },
-            ApiJson.Options);
+            new
+            {
+                name,
+                unitOfMeasurement = "tablets",
+                fallBelow = 5,
+            },
+            ApiJson.Options
+        );
         response.EnsureSuccessStatusCode();
-        return ClinicSetup.ReadInt(await response.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options), "id");
+        return ClinicSetup.ReadInt(
+            await response.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
+            "id"
+        );
     }
 
-    private static async Task<int> CreateBrandAsync(HttpClient client, string name, int ingredientId)
+    private static async Task<int> CreateBrandAsync(
+        HttpClient client,
+        string name,
+        int ingredientId
+    )
     {
         var response = await client.PostAsJsonAsync(
             "/medication-brands",
-            new { name, activeIngredientId = ingredientId, remarks = "" },
-            ApiJson.Options);
+            new
+            {
+                name,
+                activeIngredientId = ingredientId,
+                remarks = "",
+            },
+            ApiJson.Options
+        );
         response.EnsureSuccessStatusCode();
-        return ClinicSetup.ReadInt(await response.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options), "id");
+        return ClinicSetup.ReadInt(
+            await response.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
+            "id"
+        );
     }
 
     private static async Task CreateStockAsync(HttpClient client, int brandId, string location)
@@ -115,7 +149,8 @@ public sealed class BrandTests(AppFixture fixture)
                 location,
                 stockStatus = "active",
             },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         response.EnsureSuccessStatusCode();
     }
 }

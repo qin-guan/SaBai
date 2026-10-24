@@ -23,8 +23,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
         var leftEyePinhole = EyesightRules.NormalizePinhole(req.LeftEyePinhole);
         var rightEyePinhole = EyesightRules.NormalizePinhole(req.RightEyePinhole);
 
-        _ = await db.Visits
-            .AsNoTracking()
+        _ = await db
+            .Visits.AsNoTracking()
             .FirstOrNotFoundAsync(x => x.Id == req.VisitId, "Visit was not found.", ct);
 
         if (await db.Eyesights.AnyAsync(x => x.VisitId == req.VisitId, ct))
@@ -50,11 +50,18 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
         {
             await db.SaveChangesAsync(ct);
         }
-        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+        catch (DbUpdateException ex)
+            when (ex.InnerException
+                    is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation }
+            )
         {
             throw new ConflictException("Eyesight already exists for this visit.");
         }
 
-        await Send.CreatedAtAsync<Get.Endpoint>(new { eyesight.Id }, Response.From(eyesight), cancellation: ct);
+        await Send.CreatedAtAsync<Get.Endpoint>(
+            new { eyesight.Id },
+            Response.From(eyesight),
+            cancellation: ct
+        );
     }
 }

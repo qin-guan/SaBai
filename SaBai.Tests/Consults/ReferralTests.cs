@@ -21,7 +21,8 @@ public sealed class ReferralTests(AppFixture fixture)
         var created = await client.PostAsJsonAsync(
             "/referrals",
             new { consultId, referredFor = "eye clinic" },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var createdBody = await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
         var id = ClinicSetup.ReadInt(createdBody, "id");
         var listed = await client.GetAsync($"/consults/{consultId}/referrals");
@@ -49,7 +50,8 @@ public sealed class ReferralTests(AppFixture fixture)
         var response = await client.PostAsJsonAsync(
             "/referrals",
             new { consultId = 99999999, referredFor = $"missing {ClinicSetup.Suffix()}" },
-            ApiJson.Options);
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.NotFound);
@@ -61,13 +63,17 @@ public sealed class ReferralTests(AppFixture fixture)
         // Arrange
         var client = fixture.CreateHttpClient("api");
         await client.LoginAsync();
-        var (consultId, _) = await CreateConsultAsync(client, $"Empty refer {ClinicSetup.Suffix()}");
+        var (consultId, _) = await CreateConsultAsync(
+            client,
+            $"Empty refer {ClinicSetup.Suffix()}"
+        );
 
         // Act
         var response = await client.PostAsJsonAsync(
             "/referrals",
             new { consultId, referredFor = "" },
-            ApiJson.Options);
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
@@ -98,15 +104,20 @@ public sealed class ReferralTests(AppFixture fixture)
         var created = await client.PostAsJsonAsync(
             "/referrals",
             new { consultId, referredFor = $"state {suffix}" },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         created.EnsureSuccessStatusCode();
-        var id = ClinicSetup.ReadInt(await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options), "id");
+        var id = ClinicSetup.ReadInt(
+            await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
+            "id"
+        );
 
         // Act
         var response = await client.PatchAsJsonAsync(
             $"/referrals/{id}/state",
             new { referralState = "NotAState" },
-            ApiJson.Options);
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
@@ -123,19 +134,25 @@ public sealed class ReferralTests(AppFixture fixture)
         var created = await client.PostAsJsonAsync(
             "/referrals",
             new { consultId, referredFor = $"outgoing {suffix}" },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         created.EnsureSuccessStatusCode();
-        var id = ClinicSetup.ReadInt(await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options), "id");
+        var id = ClinicSetup.ReadInt(
+            await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
+            "id"
+        );
 
         // Act
         var seen = await client.PatchAsJsonAsync(
             $"/referrals/{id}/state",
             new { referralState = "Seen", referralOutcome = "booked" },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var outgoing = await client.PatchAsJsonAsync(
             $"/referrals/{id}/state",
             new { referralState = "Outgoing" },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         var body = await outgoing.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
 
         // Assert
@@ -145,7 +162,10 @@ public sealed class ReferralTests(AppFixture fixture)
         await Assert.That(body.GetProperty("referralOutcome").GetString()).IsEqualTo("booked");
     }
 
-    private static async Task<(int ConsultId, int VisitId)> CreateConsultAsync(HttpClient client, string patientName)
+    private static async Task<(int ConsultId, int VisitId)> CreateConsultAsync(
+        HttpClient client,
+        string patientName
+    )
     {
         var suffix = ClinicSetup.Suffix();
         var villageId = await ClinicSetup.CreateVillageAsync(client, $"F{suffix}");

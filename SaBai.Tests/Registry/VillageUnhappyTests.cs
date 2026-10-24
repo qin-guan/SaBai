@@ -18,7 +18,8 @@ public sealed class VillageUnhappyTests(AppFixture fixture)
         var hidden = await client.PatchAsJsonAsync(
             $"/village-codes/{id}",
             new { isVisible = false },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         hidden.EnsureSuccessStatusCode();
 
         // Act
@@ -42,8 +43,14 @@ public sealed class VillageUnhappyTests(AppFixture fixture)
         // Act
         var response = await client.PostAsJsonAsync(
             "/village-codes",
-            new { code, name = $"Village {code}", colorHex = "red" },
-            ApiJson.Options);
+            new
+            {
+                code,
+                name = $"Village {code}",
+                colorHex = "red",
+            },
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
@@ -60,8 +67,14 @@ public sealed class VillageUnhappyTests(AppFixture fixture)
         // Act
         var response = await client.PostAsJsonAsync(
             "/village-codes",
-            new { code, name = "", colorHex = "#336699" },
-            ApiJson.Options);
+            new
+            {
+                code,
+                name = "",
+                colorHex = "#336699",
+            },
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
@@ -92,7 +105,8 @@ public sealed class VillageUnhappyTests(AppFixture fixture)
         var response = await client.PatchAsJsonAsync(
             "/village-codes/99999999",
             new { name = "Missing" },
-            ApiJson.Options);
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.NotFound);

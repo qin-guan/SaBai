@@ -37,7 +37,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             broadcast.CreatedBy,
             broadcast.CreatedAt,
             broadcast.PublishedAt,
-            broadcast.Attempts);
+            broadcast.Attempts
+        );
         await Send.CreatedAtAsync<List.Get.Endpoint>(new { }, response, cancellation: ct);
     }
 }

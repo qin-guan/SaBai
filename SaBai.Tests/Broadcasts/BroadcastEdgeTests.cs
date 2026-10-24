@@ -18,8 +18,14 @@ public sealed class BroadcastEdgeTests(AppFixture fixture)
         // Act
         var created = await client.PostAsJsonAsync(
             "/broadcasts",
-            new { title, body = "Clinic is closing early.", severity = "warning" },
-            ApiJson.Options);
+            new
+            {
+                title,
+                body = "Clinic is closing early.",
+                severity = "warning",
+            },
+            ApiJson.Options
+        );
         var broadcast = await created.Content.ReadFromJsonAsync<BroadcastCreated>(ApiJson.Options);
         var listed = await client.GetAsync("/broadcasts");
         var body = await listed.Content.ReadAsStringAsync();
@@ -41,8 +47,14 @@ public sealed class BroadcastEdgeTests(AppFixture fixture)
         // Act
         var response = await client.PostAsJsonAsync(
             "/broadcasts",
-            new { title = "", body = $"Empty title {ClinicSetup.Suffix()}", severity = "info" },
-            ApiJson.Options);
+            new
+            {
+                title = "",
+                body = $"Empty title {ClinicSetup.Suffix()}",
+                severity = "info",
+            },
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
@@ -71,10 +83,19 @@ public sealed class BroadcastEdgeTests(AppFixture fixture)
         var title = $"Remove {ClinicSetup.Suffix()}";
         var created = await client.PostAsJsonAsync(
             "/broadcasts",
-            new { title, body = "This notice will be removed.", severity = "critical" },
-            ApiJson.Options);
+            new
+            {
+                title,
+                body = "This notice will be removed.",
+                severity = "critical",
+            },
+            ApiJson.Options
+        );
         created.EnsureSuccessStatusCode();
-        var id = ClinicSetup.ReadInt(await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options), "id");
+        var id = ClinicSetup.ReadInt(
+            await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
+            "id"
+        );
 
         // Act
         var deleted = await client.DeleteAsync($"/broadcasts/{id}");
@@ -96,8 +117,14 @@ public sealed class BroadcastEdgeTests(AppFixture fixture)
         // Act
         var response = await client.PostAsJsonAsync(
             "/broadcasts",
-            new { title = "Closed", body = "No token", severity = "info" },
-            ApiJson.Options);
+            new
+            {
+                title = "Closed",
+                body = "No token",
+                severity = "info",
+            },
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.Unauthorized);

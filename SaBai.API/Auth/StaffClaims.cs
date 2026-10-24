@@ -12,8 +12,9 @@ public static class StaffRoles
 public static class StaffClaims
 {
     public static Guid Id(this ClaimsPrincipal user) =>
-        Guid.Parse(user.FindFirstValue(ClaimTypes.NameIdentifier)
-            ?? throw new AuthRejectedException());
+        Guid.Parse(
+            user.FindFirstValue(ClaimTypes.NameIdentifier) ?? throw new AuthRejectedException()
+        );
 
     public static string Email(this ClaimsPrincipal user) =>
         user.FindFirstValue(ClaimTypes.Email) ?? "";

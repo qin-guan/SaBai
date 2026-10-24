@@ -6,12 +6,15 @@ public sealed record Response(
     int VisitId,
     string? LeftGlassesDegree,
     string? RightGlassesDegree,
-    string? Notes)
+    string? Notes
+)
 {
-    public static Response From(global::SaBai.API.Domain.Eyesight eyesight) => new(
-        eyesight.Id,
-        eyesight.VisitId,
-        eyesight.LeftPrescribedGlassesDegree,
-        eyesight.RightPrescribedGlassesDegree,
-        eyesight.Comments);
+    public static Response From(global::SaBai.API.Domain.Eyesight eyesight) =>
+        new(
+            eyesight.Id,
+            eyesight.VisitId,
+            eyesight.LeftPrescribedGlassesDegree,
+            eyesight.RightPrescribedGlassesDegree,
+            eyesight.Comments
+        );
 }

@@ -8,4 +8,5 @@ public sealed record Response(
     string ColorHex,
     bool IsVisible,
     DateTimeOffset CreatedAt,
-    DateTimeOffset UpdatedAt);
+    DateTimeOffset UpdatedAt
+);

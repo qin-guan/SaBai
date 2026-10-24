@@ -19,7 +19,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
         await db.MedicationBrands.FirstOrNotFoundAsync(
             x => x.Id == req.MedicationBrandId,
             "Medication brand was not found.",
-            ct);
+            ct
+        );
 
         var stock = new SaBai.API.Domain.MedicationStock
         {
@@ -35,7 +36,16 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
         await Send.CreatedAtAsync<List.Get.Endpoint>(
             new { },
-            new Response(stock.Id, stock.MedicationBrandId, stock.Quantity, stock.Expiry, stock.Location, stock.StockStatus, stock.Remarks),
-            cancellation: ct);
+            new Response(
+                stock.Id,
+                stock.MedicationBrandId,
+                stock.Quantity,
+                stock.Expiry,
+                stock.Location,
+                stock.StockStatus,
+                stock.Remarks
+            ),
+            cancellation: ct
+        );
     }
 }

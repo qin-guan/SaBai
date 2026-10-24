@@ -17,7 +17,11 @@ public sealed class ChartTests(AppFixture fixture)
         var patientName = $"Records {suffix}";
         var villageId = await ClinicSetup.CreateVillageAsync(client, $"H{suffix}");
         var (_, visitId) = await ClinicSetup.RegisterPatientAsync(client, villageId, patientName);
-        var consultId = await ClinicSetup.CreateConsultAsync(client, visitId, $"chart wheeze {suffix}");
+        var consultId = await ClinicSetup.CreateConsultAsync(
+            client,
+            visitId,
+            $"chart wheeze {suffix}"
+        );
 
         // Act
         var response = await client.GetAsync($"/patient-records?visitId={visitId}");
@@ -25,8 +29,16 @@ public sealed class ChartTests(AppFixture fixture)
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.OK);
-        await Assert.That(body.GetProperty("patient").GetProperty("name").GetString()).IsEqualTo(patientName);
-        await Assert.That(body.GetProperty("consults").EnumerateArray().Any(x => x.GetProperty("id").GetInt32() == consultId)).IsTrue();
+        await Assert
+            .That(body.GetProperty("patient").GetProperty("name").GetString())
+            .IsEqualTo(patientName);
+        await Assert
+            .That(
+                body.GetProperty("consults")
+                    .EnumerateArray()
+                    .Any(x => x.GetProperty("id").GetInt32() == consultId)
+            )
+            .IsTrue();
     }
 
     [Test]
@@ -37,7 +49,11 @@ public sealed class ChartTests(AppFixture fixture)
         await client.LoginAsync();
         var suffix = ClinicSetup.Suffix();
         var villageId = await ClinicSetup.CreateVillageAsync(client, $"J{suffix}");
-        var (_, visitId) = await ClinicSetup.RegisterPatientAsync(client, villageId, $"Workspace {suffix}");
+        var (_, visitId) = await ClinicSetup.RegisterPatientAsync(
+            client,
+            villageId,
+            $"Workspace {suffix}"
+        );
         await ClinicSetup.CreateConsultAsync(client, visitId, $"workspace {suffix}");
 
         // Act
@@ -46,7 +62,13 @@ public sealed class ChartTests(AppFixture fixture)
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.OK);
-        await Assert.That(body.GetProperty("consults").EnumerateArray().Any(x => x.GetProperty("doctorNickname").GetString() == "Admin")).IsTrue();
+        await Assert
+            .That(
+                body.GetProperty("consults")
+                    .EnumerateArray()
+                    .Any(x => x.GetProperty("doctorNickname").GetString() == "Admin")
+            )
+            .IsTrue();
     }
 
     [Test]

@@ -56,7 +56,9 @@ public sealed class FileTests(AppFixture fixture)
         await Assert.That(visibleBody).Contains(fileName);
         var restoredContent = await client.GetAsync($"/files/{created[0].Id}/content");
         await Assert.That(restoredContent.StatusCode).IsEqualTo(HttpStatusCode.OK);
-        await Assert.That(await restoredContent.Content.ReadAsStringAsync()).IsEqualTo("clinic note");
+        await Assert
+            .That(await restoredContent.Content.ReadAsStringAsync())
+            .IsEqualTo("clinic note");
     }
 
     [Test]
@@ -82,10 +84,19 @@ public sealed class FileTests(AppFixture fixture)
         var code = $"F{suffix.ToUpperInvariant()}";
         var village = await client.PostAsJsonAsync(
             "/village-codes",
-            new { code, name = $"File village {suffix}", colorHex = "#112233" },
-            ApiJson.Options);
+            new
+            {
+                code,
+                name = $"File village {suffix}",
+                colorHex = "#112233",
+            },
+            ApiJson.Options
+        );
         village.EnsureSuccessStatusCode();
-        var villageId = ReadInt(await village.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options), "id");
+        var villageId = ReadInt(
+            await village.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
+            "id"
+        );
         var patient = await client.PostAsJsonAsync(
             "/patients",
             new
@@ -99,7 +110,8 @@ public sealed class FileTests(AppFixture fixture)
                 hasSabaiCard = false,
                 villageCodeId = villageId,
             },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         patient.EnsureSuccessStatusCode();
         return ReadInt(await patient.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options), "id");
     }

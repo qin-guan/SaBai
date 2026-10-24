@@ -16,8 +16,14 @@ public sealed class VisionTests(AppFixture fixture)
         const string degree = "6/12";
         var created = await client.PostAsJsonAsync(
             "/glasses",
-            new { visitId, leftGlassesDegree = degree, notes = "trial" },
-            ApiJson.Options);
+            new
+            {
+                visitId,
+                leftGlassesDegree = degree,
+                notes = "trial",
+            },
+            ApiJson.Options
+        );
         created.EnsureSuccessStatusCode();
 
         // Act

@@ -15,4 +15,5 @@ public sealed record Response(
     Guid DoctorId,
     int PatientId,
     string PatientName,
-    string DoctorNickname);
+    string DoctorNickname
+);

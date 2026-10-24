@@ -21,7 +21,8 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<Response>
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var rows = await db.Patients.AsNoTracking()
+        var rows = await db
+            .Patients.AsNoTracking()
             .Select(x => new
             {
                 x.Id,
@@ -38,19 +39,16 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<Response>
                 x.VillageCodeId,
                 VillageCode = x.VillageCode != null ? x.VillageCode.Code : null,
                 VillageColorHex = x.VillageCode != null ? x.VillageCode.ColorHex : null,
+                x.PhotoStoredFileName,
+                x.LatestFaceId,
             })
             .ToListAsync(ct);
         var latest = await LatestVisitsAsync([.. rows.Select(x => x.Id)], ct);
 
-        var patients = rows
-            .Select(x =>
+        var patients = rows.Select(x =>
             {
                 latest.TryGetValue(x.Id, out var last);
-                return new
-                {
-                    Row = x,
-                    Last = last,
-                };
+                return new { Row = x, Last = last };
             })
             .OrderByDescending(x => x.Last is not null)
             .ThenByDescending(x => x.Last?.Date)
@@ -71,22 +69,34 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<Response>
                 x.Row.VillageCode,
                 x.Row.VillageColorHex,
                 Patient.FormatDisplayId(x.Row.VillageCode, x.Row.Id),
-                Patient.FormatFilterString(x.Row.VillageCode, x.Row.Id, x.Row.ContactNo, x.Row.Name),
+                Patient.FormatFilterString(
+                    x.Row.VillageCode,
+                    x.Row.Id,
+                    x.Row.ContactNo,
+                    x.Row.Name
+                ),
                 x.Last?.Date,
-                x.Last?.Id))
+                x.Last?.Id,
+                x.Row.PhotoStoredFileName != null,
+                x.Row.LatestFaceId != null
+            ))
             .ToList();
 
         await Send.OkAsync(new Response(patients), ct);
     }
 
-    private async Task<Dictionary<int, LatestVisit>> LatestVisitsAsync(int[] patientIds, CancellationToken ct)
+    private async Task<Dictionary<int, LatestVisit>> LatestVisitsAsync(
+        int[] patientIds,
+        CancellationToken ct
+    )
     {
         if (patientIds.Length == 0)
         {
             return [];
         }
 
-        var visits = await db.Visits.AsNoTracking()
+        var visits = await db
+            .Visits.AsNoTracking()
             .Where(x => patientIds.Contains(x.PatientId))
             .Select(x => new LatestVisit(x.Id, x.PatientId, x.Date))
             .ToListAsync(ct);
@@ -95,7 +105,8 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<Response>
             .GroupBy(x => x.PatientId)
             .ToDictionary(
                 g => g.Key,
-                g => g.OrderByDescending(x => x.Date).ThenByDescending(x => x.Id).First());
+                g => g.OrderByDescending(x => x.Date).ThenByDescending(x => x.Id).First()
+            );
     }
 
     private sealed record LatestVisit(int Id, int PatientId, DateTimeOffset Date);

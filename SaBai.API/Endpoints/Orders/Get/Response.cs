@@ -14,4 +14,5 @@ public sealed record Response(
     string? Remarks,
     Guid? ApprovedById,
     DateTimeOffset? ApprovedAt,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt
+);

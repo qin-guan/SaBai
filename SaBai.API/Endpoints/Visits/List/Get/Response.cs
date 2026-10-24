@@ -13,4 +13,5 @@ public sealed record Item(
     string VillageCode,
     string VillageName,
     string VillageColorHex,
-    string Status);
+    string Status
+);

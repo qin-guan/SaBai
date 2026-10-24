@@ -20,4 +20,7 @@ public sealed record Response(
     string DisplayId,
     string FilterString,
     DateTimeOffset? LastVisitDate,
-    int? LastVisitId);
+    int? LastVisitId,
+    bool HasPhoto,
+    bool HasFace
+);

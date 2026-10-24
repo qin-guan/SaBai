@@ -10,4 +10,5 @@ public sealed record Response(
     DateTimeOffset Expiry,
     string Location,
     StockStatus StockStatus,
-    string? Remarks);
+    string? Remarks
+);

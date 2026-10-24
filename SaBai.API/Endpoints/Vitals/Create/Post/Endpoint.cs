@@ -18,8 +18,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        _ = await db.Visits
-            .AsNoTracking()
+        _ = await db
+            .Visits.AsNoTracking()
             .FirstOrNotFoundAsync(x => x.Id == req.VisitId, "Visit was not found.", ct);
 
         if (await db.Vitals.AnyAsync(x => x.VisitId == req.VisitId, ct))
@@ -49,11 +49,18 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
         {
             await db.SaveChangesAsync(ct);
         }
-        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+        catch (DbUpdateException ex)
+            when (ex.InnerException
+                    is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation }
+            )
         {
             throw new ConflictException("Vitals already exist for this visit.");
         }
 
-        await Send.CreatedAtAsync<Get.Endpoint>(new { vitals.Id }, Response.From(vitals), cancellation: ct);
+        await Send.CreatedAtAsync<Get.Endpoint>(
+            new { vitals.Id },
+            Response.From(vitals),
+            cancellation: ct
+        );
     }
 }

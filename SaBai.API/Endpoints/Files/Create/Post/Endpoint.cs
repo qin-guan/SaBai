@@ -9,7 +9,8 @@ using SaBai.API.Storage;
 
 namespace SaBai.API.Endpoints.Files.Create.Post;
 
-public sealed class Endpoint(AppDbContext db, IAmazonS3 s3, RustFsSettings storage) : Endpoint<Request, List<Response>>
+public sealed class Endpoint(AppDbContext db, IAmazonS3 s3, RustFsSettings storage)
+    : Endpoint<Request, List<Response>>
 {
     public override void Configure()
     {
@@ -63,16 +64,19 @@ public sealed class Endpoint(AppDbContext db, IAmazonS3 s3, RustFsSettings stora
 
                 var storedName = $"{Guid.NewGuid():N}{Path.GetExtension(fileName)}";
                 await using var stream = upload.OpenReadStream();
-                await s3.PutObjectAsync(new PutObjectRequest
-                {
-                    BucketName = storage.Bucket,
-                    Key = storedName,
-                    InputStream = stream,
-                    ContentType = string.IsNullOrWhiteSpace(upload.ContentType)
-                        ? "application/octet-stream"
-                        : upload.ContentType,
-                    AutoCloseStream = false,
-                }, ct);
+                await s3.PutObjectAsync(
+                    new PutObjectRequest
+                    {
+                        BucketName = storage.Bucket,
+                        Key = storedName,
+                        InputStream = stream,
+                        ContentType = string.IsNullOrWhiteSpace(upload.ContentType)
+                            ? "application/octet-stream"
+                            : upload.ContentType,
+                        AutoCloseStream = false,
+                    },
+                    ct
+                );
                 uploadedKeys.Add(storedName);
 
                 var file = new ClinicalFile
@@ -95,11 +99,10 @@ public sealed class Endpoint(AppDbContext db, IAmazonS3 s3, RustFsSettings stora
         {
             foreach (var key in uploadedKeys)
             {
-                await s3.DeleteObjectAsync(new DeleteObjectRequest
-                {
-                    BucketName = storage.Bucket,
-                    Key = key,
-                }, CancellationToken.None);
+                await s3.DeleteObjectAsync(
+                    new DeleteObjectRequest { BucketName = storage.Bucket, Key = key },
+                    CancellationToken.None
+                );
             }
 
             throw;
@@ -114,14 +117,21 @@ public sealed class Endpoint(AppDbContext db, IAmazonS3 s3, RustFsSettings stora
                 file.Description,
                 file.SizeBytes,
                 file.IsDeleted,
-                file.CreatedAt))
+                file.CreatedAt
+            ))
             .ToList();
-        await Send.CreatedAtAsync<Get.Endpoint>(new { Id = responses[0].Id }, responses, cancellation: ct);
+        await Send.CreatedAtAsync<Get.Endpoint>(
+            new { Id = responses[0].Id },
+            responses,
+            cancellation: ct
+        );
     }
 
-    private async Task<(int PatientId, IReadOnlyList<IFormFile> Files, IReadOnlyList<string> Descriptions)> ReadFormAsync(
-        Request req,
-        CancellationToken ct)
+    private async Task<(
+        int PatientId,
+        IReadOnlyList<IFormFile> Files,
+        IReadOnlyList<string> Descriptions
+    )> ReadFormAsync(Request req, CancellationToken ct)
     {
         if (!HttpContext.Request.HasFormContentType)
         {
@@ -162,9 +172,10 @@ public sealed class Endpoint(AppDbContext db, IAmazonS3 s3, RustFsSettings stora
             rawDescriptions = form["Descriptions"];
         }
 
-        IReadOnlyList<string> descriptions = rawDescriptions.Count > 0
-            ? [.. rawDescriptions.Select(value => value ?? "")]
-            : req.Descriptions ?? [];
+        IReadOnlyList<string> descriptions =
+            rawDescriptions.Count > 0
+                ? [.. rawDescriptions.Select(value => value ?? "")]
+                : req.Descriptions ?? [];
 
         return (patientId, files, descriptions);
     }

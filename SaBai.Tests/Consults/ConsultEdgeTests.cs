@@ -23,7 +23,8 @@ public sealed class ConsultEdgeTests(AppFixture fixture)
                 visitId = 99999999,
                 diagnoses = new[] { new { details, category = "Respiratory" } },
             },
-            ApiJson.Options);
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.NotFound);
@@ -41,7 +42,8 @@ public sealed class ConsultEdgeTests(AppFixture fixture)
         var response = await client.PostAsJsonAsync(
             "/consults",
             new { visitId, diagnoses = Array.Empty<object>() },
-            ApiJson.Options);
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
@@ -72,7 +74,8 @@ public sealed class ConsultEdgeTests(AppFixture fixture)
         var response = await client.PatchAsJsonAsync(
             "/consults/99999999",
             new { consultation = "absent" },
-            ApiJson.Options);
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.NotFound);
@@ -104,7 +107,8 @@ public sealed class ConsultEdgeTests(AppFixture fixture)
         var referral = await client.PostAsJsonAsync(
             "/referrals",
             new { consultId, referredFor = $"hold {suffix}" },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         referral.EnsureSuccessStatusCode();
 
         // Act
@@ -121,7 +125,11 @@ public sealed class ConsultEdgeTests(AppFixture fixture)
         var client = fixture.CreateHttpClient("api");
         await client.LoginAsync();
         var (_, visitId) = await RegisterAsync(client);
-        var consultId = await ClinicSetup.CreateConsultAsync(client, visitId, $"pdf {ClinicSetup.Suffix()}");
+        var consultId = await ClinicSetup.CreateConsultAsync(
+            client,
+            visitId,
+            $"pdf {ClinicSetup.Suffix()}"
+        );
         var anonymous = fixture.CreateHttpClient("api");
 
         // Act
@@ -148,7 +156,13 @@ public sealed class ConsultEdgeTests(AppFixture fixture)
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.OK);
         await Assert.That(body.GetProperty("doctorNickname").GetString()).IsEqualTo("Admin");
-        await Assert.That(body.GetProperty("diagnoses").EnumerateArray().Any(x => x.GetProperty("details").GetString() == details)).IsTrue();
+        await Assert
+            .That(
+                body.GetProperty("diagnoses")
+                    .EnumerateArray()
+                    .Any(x => x.GetProperty("details").GetString() == details)
+            )
+            .IsTrue();
     }
 
     private static async Task<(int PatientId, int VisitId)> RegisterAsync(HttpClient client)

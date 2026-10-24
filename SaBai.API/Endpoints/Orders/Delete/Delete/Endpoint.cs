@@ -15,7 +15,11 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var order = await db.Orders.FirstOrNotFoundAsync(x => x.Id == req.Id, "Order was not found.", ct);
+        var order = await db.Orders.FirstOrNotFoundAsync(
+            x => x.Id == req.Id,
+            "Order was not found.",
+            ct
+        );
         db.Orders.Remove(order);
         await db.SaveChangesAsync(ct);
         await Send.NoContentAsync(ct);

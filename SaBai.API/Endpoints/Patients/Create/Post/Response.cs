@@ -22,4 +22,7 @@ public sealed record Response(
     DateTimeOffset LastVisitDate,
     int LastVisitId,
     int VisitId,
-    int? VitalsId);
+    int? VitalsId,
+    bool HasPhoto,
+    bool HasFace
+);

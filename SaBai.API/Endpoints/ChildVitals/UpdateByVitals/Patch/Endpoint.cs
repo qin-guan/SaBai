@@ -15,7 +15,11 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var entity = await db.ChildVitals.FirstOrNotFoundAsync(x => x.VitalsId == req.VitalsId, "Child vitals were not found.", ct);
+        var entity = await db.ChildVitals.FirstOrNotFoundAsync(
+            x => x.VitalsId == req.VitalsId,
+            "Child vitals were not found.",
+            ct
+        );
 
         if (req.GrossMotor is not null)
         {

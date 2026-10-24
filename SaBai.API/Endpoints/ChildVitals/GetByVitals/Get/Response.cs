@@ -12,18 +12,21 @@ public sealed record Response(
     string? Heart,
     string? Abdomen,
     string? Lungs,
-    string? HernialOrifices)
+    string? HernialOrifices
+)
 {
-    public static Response From(global::SaBai.API.Domain.ChildVitals childVitals) => new(
-        childVitals.Id,
-        childVitals.VitalsId,
-        childVitals.GrossMotor,
-        childVitals.RedReflex,
-        childVitals.Scoliosis,
-        childVitals.Pallor,
-        childVitals.OralCavity,
-        childVitals.Heart,
-        childVitals.Abdomen,
-        childVitals.Lungs,
-        childVitals.HernialOrifices);
+    public static Response From(global::SaBai.API.Domain.ChildVitals childVitals) =>
+        new(
+            childVitals.Id,
+            childVitals.VitalsId,
+            childVitals.GrossMotor,
+            childVitals.RedReflex,
+            childVitals.Scoliosis,
+            childVitals.Pallor,
+            childVitals.OralCavity,
+            childVitals.Heart,
+            childVitals.Abdomen,
+            childVitals.Lungs,
+            childVitals.HernialOrifices
+        );
 }

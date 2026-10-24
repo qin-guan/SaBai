@@ -17,7 +17,11 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var consult = await db.Consults.FirstOrNotFoundAsync(x => x.Id == req.Id, "Consult was not found.", ct);
+        var consult = await db.Consults.FirstOrNotFoundAsync(
+            x => x.Id == req.Id,
+            "Consult was not found.",
+            ct
+        );
         if (await db.Referrals.AnyAsync(x => x.ConsultId == consult.Id, ct))
         {
             throw new ConflictException("Cannot delete a consult that still has referrals.");

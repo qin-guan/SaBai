@@ -18,8 +18,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        _ = await db.Vitals
-            .AsNoTracking()
+        _ = await db
+            .Vitals.AsNoTracking()
             .FirstOrNotFoundAsync(x => x.Id == req.VitalsId, "Vitals were not found.", ct);
 
         if (await db.ChildVitals.AnyAsync(x => x.VitalsId == req.VitalsId, ct))
@@ -45,11 +45,18 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
         {
             await db.SaveChangesAsync(ct);
         }
-        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+        catch (DbUpdateException ex)
+            when (ex.InnerException
+                    is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation }
+            )
         {
             throw new ConflictException("Child vitals already exist for this vitals record.");
         }
 
-        await Send.CreatedAtAsync<Get.Endpoint>(new { childVitals.Id }, Response.From(childVitals), cancellation: ct);
+        await Send.CreatedAtAsync<Get.Endpoint>(
+            new { childVitals.Id },
+            Response.From(childVitals),
+            cancellation: ct
+        );
     }
 }

@@ -2,7 +2,7 @@ services:
   compose-dashboard:
     image: "mcr.microsoft.com/dotnet/nightly/aspire-dashboard:13.6"
     ports:
-      - "18888"
+      - "18888:18888"
     expose:
       - "18889"
       - "18890"
@@ -14,6 +14,9 @@ services:
     environment:
       QDRANT__SERVICE__API_KEY: "${QDRANT_KEY}"
       QDRANT__SERVICE__ENABLE_STATIC_CONTENT: "0"
+    ports:
+      - "6333:6333"
+      - "6334:6334"
     expose:
       - "6334"
       - "6333"
@@ -31,6 +34,7 @@ services:
       POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_DB: "sabai"
     expose:
       - "5432"
     volumes:
@@ -40,6 +44,23 @@ services:
         read_only: false
     networks:
       - "aspire"
+  pgadmin:
+    image: "docker.io/dpage/pgadmin4:9.15.0"
+    environment:
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_DEFAULT_EMAIL: "admin@domain.com"
+      PGADMIN_DEFAULT_PASSWORD: "admin"
+    ports:
+      - "5050:80"
+    expose:
+      - "80"
+    networks:
+      - "aspire"
+    configs:
+      - source: "pgadmin__pgadmin4_servers.json"
+        target: "/pgadmin4/servers.json"
+        mode: 0644
   fs:
     image: "rustfs/rustfs:latest"
     environment:
@@ -52,6 +73,8 @@ services:
       RUSTFS_ACCESS_KEY: "${RUSTFSACCESSKEY}"
       RUSTFS_SECRET_KEY: "${RUSTFSSECRETKEY}"
       RUSTFS_OBS_LOGGER_LEVEL: "info"
+    ports:
+      - "9001:9001"
     expose:
       - "9000"
       - "9001"
@@ -67,7 +90,9 @@ services:
     networks:
       - "aspire"
   api:
-    image: "${API_IMAGE}"
+    build:
+      context: "."
+      dockerfile: "SaBai.API/Dockerfile"
     environment:
       OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
       ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
@@ -98,12 +123,34 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://compose-dashboard:18889"
       OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
       OTEL_SERVICE_NAME: "api"
+    ports:
+      - "8080:8080"
     expose:
       - "${API_PORT}"
     depends_on:
       postgres:
         condition: "service_started"
       fs:
+        condition: "service_started"
+    networks:
+      - "aspire"
+  frontend:
+    build:
+      context: "."
+      dockerfile: "SaBai.Web/Dockerfile"
+    environment:
+      NEXT_PUBLIC_API_URL: "http://api:${API_PORT}"
+      PORT: "3000"
+      HOSTNAME: "0.0.0.0"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://compose-dashboard:18889"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "frontend"
+    ports:
+      - "3000:3000"
+    expose:
+      - "3000"
+    depends_on:
+      api:
         condition: "service_started"
     networks:
       - "aspire"
@@ -119,3 +166,6 @@ volumes:
     driver: "local"
   fs-logs:
     driver: "local"
+configs:
+  pgadmin__pgadmin4_servers.json:
+    content: "{\n  \"Servers\": {\n    \"1\": {\n      \"Name\": \"postgres\",\n      \"Group\": \"Servers\",\n      \"Host\": \"postgres\",\n      \"Port\": 5432,\n      \"Username\": \"postgres\",\n      \"SSLMode\": \"prefer\",\n      \"MaintenanceDB\": \"postgres\",\n      \"PasswordExecCommand\": \"echo \\u0027h_6{sT4SM~WHaruzxuUNVd\\u0027\"\n    }\n  }\n}"

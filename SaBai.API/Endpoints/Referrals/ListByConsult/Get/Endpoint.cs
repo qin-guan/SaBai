@@ -16,9 +16,11 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, List<Response>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        _ = await db.Consults.AsNoTracking().FirstOrNotFoundAsync(x => x.Id == req.ConsultId, "Consult was not found.", ct);
-        var referrals = await db.Referrals
-            .AsNoTracking()
+        _ = await db
+            .Consults.AsNoTracking()
+            .FirstOrNotFoundAsync(x => x.Id == req.ConsultId, "Consult was not found.", ct);
+        var referrals = await db
+            .Referrals.AsNoTracking()
             .Where(x => x.ConsultId == req.ConsultId)
             .OrderByDescending(x => x.CreatedAt)
             .ThenByDescending(x => x.Id)
@@ -29,7 +31,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, List<Response>
                 x.ReferralState,
                 x.ReferralOutcome,
                 x.ConsultId,
-                x.CreatedAt))
+                x.CreatedAt
+            ))
             .ToListAsync(ct);
 
         await Send.OkAsync(referrals, ct);

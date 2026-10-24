@@ -18,7 +18,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
         var stock = await db.MedicationStocks.FirstOrNotFoundAsync(
             x => x.Id == req.Id,
             "Medication stock was not found.",
-            ct);
+            ct
+        );
 
         if (!string.IsNullOrWhiteSpace(req.Location))
         {
@@ -34,7 +35,16 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
         await db.SaveChangesAsync(ct);
 
         await Send.OkAsync(
-            new Response(stock.Id, stock.MedicationBrandId, stock.Quantity, stock.Expiry, stock.Location, stock.StockStatus, stock.Remarks),
-            ct);
+            new Response(
+                stock.Id,
+                stock.MedicationBrandId,
+                stock.Quantity,
+                stock.Expiry,
+                stock.Location,
+                stock.StockStatus,
+                stock.Remarks
+            ),
+            ct
+        );
     }
 }

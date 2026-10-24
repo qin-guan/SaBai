@@ -12,4 +12,5 @@ public sealed record Response(
     StockStatus StockStatus,
     string? Remarks,
     string BrandName,
-    string IngredientName);
+    string IngredientName
+);

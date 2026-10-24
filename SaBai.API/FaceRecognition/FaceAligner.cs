@@ -57,26 +57,39 @@ public readonly record struct SimilarityTransform(double A, double B, double Tx,
         if (src.Count != dst.Count || src.Count < 2)
             throw new ArgumentException("Need at least two matching point pairs.");
 
-        double msx = 0, msy = 0, mdx = 0, mdy = 0;
+        double msx = 0,
+            msy = 0,
+            mdx = 0,
+            mdy = 0;
         for (var i = 0; i < src.Count; i++)
         {
-            msx += src[i].X; msy += src[i].Y;
-            mdx += dst[i].X; mdy += dst[i].Y;
+            msx += src[i].X;
+            msy += src[i].Y;
+            mdx += dst[i].X;
+            mdy += dst[i].Y;
         }
 
-        msx /= src.Count; msy /= src.Count; mdx /= src.Count; mdy /= src.Count;
+        msx /= src.Count;
+        msy /= src.Count;
+        mdx /= src.Count;
+        mdy /= src.Count;
 
-        double norm = 0, dot = 0, cross = 0;
+        double norm = 0,
+            dot = 0,
+            cross = 0;
         for (var i = 0; i < src.Count; i++)
         {
-            double ax = src[i].X - msx, ay = src[i].Y - msy;
-            double bx = dst[i].X - mdx, by = dst[i].Y - mdy;
+            double ax = src[i].X - msx,
+                ay = src[i].Y - msy;
+            double bx = dst[i].X - mdx,
+                by = dst[i].Y - mdy;
             norm += ax * ax + ay * ay;
             dot += ax * bx + ay * by;
             cross += ax * by - ay * bx;
         }
 
-        if (norm < 1e-12) throw new ArgumentException("Source points are degenerate.");
+        if (norm < 1e-12)
+            throw new ArgumentException("Source points are degenerate.");
 
         var a = dot / norm;
         var b = cross / norm;

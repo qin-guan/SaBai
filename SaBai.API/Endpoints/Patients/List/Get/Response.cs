@@ -23,4 +23,7 @@ public sealed record Item(
     string DisplayId,
     string FilterString,
     DateTimeOffset? LastVisitDate,
-    int? LastVisitId);
+    int? LastVisitId,
+    bool HasPhoto,
+    bool HasFace
+);

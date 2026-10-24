@@ -18,8 +18,14 @@ public sealed class EyesightTests(AppFixture fixture)
         // Act
         var created = await client.PostAsJsonAsync(
             "/eyesight",
-            new { visitId, leftEyeDegree = "6/9+2", leftEyePinhole = "ni" },
-            ApiJson.Options);
+            new
+            {
+                visitId,
+                leftEyeDegree = "6/9+2",
+                leftEyePinhole = "ni",
+            },
+            ApiJson.Options
+        );
         var fetched = await client.GetAsync($"/visits/{visitId}/eyesight");
         var body = await fetched.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
 
@@ -42,7 +48,8 @@ public sealed class EyesightTests(AppFixture fixture)
         var response = await client.PostAsJsonAsync(
             "/eyesight",
             new { visitId, leftEyeDegree = "20/20" },
-            ApiJson.Options);
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
@@ -60,7 +67,8 @@ public sealed class EyesightTests(AppFixture fixture)
         var response = await client.PostAsJsonAsync(
             "/eyesight",
             new { visitId, leftEyePinhole = "nope" },
-            ApiJson.Options);
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
@@ -76,14 +84,16 @@ public sealed class EyesightTests(AppFixture fixture)
         var created = await client.PostAsJsonAsync(
             "/eyesight",
             new { visitId, leftEyeDegree = "6/6" },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         created.EnsureSuccessStatusCode();
 
         // Act
         var again = await client.PostAsJsonAsync(
             "/eyesight",
             new { visitId, leftEyeDegree = "6/9" },
-            ApiJson.Options);
+            ApiJson.Options
+        );
 
         // Assert
         await Assert.That(again.StatusCode).IsEqualTo(HttpStatusCode.Conflict);
@@ -113,9 +123,13 @@ public sealed class EyesightTests(AppFixture fixture)
         var created = await client.PostAsJsonAsync(
             "/eyesight",
             new { visitId, leftEyeDegree = "CF" },
-            ApiJson.Options);
+            ApiJson.Options
+        );
         created.EnsureSuccessStatusCode();
-        var id = ClinicSetup.ReadInt(await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options), "id");
+        var id = ClinicSetup.ReadInt(
+            await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
+            "id"
+        );
 
         // Act
         var deleted = await client.DeleteAsync($"/eyesight/{id}");

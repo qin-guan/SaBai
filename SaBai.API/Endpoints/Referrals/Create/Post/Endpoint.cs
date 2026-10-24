@@ -17,7 +17,11 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        _ = await db.Consults.FirstOrNotFoundAsync(x => x.Id == req.ConsultId, "Consult was not found.", ct);
+        _ = await db.Consults.FirstOrNotFoundAsync(
+            x => x.Id == req.ConsultId,
+            "Consult was not found.",
+            ct
+        );
         var referral = new Referral
         {
             ReferredFor = req.ReferredFor.Trim(),
@@ -30,8 +34,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
         db.Referrals.Add(referral);
         await db.SaveChangesAsync(ct);
 
-        var created = await db.Referrals
-            .AsNoTracking()
+        var created = await db
+            .Referrals.AsNoTracking()
             .Where(x => x.Id == referral.Id)
             .Select(x => new Response(
                 x.Id,
@@ -45,7 +49,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                 x.Consult.DoctorId,
                 x.Consult.Visit.PatientId,
                 x.Consult.Visit.Patient.Name,
-                x.Consult.Doctor.Nickname))
+                x.Consult.Doctor.Nickname
+            ))
             .FirstAsync(ct);
 
         await Send.CreatedAtAsync<Get.Endpoint>(new { referral.Id }, created, cancellation: ct);

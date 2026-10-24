@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using SaBai.API.Domain;
 using SaBai.Tests.Support;
+using HasRecentVisitResponse = SaBai.API.Endpoints.Visits.HasRecent.Get.Response;
 using PatientVisitsResponse = SaBai.API.Endpoints.Patients.Visits.Get.Response;
 using VisitListResponse = SaBai.API.Endpoints.Visits.List.Get.Response;
 
@@ -70,5 +71,48 @@ public sealed class VisitTests(AppFixture fixture)
         // Assert
         await Assert.That(deleted.StatusCode).IsEqualTo(HttpStatusCode.NoContent);
         await Assert.That(missing.StatusCode).IsEqualTo(HttpStatusCode.NotFound);
+    }
+
+    [Test]
+    public async Task HasRecent_AfterRegistration_ReturnsVisitDate()
+    {
+        // Arrange
+        var client = fixture.CreateHttpClient("api");
+        await client.LoginAsync();
+        var code = ClinicSamples.Code();
+        var village = await ClinicSamples.CreateVillageAsync(client, code);
+        var patient = await ClinicSamples.RegisterAsync(client, village.Id, $"Repeat {code}");
+
+        // Act
+        var recent = await client.GetFromJsonAsync<HasRecentVisitResponse>(
+            $"/visits/recent?patientId={patient.Id}",
+            ApiJson.Options
+        );
+
+        // Assert
+        await Assert.That(recent!.HasRecentVisit).IsTrue();
+        await Assert.That(recent.ExistingVisitDate).IsNotNull();
+    }
+
+    [Test]
+    public async Task HasRecent_WithoutVisit_ReturnsFalse()
+    {
+        // Arrange
+        var client = fixture.CreateHttpClient("api");
+        await client.LoginAsync();
+        var code = ClinicSamples.Code();
+        var village = await ClinicSamples.CreateVillageAsync(client, code);
+        var patient = await ClinicSamples.RegisterAsync(client, village.Id, $"Fresh {code}");
+        (await client.DeleteAsync($"/visits/{patient.VisitId}")).EnsureSuccessStatusCode();
+
+        // Act
+        var recent = await client.GetFromJsonAsync<HasRecentVisitResponse>(
+            $"/visits/recent?patientId={patient.Id}",
+            ApiJson.Options
+        );
+
+        // Assert
+        await Assert.That(recent!.HasRecentVisit).IsFalse();
+        await Assert.That(recent.ExistingVisitDate).IsNull();
     }
 }

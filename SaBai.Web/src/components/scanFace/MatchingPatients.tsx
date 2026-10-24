@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/router";
 import toast from "react-hot-toast";
@@ -5,9 +6,11 @@ import { MdPersonSearch } from "react-icons/md";
 import {
   saBaiAPIEndpointsPatientsSearchByFacePostEndpoint,
   saBaiAPIEndpointsVisitsCreatePostEndpoint,
+  saBaiAPIEndpointsVisitsHasRecentGetEndpoint,
 } from "@sabai/sdk/clients";
 import { Mode } from "@/types/scan";
 import { Button } from "@/components/interactive/Button/Button";
+import Modal from "@/components/interactive/Modal";
 import { PatientPhoto } from "@/components/PatientPhoto";
 import { apiConfig } from "@/lib/api/config";
 import { getApiErrorMessage } from "@/lib/api/errors";
@@ -17,7 +20,8 @@ import { paths } from "@/utils/paths";
 
 /**
  * Searches the Qdrant face index for patients matching the captured photo and
- * lets the user open a visit for the best match.
+ * lets the user open a visit for the best match. Asks for confirmation when
+ * the patient already had a visit opened within the last minute.
  */
 export default function MatchingPatients({
   imgDetails,
@@ -28,6 +32,11 @@ export default function MatchingPatients({
 }) {
   const router = useRouter();
   const { selectedVillageCodeId, isLoading: villageLoading } = useVillageCode();
+  const [duplicateVisitConfirmation, setDuplicateVisitConfirmation] = useState<{
+    patientId: number;
+    existingVisitDate: Date | null;
+  } | null>(null);
+  const [isCheckingDuplicate, setIsCheckingDuplicate] = useState(false);
 
   const search = useQuery({
     queryKey: ["patient-face-search", imgDetails],
@@ -58,20 +67,50 @@ export default function MatchingPatients({
     },
   });
 
-  const handleSelect = async (patientId: number) => {
-    if (!selectedVillageCodeId) {
-      toast.error("Please select a village code before starting a visit.");
-      return;
-    }
-
+  const submitCreateVisit = async (patientId: number) => {
     try {
       await createVisit.mutateAsync(patientId);
+      setDuplicateVisitConfirmation(null);
       router.push(paths.vitalsDetail(patientId));
     } catch (error) {
       toast.error(
         getApiErrorMessage(error, "Failed to start a visit for this patient."),
       );
     }
+  };
+
+  const handleSelect = async (patientId: number) => {
+    if (!selectedVillageCodeId) {
+      toast.error("Please select a village code before starting a visit.");
+      return;
+    }
+
+    setIsCheckingDuplicate(true);
+    let recent;
+    try {
+      recent = await saBaiAPIEndpointsVisitsHasRecentGetEndpoint({
+        ...apiConfig,
+        query: { patientId },
+        throwOnError: true,
+      }).unwrap();
+    } catch {
+      // Don't block visit creation if the duplicate check itself fails.
+      recent = null;
+    } finally {
+      setIsCheckingDuplicate(false);
+    }
+
+    if (recent?.hasRecentVisit) {
+      setDuplicateVisitConfirmation({
+        patientId,
+        existingVisitDate: recent.existingVisitDate
+          ? new Date(recent.existingVisitDate)
+          : null,
+      });
+      return;
+    }
+
+    await submitCreateVisit(patientId);
   };
 
   const matches = search.data ?? [];
@@ -131,12 +170,52 @@ export default function MatchingPatients({
               <Button
                 onClick={() => handleSelect(match.id)}
                 colour="emerald"
-                title={createVisit.isPending ? "Starting…" : "Select"}
-                disabled={createVisit.isPending || villageLoading}
+                title={
+                  isCheckingDuplicate || createVisit.isPending
+                    ? "Starting…"
+                    : "Select"
+                }
+                disabled={
+                  isCheckingDuplicate || createVisit.isPending || villageLoading
+                }
               />
             </li>
           ))}
         </ul>
+      )}
+
+      {duplicateVisitConfirmation !== null && (
+        <Modal
+          title="Duplicate Visit"
+          onClose={() => setDuplicateVisitConfirmation(null)}
+        >
+          <p className="mb-6 text-slate-700">
+            A visit already exists for this patient
+            {duplicateVisitConfirmation.existingVisitDate && (
+              <>
+                {" "}
+                at{" "}
+                {duplicateVisitConfirmation.existingVisitDate.toLocaleTimeString()}
+              </>
+            )}
+            . Are you sure you want to create another?
+          </p>
+          <div className="flex justify-end gap-3">
+            <Button
+              colour="red"
+              title="Cancel"
+              onClick={() => setDuplicateVisitConfirmation(null)}
+            />
+            <Button
+              colour="emerald"
+              title={createVisit.isPending ? "Creating..." : "Confirm"}
+              disabled={createVisit.isPending}
+              onClick={() =>
+                submitCreateVisit(duplicateVisitConfirmation.patientId)
+              }
+            />
+          </div>
+        </Modal>
       )}
     </div>
   );

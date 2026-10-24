@@ -119,6 +119,7 @@ import { saBaiAPIEndpointsVisionGetEndpointHandler } from './saBaiAPIEndpointsVi
 import { saBaiAPIEndpointsVisitsCreatePostEndpointHandler } from './saBaiAPIEndpointsVisitsCreatePostEndpoint'
 import { saBaiAPIEndpointsVisitsDeleteDeleteEndpointHandler } from './saBaiAPIEndpointsVisitsDeleteDeleteEndpoint'
 import { saBaiAPIEndpointsVisitsGetEndpointHandler } from './saBaiAPIEndpointsVisitsGetEndpoint'
+import { saBaiAPIEndpointsVisitsHasRecentGetEndpointHandler } from './saBaiAPIEndpointsVisitsHasRecentGetEndpoint'
 import { saBaiAPIEndpointsVisitsListGetEndpointHandler } from './saBaiAPIEndpointsVisitsListGetEndpoint'
 import { saBaiAPIEndpointsVisitsUpdatePatchEndpointHandler } from './saBaiAPIEndpointsVisitsUpdatePatchEndpoint'
 import { saBaiAPIEndpointsVitalsCreatePostEndpointHandler } from './saBaiAPIEndpointsVitalsCreatePostEndpoint'
@@ -244,6 +245,7 @@ import { saBaiAPIEndpointsVisionGetEndpointQueryVisitIdSchema, saBaiAPIEndpoints
 import { saBaiAPIEndpointsVisitsCreatePostEndpointBodySchema, saBaiAPIEndpointsVisitsCreatePostEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsVisitsCreatePostEndpointSchema'
 import { saBaiAPIEndpointsVisitsDeleteDeleteEndpointPathIdSchema, saBaiAPIEndpointsVisitsDeleteDeleteEndpointStatus204Schema } from '../zod/saBaiAPIEndpointsVisitsDeleteDeleteEndpointSchema'
 import { saBaiAPIEndpointsVisitsGetEndpointPathIdSchema, saBaiAPIEndpointsVisitsGetEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsVisitsGetEndpointSchema'
+import { saBaiAPIEndpointsVisitsHasRecentGetEndpointQueryPatientIdSchema, saBaiAPIEndpointsVisitsHasRecentGetEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsVisitsHasRecentGetEndpointSchema'
 import { saBaiAPIEndpointsVisitsListGetEndpointQueryPatientIdSchema, saBaiAPIEndpointsVisitsListGetEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsVisitsListGetEndpointSchema'
 import { saBaiAPIEndpointsVisitsUpdatePatchEndpointBodySchema, saBaiAPIEndpointsVisitsUpdatePatchEndpointPathIdSchema, saBaiAPIEndpointsVisitsUpdatePatchEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsVisitsUpdatePatchEndpointSchema'
 import { saBaiAPIEndpointsVitalsCreatePostEndpointBodySchema, saBaiAPIEndpointsVitalsCreatePostEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsVitalsCreatePostEndpointSchema'
@@ -1339,6 +1341,16 @@ export function getServer() {
     inputSchema: { body: saBaiAPIEndpointsVisitsCreatePostEndpointBodySchema },
   }, async ({ body }, request) => {
     return saBaiAPIEndpointsVisitsCreatePostEndpointHandler({ body }, request)
+  })
+
+
+  server.registerTool("SaBaiAPIEndpointsVisitsHasRecentGetEndpoint", {
+    title: "Check whether a patient had a visit opened in the last minute",
+    description: "Make a GET request to /visits/recent",
+    outputSchema: { data: saBaiAPIEndpointsVisitsHasRecentGetEndpointStatus200Schema },
+    inputSchema: { query: z.object({ "patientId": saBaiAPIEndpointsVisitsHasRecentGetEndpointQueryPatientIdSchema }) },
+  }, async ({ query }, request) => {
+    return saBaiAPIEndpointsVisitsHasRecentGetEndpointHandler({ query }, request)
   })
 
 

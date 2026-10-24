@@ -61,7 +61,9 @@ jobs:
             core.exportVariable('ACTIONS_RESULTS_URL', process.env['ACTIONS_RESULTS_URL']);
 
       - name: Run tests
-        run: dotnet test --no-build --configuration Release
+        run: |
+          dotnet dev-certs https --trust
+          dotnet test --no-build --configuration Release
 
       - name: Upload API server log
         if: always()

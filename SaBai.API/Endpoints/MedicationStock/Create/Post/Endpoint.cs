@@ -32,6 +32,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             Remarks = string.IsNullOrWhiteSpace(req.Remarks) ? null : req.Remarks.Trim(),
         };
         db.MedicationStocks.Add(stock);
+        db.StockChanges.AddRange(StockChangeLog.ForCreate(stock, User.Id(), DateTimeOffset.UtcNow));
         await db.SaveChangesAsync(ct);
 
         await Send.CreatedAtAsync<List.Get.Endpoint>(

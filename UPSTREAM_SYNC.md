@@ -3,7 +3,7 @@
 SaBai is a port of [NUS-Project-SaBai/project-sabai](https://github.com/NUS-Project-SaBai/project-sabai).
 Merges to upstream `dev` are ported here daily.
 
-Last synced upstream commit: `703cc08f7bd6aa52f9a39aa60f2d5bae41b65cfc`
+Last synced upstream commit: `19d049de1c4b25f4f560ccd1b1f75d63d898f5c6`
 
 ## Mapping upstream changes
 
@@ -24,3 +24,11 @@ Last synced upstream commit: `703cc08f7bd6aa52f9a39aa60f2d5bae41b65cfc`
   authenticated staff role.
 - Upstream #278 changed `.husky/pre-commit` to run `lint-staged`; only the `lint-staged`
   config was ported because this repo has no husky hook.
+- Upstream #243 logs stock changes with a Postgres trigger. Here the same rows are written in
+  code via `Domain/StockChangeLog.cs`, in the same `SaveChanges` as the stock edit, so the
+  current WorkOS user is recorded without session variables. Order approval keeps its own
+  quantity rows (upstream has no equivalent flow yet).
+- Upstream #286 (friendly duplicate village code error) was already covered: the API returns
+  409 with a message and the modal shows it.
+- Upstream #307 (`pnpm install --frozen-lockfile` in CI) was already covered by
+  `SaBai.Web/Dockerfile`; no CI workflow here installs pnpm packages.

@@ -69,7 +69,6 @@ import { saBaiAPIEndpointsMedicationIngredientsListGetEndpointHandler } from './
 import { saBaiAPIEndpointsMedicationIngredientsUpdatePutEndpointHandler } from './saBaiAPIEndpointsMedicationIngredientsUpdatePutEndpoint'
 import { saBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointHandler } from './saBaiAPIEndpointsMedicationStockAdjustmentsPostEndpoint'
 import { saBaiAPIEndpointsMedicationStockCreatePostEndpointHandler } from './saBaiAPIEndpointsMedicationStockCreatePostEndpoint'
-import { saBaiAPIEndpointsMedicationStockDeleteDeleteEndpointHandler } from './saBaiAPIEndpointsMedicationStockDeleteDeleteEndpoint'
 import { saBaiAPIEndpointsMedicationStockListGetEndpointHandler } from './saBaiAPIEndpointsMedicationStockListGetEndpoint'
 import { saBaiAPIEndpointsMedicationStockSplitsPostEndpointHandler } from './saBaiAPIEndpointsMedicationStockSplitsPostEndpoint'
 import { saBaiAPIEndpointsMedicationStockUpdatePatchEndpointHandler } from './saBaiAPIEndpointsMedicationStockUpdatePatchEndpoint'
@@ -195,7 +194,6 @@ import { saBaiAPIEndpointsMedicationIngredientsListGetEndpointStatus200Schema } 
 import { saBaiAPIEndpointsMedicationIngredientsUpdatePutEndpointBodySchema, saBaiAPIEndpointsMedicationIngredientsUpdatePutEndpointPathIdSchema, saBaiAPIEndpointsMedicationIngredientsUpdatePutEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsMedicationIngredientsUpdatePutEndpointSchema'
 import { saBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointBodySchema, saBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointPathIdSchema, saBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointSchema'
 import { saBaiAPIEndpointsMedicationStockCreatePostEndpointBodySchema, saBaiAPIEndpointsMedicationStockCreatePostEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsMedicationStockCreatePostEndpointSchema'
-import { saBaiAPIEndpointsMedicationStockDeleteDeleteEndpointPathIdSchema, saBaiAPIEndpointsMedicationStockDeleteDeleteEndpointStatus204Schema } from '../zod/saBaiAPIEndpointsMedicationStockDeleteDeleteEndpointSchema'
 import { saBaiAPIEndpointsMedicationStockListGetEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsMedicationStockListGetEndpointSchema'
 import { saBaiAPIEndpointsMedicationStockSplitsPostEndpointBodySchema, saBaiAPIEndpointsMedicationStockSplitsPostEndpointPathIdSchema, saBaiAPIEndpointsMedicationStockSplitsPostEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsMedicationStockSplitsPostEndpointSchema'
 import { saBaiAPIEndpointsMedicationStockUpdatePatchEndpointBodySchema, saBaiAPIEndpointsMedicationStockUpdatePatchEndpointPathIdSchema, saBaiAPIEndpointsMedicationStockUpdatePatchEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsMedicationStockUpdatePatchEndpointSchema'
@@ -884,16 +882,6 @@ export function getServer() {
     inputSchema: { path: z.object({ "id": saBaiAPIEndpointsMedicationStockUpdatePatchEndpointPathIdSchema }), body: saBaiAPIEndpointsMedicationStockUpdatePatchEndpointBodySchema },
   }, async ({ path, body }, request) => {
     return saBaiAPIEndpointsMedicationStockUpdatePatchEndpointHandler({ path, body }, request)
-  })
-
-
-  server.registerTool("SaBaiAPIEndpointsMedicationStockDeleteDeleteEndpoint", {
-    title: "Delete a medication stock lot",
-    description: "Make a DELETE request to /medication-stock/{id}",
-    outputSchema: { data: saBaiAPIEndpointsMedicationStockDeleteDeleteEndpointStatus204Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsMedicationStockDeleteDeleteEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsMedicationStockDeleteDeleteEndpointHandler({ path }, request)
   })
 
 

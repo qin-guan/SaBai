@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using SaBai.Tests.Support;
@@ -163,7 +164,63 @@ public sealed class StockTests(AppFixture fixture)
         await Assert.That(lot.Location).IsEqualTo(updatedLocation);
     }
 
+    [Test]
+    public async Task CreateAndSplit_RecordQuantityHistory()
+    {
+        // Arrange
+        var client = fixture.CreateHttpClient("api");
+        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        var suffix = ClinicSetup.Suffix();
+        var (stockId, brandId) = await CreateStockWithBrandAsync(
+            client,
+            suffix,
+            quantity: 6,
+            $"history-{suffix}"
+        );
+
+        // Act
+        var split = await client.PostAsJsonAsync(
+            $"/medication-stock/{stockId}/splits",
+            new
+            {
+                splits = new object[]
+                {
+                    new
+                    {
+                        quantity = 4,
+                        location = $"left-{suffix}",
+                        stockStatus = "active",
+                    },
+                    new
+                    {
+                        quantity = 2,
+                        location = $"right-{suffix}",
+                        stockStatus = "active",
+                    },
+                },
+            },
+            ApiJson.Options
+        );
+        var history = await client.GetFromJsonAsync<List<HistoryRow>>(
+            $"/medication-history?brandId={brandId}",
+            ApiJson.Options
+        );
+
+        // Assert
+        await Assert.That(split.StatusCode).IsEqualTo(HttpStatusCode.OK);
+        await Assert
+            .That(history!.Where(x => x.Kind == "adjustment").Select(x => x.QuantityChanged).Order())
+            .IsEquivalentTo(new[] { -6, 2, 4, 6 });
+    }
+
     private static async Task<int> CreateStockAsync(
+        HttpClient client,
+        string suffix,
+        int quantity,
+        string location
+    ) => (await CreateStockWithBrandAsync(client, suffix, quantity, location)).StockId;
+
+    private static async Task<(int StockId, int BrandId)> CreateStockWithBrandAsync(
         HttpClient client,
         string suffix,
         int quantity,
@@ -213,10 +270,11 @@ public sealed class StockTests(AppFixture fixture)
             ApiJson.Options
         );
         stock.EnsureSuccessStatusCode();
-        return ClinicSetup.ReadInt(
+        var stockId = ClinicSetup.ReadInt(
             await stock.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
             "id"
         );
+        return (stockId, brandId);
     }
 
     private static StockLot FindLot(string body, int stockId)
@@ -229,4 +287,6 @@ public sealed class StockTests(AppFixture fixture)
     }
 
     private sealed record StockLot(int Id, int Quantity, string Location);
+
+    private sealed record HistoryRow(string Kind, int QuantityChanged);
 }

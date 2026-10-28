@@ -18,5 +18,9 @@ export const saBaiAPIEndpointsReferralsGetResponseSchema = z.object({
   doctorId: z.uuid(),
   patientId: z.int32(),
   patientName: z.string(),
+  hasPhoto: z.boolean(),
+  villageCodeId: z.int32(),
+  villageCode: z.string(),
+  villageColorHex: z.string(),
   doctorNickname: z.string(),
 })

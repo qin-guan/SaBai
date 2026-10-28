@@ -22,6 +22,10 @@ export function createSaBaiAPIEndpointsReferralsGetResponse<TData extends Partia
   doctorId: faker.string.uuid(),
   patientId: faker.number.int(),
   patientName: faker.string.alpha(),
+  hasPhoto: faker.datatype.boolean(),
+  villageCodeId: faker.number.int(),
+  villageCode: faker.string.alpha(),
+  villageColorHex: faker.string.alpha(),
   doctorNickname: faker.string.alpha(),
 }
   return {

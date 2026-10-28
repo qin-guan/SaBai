@@ -4,6 +4,7 @@ import { saBaiAPIEndpointsVillageCodesListGetEndpointQueryOptions } from "@sabai
 import type { VillageCode } from "@/lib/context/VillageCodeContext";
 import { apiConfig } from "@/lib/api/config";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import { paths } from "@/utils/paths";
 import TableHeader from "@/components/TableHeader";
 import TableRow from "@/components/TableRow";
 import TableCell from "@/components/TableCell";
@@ -22,10 +23,7 @@ function Content({
   openEdit: (code: VillageCode) => void;
   openDelete: (code: VillageCode) => void;
 }) {
-  const {
-    data,
-    isLoading,
-  } = useQuery(
+  const { data, isLoading } = useQuery(
     saBaiAPIEndpointsVillageCodesListGetEndpointQueryOptions(
       { query: { includeHidden: showHidden } },
       apiConfig,
@@ -115,7 +113,7 @@ function VillageCodesPage() {
         <Breadcrumbs
           items={[
             { label: "Home", href: "/" },
-            { label: "Settings" },
+            { label: "Settings", href: paths.settings() },
             { label: "Village Codes" },
           ]}
         />

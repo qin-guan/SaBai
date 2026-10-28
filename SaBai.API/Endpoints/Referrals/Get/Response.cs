@@ -2,7 +2,9 @@ using SaBai.API.Domain;
 
 namespace SaBai.API.Endpoints.Referrals.Get;
 
-/// <summary>Referral with consult, doctor nickname, and patient.</summary>
+/// <summary>
+/// Referral with consult, doctor nickname, patient, and the village of the visit it was made at.
+/// </summary>
 public sealed record Response(
     int Id,
     string ReferredFor,
@@ -15,5 +17,9 @@ public sealed record Response(
     Guid DoctorId,
     int PatientId,
     string PatientName,
+    bool HasPhoto,
+    int VillageCodeId,
+    string VillageCode,
+    string VillageColorHex,
     string DoctorNickname
 );

@@ -37,6 +37,10 @@ public sealed class ReferralTests(AppFixture fixture)
         await Assert.That(items!.Any(x => ClinicSetup.ReadInt(x, "id") == id)).IsTrue();
         await Assert.That(fetched.StatusCode).IsEqualTo(HttpStatusCode.OK);
         await Assert.That(body.GetProperty("patientName").GetString()).IsEqualTo(patientName);
+        await Assert.That(body.GetProperty("hasPhoto").GetBoolean()).IsFalse();
+        await Assert.That(ClinicSetup.ReadInt(body, "villageCodeId")).IsGreaterThan(0);
+        await Assert.That(body.GetProperty("villageCode").GetString()).IsNotNull();
+        await Assert.That(body.GetProperty("villageColorHex").GetString()).IsNotNull();
     }
 
     [Test]

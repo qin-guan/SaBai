@@ -110,9 +110,7 @@ describe("VillageCodesPage", () => {
             mocks.listLoading
               ? new Promise(() => {})
               : Promise.resolve({ villageCodes: codes }),
-          initialData: mocks.listLoading
-            ? undefined
-            : { villageCodes: codes },
+          initialData: mocks.listLoading ? undefined : { villageCodes: codes },
           staleTime: Infinity,
         };
       },
@@ -130,7 +128,10 @@ describe("VillageCodesPage", () => {
       screen.getByRole("heading", { name: "Village Codes" }),
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Home" })).toBeInTheDocument();
-    expect(screen.getByText("Settings")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Settings" })).toHaveAttribute(
+      "href",
+      "/settings",
+    );
   });
 
   it("displays loading state", () => {

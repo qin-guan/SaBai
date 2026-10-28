@@ -7,6 +7,8 @@ import {
   saBaiAPIEndpointsPatientsVisitsGetEndpointQueryOptions,
 } from "@sabai/sdk/hooks";
 import withDefaultLayout from "@/components/layouts/withDefaultLayout";
+import PatientTopMenuLayout from "@/components/layouts/PatientTopMenuLayout";
+import { paths } from "@/utils/paths";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { apiConfig } from "@/lib/api/config";
 import LoadingSpinner from "@/components/LoadingSpinner";
@@ -142,6 +144,11 @@ function ConsultsPage() {
   );
 }
 
-ConsultsPage.getLayout = (page: React.ReactNode) => withDefaultLayout(page);
+ConsultsPage.getLayout = (page: React.ReactNode) =>
+  withDefaultLayout(
+    <PatientTopMenuLayout getPatientLink={paths.consultsDetail}>
+      {page}
+    </PatientTopMenuLayout>,
+  );
 
 export default ConsultsPage;

@@ -22,6 +22,10 @@ export function createSaBaiAPIEndpointsReferralsListGetResponse<TData extends Pa
   doctorId: faker.string.uuid(),
   patientId: faker.number.int(),
   patientName: faker.string.alpha(),
+  hasPhoto: faker.datatype.boolean(),
+  villageCodeId: faker.number.int(),
+  villageCode: faker.string.alpha(),
+  villageColorHex: faker.string.alpha(),
 }
   return {
     ...defaultFakeData,

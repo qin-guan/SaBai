@@ -69,22 +69,26 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                 throw new ConflictException("Splits are not distinct!");
             }
 
+            var userId = User.Id();
+            var now = DateTimeOffset.UtcNow;
             foreach (var child in children)
             {
-                db.MedicationStocks.Add(
-                    new SaBai.API.Domain.MedicationStock
-                    {
-                        MedicationBrandId = parent.MedicationBrandId,
-                        Quantity = child.Quantity,
-                        Expiry = parent.Expiry,
-                        Location = child.Location,
-                        StockStatus = child.StockStatus,
-                        Remarks = child.Remarks,
-                    }
-                );
+                var stock = new SaBai.API.Domain.MedicationStock
+                {
+                    MedicationBrandId = parent.MedicationBrandId,
+                    Quantity = child.Quantity,
+                    Expiry = parent.Expiry,
+                    Location = child.Location,
+                    StockStatus = child.StockStatus,
+                    Remarks = child.Remarks,
+                };
+                db.MedicationStocks.Add(stock);
+                db.StockChanges.AddRange(StockChangeLog.ForCreate(stock, userId, now));
             }
 
+            var before = StockChangeLog.Snapshot.Of(parent);
             parent.Quantity = 0;
+            db.StockChanges.AddRange(StockChangeLog.ForUpdate(before, parent, userId, now));
             await db.SaveChangesAsync(ct);
             await transaction.CommitAsync(ct);
             return new Response(true);

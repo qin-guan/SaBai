@@ -64,7 +64,6 @@ export { saBaiAPIEndpointsMedicationIngredientsListGetEndpointHandler } from './
 export { saBaiAPIEndpointsMedicationIngredientsUpdatePutEndpointHandler } from './saBaiAPIEndpointsMedicationIngredientsUpdatePutEndpoint'
 export { saBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointHandler } from './saBaiAPIEndpointsMedicationStockAdjustmentsPostEndpoint'
 export { saBaiAPIEndpointsMedicationStockCreatePostEndpointHandler } from './saBaiAPIEndpointsMedicationStockCreatePostEndpoint'
-export { saBaiAPIEndpointsMedicationStockDeleteDeleteEndpointHandler } from './saBaiAPIEndpointsMedicationStockDeleteDeleteEndpoint'
 export { saBaiAPIEndpointsMedicationStockListGetEndpointHandler } from './saBaiAPIEndpointsMedicationStockListGetEndpoint'
 export { saBaiAPIEndpointsMedicationStockSplitsPostEndpointHandler } from './saBaiAPIEndpointsMedicationStockSplitsPostEndpoint'
 export { saBaiAPIEndpointsMedicationStockUpdatePatchEndpointHandler } from './saBaiAPIEndpointsMedicationStockUpdatePatchEndpoint'

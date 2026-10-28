@@ -23,6 +23,8 @@ const mocks = vi.hoisted(() => ({
   villageCodes: { data: [] as unknown, loading: false },
   createPatient: vi.fn(),
   searchMatches: [] as SearchMatch[],
+  search: vi.fn(),
+  hasRecentVisit: vi.fn(),
   createVisit: vi.fn(),
   uploadPhoto: vi.fn(),
   enrollFace: vi.fn(),
@@ -51,8 +53,11 @@ vi.mock("@sabai/sdk/hooks", async (importOriginal) => {
 });
 
 vi.mock("@sabai/sdk/clients", () => ({
-  saBaiAPIEndpointsPatientsSearchByFacePostEndpoint: () => ({
-    unwrap: async () => ({ matches: mocks.searchMatches }),
+  saBaiAPIEndpointsPatientsSearchByFacePostEndpoint: (...args: unknown[]) => ({
+    unwrap: () => mocks.search(...args),
+  }),
+  saBaiAPIEndpointsVisitsHasRecentGetEndpoint: (...args: unknown[]) => ({
+    unwrap: () => mocks.hasRecentVisit(...args),
   }),
   saBaiAPIEndpointsVisitsCreatePostEndpoint: (...args: unknown[]) => {
     mocks.createVisit(...args);
@@ -154,6 +159,13 @@ describe("ScanFacePage", () => {
     mocks.villageCodes.loading = false;
     mocks.createPatient.mockResolvedValue({ id: 1 });
     mocks.searchMatches = [];
+    mocks.search.mockImplementation(async () => ({
+      matches: mocks.searchMatches,
+    }));
+    mocks.hasRecentVisit.mockResolvedValue({
+      hasRecentVisit: false,
+      existingVisitDate: null,
+    });
     mocks.createVisit.mockResolvedValue(undefined);
     mocks.uploadPhoto.mockResolvedValue(undefined);
     mocks.enrollFace.mockResolvedValue(undefined);
@@ -301,6 +313,166 @@ describe("ScanFacePage", () => {
         body: { patientId: 42, villageCodeId: 1 },
       }),
     );
+  });
+
+  it("asks for confirmation before creating a visit the patient already has", async () => {
+    const user = userEvent.setup();
+
+    window.localStorage.setItem(
+      "villageCodeState",
+      JSON.stringify({ selectedVillageCodeId: 1 }),
+    );
+    mocks.villageCodes.data = VILLAGE_CODES;
+    mocks.searchMatches = [
+      {
+        id: 42,
+        name: "Jane Doe",
+        displayId: "V00042",
+        villageCode: "V0",
+        villageColorHex: null,
+        hasPhoto: false,
+        similarity: 0.9,
+      },
+    ];
+    mocks.hasRecentVisit.mockResolvedValue({
+      hasRecentVisit: true,
+      existingVisitDate: "2026-10-28T08:00:00Z",
+    });
+
+    renderWithQueryClient(
+      <VillageCodeProvider>
+        <ScanFacePage />
+        <Toaster />
+      </VillageCodeProvider>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Capture" }));
+    await user.click(await screen.findByRole("button", { name: "Select" }));
+
+    expect(
+      await screen.findByText(/A visit already exists for this patient/),
+    ).toBeInTheDocument();
+    expect(mocks.hasRecentVisit).toHaveBeenCalledWith(
+      expect.objectContaining({ query: { patientId: 42 } }),
+    );
+    expect(mocks.createVisit).not.toHaveBeenCalled();
+
+    await user.click(await screen.findByRole("button", { name: "Confirm" }));
+
+    await waitFor(() => expect(mocks.createVisit).toHaveBeenCalledTimes(1));
+  });
+
+  it("displays a loading message while locating face matches", async () => {
+    const user = userEvent.setup();
+    mocks.search.mockImplementation(() => new Promise(() => {}));
+
+    renderWithQueryClient(
+      <VillageCodeProvider>
+        <ScanFacePage />
+      </VillageCodeProvider>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Capture" }));
+
+    expect(
+      await screen.findByText("Searching for matches…"),
+    ).toBeInTheDocument();
+  });
+
+  it("searches for matches with the captured image", async () => {
+    const user = userEvent.setup();
+
+    renderWithQueryClient(
+      <VillageCodeProvider>
+        <ScanFacePage />
+      </VillageCodeProvider>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Capture" }));
+
+    await waitFor(() => expect(mocks.search).toHaveBeenCalledTimes(1));
+    expect(mocks.search).toHaveBeenCalledWith(
+      expect.objectContaining({ body: { image: expect.any(File) } }),
+    );
+  });
+
+  it("displays an error message when the face search fails", async () => {
+    const user = userEvent.setup();
+    mocks.search.mockRejectedValue({ status: 500 });
+
+    renderWithQueryClient(
+      <VillageCodeProvider>
+        <ScanFacePage />
+      </VillageCodeProvider>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Capture" }));
+
+    expect(
+      await screen.findByText(
+        "Face search failed. Try again or register the patient manually.",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("shows an error toast when patient creation fails", async () => {
+    const user = userEvent.setup();
+
+    window.localStorage.setItem(
+      "villageCodeState",
+      JSON.stringify({ selectedVillageCodeId: 1 }),
+    );
+    mocks.villageCodes.data = VILLAGE_CODES;
+    mocks.createPatient.mockRejectedValue({ status: 500 });
+
+    const { container } = renderWithQueryClient(
+      <VillageCodeProvider>
+        <ScanFacePage />
+        <Toaster />
+      </VillageCodeProvider>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Capture" }));
+    await screen.findByText("Face matches");
+    await user.click(
+      screen.getByRole("button", { name: "Register New Patient" }),
+    );
+
+    await fillValidRegistrationForm(container);
+    await user.click(
+      screen.getByRole("button", { name: "Create New Patient" }),
+    );
+
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      "Failed to create patient. Please try again.",
+    );
+    expect(mocks.uploadPhoto).not.toHaveBeenCalled();
+  });
+
+  it("does not switch to captured state when the webcam returns a null screenshot", async () => {
+    const user = userEvent.setup();
+    const getScreenshot = Webcam.prototype.getScreenshot;
+    Webcam.prototype.getScreenshot = () => null;
+
+    try {
+      renderWithQueryClient(
+        <VillageCodeProvider>
+          <ScanFacePage />
+        </VillageCodeProvider>,
+      );
+
+      await user.click(screen.getByRole("button", { name: "Capture" }));
+
+      expect(
+        screen.getByRole("button", { name: "Capture" }),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: "Retake Photo" }),
+      ).not.toBeInTheDocument();
+      expect(mocks.search).not.toHaveBeenCalled();
+    } finally {
+      Webcam.prototype.getScreenshot = getScreenshot;
+    }
   });
 
   it("displays an error if a village code is not selected while creating a patient", async () => {

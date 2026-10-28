@@ -1,4 +1,3 @@
-using System.Globalization;
 using FastEndpoints;
 using SaBai.API.Auth;
 using SaBai.API.Data;
@@ -29,23 +28,15 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             throw new BadRequestException("Stock quantity cannot be negative.");
         }
 
-        var previous = stock.Quantity;
+        var before = StockChangeLog.Snapshot.Of(stock);
         stock.Quantity = newQuantity;
         if (req.Remarks is not null)
         {
             stock.Remarks = string.IsNullOrWhiteSpace(req.Remarks) ? null : req.Remarks.Trim();
         }
 
-        db.StockChanges.Add(
-            new StockChange
-            {
-                StockId = stock.Id,
-                Field = StockChangeField.Quantity,
-                PreviousValue = previous.ToString(CultureInfo.InvariantCulture),
-                NewValue = newQuantity.ToString(CultureInfo.InvariantCulture),
-                UserId = User.Id(),
-                CreatedAt = DateTimeOffset.UtcNow,
-            }
+        db.StockChanges.AddRange(
+            StockChangeLog.ForUpdate(before, stock, User.Id(), DateTimeOffset.UtcNow)
         );
         await db.SaveChangesAsync(ct);
 

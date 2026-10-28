@@ -23,6 +23,9 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             .Include(x => x.Consult)
                 .ThenInclude(x => x.Visit)
                     .ThenInclude(x => x.Patient)
+            .Include(x => x.Consult)
+                .ThenInclude(x => x.Visit)
+                    .ThenInclude(x => x.VillageCode)
             .FirstOrNotFoundAsync(x => x.Id == req.Id, "Referral was not found.", ct);
 
         await Send.OkAsync(
@@ -38,6 +41,10 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                 referral.Consult.DoctorId,
                 referral.Consult.Visit.PatientId,
                 referral.Consult.Visit.Patient.Name,
+                referral.Consult.Visit.Patient.PhotoStoredFileName != null,
+                referral.Consult.Visit.VillageCodeId,
+                referral.Consult.Visit.VillageCode.Code,
+                referral.Consult.Visit.VillageCode.ColorHex,
                 referral.Consult.Doctor.Nickname
             ),
             ct

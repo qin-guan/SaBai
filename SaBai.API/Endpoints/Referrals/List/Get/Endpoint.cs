@@ -31,7 +31,11 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
                 x.Consult.Date,
                 x.Consult.DoctorId,
                 x.Consult.Visit.PatientId,
-                x.Consult.Visit.Patient.Name
+                x.Consult.Visit.Patient.Name,
+                x.Consult.Visit.Patient.PhotoStoredFileName != null,
+                x.Consult.Visit.VillageCodeId,
+                x.Consult.Visit.VillageCode.Code,
+                x.Consult.Visit.VillageCode.ColorHex
             ))
             .ToListAsync(ct);
 

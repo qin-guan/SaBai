@@ -1,6 +1,7 @@
 import { useRouter } from "next/router";
 import { paths } from "@/utils/paths";
 import withDefaultLayout from "@/components/layouts/withDefaultLayout";
+import PatientTopMenuLayout from "@/components/layouts/PatientTopMenuLayout";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { useQuery } from "@tanstack/react-query";
 import { saBaiAPIEndpointsPatientsWithLatestVisitGetEndpointQueryOptions } from "@sabai/sdk/hooks";
@@ -133,11 +134,7 @@ function Wrapper({ children }: { children: ReactNode }) {
 
 function VisionPage() {
   const router = useRouter();
-  const {
-    data,
-    isLoading,
-    isError,
-  } = useQuery(
+  const { data, isLoading, isError } = useQuery(
     saBaiAPIEndpointsPatientsWithLatestVisitGetEndpointQueryOptions(apiConfig),
   );
   const patients = data?.patients;
@@ -192,6 +189,11 @@ function VisionPage() {
   return <Wrapper>{renderContent()}</Wrapper>;
 }
 
-VisionPage.getLayout = (page: ReactNode) => withDefaultLayout(page);
+VisionPage.getLayout = (page: ReactNode) =>
+  withDefaultLayout(
+    <PatientTopMenuLayout getPatientLink={paths.visionUpdateGlasses}>
+      {page}
+    </PatientTopMenuLayout>,
+  );
 
 export default VisionPage;

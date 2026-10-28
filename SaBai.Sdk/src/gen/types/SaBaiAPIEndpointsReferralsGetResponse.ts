@@ -47,5 +47,14 @@ export type SaBaiAPIEndpointsReferralsGetResponse = {
     */
     patientId: number;
     patientName: string;
+    hasPhoto: boolean;
+    /**
+     * @description
+     * Format: `int32`
+     * @type integer
+    */
+    villageCodeId: number;
+    villageCode: string;
+    villageColorHex: string;
     doctorNickname: string;
 };

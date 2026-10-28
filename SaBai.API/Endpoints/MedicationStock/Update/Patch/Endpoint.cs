@@ -1,6 +1,7 @@
 using FastEndpoints;
 using SaBai.API.Auth;
 using SaBai.API.Data;
+using SaBai.API.Domain;
 
 namespace SaBai.API.Endpoints.MedicationStock.Update.Patch;
 
@@ -20,6 +21,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             "Medication stock was not found.",
             ct
         );
+        var before = StockChangeLog.Snapshot.Of(stock);
 
         if (!string.IsNullOrWhiteSpace(req.Location))
         {
@@ -32,6 +34,9 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
         }
 
         stock.Remarks = string.IsNullOrWhiteSpace(req.Remarks) ? null : req.Remarks.Trim();
+        db.StockChanges.AddRange(
+            StockChangeLog.ForUpdate(before, stock, User.Id(), DateTimeOffset.UtcNow)
+        );
         await db.SaveChangesAsync(ct);
 
         await Send.OkAsync(

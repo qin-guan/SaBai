@@ -8,6 +8,8 @@ import {
 } from "@sabai/sdk/hooks";
 import { apiConfig } from "@/lib/api/config";
 import withDefaultLayout from "@/components/layouts/withDefaultLayout";
+import PatientTopMenuLayout from "@/components/layouts/PatientTopMenuLayout";
+import { paths } from "@/utils/paths";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { RHFDropdown } from "@/components/interactive/RHF/RHFDropdown";
@@ -159,6 +161,10 @@ function UpdateGlassesPage() {
 }
 
 UpdateGlassesPage.getLayout = (page: React.ReactNode) =>
-  withDefaultLayout(page);
+  withDefaultLayout(
+    <PatientTopMenuLayout getPatientLink={paths.visionUpdateGlasses}>
+      {page}
+    </PatientTopMenuLayout>,
+  );
 
 export default UpdateGlassesPage;

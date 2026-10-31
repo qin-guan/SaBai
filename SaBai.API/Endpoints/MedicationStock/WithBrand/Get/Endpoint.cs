@@ -2,6 +2,7 @@ using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 using SaBai.API.Auth;
 using SaBai.API.Data;
+using SaBai.API.Domain;
 
 namespace SaBai.API.Endpoints.MedicationStock.WithBrand.Get;
 
@@ -20,7 +21,8 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
             .MedicationStocks.AsNoTracking()
             .Where(x => x.Quantity != 0)
             .OrderByDescending(x => x.Id)
-            .Select(x => new Response(
+            .Select(x => new
+            {
                 x.Id,
                 x.MedicationBrandId,
                 x.Quantity,
@@ -28,11 +30,37 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
                 x.Location,
                 x.StockStatus,
                 x.Remarks,
-                x.MedicationBrand.Name,
-                x.MedicationBrand.ActiveIngredient.Name
-            ))
+                BrandName = x.MedicationBrand.Name,
+                IngredientName = x.MedicationBrand.ActiveIngredient.Name,
+                IngredientId = x.MedicationBrand.ActiveIngredientId,
+                x.MedicationBrand.ActiveIngredient.FallBelow,
+            })
             .ToListAsync(ct);
 
-        await Send.OkAsync(stocks, ct);
+        var activeTotals = stocks
+            .Where(x => x.StockStatus == StockStatus.Active)
+            .GroupBy(x => x.IngredientId)
+            .ToDictionary(g => g.Key, g => g.Sum(x => x.Quantity));
+
+        await Send.OkAsync(
+            stocks
+                .Select(x => new Response(
+                    x.Id,
+                    x.MedicationBrandId,
+                    x.Quantity,
+                    x.Expiry,
+                    x.Location,
+                    x.StockStatus,
+                    x.Remarks,
+                    x.BrandName,
+                    x.IngredientName,
+                    x.IngredientId,
+                    x.FallBelow,
+                    x.StockStatus == StockStatus.Active
+                        && activeTotals.GetValueOrDefault(x.IngredientId) <= x.FallBelow
+                ))
+                .ToList(),
+            ct
+        );
     }
 }

@@ -213,6 +213,37 @@ public sealed class StockTests(AppFixture fixture)
             .IsEquivalentTo(new[] { -6, 2, 4, 6 });
     }
 
+    [Test]
+    public async Task WithBrand_FlagsLotsAtOrBelowFallBelow()
+    {
+        // Arrange
+        var client = fixture.CreateHttpClient("api");
+        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        var suffix = ClinicSetup.Suffix();
+        var (lowId, _) = await CreateStockWithBrandAsync(
+            client,
+            $"low-{suffix}",
+            quantity: 5,
+            $"low-{suffix}"
+        );
+        var (okId, _) = await CreateStockWithBrandAsync(
+            client,
+            $"ok-{suffix}",
+            quantity: 6,
+            $"ok-{suffix}"
+        );
+
+        // Act
+        var listed = await client.GetFromJsonAsync<List<LowStockRow>>(
+            "/medication-stock/with-brand",
+            ApiJson.Options
+        );
+
+        // Assert
+        await Assert.That(listed!.Single(x => x.Id == lowId).IsLowStock).IsTrue();
+        await Assert.That(listed!.Single(x => x.Id == okId).IsLowStock).IsFalse();
+    }
+
     private static async Task<int> CreateStockAsync(
         HttpClient client,
         string suffix,
@@ -289,4 +320,6 @@ public sealed class StockTests(AppFixture fixture)
     private sealed record StockLot(int Id, int Quantity, string Location);
 
     private sealed record HistoryRow(string Kind, int QuantityChanged);
+
+    private sealed record LowStockRow(int Id, bool IsLowStock);
 }

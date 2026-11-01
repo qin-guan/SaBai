@@ -55,11 +55,10 @@ vi.mock("@sabai/sdk/hooks", async (importOriginal) => {
       mutationKey: ["medication-stock-create"],
       mutationFn: mocks.create,
     }),
-    saBaiAPIEndpointsMedicationStockUpdatePatchEndpointMutationOptions:
-      () => ({
-        mutationKey: ["medication-stock-update"],
-        mutationFn: mocks.update,
-      }),
+    saBaiAPIEndpointsMedicationStockUpdatePatchEndpointMutationOptions: () => ({
+      mutationKey: ["medication-stock-update"],
+      mutationFn: mocks.update,
+    }),
     saBaiAPIEndpointsMedicationStockSplitsPostEndpointMutationOptions: () => ({
       mutationKey: ["medication-stock-splits"],
       mutationFn: mocks.createSplits,
@@ -78,6 +77,9 @@ const MOCK_STOCK = [
     remarks: "test remark",
     brandName: "Panadol",
     ingredientName: "Paracetamol",
+    ingredientId: 1,
+    fallBelow: 10,
+    isLowStock: false,
   },
 ];
 
@@ -164,6 +166,51 @@ describe("MedicationStockPage", () => {
         "EditSplit",
       ],
     ]);
+  });
+
+  it("highlights low stock rows in red", () => {
+    mocks.stock.data = [{ ...MOCK_STOCK[0], isLowStock: true }];
+
+    renderPage();
+    const row = screen.getByText("Paracetamol").closest("tr");
+    expect(row).toHaveClass("bg-red-50", "hover:!bg-red-100");
+  });
+
+  it("does not highlight rows without a low-stock flag", () => {
+    mocks.stock.data = [{ ...MOCK_STOCK[0], isLowStock: false }];
+
+    renderPage();
+    const row = screen.getByText("Paracetamol").closest("tr");
+    expect(row).not.toHaveClass("bg-red-50");
+    expect(row).not.toHaveClass("hover:!bg-red-100");
+  });
+
+  it("highlights only flagged rows when displaying mixed stock", () => {
+    mocks.stock.data = [
+      {
+        ...MOCK_STOCK[0],
+        id: 1,
+        ingredientName: "Low stock ingredient",
+        isLowStock: true,
+      },
+      {
+        ...MOCK_STOCK[0],
+        id: 2,
+        ingredientName: "Normal stock ingredient",
+        isLowStock: false,
+      },
+    ];
+
+    renderPage();
+
+    const lowStockRow = screen.getByText("Low stock ingredient").closest("tr");
+    const normalStockRow = screen
+      .getByText("Normal stock ingredient")
+      .closest("tr");
+
+    expect(lowStockRow).toHaveClass("bg-red-50", "hover:!bg-red-100");
+    expect(normalStockRow).not.toHaveClass("bg-red-50");
+    expect(normalStockRow).not.toHaveClass("hover:!bg-red-100");
   });
 
   it("opens a modal to add new stock when the Add Stock button is clicked", async () => {

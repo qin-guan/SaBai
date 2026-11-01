@@ -35,4 +35,17 @@ export type SaBaiAPIEndpointsMedicationStockWithBrandGetResponse = {
     remarks: string | null;
     brandName: string;
     ingredientName: string;
+    /**
+     * @description
+     * Format: `int32`
+     * @type integer
+    */
+    ingredientId: number;
+    /**
+     * @description
+     * Format: `int32`
+     * @type integer
+    */
+    fallBelow: number;
+    isLowStock: boolean;
 };

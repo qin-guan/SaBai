@@ -187,7 +187,8 @@ function Row({
     onSuccess: () => {
       toast.success("Successfully updated!");
       queryClient.invalidateQueries({
-        queryKey: saBaiAPIEndpointsMedicationStockWithBrandGetEndpointQueryKey(),
+        queryKey:
+          saBaiAPIEndpointsMedicationStockWithBrandGetEndpointQueryKey(),
       });
       form.reset();
       setIsEditing(false);
@@ -219,7 +220,10 @@ function Row({
   };
 
   return (
-    <TableRow key={item.id}>
+    <TableRow
+      key={item.id}
+      className={item.isLowStock ? "bg-red-50 hover:!bg-red-100" : ""}
+    >
       <FormProvider {...form}>
         <TableCell>
           <span className="text-sm font-medium text-slate-900">

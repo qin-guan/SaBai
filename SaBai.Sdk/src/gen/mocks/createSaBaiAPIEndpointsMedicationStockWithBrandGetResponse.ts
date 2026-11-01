@@ -20,6 +20,9 @@ export function createSaBaiAPIEndpointsMedicationStockWithBrandGetResponse<TData
   remarks: faker.string.alpha(),
   brandName: faker.string.alpha(),
   ingredientName: faker.string.alpha(),
+  ingredientId: faker.number.int(),
+  fallBelow: faker.number.int(),
+  isLowStock: faker.datatype.boolean(),
 }
   return {
     ...defaultFakeData,

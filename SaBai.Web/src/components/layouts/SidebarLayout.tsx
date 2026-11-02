@@ -5,7 +5,7 @@ import { clearToken } from "@/lib/api/token";
 import { AiOutlineSetting, AiOutlineUser } from "react-icons/ai";
 import { BsEyeglasses } from "react-icons/bs";
 import { MdMonitorHeart } from "react-icons/md";
-import { FaStethoscope } from "react-icons/fa";
+import { FaStethoscope, FaTooth } from "react-icons/fa";
 import { PiSignOutFill } from "react-icons/pi";
 import { IoMdMenu } from "react-icons/io";
 import { LuScanFace } from "react-icons/lu";
@@ -78,6 +78,7 @@ function SidebarNavButtons() {
     { name: "Vitals", href: paths.vitals(), icon: MdMonitorHeart },
     { name: "Vision", href: paths.vision(), icon: BsEyeglasses },
     { name: "Consults", href: paths.consults(), icon: FaStethoscope },
+    { name: "Dental", href: paths.dental(), icon: FaTooth },
     {
       name: "Medication Stock",
       href: paths.medicationStock(),

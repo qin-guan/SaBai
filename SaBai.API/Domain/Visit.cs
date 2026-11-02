@@ -22,5 +22,7 @@ public sealed class Visit
 
     public Eyesight? Eyesight { get; set; }
 
+    public DentalConsult? DentalConsult { get; set; }
+
     public ICollection<Consult> Consults { get; set; } = [];
 }

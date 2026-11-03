@@ -3,7 +3,7 @@
 SaBai is a port of [NUS-Project-SaBai/project-sabai](https://github.com/NUS-Project-SaBai/project-sabai).
 Merges to upstream `dev` are ported here daily.
 
-Last synced upstream commit: `5275728606efffd555de6279fe29f57fa6813c24`
+Last synced upstream commit: `294d053d4d0d01b0d28c1f6d4f56da8f839cdf17`
 
 ## Mapping upstream changes
 

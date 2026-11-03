@@ -28,6 +28,8 @@ import { saBaiAPIEndpointsConsultsGetEndpointHandler } from './saBaiAPIEndpoints
 import { saBaiAPIEndpointsConsultsListByVisitGetEndpointHandler } from './saBaiAPIEndpointsConsultsListByVisitGetEndpoint'
 import { saBaiAPIEndpointsConsultsPdfGetEndpointHandler } from './saBaiAPIEndpointsConsultsPdfGetEndpoint'
 import { saBaiAPIEndpointsConsultsUpdatePatchEndpointHandler } from './saBaiAPIEndpointsConsultsUpdatePatchEndpoint'
+import { saBaiAPIEndpointsDentalGetByVisitGetEndpointHandler } from './saBaiAPIEndpointsDentalGetByVisitGetEndpoint'
+import { saBaiAPIEndpointsDentalUpsertByVisitPutEndpointHandler } from './saBaiAPIEndpointsDentalUpsertByVisitPutEndpoint'
 import { saBaiAPIEndpointsDiagnosesCreatePostEndpointHandler } from './saBaiAPIEndpointsDiagnosesCreatePostEndpoint'
 import { saBaiAPIEndpointsDiagnosesDeleteDeleteEndpointHandler } from './saBaiAPIEndpointsDiagnosesDeleteDeleteEndpoint'
 import { saBaiAPIEndpointsDiagnosesGetEndpointHandler } from './saBaiAPIEndpointsDiagnosesGetEndpoint'
@@ -153,6 +155,8 @@ import { saBaiAPIEndpointsConsultsGetEndpointPathIdSchema, saBaiAPIEndpointsCons
 import { saBaiAPIEndpointsConsultsListByVisitGetEndpointPathVisitIdSchema, saBaiAPIEndpointsConsultsListByVisitGetEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsConsultsListByVisitGetEndpointSchema'
 import { saBaiAPIEndpointsConsultsPdfGetEndpointPathIdSchema, saBaiAPIEndpointsConsultsPdfGetEndpointStatus204Schema } from '../zod/saBaiAPIEndpointsConsultsPdfGetEndpointSchema'
 import { saBaiAPIEndpointsConsultsUpdatePatchEndpointBodySchema, saBaiAPIEndpointsConsultsUpdatePatchEndpointPathIdSchema, saBaiAPIEndpointsConsultsUpdatePatchEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsConsultsUpdatePatchEndpointSchema'
+import { saBaiAPIEndpointsDentalGetByVisitGetEndpointPathVisitIdSchema, saBaiAPIEndpointsDentalGetByVisitGetEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsDentalGetByVisitGetEndpointSchema'
+import { saBaiAPIEndpointsDentalUpsertByVisitPutEndpointBodySchema, saBaiAPIEndpointsDentalUpsertByVisitPutEndpointPathVisitIdSchema, saBaiAPIEndpointsDentalUpsertByVisitPutEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsDentalUpsertByVisitPutEndpointSchema'
 import { saBaiAPIEndpointsDiagnosesCreatePostEndpointBodySchema, saBaiAPIEndpointsDiagnosesCreatePostEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsDiagnosesCreatePostEndpointSchema'
 import { saBaiAPIEndpointsDiagnosesDeleteDeleteEndpointPathIdSchema, saBaiAPIEndpointsDiagnosesDeleteDeleteEndpointStatus204Schema } from '../zod/saBaiAPIEndpointsDiagnosesDeleteDeleteEndpointSchema'
 import { saBaiAPIEndpointsDiagnosesGetEndpointPathIdSchema, saBaiAPIEndpointsDiagnosesGetEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsDiagnosesGetEndpointSchema'
@@ -1379,6 +1383,26 @@ export function getServer() {
     inputSchema: { path: z.object({ "visitId": saBaiAPIEndpointsConsultsListByVisitGetEndpointPathVisitIdSchema }) },
   }, async ({ path }, request) => {
     return saBaiAPIEndpointsConsultsListByVisitGetEndpointHandler({ path }, request)
+  })
+
+
+  server.registerTool("SaBaiAPIEndpointsDentalUpsertByVisitPutEndpoint", {
+    title: "Save the dental consultation for a visit, creating it if needed",
+    description: "Make a PUT request to /visits/{visitId}/dental",
+    outputSchema: { data: saBaiAPIEndpointsDentalUpsertByVisitPutEndpointStatus200Schema },
+    inputSchema: { path: z.object({ "visitId": saBaiAPIEndpointsDentalUpsertByVisitPutEndpointPathVisitIdSchema }), body: saBaiAPIEndpointsDentalUpsertByVisitPutEndpointBodySchema },
+  }, async ({ path, body }, request) => {
+    return saBaiAPIEndpointsDentalUpsertByVisitPutEndpointHandler({ path, body }, request)
+  })
+
+
+  server.registerTool("SaBaiAPIEndpointsDentalGetByVisitGetEndpoint", {
+    title: "Get the dental consultation for a visit",
+    description: "Make a GET request to /visits/{visitId}/dental",
+    outputSchema: { data: saBaiAPIEndpointsDentalGetByVisitGetEndpointStatus200Schema },
+    inputSchema: { path: z.object({ "visitId": saBaiAPIEndpointsDentalGetByVisitGetEndpointPathVisitIdSchema }) },
+  }, async ({ path }, request) => {
+    return saBaiAPIEndpointsDentalGetByVisitGetEndpointHandler({ path }, request)
   })
 
 

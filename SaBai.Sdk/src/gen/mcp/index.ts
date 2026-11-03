@@ -23,6 +23,8 @@ export { saBaiAPIEndpointsConsultsGetEndpointHandler } from './saBaiAPIEndpoints
 export { saBaiAPIEndpointsConsultsListByVisitGetEndpointHandler } from './saBaiAPIEndpointsConsultsListByVisitGetEndpoint'
 export { saBaiAPIEndpointsConsultsPdfGetEndpointHandler } from './saBaiAPIEndpointsConsultsPdfGetEndpoint'
 export { saBaiAPIEndpointsConsultsUpdatePatchEndpointHandler } from './saBaiAPIEndpointsConsultsUpdatePatchEndpoint'
+export { saBaiAPIEndpointsDentalGetByVisitGetEndpointHandler } from './saBaiAPIEndpointsDentalGetByVisitGetEndpoint'
+export { saBaiAPIEndpointsDentalUpsertByVisitPutEndpointHandler } from './saBaiAPIEndpointsDentalUpsertByVisitPutEndpoint'
 export { saBaiAPIEndpointsDiagnosesCreatePostEndpointHandler } from './saBaiAPIEndpointsDiagnosesCreatePostEndpoint'
 export { saBaiAPIEndpointsDiagnosesDeleteDeleteEndpointHandler } from './saBaiAPIEndpointsDiagnosesDeleteDeleteEndpoint'
 export { saBaiAPIEndpointsDiagnosesGetEndpointHandler } from './saBaiAPIEndpointsDiagnosesGetEndpoint'

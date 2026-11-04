@@ -77,8 +77,8 @@ function SidebarNavButtons() {
     { name: "Patient", href: paths.patient(), icon: AiOutlineUser },
     { name: "Vitals", href: paths.vitals(), icon: MdMonitorHeart },
     { name: "Vision", href: paths.vision(), icon: BsEyeglasses },
-    { name: "Dental", href: paths.dental(), icon: FaTooth },
     { name: "Consults", href: paths.consults(), icon: FaStethoscope },
+    { name: "Dental", href: paths.dental(), icon: FaTooth },
     {
       name: "Medication Stock",
       href: paths.medicationStock(),

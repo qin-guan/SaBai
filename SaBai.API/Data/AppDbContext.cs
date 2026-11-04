@@ -17,6 +17,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     public DbSet<Eyesight> Eyesights => Set<Eyesight>();
 
+    public DbSet<DentalConsult> DentalConsults => Set<DentalConsult>();
+
     public DbSet<PubertyAssessment> PubertyAssessments => Set<PubertyAssessment>();
 
     public DbSet<ChildVitals> ChildVitals => Set<ChildVitals>();
@@ -125,6 +127,28 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .WithOne(x => x.Eyesight)
                 .HasForeignKey<Eyesight>(x => x.VisitId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<DentalConsult>(entity =>
+        {
+            entity.HasIndex(x => x.VisitId).IsUnique();
+            entity
+                .HasOne(x => x.Visit)
+                .WithOne(x => x.DentalConsult)
+                .HasForeignKey<DentalConsult>(x => x.VisitId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Store every examination/history choice by name, like the other enums here.
+            foreach (
+                var property in typeof(DentalConsult)
+                    .GetProperties()
+                    .Where(p =>
+                        (Nullable.GetUnderlyingType(p.PropertyType) ?? p.PropertyType).IsEnum
+                    )
+            )
+            {
+                entity.Property(property.Name).HasConversion<string>().HasMaxLength(32);
+            }
         });
 
         modelBuilder.Entity<PubertyAssessment>(entity =>

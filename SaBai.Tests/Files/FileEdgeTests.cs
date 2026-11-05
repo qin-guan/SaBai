@@ -14,7 +14,7 @@ public sealed class FileEdgeTests(AppFixture fixture)
         // Arrange
         var client = fixture.CreateHttpClient("api");
         await client.LoginAsync(ClinicApi.PharmacistEmail);
-        using var content = Form(99999999, $"orphan-{ClinicSetup.Suffix()}.txt", "orphan note");
+        using var content = Form(99999999, $"orphan-{ClinicSetup.Suffix()}.pdf", "orphan note");
 
         // Act
         var response = await client.PostAsync("/files", content);
@@ -33,8 +33,8 @@ public sealed class FileEdgeTests(AppFixture fixture)
         var suffix = ClinicSetup.Suffix();
         using var content = new MultipartFormDataContent();
         content.Add(new StringContent(patientId.ToString()), "patientId");
-        content.Add(FilePart("one"), "files", $"a-{suffix}.txt");
-        content.Add(FilePart("two"), "files", $"b-{suffix}.txt");
+        content.Add(FilePart("one"), "files", $"a-{suffix}.pdf");
+        content.Add(FilePart("two"), "files", $"b-{suffix}.pdf");
         content.Add(new StringContent("only one"), "descriptions");
 
         // Act
@@ -82,7 +82,7 @@ public sealed class FileEdgeTests(AppFixture fixture)
         var fileId = await UploadAsync(
             client,
             patientId,
-            $"secret-{ClinicSetup.Suffix()}.txt",
+            $"secret-{ClinicSetup.Suffix()}.pdf",
             "private"
         );
         var anonymous = fixture.CreateHttpClient("api");
@@ -102,7 +102,7 @@ public sealed class FileEdgeTests(AppFixture fixture)
         await client.LoginAsync(ClinicApi.PharmacistEmail);
         var suffix = ClinicSetup.Suffix();
         var patientId = await CreatePatientAsync(client);
-        var fileId = await UploadAsync(client, patientId, $"note-{suffix}.txt", "original note");
+        var fileId = await UploadAsync(client, patientId, $"note-{suffix}.pdf", "original note");
         var description = $"Updated note {suffix}";
 
         // Act
@@ -127,7 +127,7 @@ public sealed class FileEdgeTests(AppFixture fixture)
         var client = fixture.CreateHttpClient("api");
         await client.LoginAsync(ClinicApi.PharmacistEmail);
         var patientId = await CreatePatientAsync(client);
-        var fileName = $"deleted-{ClinicSetup.Suffix()}.txt";
+        var fileName = $"deleted-{ClinicSetup.Suffix()}.pdf";
         var fileId = await UploadAsync(client, patientId, fileName, "to delete");
         var deleted = await client.DeleteAsync($"/files/{fileId}");
         deleted.EnsureSuccessStatusCode();
@@ -143,6 +143,34 @@ public sealed class FileEdgeTests(AppFixture fixture)
         await Assert.That(deletedBody).Contains(fileName);
         await Assert.That(all.StatusCode).IsEqualTo(HttpStatusCode.OK);
         await Assert.That(allBody).Contains(fileName);
+    }
+
+    [Test]
+    [Arguments("text/plain", "clinic note")]
+    [Arguments("application/pdf", "")]
+    public async Task Upload_DisallowedTypeOrEmpty_ReturnsBadRequest(string contentType, string body)
+    {
+        // Arrange
+        var client = fixture.CreateHttpClient("api");
+        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        var patientId = await CreatePatientAsync(client);
+        using var content = new MultipartFormDataContent();
+        content.Add(new StringContent(patientId.ToString()), "patientId");
+        var bytes = new ByteArrayContent(System.Text.Encoding.UTF8.GetBytes(body));
+        bytes.Headers.ContentType = new MediaTypeHeaderValue(contentType);
+        content.Add(bytes, "files", $"rejected-{ClinicSetup.Suffix()}.bin");
+        content.Add(new StringContent("rejected"), "descriptions");
+
+        // Act
+        var response = await client.PostAsync("/files", content);
+        var listed = await client.GetFromJsonAsync<List<JsonElement>>(
+            $"/files?patientId={patientId}",
+            ApiJson.Options
+        );
+
+        // Assert
+        await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
+        await Assert.That(listed!).IsEmpty();
     }
 
     private static async Task<int> CreatePatientAsync(HttpClient client)
@@ -178,7 +206,7 @@ public sealed class FileEdgeTests(AppFixture fixture)
     private static ByteArrayContent FilePart(string text)
     {
         var bytes = new ByteArrayContent(System.Text.Encoding.UTF8.GetBytes(text));
-        bytes.Headers.ContentType = new MediaTypeHeaderValue("text/plain");
+        bytes.Headers.ContentType = new MediaTypeHeaderValue("application/pdf");
         return bytes;
     }
 }

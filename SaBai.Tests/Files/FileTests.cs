@@ -16,11 +16,11 @@ public sealed class FileTests(AppFixture fixture)
         await client.LoginAsync(ClinicApi.PharmacistEmail);
         var suffix = Guid.NewGuid().ToString("N")[..8];
         var patientId = await CreatePatientAsync(client, suffix);
-        var fileName = $"note-{suffix}.txt";
+        var fileName = $"note-{suffix}.pdf";
         using var content = new MultipartFormDataContent();
         content.Add(new StringContent(patientId.ToString()), "patientId");
         var bytes = new ByteArrayContent([.. "clinic note"u8]);
-        bytes.Headers.ContentType = new MediaTypeHeaderValue("text/plain");
+        bytes.Headers.ContentType = new MediaTypeHeaderValue("application/pdf");
         content.Add(bytes, "files", fileName);
         content.Add(new StringContent("visit note"), "descriptions");
 

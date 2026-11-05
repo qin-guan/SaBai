@@ -57,9 +57,21 @@ public sealed class Endpoint(AppDbContext db, IAmazonS3 s3, RustFsSettings stora
                     throw new BadRequestException("File name is too long.");
                 }
 
+                if (upload.Length == 0)
+                {
+                    throw new BadRequestException($"{fileName} - File is empty.");
+                }
+
                 if (upload.Length > ClinicalFile.MaxBytes)
                 {
-                    throw new BadRequestException("File is too large.");
+                    throw new BadRequestException($"{fileName} - File is too large.");
+                }
+
+                if (!ClinicalFile.AllowedContentTypes.Contains(upload.ContentType ?? ""))
+                {
+                    throw new BadRequestException(
+                        $"{fileName} - Only PDF, JPEG, PNG and DOCX files are allowed."
+                    );
                 }
 
                 var storedName = $"{Guid.NewGuid():N}{Path.GetExtension(fileName)}";
@@ -70,9 +82,7 @@ public sealed class Endpoint(AppDbContext db, IAmazonS3 s3, RustFsSettings stora
                         BucketName = storage.Bucket,
                         Key = storedName,
                         InputStream = stream,
-                        ContentType = string.IsNullOrWhiteSpace(upload.ContentType)
-                            ? "application/octet-stream"
-                            : upload.ContentType,
+                        ContentType = upload.ContentType,
                         AutoCloseStream = false,
                     },
                     ct

@@ -1,7 +1,7 @@
 import type { Journey, StationKey } from './journey'
 
 /**
- * Wait-time estimates from each station's measured throughput.
+ * How long a station is backed up, from its measured throughput.
  *
  * A station's throughput is how many patients it finished per minute,
  * measured from the time each record was saved (vitals, vision, first
@@ -9,7 +9,7 @@ import type { Journey, StationKey } from './journey'
  * working there, so no staffing input is needed:
  *
  *   rate = completions in the window / window length (minutes)
- *   wait for the k-th patient in the queue ≈ k / rate
+ *   wait for someone sent there now ≈ patients still waiting / rate
  *
  * The window is the last hour, so the estimate follows the clinic's current
  * pace. When the last hour has too few completions to be meaningful it falls
@@ -77,11 +77,14 @@ export function withServiceTimeFallback(measured: StationThroughput, serviceMinu
   return { perMinute: 1 / serviceMinutes, samples: measured.samples, basis: 'form timing' }
 }
 
-/** Estimated minutes until the patient at `position` (1 = next) is seen, or null. */
-export function estimatedWaitMinutes(throughput: StationThroughput, position: number): number | null {
-  if (!throughput.perMinute || position < 1)
+/**
+ * Roughly how many minutes someone sent to the station now would wait: the
+ * time to see everyone already waiting there. Null without a rate.
+ */
+export function stationWaitMinutes(throughput: StationThroughput, waiting: number): number | null {
+  if (!throughput.perMinute)
     return null
-  return position / throughput.perMinute
+  return Math.max(waiting, 0) / throughput.perMinute
 }
 
 /** "<5 min", "~15 min", "~1 h 20 min". Rounded to 5 minutes: it is an estimate. */

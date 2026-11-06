@@ -6,7 +6,7 @@ const withVisit = (path: string, visitId?: number) =>
 export const paths = {
   home: () => "/",
   login: () => "/login",
-  /** The patient queue; `station` filters it to who that station is waiting for. */
+  /** The patient list; `station` filters it to who that station is waiting for. */
   patient: (station?: StationKey) => (station ? `/patient?station=${station}` : "/patient"),
   patientDetail: (patientId: number) => `/patient/${patientId}`,
   scanFace: () => "/scan-face",

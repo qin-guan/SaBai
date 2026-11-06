@@ -3,7 +3,7 @@
  *
  *   Vitals → Vision → Consult → Dental (optional) → Pharmacy (optional)
  *
- * Built from the API's per-visit `journey` flags so every screen (queue,
+ * Built from the API's per-visit `journey` flags so every screen (patient list,
  * patient record, station pages) shows the same at-a-glance status.
  */
 
@@ -24,7 +24,7 @@ export interface Journey {
   dentalReferred: boolean
   pharmacyOrders: number
   pharmacyPending: number
-  /** When each step was recorded (ISO); used for throughput and wait estimates. */
+  /** When each step was recorded (ISO); used for station throughput and wait. */
   vitalsAt?: string | null
   visionAt?: string | null
   consultAt?: string | null
@@ -110,17 +110,4 @@ export function isWaitingFor(journey: Journey, station: StationKey) {
   if (station === 'dental')
     return state !== 'done' && (journey.dentalReferred || journey.consult)
   return state === 'todo'
-}
-
-/**
- * Sort key inside a station's queue: patients the station is most clearly
- * needed for first (a dental referral before walk-ins, a patient who finished
- * the earlier steps before one who skipped ahead).
- */
-export function stationPriority(journey: Journey, station: StationKey) {
-  if (station === 'dental')
-    return journey.dentalReferred ? 0 : 1
-  const index = STATIONS.findIndex(s => s.key === station)
-  const earlier = STATIONS.slice(0, index).filter(s => !s.optional)
-  return earlier.filter(s => stepState(journey, s.key).state !== 'done').length
 }

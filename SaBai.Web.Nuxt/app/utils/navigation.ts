@@ -23,12 +23,12 @@ export interface NavItem {
   icon: Component
   /** Extra words the universal search matches on. */
   keywords: string
-  /** For station entries: the queue filter this item opens. */
+  /** For station entries: the station filter this item opens. */
   station?: StationKey
 }
 
 /**
- * Sidebar. Stations are not separate pages: each opens the one patient queue
+ * Sidebar. Stations are not separate pages: each opens the one patient list
  * filtered to who that station is waiting for, so every station works the same
  * way and a patient's whole journey is visible from any of them.
  */
@@ -62,7 +62,7 @@ export const ALL_NAV_ITEMS = [...NAV_ITEMS, ...STATION_NAV_ITEMS, ...ADMIN_NAV_I
 
 /**
  * The station the user is working in: a station form's `patientLink` meta, or
- * the queue's `?station=` filter. Undefined on the unfiltered queue and
+ * the list's `?station=` filter. Undefined on the unfiltered list and
  * elsewhere.
  */
 export function currentStation(route: Pick<RouteLocationNormalizedLoaded, 'path' | 'query' | 'meta'>): StationKey | undefined {

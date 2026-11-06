@@ -1,4 +1,4 @@
-import { isWaitingFor, journeySteps, nextStep, requiredProgress, stationPriority } from "~/utils/journey";
+import { isWaitingFor, journeySteps, nextStep, requiredProgress } from "~/utils/journey";
 import type { Journey } from "~/utils/journey";
 
 const blank: Journey = {
@@ -70,16 +70,5 @@ describe("isWaitingFor", () => {
   it("only waits for pharmacy with medication to dispense", () => {
     expect(isWaitingFor(blank, "pharmacy")).toBe(false);
     expect(isWaitingFor(j({ pharmacyOrders: 1, pharmacyPending: 1 }), "pharmacy")).toBe(true);
-  });
-});
-
-describe("stationPriority", () => {
-  it("puts patients who finished earlier steps first", () => {
-    expect(stationPriority(j({ vitals: true, vision: true }), "consults")).toBe(0);
-    expect(stationPriority(j({ vitals: true }), "consults")).toBe(1);
-  });
-
-  it("puts dental referrals before walk-ins", () => {
-    expect(stationPriority(j({ dentalReferred: true }), "dental")).toBeLessThan(stationPriority(blank, "dental"));
   });
 });

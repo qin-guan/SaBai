@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PhArrowRight, PhMagnifyingGlass, PhScan, PhWarning } from '@phosphor-icons/vue'
+import { PhCaretRight, PhMagnifyingGlass, PhScan, PhWarning } from '@phosphor-icons/vue'
 import { useIntervalFn } from '@vueuse/core'
 import type { StationKey } from '~/utils/journey'
 import type { StationThroughput } from '~/utils/waitTime'
@@ -108,20 +108,17 @@ function waitAt(p: Row, key: StationKey) {
     return null
   return { position, minutes: estimatedWaitMinutes(throughput.value[key], position) }
 }
-/** The wait shown on a row: for this station's queue, or (unfiltered) for the patient's next step. */
-function rowWait(p: Row) {
-  const key = station.value ? (show.value === 'waiting' ? station.value : undefined) : actionFor(p).station
-  const wait = key ? waitAt(p, key) : null
-  return wait && key ? { ...wait, station: key } : null
-}
+/** Waits are shown only in a station's waiting list, where the order is the queue. */
+const showWait = computed(() => !!station.value && show.value === 'waiting')
+const rowWait = (p: Row) => (showWait.value ? waitAt(p, station.value!) : null)
 /** Estimated time to clear a station's whole queue. */
 const clearMinutes = (key: StationKey) => estimatedWaitMinutes(throughput.value[key], waitingCounts.value[key])
 const basisNote = (t: StationThroughput) =>
   t.basis === 'form timing'
-    ? 'Based on how long forms take on this device'
+    ? `About ${formatRate(t.perMinute)}, from how long forms take on this device`
     : t.basis
-      ? `Based on ${t.samples} patients seen ${t.basis === 'today' ? 'today' : 'in the last hour'}`
-      : 'Not enough patients seen yet to estimate'
+      ? `About ${formatRate(t.perMinute)}, from ${t.samples} patients seen ${t.basis === 'today' ? 'today' : 'in the last hour'}`
+      : 'Not enough patients seen yet to estimate a wait'
 
 const rows = computed(() => {
   const s = station.value
@@ -145,17 +142,17 @@ const stationCards = computed(() => [
     key: undefined as StationKey | undefined,
     label: 'All',
     count: inScope.value.length,
-    detail: scope.value === 'today' ? 'in clinic today' : 'patients',
+    detail: scope.value === 'today' ? 'In clinic today' : 'Patients',
     note: '',
   },
   ...STATIONS.map(({ key, label }) => {
     const t = throughput.value[key]
     const waiting = waitingCounts.value[key]
     const detail = !waiting
-      ? 'no queue'
+      ? 'No queue'
       : t.perMinute
-        ? `${formatWait(clearMinutes(key))} · ${formatRate(t.perMinute)}`
-        : 'no estimate yet'
+        ? `${formatWait(clearMinutes(key))} wait`
+        : 'Waiting'
     return { key: key as StationKey | undefined, label, count: waiting, detail, note: basisNote(t) }
   }),
 ])
@@ -168,17 +165,13 @@ const SHOW_OPTIONS: { value: Show, label: string }[] = [
   { value: 'all', label: 'All' },
 ]
 
-/** The row's main action: open this station, or (unfiltered) the patient's next step. */
-function actionFor(p: Row) {
-  const visitId = p.lastVisitId ?? undefined
-  if (station.value) {
-    return { label: `Open ${stationLabel(station.value)}`, to: patientLinkFor(station.value, p.id, visitId) }
-  }
-  const next = p.lastVisitJourney ? nextStep(p.lastVisitJourney) : null
-  if (next)
-    return { label: `Next: ${next.label}`, to: patientLinkFor(next.key, p.id, visitId), station: next.key }
-  return { label: 'Open record', to: paths.patientDetail(p.id) }
-}
+/**
+ * Where a row leads: in a station queue, that station's form for the
+ * patient's current visit; otherwise the patient record, which shows the
+ * journey and the next step.
+ */
+const rowLink = (p: Row) =>
+  station.value ? patientLinkFor(station.value, p.id, p.lastVisitId ?? undefined) : paths.patientDetail(p.id)
 
 const emptyMessage = computed(() => {
   if (filter.value.trim())
@@ -191,7 +184,14 @@ const emptyMessage = computed(() => {
 })
 
 const timeOf = (date: string) => new Date(date).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
-const dateOf = (date: string) => (isSameDay(date) ? `Today ${timeOf(date)}` : new Date(date).toLocaleDateString())
+const dateOf = (date: string) => (isSameDay(date) ? `Arrived ${timeOf(date)}` : `Last visit ${new Date(date).toLocaleDateString()}`)
+
+// One grid for the heading and every row, so columns line up.
+const gridCols = computed(() =>
+  showWait.value
+    ? 'md:grid-cols-[2.75rem_minmax(0,1fr)_minmax(0,20rem)_6.5rem_1rem]'
+    : 'md:grid-cols-[2.75rem_minmax(0,1fr)_minmax(0,20rem)_1rem]',
+)
 </script>
 
 <template>
@@ -279,86 +279,86 @@ const dateOf = (date: string) => (isSameDay(date) ? `Today ${timeOf(date)}` : ne
       <template v-else>
         <!-- Column headings (wide screens); rows share the same grid. -->
         <div
-          class="hidden border-b border-border bg-muted/50 px-3 py-1 text-[0.6875rem] font-semibold tracking-wide text-muted-foreground uppercase md:grid md:grid-cols-[2.75rem_minmax(0,1fr)_minmax(0,20rem)_8.5rem_9.5rem] md:gap-x-3"
+          class="hidden border-b border-border bg-muted/50 px-3 py-1 text-[0.6875rem] font-semibold tracking-wide text-muted-foreground uppercase md:grid md:gap-x-4"
+          :class="gridCols"
           aria-hidden="true"
         >
           <span />
           <span>Patient</span>
           <span>Journey</span>
-          <span>{{ station && show !== 'waiting' ? '' : 'Est. wait' }}</span>
+          <span v-if="showWait">Est. wait</span>
           <span />
         </div>
         <ul class="divide-y divide-border">
-          <li
-            v-for="patient in rows"
-            :key="patient.id"
-            class="grid grid-cols-[2.75rem_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 px-3 py-2 md:grid-cols-[2.75rem_minmax(0,1fr)_minmax(0,20rem)_8.5rem_9.5rem]"
-          >
-            <PatientPhoto :patient-id="patient.id" :has-photo="patient.hasPhoto" :size="44" alt="" />
-
-            <div class="min-w-0">
-              <p class="flex min-w-0 items-center gap-2">
-                <NuxtLink
-                  :to="paths.patientDetail(patient.id)"
-                  class="truncate text-sm font-semibold text-foreground underline-offset-2 hover:text-primary hover:underline touch:text-base"
-                >
-                  {{ patient.name }}
-                </NuxtLink>
-                <span
-                  v-if="hasDrugAllergy(patient.drugAllergy)"
-                  class="inline-flex shrink-0 items-center gap-1 border border-destructive bg-destructive-subtle px-1 text-[0.6875rem] font-semibold text-destructive touch:text-xs"
-                  :title="`Drug allergy: ${patient.drugAllergy}`"
-                >
-                  <PhWarning class="size-3" aria-hidden="true" />
-                  <span class="max-w-32 truncate">{{ patient.drugAllergy }}</span>
-                </span>
-              </p>
-              <p class="flex flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground touch:text-sm">
-                <PatientCode :village-code="patient.villageCode" :village-color-hex="patient.villageColorHex" :id="patient.id" />
-                <span aria-hidden="true">·</span>
-                <span>{{ calculateAge(patient.dateOfBirth) }} y <span class="capitalize">{{ patient.gender }}</span></span>
-                <template v-if="patient.lastVisitDate">
-                  <span aria-hidden="true">·</span>
-                  <span :title="`Visit started ${formatVisitDate(patient.lastVisitDate)}`">{{ dateOf(patient.lastVisitDate) }}</span>
-                </template>
-              </p>
-            </div>
-
-            <!-- Wait: beside the name on phones, its own column on wide screens. -->
-            <div class="text-right md:order-last md:col-start-4 md:row-start-1 md:text-left">
-              <template v-if="rowWait(patient)">
-                <p class="text-sm font-semibold whitespace-nowrap tabular-nums touch:text-base">
-                  {{ rowWait(patient)!.minutes !== null ? formatWait(rowWait(patient)!.minutes) : `${ordinal(rowWait(patient)!.position)} in line` }}
-                </p>
-                <p class="text-[0.6875rem] whitespace-nowrap text-muted-foreground touch:text-xs">
-                  <template v-if="rowWait(patient)!.minutes !== null">{{ ordinal(rowWait(patient)!.position) }}</template><template v-else>No estimate</template><template v-if="!station"> · {{ stationLabel(rowWait(patient)!.station) }}</template>
-                </p>
-              </template>
-            </div>
-
-            <div class="col-span-3 min-w-0 md:col-span-1 md:col-start-3 md:row-start-1">
-              <JourneyTracker
-                v-if="patient.lastVisitJourney && patient.lastVisitId"
-                :journey="patient.lastVisitJourney"
-                :patient-id="patient.id"
-                :visit-id="patient.lastVisitId"
-                :active="station"
-                size="compact"
-              />
-              <span v-else class="text-xs text-muted-foreground touch:text-sm">No visit yet</span>
-            </div>
-
-            <Button
-              as-child
-              size="sm"
-              :variant="station ? 'success' : 'outline'"
-              class="col-span-3 md:col-span-1 md:col-start-5 md:row-start-1 md:justify-self-stretch"
+          <li v-for="patient in rows" :key="patient.id">
+            <!-- The whole row is the link: one target per patient, no repeated buttons. -->
+            <NuxtLink
+              :to="rowLink(patient)"
+              class="group grid grid-cols-[2.75rem_minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 px-3 py-2.5 hover:bg-accent/60 focus-visible:bg-accent focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+              :class="gridCols"
             >
-              <NuxtLink :to="actionFor(patient).to" :aria-label="`${actionFor(patient).label}: ${patient.name}`">
-                {{ actionFor(patient).label }}
-                <PhArrowRight aria-hidden="true" />
-              </NuxtLink>
-            </Button>
+              <span class="sr-only">{{ station ? `Open ${stationLabel(station)}:` : 'Open record:' }}</span>
+              <PatientPhoto :patient-id="patient.id" :has-photo="patient.hasPhoto" :size="44" alt="" />
+
+              <div class="min-w-0">
+                <p class="flex min-w-0 items-center gap-2">
+                  <span class="truncate text-sm font-semibold group-hover:text-primary touch:text-base">{{ patient.name }}</span>
+                  <span
+                    v-if="hasDrugAllergy(patient.drugAllergy)"
+                    class="inline-flex shrink-0 items-center gap-1 border border-destructive bg-destructive-subtle px-1 text-[0.6875rem] font-semibold text-destructive touch:text-xs"
+                    :title="`Drug allergy: ${patient.drugAllergy}`"
+                  >
+                    <PhWarning class="size-3" aria-hidden="true" />
+                    <span class="max-w-32 truncate">{{ patient.drugAllergy }}</span>
+                  </span>
+                </p>
+                <p class="flex flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground touch:text-sm">
+                  <PatientCode :village-code="patient.villageCode" :village-color-hex="patient.villageColorHex" :id="patient.id" />
+                  <span aria-hidden="true">·</span>
+                  <span>{{ calculateAge(patient.dateOfBirth) }} y <span class="capitalize">{{ patient.gender }}</span></span>
+                  <template v-if="patient.lastVisitDate">
+                    <span aria-hidden="true">·</span>
+                    <span>{{ dateOf(patient.lastVisitDate) }}</span>
+                  </template>
+                </p>
+              </div>
+
+              <!-- Wait (station queues): beside the name on phones, its own column on wide screens. -->
+              <div v-if="showWait" class="text-right md:col-start-4 md:row-start-1 md:text-left">
+                <template v-if="rowWait(patient)">
+                  <p class="text-sm font-semibold whitespace-nowrap tabular-nums touch:text-base">
+                    {{ rowWait(patient)!.minutes !== null ? formatWait(rowWait(patient)!.minutes) : `${ordinal(rowWait(patient)!.position)} in line` }}
+                  </p>
+                  <p v-if="rowWait(patient)!.minutes !== null" class="text-[0.6875rem] whitespace-nowrap text-muted-foreground touch:text-xs">
+                    {{ ordinal(rowWait(patient)!.position) }} in line
+                  </p>
+                </template>
+              </div>
+              <PhCaretRight
+                v-else
+                class="size-4 text-muted-foreground group-hover:text-primary md:hidden"
+                aria-hidden="true"
+              />
+
+              <div class="col-span-3 min-w-0 md:col-span-1 md:col-start-3 md:row-start-1">
+                <JourneyTracker
+                  v-if="patient.lastVisitJourney && patient.lastVisitId"
+                  :journey="patient.lastVisitJourney"
+                  :patient-id="patient.id"
+                  :visit-id="patient.lastVisitId"
+                  :active="station"
+                  :links="false"
+                  size="compact"
+                />
+                <span v-else class="text-xs text-muted-foreground touch:text-sm">No visit yet</span>
+              </div>
+
+              <PhCaretRight
+                class="hidden size-4 text-muted-foreground group-hover:text-primary md:block"
+                :class="showWait ? 'md:col-start-5' : 'md:col-start-4'"
+                aria-hidden="true"
+              />
+            </NuxtLink>
           </li>
         </ul>
       </template>

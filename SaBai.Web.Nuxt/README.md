@@ -55,9 +55,12 @@ the next step highlighted, optional steps dashed. Every step links to that
 station's form for the same visit, so a patient can be sent on from any screen.
 
 - **`/patient` is the one patient queue.** Unfiltered it shows everyone seen
-  today and their journeys. A station card (or a sidebar *Stations* link)
-  filters it to `?station=vitals|vision|consults|dental|pharmacy`: who that
-  station is waiting for, most ready first, then longest waiting.
+  today and their journeys; a row opens the patient record. A station card
+  (or a sidebar *Stations* link) filters it to
+  `?station=vitals|vision|consults|dental|pharmacy`: who that station is
+  waiting for, most ready first, then longest waiting, with each patient's
+  estimated wait; a row opens that station's form. Each row is one link, so
+  there are no per-row buttons.
   `/vitals`, `/vision`, `/consults` and `/dental` redirect there; they used to
   be four near-identical lists.
 - **The patient record** (`/patient/:id`) shows the current visit's journey

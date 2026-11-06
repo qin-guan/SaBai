@@ -15,7 +15,7 @@ const icon = computed(
 <template>
   <div
     :role="props.kind === 'error' ? 'alert' : 'status'"
-    class="flex items-start gap-2 px-3 py-3 text-xs"
+    class="flex items-start gap-2 px-3 py-3 text-xs touch:text-sm"
     :class="{
       'text-muted-foreground': props.kind === 'loading' || props.kind === 'empty',
       'border border-destructive/40 bg-destructive-subtle text-destructive': props.kind === 'error',

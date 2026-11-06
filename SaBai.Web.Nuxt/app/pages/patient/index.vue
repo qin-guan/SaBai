@@ -28,7 +28,7 @@ const patients = computed(() => data.value?.patients ?? [])
                 <p class="truncate text-sm font-semibold">
                   {{ patient.name }}
                 </p>
-                <p class="text-xs text-muted-foreground">
+                <p class="text-xs text-muted-foreground touch:text-sm">
                   <span class="font-mono">{{ formatPatientId(patient.id) }}</span> ·
                   <span class="capitalize">{{ patient.gender }}</span> · {{ calculateAge(patient.dateOfBirth) }} yrs
                 </p>

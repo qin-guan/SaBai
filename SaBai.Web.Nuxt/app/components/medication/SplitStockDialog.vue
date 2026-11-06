@@ -84,7 +84,7 @@ const parent = computed(() => [
     <AppPanel title="Parent stock details" flush class="mb-3">
       <dl class="grid grid-cols-1 sm:grid-cols-3">
         <div v-for="[label, value] in parent" :key="label" class="border-r border-b border-border px-2 py-1.5">
-          <dt class="text-[0.6875rem] font-semibold text-muted-foreground">
+          <dt class="text-[0.6875rem] touch:text-xs font-semibold text-muted-foreground">
             {{ label }}
           </dt>
           <dd class="font-semibold">
@@ -100,7 +100,7 @@ const parent = computed(() => [
           <PhPlus aria-hidden="true" /> Add Split
         </Button>
       </template>
-      <p v-if="splits.length === 0" class="text-xs text-muted-foreground">
+      <p v-if="splits.length === 0" class="text-xs text-muted-foreground touch:text-sm">
         No splits added, add a split to begin.
       </p>
       <ol v-else ref="list" class="flex flex-col gap-2">
@@ -110,7 +110,7 @@ const parent = computed(() => [
           class="grid grid-cols-2 items-end gap-2 border border-border bg-stripe p-2 sm:grid-cols-[2rem_1fr_9rem_6rem_1fr_auto]"
           :aria-label="`Split ${index + 1}`"
         >
-          <span class="col-span-2 text-xs font-bold text-muted-foreground sm:col-span-1 sm:pb-2">#{{ index + 1 }}</span>
+          <span class="col-span-2 text-xs font-bold text-muted-foreground sm:col-span-1 sm:pb-2 touch:text-sm">#{{ index + 1 }}</span>
           <FormField v-slot="{ id }" label="Location">
             <Input :id="id" v-model="s.location" data-split-location />
           </FormField>

@@ -113,7 +113,7 @@ async function select(patientId: number) {
     />
     <div v-else-if="matches.length === 0" class="flex flex-col items-center gap-2 py-8 text-center">
       <PhUserFocus class="size-12 text-muted-foreground/50" aria-hidden="true" />
-      <p class="text-xs text-muted-foreground" role="status">
+      <p class="text-xs text-muted-foreground touch:text-sm" role="status">
         No matching patients found.
       </p>
     </div>
@@ -124,7 +124,7 @@ async function select(patientId: number) {
           <p class="truncate text-sm font-semibold">
             {{ match.name }}
           </p>
-          <p class="text-xs text-muted-foreground">
+          <p class="text-xs text-muted-foreground touch:text-sm">
             {{ match.displayId }}<template v-if="match.villageCode">
               • {{ match.villageCode }}
             </template>

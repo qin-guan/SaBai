@@ -23,12 +23,12 @@ const selected = computed({
 </script>
 
 <template>
-  <div v-if="isLoading" class="px-2 py-1 text-xs opacity-80" role="status">
+  <div v-if="isLoading" class="px-2 py-1 text-xs opacity-80 touch:text-sm" role="status">
     Loading villages…
   </div>
   <div
     v-else-if="!villageCodes || villageCodes.length === 0"
-    class="border border-warning-border bg-warning-subtle px-2 py-1 text-xs text-warning"
+    class="border border-warning-border bg-warning-subtle px-2 py-1 text-xs text-warning touch:text-sm"
   >
     No villages available
   </div>

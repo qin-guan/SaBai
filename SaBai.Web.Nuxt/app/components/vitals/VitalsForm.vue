@@ -38,6 +38,7 @@ const blank = (): VitalsFormValues => ({
 
 const { data: vitalData, isLoading } = useVisitVitals(() => props.visitId)
 const form = ref<VitalsFormValues>(blank())
+const draft = useFormDraft(() => `vitals:${props.visitId}`, form)
 const baseline = ref('')
 const isDirty = computed(() => JSON.stringify(form.value) !== baseline.value)
 
@@ -56,8 +57,8 @@ watch(
       values.urineTest = data.urineTest ?? ''
       values.others = data.others ?? ''
     }
-    form.value = values
     baseline.value = JSON.stringify(values)
+    form.value = draft.resume(values)
   },
   { immediate: true },
 )
@@ -80,6 +81,7 @@ const bmi = computed(() => computeBmi(form.value.height || null, form.value.weig
 
 const queryClient = useQueryClient()
 const onSuccess = () => {
+  draft.clear(form.value)
   queryClient.invalidateQueries({ queryKey: queryKeys.vitals(props.visitId) })
   toast.success('Vitals saved successfully!')
 }
@@ -151,9 +153,15 @@ const diabetesLabelId = useId()
     :class="showChart && 'min-[1128px]:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]'"
     aria-label="Vitals"
     @submit.prevent="submit"
+    @keydown.enter="enterMovesToNextField"
   >
+    <DraftNotice
+      :restored-at="draft.restoredAt.value"
+      :class="showChart && 'min-[1128px]:col-start-1'"
+      @discard="form = draft.discard()"
+    />
     <AppPanel title="Body Measurements" description="General physical measurements.">
-      <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <div class="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 lg:grid-cols-4">
         <FormField v-slot="{ id }" label="Height (cm)">
           <NumericInput :id="id" v-model="form.height" unit="cm" step="0.1" />
         </FormField>
@@ -164,8 +172,8 @@ const diabetesLabelId = useId()
           <NumericInput :id="id" v-model="form.temperature" unit="°C" step="0.1" />
         </FormField>
         <div class="flex flex-col gap-1">
-          <span class="text-xs font-semibold">BMI</span>
-          <output class="flex h-8 items-center border border-dashed border-border bg-muted px-2.5 text-xs tabular-nums" aria-live="polite">
+          <span class="text-xs font-semibold touch:text-sm">BMI</span>
+          <output class="flex h-8 items-center touch:h-11 touch:text-base border border-dashed border-border bg-muted px-2.5 text-xs tabular-nums" aria-live="polite">
             {{ bmi }}
           </output>
         </div>
@@ -186,7 +194,7 @@ const diabetesLabelId = useId()
     </div>
 
     <AppPanel title="Cardiovascular" description="Blood pressure and heart rate readings.">
-      <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div class="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 md:grid-cols-3">
         <FormField v-slot="{ id }" label="Systolic Blood Pressure (mmHg)">
           <NumericInput :id="id" v-model="form.systolic" unit="mmHg" />
         </FormField>
@@ -199,7 +207,7 @@ const diabetesLabelId = useId()
       </div>
       <div v-if="bloodPressureStatus" class="mt-3 flex flex-wrap items-center gap-2" role="status">
         <span
-          class="inline-flex items-center gap-1 border px-2 py-0.5 text-xs font-bold"
+          class="inline-flex items-center gap-1 border px-2 py-0.5 text-xs font-bold touch:text-sm"
           :class="bloodPressureStatus === 'Pre-HTN'
             ? 'border-warning-border bg-warning-subtle text-warning'
             : 'border-destructive/40 bg-destructive-subtle text-destructive'"
@@ -207,7 +215,7 @@ const diabetesLabelId = useId()
           <PhWarning class="size-4" aria-hidden="true" />
           {{ bloodPressureStatus }}
         </span>
-        <span class="text-xs text-muted-foreground">{{ describeBloodPressureThreshold(bloodPressureStatus) }}</span>
+        <span class="text-xs text-muted-foreground touch:text-sm">{{ describeBloodPressureThreshold(bloodPressureStatus) }}</span>
       </div>
     </AppPanel>
 
@@ -227,7 +235,7 @@ const diabetesLabelId = useId()
         </FormField>
       </div>
       <div class="mt-3 flex flex-col gap-1">
-        <span :id="diabetesLabelId" class="text-xs font-semibold">Diabetes Mellitus History Status Flag</span>
+        <span :id="diabetesLabelId" class="text-xs font-semibold touch:text-sm">Diabetes Mellitus History Status Flag</span>
         <ChoiceGroup
           v-model="form.diabetesMellitus"
           :labelledby="diabetesLabelId"
@@ -250,7 +258,7 @@ const diabetesLabelId = useId()
     </AppPanel>
 
     <SaveBar :class="showChart && 'min-[1128px]:col-start-1'">
-      <span v-if="isDirty" class="text-xs font-semibold text-warning">Unsaved changes</span>
+      <span v-if="isDirty" class="text-xs font-semibold text-warning touch:text-sm">Unsaved changes</span>
       <Button type="submit" variant="success" :disabled="saving">
         <PhFloppyDisk aria-hidden="true" />
         {{ saving ? 'Saving…' : 'Save Records' }}

@@ -138,7 +138,7 @@ useSaveShortcut(submit)
       </FormField>
       <FormField v-slot="{ id }" label="Color">
         <div class="flex gap-2">
-          <input :id="id" v-model="form.colorHex" type="color" class="h-8 w-14 shrink-0 cursor-pointer border border-input bg-card p-0.5 [@media(pointer:coarse)]:h-11">
+          <input :id="id" v-model="form.colorHex" type="color" class="h-8 w-14 shrink-0 cursor-pointer border border-input bg-card p-0.5 touch:h-11">
           <Input :model-value="form.colorHex" readonly aria-label="Color value" class="bg-muted font-mono" />
         </div>
       </FormField>

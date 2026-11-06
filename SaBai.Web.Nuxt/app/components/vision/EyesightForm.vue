@@ -61,6 +61,7 @@ const SECTIONS: { title: string, fields: { name: Key, label: string, side: 'Righ
 
 const { data: eyesight, isLoading } = useVisitEyesight(() => props.visitId)
 const form = ref<EyesightFormValues>({ ...BLANK_EYESIGHT })
+const draft = useFormDraft(() => `eyesight:${props.visitId}`, form)
 const baseline = ref('')
 const touched = ref(new Set<Key>())
 const isDirty = computed(() => JSON.stringify(form.value) !== baseline.value)
@@ -80,6 +81,7 @@ watch([eyesight, isLoading], () => {
   for (const key of Object.keys(values) as Key[])
     values[key] = data[key] ?? ''
   load(values)
+  form.value = { ...draft.resume(values) }
 }, { immediate: true })
 
 const errors = computed(() => {
@@ -141,6 +143,7 @@ function submit() {
       queryClient.invalidateQueries({ queryKey: queryKeys.eyesight(props.visitId) })
       toast.success('Vision record saved successfully!')
       load(data)
+      draft.clear(data)
     },
     onError: (error: unknown) => toast.error(getApiErrorMessage(error, 'Failed to save vision record.')),
   }
@@ -154,7 +157,9 @@ useSaveShortcut(submit)
 
 <template>
   <StateMessage v-if="isLoading" kind="loading" message="Loading vision data" />
-  <form v-else ref="formEl" novalidate aria-label="Vision record" @submit.prevent="submit">
+  <form v-else ref="formEl" novalidate aria-label="Vision record" @submit.prevent="submit"
+    @keydown.enter="enterMovesToNextField">
+    <DraftNotice :restored-at="draft.restoredAt.value" @discard="form = draft.discard()" />
     <AppPanel title="Eyesight" description="Right eye first, then left (VA notation e.g. 6/9, 6/9+2, CF, HM, LP, NLP).">
       <div class="flex flex-col divide-y divide-border">
         <div
@@ -162,7 +167,7 @@ useSaveShortcut(submit)
           :key="section.title"
           class="grid grid-cols-1 gap-3 py-3 first:pt-0 md:grid-cols-[12rem_1fr_1fr] md:items-start"
         >
-          <h3 class="text-xs font-bold uppercase tracking-wide text-chrome md:pt-6">
+          <h3 class="text-xs font-bold uppercase tracking-wide text-chrome md:pt-6 touch:text-sm">
             {{ section.title }}
           </h3>
           <FormField
@@ -193,7 +198,7 @@ useSaveShortcut(submit)
       </div>
     </AppPanel>
     <SaveBar>
-      <span v-if="isDirty" class="text-xs font-semibold text-warning">Unsaved changes</span>
+      <span v-if="isDirty" class="text-xs font-semibold text-warning touch:text-sm">Unsaved changes</span>
       <Button type="submit" variant="success" :disabled="saving">
         <PhFloppyDisk aria-hidden="true" />
         {{ saving ? 'Saving…' : 'Save Records' }}

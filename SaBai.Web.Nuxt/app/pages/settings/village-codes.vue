@@ -66,7 +66,7 @@ const remove = useMutation({
 
     <AppPanel title="Village codes" flush>
       <StateMessage v-if="isLoading" kind="loading" message="Loading Village Codes..." />
-      <Table v-else class="grid-table">
+      <Table v-else class="grid-table stack-table">
         <TableHeader>
           <TableRow>
             <TableHead>Code</TableHead>
@@ -80,17 +80,17 @@ const remove = useMutation({
         </TableHeader>
         <TableBody>
           <TableRow v-for="code in codes" :key="code.id">
-            <TableCell class="font-mono font-semibold">
+            <TableCell data-label="Code" class="font-mono font-semibold">
               {{ code.code }}
             </TableCell>
-            <TableCell>{{ code.name }}</TableCell>
-            <TableCell>
+            <TableCell data-label="Name">{{ code.name }}</TableCell>
+            <TableCell data-label="Color">
               <span class="inline-flex items-center gap-2">
                 <span class="size-3.5 border border-border" :style="{ backgroundColor: code.colorHex }" aria-hidden="true" />
                 <span class="font-mono text-muted-foreground">{{ code.colorHex }}</span>
               </span>
             </TableCell>
-            <TableCell>
+            <TableCell data-label="Status">
               <Badge v-if="code.isVisible" variant="outline" class="border-success/40 bg-success-subtle text-success">
                 Active
               </Badge>
@@ -98,7 +98,7 @@ const remove = useMutation({
                 Hidden
               </Badge>
             </TableCell>
-            <TableCell>
+            <TableCell data-stack="actions">
               <div class="flex justify-end gap-1">
                 <Button size="sm" variant="outline" :aria-label="`Edit ${code.name}`" @click="openEdit(code)">
                   <PhPencilSimple aria-hidden="true" /> Edit

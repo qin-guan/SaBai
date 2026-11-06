@@ -38,7 +38,7 @@ const splitting = ref<MedicationStockRow | null>(null)
       <StateMessage v-if="isError" kind="error" message="An error has occurred!" />
       <StateMessage v-else-if="isLoading" kind="loading" message="Loading stock..." />
       <StateMessage v-else-if="!stock || stock.length === 0" message="No stock found. Seed the database or add a new record." />
-      <Table v-else class="grid-table">
+      <Table v-else class="grid-table stack-table">
         <TableHeader>
           <TableRow>
             <TableHead>Active Ingredient</TableHead>

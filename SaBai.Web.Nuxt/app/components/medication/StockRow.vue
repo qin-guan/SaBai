@@ -95,14 +95,14 @@ function onKeydown(event: KeyboardEvent) {
     :class="item.isLowStock && 'bg-destructive-subtle! hover:bg-destructive-subtle/70!'"
     @keydown="onKeydown"
   >
-    <TableCell class="font-semibold">
+    <TableCell data-stack="title" class="font-semibold">
       {{ item.ingredientName }}
       <Badge v-if="item.isLowStock" variant="destructive" class="ml-1">
         Low
       </Badge>
     </TableCell>
-    <TableCell>{{ item.brandName }}</TableCell>
-    <TableCell class="min-w-36">
+    <TableCell data-label="Brand">{{ item.brandName }}</TableCell>
+    <TableCell data-label="Location" class="min-w-36">
       <template v-if="isEditing">
         <Input
           ref="firstInput"
@@ -110,7 +110,7 @@ function onKeydown(event: KeyboardEvent) {
           :aria-label="`Location for ${item.brandName}`"
           :aria-invalid="!!locationError || undefined"
         />
-        <p v-if="locationError" class="mt-0.5 text-xs text-destructive" role="alert">
+        <p v-if="locationError" class="mt-0.5 text-xs text-destructive touch:text-sm" role="alert">
           {{ locationError }}
         </p>
       </template>
@@ -118,13 +118,13 @@ function onKeydown(event: KeyboardEvent) {
         {{ item.location }}
       </template>
     </TableCell>
-    <TableCell class="text-right tabular-nums">
+    <TableCell data-label="Quantity" class="text-right tabular-nums">
       {{ item.quantity }}
     </TableCell>
-    <TableCell class="tabular-nums">
+    <TableCell data-label="Expiry" class="tabular-nums">
       {{ new Date(item.expiry).toLocaleDateString() }}
     </TableCell>
-    <TableCell class="min-w-32">
+    <TableCell data-label="State" class="min-w-32">
       <NativeSelect v-if="isEditing" v-model="form.stockStatus" :aria-label="`Status for ${item.brandName}`">
         <NativeSelectOption v-for="o in stockStatusOptions" :key="o.value" :value="o.value">
           {{ o.label }}
@@ -134,13 +134,13 @@ function onKeydown(event: KeyboardEvent) {
         {{ item.stockStatus }}
       </template>
     </TableCell>
-    <TableCell class="min-w-36">
+    <TableCell data-label="Remarks" class="min-w-36">
       <Input v-if="isEditing" v-model="form.remarks" :aria-label="`Remarks for ${item.brandName}`" />
       <template v-else>
         {{ item.remarks }}
       </template>
     </TableCell>
-    <TableCell>
+    <TableCell data-stack="actions">
       <div class="flex justify-end gap-1">
         <template v-if="isEditing">
           <Button size="sm" variant="success" :disabled="update.isPending.value" @click="save">

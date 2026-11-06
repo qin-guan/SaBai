@@ -27,6 +27,7 @@ const SECTIONS = [
 // A visit without a dental consultation answers 404; that is just an empty form.
 const { data, isLoading } = useVisitDental(() => props.visitId)
 const form = ref<DentalFormValues>(toDentalFormValues(null))
+const draft = useFormDraft(() => `dental:${props.visitId}`, form)
 const baseline = ref('')
 const isDirty = computed(() => JSON.stringify(form.value) !== baseline.value)
 const formEl = ref<HTMLFormElement>()
@@ -37,8 +38,11 @@ function load(values: DentalFormValues) {
 }
 
 watch([data, isLoading], () => {
-  if (!isLoading.value)
-    load(toDentalFormValues(data.value))
+  if (isLoading.value)
+    return
+  const values = toDentalFormValues(data.value)
+  load(values)
+  form.value = draft.resume(values)
 }, { immediate: true })
 
 function addDiagnosis() {
@@ -60,7 +64,9 @@ const save = useMutation({
     }).unwrap(),
   onSuccess: (saved) => {
     queryClient.setQueryData(queryKeys.dental(props.visitId), saved)
-    load(toDentalFormValues(saved as DentalResponse))
+    const values = toDentalFormValues(saved as DentalResponse)
+    load(values)
+    draft.clear(values)
     toast.success('Dental consultation saved.')
   },
   onError: error => toast.error(getApiErrorMessage(error, 'Failed to save dental consultation.')),
@@ -81,7 +87,8 @@ const extraIds = { brushingFrequency: useId(), sugarConsumption: useId(), referr
 
 <template>
   <StateMessage v-if="isLoading" kind="loading" message="Loading dental consultation" />
-  <form v-else ref="formEl" novalidate aria-label="Dental consultation" @submit.prevent="submit">
+  <form v-else ref="formEl" novalidate aria-label="Dental consultation" @submit.prevent="submit"
+    @keydown.enter="enterMovesToNextField">
     <!-- Section jump bar: sticks under the app bar; scrolls sideways on phones. -->
     <nav
       aria-label="Dental consultation sections"
@@ -92,34 +99,35 @@ const extraIds = { brushingFrequency: useId(), sugarConsumption: useId(), referr
         v-for="(section, index) in SECTIONS"
         :key="section.id"
         :href="`#${section.id}`"
-        class="flex shrink-0 items-center gap-1.5 px-3 py-2 text-xs font-semibold whitespace-nowrap text-chrome hover:bg-accent focus-visible:bg-accent [@media(pointer:coarse)]:py-3"
+        class="flex shrink-0 items-center gap-1.5 px-3 py-2 text-xs font-semibold whitespace-nowrap text-chrome hover:bg-accent focus-visible:bg-accent touch:py-3 touch:text-sm"
       >
         <span class="text-muted-foreground" aria-hidden="true">{{ index + 1 }}</span>
         {{ section.tab }}
       </a>
     </nav>
 
+    <DraftNotice :restored-at="draft.restoredAt.value" @discard="form = draft.discard()" />
     <div class="flex flex-col gap-3">
       <AppPanel :id="SECTIONS[0].id" :step="1" :title="SECTIONS[0].title">
         <div class="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
           <div v-for="q in HISTORY_YES_NO_UNKNOWN.slice(0, 2)" :key="q.name" class="flex flex-col gap-1">
-            <span :id="ids[q.name]" class="text-xs font-semibold">{{ q.label }}</span>
+            <span :id="ids[q.name]" class="text-xs font-semibold touch:text-sm">{{ q.label }}</span>
             <ChoiceGroup v-model="form[q.name]" :labelledby="ids[q.name]" :options="YES_NO_UNKNOWN" />
           </div>
           <div v-for="q in HISTORY_YES_NO" :key="q.name" class="flex flex-col gap-1">
-            <span :id="ids[q.name]" class="text-xs font-semibold">{{ q.label }}</span>
+            <span :id="ids[q.name]" class="text-xs font-semibold touch:text-sm">{{ q.label }}</span>
             <ChoiceGroup v-model="form[q.name]" :labelledby="ids[q.name]" :options="YES_NO" />
           </div>
           <div class="flex flex-col gap-1">
-            <span :id="extraIds.brushingFrequency" class="text-xs font-semibold">Brushing frequency</span>
+            <span :id="extraIds.brushingFrequency" class="text-xs font-semibold touch:text-sm">Brushing frequency</span>
             <ChoiceGroup v-model="form.brushingFrequency" :labelledby="extraIds.brushingFrequency" :options="BRUSHING_FREQUENCY" />
           </div>
           <div class="flex flex-col gap-1">
-            <span :id="ids.fluorideToothpaste" class="text-xs font-semibold">Fluoride toothpaste</span>
+            <span :id="ids.fluorideToothpaste" class="text-xs font-semibold touch:text-sm">Fluoride toothpaste</span>
             <ChoiceGroup v-model="form.fluorideToothpaste" :labelledby="ids.fluorideToothpaste" :options="YES_NO_UNKNOWN" />
           </div>
           <div class="flex flex-col gap-1">
-            <span :id="extraIds.sugarConsumption" class="text-xs font-semibold">Sugar consumption</span>
+            <span :id="extraIds.sugarConsumption" class="text-xs font-semibold touch:text-sm">Sugar consumption</span>
             <ChoiceGroup v-model="form.sugarConsumption" :labelledby="extraIds.sugarConsumption" :options="SUGAR_CONSUMPTION" />
           </div>
         </div>
@@ -137,7 +145,7 @@ const extraIds = { brushingFrequency: useId(), sugarConsumption: useId(), referr
       </AppPanel>
 
       <AppPanel :id="SECTIONS[2].id" :step="3" :title="SECTIONS[2].title">
-        <h3 class="mb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+        <h3 class="mb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground touch:text-sm">
           A. Extraoral examination
         </h3>
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -152,7 +160,7 @@ const extraIds = { brushingFrequency: useId(), sugarConsumption: useId(), referr
             </NativeSelect>
           </FormField>
         </div>
-        <h3 class="mt-4 mb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+        <h3 class="mt-4 mb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground touch:text-sm">
           B. Intraoral examination
         </h3>
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -176,6 +184,7 @@ const extraIds = { brushingFrequency: useId(), sugarConsumption: useId(), referr
               v-model="diagnosis.value"
               data-dental-diagnosis
               :aria-label="`Diagnosis ${index + 1}`"
+              @keydown.enter.prevent.stop="index === form.diagnoses.length - 1 && diagnosis.value.trim() ? addDiagnosis() : enterMovesToNextField($event)"
               placeholder="e.g. Dental caries"
             />
             <Button variant="outline" :aria-label="`Remove diagnosis ${index + 1}`" @click="form.diagnoses.splice(index, 1)">
@@ -189,7 +198,7 @@ const extraIds = { brushingFrequency: useId(), sugarConsumption: useId(), referr
       </AppPanel>
 
       <AppPanel :id="SECTIONS[4].id" :step="5" :title="SECTIONS[4].title" flush>
-        <div class="hidden grid-cols-[6rem_11rem_1fr_1fr_1fr] gap-2 border-b border-border bg-stripe px-3 py-1 text-[0.6875rem] font-bold uppercase tracking-wide text-muted-foreground md:grid" aria-hidden="true">
+        <div class="hidden grid-cols-[6rem_11rem_1fr_1fr_1fr] gap-2 border-b border-border bg-stripe px-3 py-1 text-[0.6875rem] touch:text-xs font-bold uppercase tracking-wide text-muted-foreground md:grid" aria-hidden="true">
           <span>Treatment</span><span>Status</span><span>Date</span><span>Operator</span><span>Tooth no.</span>
         </div>
         <div
@@ -210,11 +219,11 @@ const extraIds = { brushingFrequency: useId(), sugarConsumption: useId(), referr
       <AppPanel :id="SECTIONS[5].id" :step="6" :title="SECTIONS[5].title">
         <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
           <div class="flex flex-col gap-1">
-            <span :id="extraIds.referredFor" class="text-xs font-semibold">Referred for</span>
+            <span :id="extraIds.referredFor" class="text-xs font-semibold touch:text-sm">Referred for</span>
             <ChoiceGroup v-model="form.referredFor" :labelledby="extraIds.referredFor" :options="REFERRED_FOR" />
           </div>
           <div class="flex flex-col gap-1">
-            <span :id="extraIds.referralPriority" class="text-xs font-semibold">Priority</span>
+            <span :id="extraIds.referralPriority" class="text-xs font-semibold touch:text-sm">Priority</span>
             <ChoiceGroup v-model="form.referralPriority" :labelledby="extraIds.referralPriority" :options="REFERRAL_PRIORITY" />
           </div>
           <FormField v-slot="{ id }" label="Referral notes">
@@ -234,8 +243,8 @@ const extraIds = { brushingFrequency: useId(), sugarConsumption: useId(), referr
     </div>
 
     <SaveBar>
-      <span v-if="isDirty" class="text-xs font-semibold text-warning">Unsaved changes</span>
-      <Button variant="outline" :disabled="!isDirty" @click="load(toDentalFormValues(data))">
+      <span v-if="isDirty" class="text-xs font-semibold text-warning touch:text-sm">Unsaved changes</span>
+      <Button variant="outline" :disabled="!isDirty" @click="form = draft.discard()">
         <PhArrowCounterClockwise aria-hidden="true" /> Reset<span class="hidden sm:inline">&nbsp;Form</span>
       </Button>
       <Button type="submit" variant="success" :disabled="save.isPending.value">

@@ -73,7 +73,7 @@ async function submit() {
           <div
             v-if="error"
             role="alert"
-            class="flex gap-2 border border-destructive/40 bg-destructive-subtle p-2 text-xs text-destructive"
+            class="flex gap-2 border border-destructive/40 bg-destructive-subtle p-2 text-xs text-destructive touch:text-sm"
           >
             <PhWarningOctagon class="mt-px size-4 shrink-0" aria-hidden="true" />
             <div>

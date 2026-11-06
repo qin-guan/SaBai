@@ -34,10 +34,10 @@ const describedby = computed(
       <span v-if="props.required" class="sr-only">(required)</span>
     </Label>
     <slot :id="fieldId" :describedby="describedby" :invalid="!!props.error" />
-    <p v-if="props.hint && !props.error" :id="`${fieldId}-hint`" class="text-xs text-muted-foreground">
+    <p v-if="props.hint && !props.error" :id="`${fieldId}-hint`" class="text-xs text-muted-foreground touch:text-sm">
       {{ props.hint }}
     </p>
-    <p v-if="props.error" :id="`${fieldId}-err`" class="flex items-start gap-1 text-xs font-medium text-destructive" role="alert">
+    <p v-if="props.error" :id="`${fieldId}-err`" class="flex items-start gap-1 text-xs font-medium text-destructive touch:text-sm" role="alert">
       <PhWarningOctagon class="mt-px size-3.5 shrink-0" aria-hidden="true" />
       {{ props.error }}
     </p>

@@ -11,6 +11,7 @@ export function usePatientStation(param: string, autoSelect: 'single' | 'latest'
   const patientId = useRouteId(param)
   const patientQuery = usePatient(patientId)
   const visitsQuery = usePatientVisits(patientId)
+  useRememberPatient(patientId)
 
   const visits = computed(() => visitsQuery.data.value?.visits)
   const selectedVisitId = ref('')

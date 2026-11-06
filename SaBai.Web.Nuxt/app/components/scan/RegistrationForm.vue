@@ -10,6 +10,9 @@ const image = defineModel<string | null>('image', { required: true })
 const emit = defineEmits<{ match: [] }>()
 
 const form = ref<PatientFormValues>(blankPatientForm())
+// The photo is not kept (too large for storage); the typed details are.
+const draft = useFormDraft('register-patient', form)
+form.value = draft.resume(blankPatientForm())
 const errors = ref<Partial<Record<keyof PatientFormValues, string>>>({})
 const formEl = ref<HTMLFormElement>()
 const { selectedVillageCodeId } = useVillageCode()
@@ -77,6 +80,7 @@ async function submit() {
   toast.success('Patient created successfully!')
   image.value = null
   form.value = blankPatientForm()
+  draft.clear(form.value)
   errors.value = {}
 }
 
@@ -90,7 +94,9 @@ useSaveShortcut(submit)
         <PhMagnifyingGlass aria-hidden="true" /> Match Instead
       </Button>
     </template>
-    <form ref="formEl" novalidate @submit.prevent="submit">
+    <DraftNotice :restored-at="draft.restoredAt.value" @discard="form = draft.discard()" />
+    <form ref="formEl" novalidate @submit.prevent="submit"
+    @keydown.enter="enterMovesToNextField">
       <PatientFields v-model="form" :errors="errors" />
       <SaveBar>
         <Button type="submit" variant="success" :disabled="create.isPending.value">

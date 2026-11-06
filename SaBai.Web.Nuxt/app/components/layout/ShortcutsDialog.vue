@@ -5,24 +5,25 @@ const groups = [
   {
     title: 'Global',
     items: [
-      { keys: '/', label: 'Search patients' },
-      { keys: 'Alt+1 … Alt+9', label: 'Switch activity (see sidebar)' },
+      { keys: 'Ctrl+K  or  /', label: 'Search patients, sections and actions' },
       { keys: 'Ctrl+B', label: 'Collapse / expand sidebar' },
       { keys: '?', label: 'Show this help' },
     ],
   },
   {
-    title: 'Patient search',
+    title: 'Search',
     items: [
-      { keys: '↑ / ↓', label: 'Move through matches' },
-      { keys: 'Enter', label: 'Open patient' },
-      { keys: 'Esc', label: 'Clear search' },
+      { keys: '↑ / ↓', label: 'Move through results' },
+      { keys: 'Enter', label: 'Open (patients open in the current station)' },
+      { keys: 'Shift+Enter', label: 'Open the patient record' },
+      { keys: 'Esc', label: 'Close' },
     ],
   },
   {
     title: 'Forms',
     items: [
       { keys: 'Ctrl+S', label: 'Save the current form' },
+      { keys: 'Enter', label: 'Next field (never submits by accident)' },
       { keys: 'Tab / Shift+Tab', label: 'Next / previous field' },
       { keys: '← / →', label: 'Change answer in a choice group' },
       { keys: 'Esc', label: 'Close dialog' },

@@ -95,10 +95,10 @@ watchEffect((onCleanup) => {
 </script>
 
 <template>
-  <p v-if="!hasValues" class="text-xs text-muted-foreground">
+  <p v-if="!hasValues" class="text-xs text-muted-foreground touch:text-sm">
     Enter height and weight to plot the growth chart.
   </p>
-  <p v-else-if="!inRange" class="text-xs text-muted-foreground">
+  <p v-else-if="!inRange" class="text-xs text-muted-foreground touch:text-sm">
     Growth chart only plots heights from {{ MIN_HEIGHT_CM }} cm and weights from {{ MIN_WEIGHT_KG }} kg.
   </p>
   <!-- Dimensions match the PNG so drawImage fills the canvas exactly. -->

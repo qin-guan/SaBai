@@ -96,7 +96,7 @@ function capture() {
 
 <template>
   <div class="flex w-full flex-col items-center gap-2">
-    <p class="text-xs font-semibold">
+    <p class="text-xs font-semibold touch:text-sm">
       Photo<span class="text-destructive" aria-hidden="true">*</span>
     </p>
     <div
@@ -116,12 +116,12 @@ function capture() {
       <PhCamera v-else class="size-10 text-muted-foreground" aria-hidden="true" />
       <span
         v-if="cameraIsOpen && !cameraReady && !cameraError"
-        class="absolute inset-x-0 bottom-0 bg-black/60 px-2 py-1 text-center text-xs text-white"
+        class="absolute inset-x-0 bottom-0 bg-black/60 px-2 py-1 text-center text-xs text-white touch:text-sm"
         role="status"
       >Starting camera…</span>
     </div>
 
-    <p v-if="cameraIsOpen && cameraError" class="text-center text-xs text-destructive" role="alert">
+    <p v-if="cameraIsOpen && cameraError" class="text-center text-xs text-destructive touch:text-sm" role="alert">
       Camera unavailable: {{ cameraError }}
     </p>
 

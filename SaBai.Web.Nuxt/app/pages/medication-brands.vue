@@ -20,7 +20,7 @@ const { data: brands, isLoading, isError } = useMedicationBrands()
       <StateMessage v-if="isError" kind="error" message="An error has occurred!" />
       <StateMessage v-else-if="isLoading" kind="loading" message="Loading brands..." />
       <StateMessage v-else-if="!brands || brands.length === 0" message="No medication brands found. Seed the database or add a new record." />
-      <Table v-else class="grid-table">
+      <Table v-else class="grid-table stack-table">
         <TableHeader>
           <TableRow>
             <TableHead>Brand ID</TableHead>
@@ -31,14 +31,14 @@ const { data: brands, isLoading, isError } = useMedicationBrands()
         </TableHeader>
         <TableBody>
           <TableRow v-for="brand in brands" :key="brand.id">
-            <TableCell class="tabular-nums">
+            <TableCell data-label="Brand ID" class="tabular-nums">
               {{ brand.id }}
             </TableCell>
-            <TableCell class="font-semibold">
+            <TableCell data-label="Name" class="font-semibold">
               {{ brand.name }}
             </TableCell>
-            <TableCell>{{ brand.remarks }}</TableCell>
-            <TableCell class="tabular-nums">
+            <TableCell data-label="Remarks">{{ brand.remarks }}</TableCell>
+            <TableCell data-label="Active Ingr. ID" class="tabular-nums">
               {{ brand.activeIngredientId }}
             </TableCell>
           </TableRow>

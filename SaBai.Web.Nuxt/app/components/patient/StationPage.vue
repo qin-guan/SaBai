@@ -61,7 +61,7 @@ useHead({ title: () => `${props.title}${props.patient ? ` — ${props.patient.na
       <slot v-if="props.selectedVisit" :visit="props.selectedVisit" :patient="props.patient" />
       <div
         v-else-if="props.visits && props.visits.length > 0"
-        class="border-2 border-dashed border-border py-12 text-center text-xs font-medium text-muted-foreground"
+        class="border-2 border-dashed border-border py-12 text-center text-xs font-medium text-muted-foreground touch:text-sm"
       >
         {{ props.chooseMessage }}
       </div>

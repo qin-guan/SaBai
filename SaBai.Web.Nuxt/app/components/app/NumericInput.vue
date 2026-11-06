@@ -34,7 +34,7 @@ function onPaste(event: ClipboardEvent) {
     />
     <span
       v-if="props.unit"
-      class="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 text-xs text-muted-foreground"
+      class="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 text-xs text-muted-foreground touch:text-sm"
       aria-hidden="true"
     >{{ props.unit }}</span>
   </div>

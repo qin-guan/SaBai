@@ -27,15 +27,20 @@ const consultFormSchema = z.object({
 type ConsultFormValues = z.infer<typeof consultFormSchema>
 
 let nextKey = 1
+// Stable key for the first diagnosis so a blank form always compares equal.
 const blank = () => ({
   pastMedicalHistory: '',
   consultation: '',
   treatmentPlan: '',
   remarks: '',
-  diagnoses: [{ key: nextKey++, details: '', category: '' }],
+  diagnoses: [{ key: 0, details: '', category: '' }],
 })
 
 const form = ref(blank())
+// Each save appends a consult, so the draft is the consult being written now.
+const draft = useFormDraft(() => `consult:${props.visitId}`, form)
+form.value = draft.resume(blank())
+nextKey = Math.max(0, ...form.value.diagnoses.map(d => d.key)) + 1
 const errors = ref<Record<string, string>>({})
 const formEl = ref<HTMLFormElement>()
 
@@ -84,6 +89,7 @@ function submit() {
         queryClient.invalidateQueries({ queryKey: queryKeys.consults(props.visitId) })
         toast.success('Consult has been saved successfully!')
         form.value = blank()
+        draft.clear(form.value)
       },
       onError: error => toast.error(getApiErrorMessage(error, 'Failed to save consult.')),
     },
@@ -94,7 +100,9 @@ useSaveShortcut(submit)
 </script>
 
 <template>
-  <form ref="formEl" novalidate aria-label="Doctor's consult form" class="min-w-0" @submit.prevent="submit">
+  <form ref="formEl" novalidate aria-label="Doctor's consult form" class="min-w-0" @submit.prevent="submit"
+    @keydown.enter="enterMovesToNextField">
+    <DraftNotice :restored-at="draft.restoredAt.value" @discard="form = draft.discard()" />
     <AppPanel title="Doctor's Consult Form">
       <div class="flex flex-col gap-3">
         <FormField v-slot="{ id }" label="Past Medical History">
@@ -105,7 +113,7 @@ useSaveShortcut(submit)
         </FormField>
 
         <fieldset class="flex flex-col gap-2">
-          <legend class="mb-1 text-xs font-semibold">
+          <legend class="mb-1 text-xs font-semibold touch:text-sm">
             Diagnoses <span class="text-destructive" aria-hidden="true">*</span><span class="sr-only">(at least one, required)</span>
           </legend>
           <div
@@ -114,7 +122,7 @@ useSaveShortcut(submit)
             class="flex flex-col gap-2 border border-border bg-stripe p-2"
           >
             <div class="flex items-center justify-between">
-              <p class="text-xs font-bold text-muted-foreground">
+              <p class="text-xs font-bold text-muted-foreground touch:text-sm">
                 Diagnosis {{ index + 1 }}
               </p>
               <Button

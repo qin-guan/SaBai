@@ -37,16 +37,42 @@ stored under the same `localStorage` key (`villageCodeState`).
 
 | Keys | Action |
 | --- | --- |
-| `/` | Search patients (↑/↓ to move, Enter to open, Esc to clear). On a station page, results open that station. |
-| `Alt+1` … `Alt+9` | Switch activity (Scan Face, Patient, Vitals, Vision, Consults, Dental, Medication Stock, Orders, Settings). |
+| `Ctrl/⌘+K` or `/` | Universal search (see below). ↑/↓ move, Enter opens, Shift+Enter opens the patient record, Esc closes. |
 | `Ctrl/⌘+S` | Save the current form or dialog. |
+| `Enter` | In a form field: move to the next field (forms never submit on Enter). |
 | `Ctrl/⌘+B` | Collapse / expand the sidebar. |
 | `?` | Shortcut help. |
 | `←`/`→` | Change the answer in a choice group (selecting the active answer again clears it). |
 | `Esc` | Close a dialog, or cancel an inline table edit (Enter saves it). |
 
+## Universal search
+
+One box (header, `/` or `Ctrl/⌘+K`) for patients, sections and actions, built on
+[MiniSearch](https://lucaong.github.io/minisearch/) (`app/utils/search.ts`):
+
+- Patients match on name, any form of their ID (`12`, `0012`, `PC0012`),
+  identification number, phone (separators ignored) and village; prefix
+  matching plus typo tolerance for words (never for numbers).
+- Sections match on clinical keywords too (`bp` → Vitals, `glasses` → Vision).
+- With an empty query it lists recently opened patients.
+- On a station page, Enter opens the patient in that station; each result also
+  has Record / Vitals / Vision / Consult / Dental quick links.
+
+## Drafts
+
+Every clinical form (vitals, vision, consult, dental, registration, edit
+patient) autosaves unsaved input to `localStorage` (`useFormDraft`), so a
+reload or closed tab does not lose work. A restored draft is announced with a
+"Discard draft" button; drafts clear on a successful save, expire after 24h,
+and — together with recent patients — are wiped on sign-out because they hold
+patient data.
+
 ## Phones
 
-The sidebar becomes a drawer, worklists become tappable rows, dialogs go
-full-screen, the save bar sticks to the bottom of the screen, and on touch
-devices controls grow to 44px with 16px text (no iOS zoom-on-focus).
+Below 640px (or on any touch screen) the dense desktop sizing steps up: body
+text 15px, labels/hints 14px, inputs 16px (no iOS zoom-on-focus) and every
+control 44px tall. Form grids collapse to one column, the sidebar becomes a
+drawer, worklists become tappable rows, wide tables (stock, ingredients,
+brands, village codes) stack into labelled cards, dialogs go full-screen and
+the save bar sticks to the bottom with full-width buttons. Keyboard hints are
+only shown on wide screens with a mouse.

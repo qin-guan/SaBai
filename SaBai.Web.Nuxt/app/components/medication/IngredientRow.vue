@@ -116,25 +116,25 @@ function onKeydown(event: KeyboardEvent) {
 
 <template>
   <TableRow @keydown="onKeydown">
-    <TableCell class="tabular-nums">
+    <TableCell data-label="ID" class="tabular-nums">
       {{ ingredient.id }}
     </TableCell>
-    <TableCell class="min-w-36 font-semibold">
+    <TableCell data-label="Name" class="min-w-36 font-semibold">
       <Input v-if="isEditing" ref="firstInput" v-model="form.name" aria-label="Active ingredient name" />
       <template v-else>
         {{ ingredient.name }}
       </template>
     </TableCell>
-    <TableCell class="min-w-28">
+    <TableCell data-label="Unit" class="min-w-28">
       <Input v-if="isEditing" v-model="form.unitOfMeasurement" aria-label="Unit of measurement" />
       <template v-else>
         {{ ingredient.unitOfMeasurement }}
       </template>
     </TableCell>
-    <TableCell class="min-w-24 tabular-nums">
+    <TableCell data-label="Fall Below" class="min-w-24 tabular-nums">
       <template v-if="isEditing">
         <NumericInput v-model="form.fallBelow" step="1" min="1" aria-label="Fall below" :aria-invalid="!!fallBelowError || undefined" />
-        <p v-if="fallBelowError" class="mt-0.5 text-xs text-destructive" role="alert">
+        <p v-if="fallBelowError" class="mt-0.5 text-xs text-destructive touch:text-sm" role="alert">
           {{ fallBelowError }}
         </p>
       </template>
@@ -142,13 +142,13 @@ function onKeydown(event: KeyboardEvent) {
         {{ ingredient.fallBelow }}
       </template>
     </TableCell>
-    <TableCell class="min-w-36">
+    <TableCell data-label="Remarks" class="min-w-36">
       <Input v-if="isEditing" v-model="form.remarks" aria-label="Remarks" />
       <template v-else>
         {{ ingredient.remarks }}
       </template>
     </TableCell>
-    <TableCell>
+    <TableCell data-stack="actions">
       <div class="flex justify-end gap-1">
         <template v-if="isEditing">
           <Button size="sm" variant="success" :disabled="update.isPending.value" @click="save">

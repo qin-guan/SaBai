@@ -25,6 +25,9 @@ watch(() => route.fullPath, () => {
 
 async function signOut() {
   clearToken()
+  // Drafts and recent patients hold patient data; don't leave them on a shared device.
+  clearAllFormDrafts()
+  clearRecentPatients()
   await navigateTo(paths.login())
 }
 </script>
@@ -52,19 +55,14 @@ async function signOut() {
               <SidebarMenuButton
                 as-child
                 :is-active="isNavItemActive(item, route.path)"
-                :tooltip="`${item.name} (Alt+${item.key})`"
+                :tooltip="item.name"
               >
                 <NuxtLink
                   :to="item.href"
                   :aria-current="isNavItemActive(item, route.path) ? 'page' : undefined"
-                  :aria-keyshortcuts="`Alt+${item.key}`"
                 >
                   <component :is="item.icon" aria-hidden="true" />
                   <span class="flex-1">{{ item.name }}</span>
-                  <span
-                    class="hidden text-[0.625rem] text-muted-foreground [@media(pointer:fine)]:inline group-data-[collapsible=icon]:hidden"
-                    aria-hidden="true"
-                  >Alt+{{ item.key }}</span>
                 </NuxtLink>
               </SidebarMenuButton>
             </SidebarMenuItem>

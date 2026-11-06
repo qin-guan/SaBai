@@ -24,7 +24,7 @@ const settingsItems = [
               <p class="font-bold">
                 {{ item.name }}
               </p>
-              <p class="text-xs text-muted-foreground">
+              <p class="text-xs text-muted-foreground touch:text-sm">
                 {{ item.description }}
               </p>
             </div>

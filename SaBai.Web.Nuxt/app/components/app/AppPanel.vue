@@ -21,15 +21,15 @@ const headingId = computed(() => (props.id ? `${props.id}-title` : undefined))
       v-if="props.title || $slots.actions"
       class="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-band-border bg-band px-3 py-1.5"
     >
-      <h2 :id="headingId" class="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-chrome">
+      <h2 :id="headingId" class="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-chrome touch:text-sm">
         <span
           v-if="props.step"
-          class="inline-flex size-5 items-center justify-center bg-chrome text-[0.6875rem] text-white"
+          class="inline-flex size-5 items-center justify-center bg-chrome text-[0.6875rem] touch:text-xs text-white"
           aria-hidden="true"
         >{{ props.step }}</span>
         {{ props.title }}
       </h2>
-      <p v-if="props.description" class="text-xs text-muted-foreground">
+      <p v-if="props.description" class="text-xs text-muted-foreground touch:text-sm">
         {{ props.description }}
       </p>
       <div v-if="$slots.actions" class="ml-auto flex flex-wrap items-center gap-2">

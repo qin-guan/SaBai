@@ -33,7 +33,7 @@ const cards = computed(() =>
       <p class="text-base font-bold leading-tight break-words">
         {{ props.patient.name }}
       </p>
-      <dl class="mt-0.5 flex flex-wrap gap-x-4 gap-y-0.5 text-xs">
+      <dl class="mt-0.5 flex flex-wrap gap-x-4 gap-y-0.5 text-xs touch:text-sm">
         <div class="flex gap-1">
           <dt class="text-muted-foreground">
             ID
@@ -72,7 +72,7 @@ const cards = computed(() =>
     </div>
     </div>
     <div
-      class="flex items-center gap-1.5 self-start border sm:self-auto px-2 py-1 text-xs font-semibold"
+      class="flex items-center gap-1.5 self-start border sm:self-auto px-2 py-1 text-xs font-semibold touch:text-sm"
       :class="hasAllergy ? 'border-destructive bg-destructive-subtle text-destructive' : 'border-border bg-card text-muted-foreground'"
     >
       <PhWarning v-if="hasAllergy" class="size-4" aria-hidden="true" />

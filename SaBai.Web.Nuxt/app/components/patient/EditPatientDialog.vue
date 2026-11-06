@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button'
 const props = defineProps<{ patient: SaBaiAPIEndpointsPatientsGetResponse }>()
 const emit = defineEmits<{ close: [] }>()
 
-const form = ref<PatientFormValues>({
+const initial: PatientFormValues = {
   name: props.patient.name,
   identificationNumber: props.patient.identificationNumber ?? '',
   contactNo: props.patient.contactNo ?? '',
@@ -24,7 +24,10 @@ const form = ref<PatientFormValues>({
   hasPoorCard: props.patient.hasPoorCard,
   hasBS2Card: props.patient.hasBS2Card,
   hasSabaiCard: props.patient.hasSabaiCard,
-})
+}
+const form = ref<PatientFormValues>({ ...initial })
+const draft = useFormDraft(`edit-patient:${props.patient.id}`, form)
+form.value = draft.resume(initial)
 const errors = ref<Partial<Record<keyof PatientFormValues, string>>>({})
 const newPhoto = ref<string | null>(null)
 const formEl = ref<HTMLFormElement>()
@@ -86,6 +89,7 @@ async function submit() {
   }
 
   queryClient.invalidateQueries({ queryKey: queryKeys.patients() })
+  draft.clear(form.value)
   toast.success('Patient details updated successfully!')
   emit('close')
 }
@@ -95,10 +99,12 @@ useSaveShortcut(submit)
 
 <template>
   <AppDialog title="Edit Patient Details" size="lg" @close="emit('close')">
-    <form id="edit-patient-form" ref="formEl" novalidate class="flex flex-col gap-4" @submit.prevent="submit">
+    <form id="edit-patient-form" ref="formEl" novalidate class="flex flex-col gap-4" @submit.prevent="submit"
+    @keydown.enter="enterMovesToNextField">
+      <DraftNotice :restored-at="draft.restoredAt.value" class="mb-0" @discard="form = draft.discard()" />
       <PatientFields v-model="form" :errors="errors" />
       <AppPanel title="Profile photo & face">
-        <p class="mb-3 text-xs text-muted-foreground">
+        <p class="mb-3 text-xs text-muted-foreground touch:text-sm">
           {{ props.patient.hasPhoto
             ? 'Capture a new photo to replace the current one and re-enroll the patient\'s face.'
             : 'Capture a photo to set the patient\'s profile photo and enroll their face.' }}
@@ -107,7 +113,7 @@ useSaveShortcut(submit)
       </AppPanel>
     </form>
     <template #footer>
-      <span class="mr-auto hidden text-xs text-muted-foreground [@media(pointer:fine)]:inline">
+      <span class="mr-auto hidden text-xs text-muted-foreground kb:inline touch:text-sm">
         <ShortcutHint keys="Ctrl+S" /> save · <ShortcutHint keys="Esc" /> cancel
       </span>
       <Button variant="outline" @click="emit('close')">

@@ -8,6 +8,7 @@ const { data: patient, isLoading, isRefetching } = usePatient(patientId)
 const { data: visitsData, isLoading: visitsLoading } = usePatientVisits(patientId)
 const visits = computed(() => visitsData.value?.visits ?? [])
 const isEditing = ref(false)
+useRememberPatient(patientId)
 
 useHead({ title: () => `${patient.value?.name ?? 'Patient'} · Sa'Bai` })
 
@@ -62,7 +63,7 @@ const details = computed(() => {
               :key="detail.label"
               class="grid grid-cols-[10rem_1fr] gap-2 border-b border-border px-3 py-1.5 sm:odd:border-r"
             >
-              <dt class="text-xs font-semibold text-muted-foreground">
+              <dt class="text-xs font-semibold text-muted-foreground touch:text-sm">
                 {{ detail.label }}
               </dt>
               <dd class="break-words">
@@ -88,7 +89,7 @@ const details = computed(() => {
                   <p class="font-semibold">
                     Visit #{{ visits.length - index }}
                   </p>
-                  <p class="text-xs text-muted-foreground">
+                  <p class="text-xs text-muted-foreground touch:text-sm">
                     {{ visit.villageName }}
                   </p>
                 </div>
@@ -97,7 +98,7 @@ const details = computed(() => {
                 <p class="font-semibold">
                   {{ new Date(visit.date).toLocaleDateString() }}
                 </p>
-                <p class="text-xs text-muted-foreground">
+                <p class="text-xs text-muted-foreground touch:text-sm">
                   {{ new Date(visit.date).toLocaleTimeString() }}
                 </p>
               </div>

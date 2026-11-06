@@ -29,7 +29,7 @@ const adding = ref(false)
       <StateMessage v-if="isError" kind="error" message="An error has occurred!" />
       <StateMessage v-else-if="isLoading" kind="loading" message="Loading active ingredients..." />
       <StateMessage v-else-if="!ingredients || ingredients.length === 0" message="No active ingredient found. Seed the database or add a new record." />
-      <Table v-else class="grid-table">
+      <Table v-else class="grid-table stack-table">
         <TableHeader>
           <TableRow>
             <TableHead>Active Ingredient ID</TableHead>

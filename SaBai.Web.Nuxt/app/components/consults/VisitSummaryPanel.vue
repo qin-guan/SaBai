@@ -50,7 +50,7 @@ const eyeRows = computed(() => {
       <template v-else>
         <dl class="grid grid-cols-2 sm:grid-cols-4">
           <div v-for="row in vitalRows" :key="row.label" class="border-r border-b border-border px-2 py-1.5">
-            <dt class="text-[0.6875rem] font-semibold text-muted-foreground">
+            <dt class="text-[0.6875rem] touch:text-xs font-semibold text-muted-foreground">
               {{ row.label }}
             </dt>
             <dd class="font-semibold tabular-nums">
@@ -59,7 +59,7 @@ const eyeRows = computed(() => {
           </div>
         </dl>
         <div class="px-2 py-1.5">
-          <p class="text-[0.6875rem] font-semibold text-muted-foreground">
+          <p class="text-[0.6875rem] touch:text-xs font-semibold text-muted-foreground">
             Others
           </p>
           <p class="whitespace-pre-wrap">
@@ -72,7 +72,7 @@ const eyeRows = computed(() => {
       <StateMessage v-if="!eyesight" message="No vision recorded for this visit." />
       <dl v-else class="grid grid-cols-2 sm:grid-cols-4">
         <div v-for="row in eyeRows" :key="row.label" class="border-r border-b border-border px-2 py-1.5">
-          <dt class="text-[0.6875rem] font-semibold text-muted-foreground">
+          <dt class="text-[0.6875rem] touch:text-xs font-semibold text-muted-foreground">
             {{ row.label }}
           </dt>
           <dd class="font-mono font-semibold">

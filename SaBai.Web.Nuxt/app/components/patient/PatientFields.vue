@@ -86,7 +86,7 @@ const cards = [
         Cards
       </legend>
       <div class="grid grid-cols-1 divide-y divide-border sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-        <div v-for="c in cards" :key="c.key" class="flex min-h-9 items-center gap-2 px-3 py-1.5 [@media(pointer:coarse)]:min-h-11">
+        <div v-for="c in cards" :key="c.key" class="flex min-h-9 items-center gap-2 px-3 py-1.5 touch:min-h-11">
           <Checkbox :id="`pf-${c.key}`" v-model="model[c.key]" />
           <Label :for="`pf-${c.key}`" class="flex-1 cursor-pointer">{{ c.label }}</Label>
         </div>

@@ -19,7 +19,7 @@ const selected = computed(() => props.visits?.find(v => v.id.toString() === mode
   <div class="mb-3 border border-border bg-card px-3 py-2">
     <StateMessage v-if="!props.visits || props.visits.length === 0" kind="warning" :message="props.emptyMessage" />
     <div v-else class="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-      <label :for="id" class="text-xs font-semibold whitespace-nowrap">Choose visit</label>
+      <label :for="id" class="text-xs font-semibold whitespace-nowrap touch:text-sm">Choose visit</label>
       <div class="w-full sm:max-w-xs">
         <NativeSelect :id="id" v-model="model">
           <NativeSelectOption value="">
@@ -30,7 +30,7 @@ const selected = computed(() => props.visits?.find(v => v.id.toString() === mode
           </NativeSelectOption>
         </NativeSelect>
       </div>
-      <p v-if="props.summaryPrefix" class="text-xs text-muted-foreground" aria-live="polite">
+      <p v-if="props.summaryPrefix" class="text-xs text-muted-foreground touch:text-sm" aria-live="polite">
         {{ props.summaryPrefix }}
         <span class="font-semibold text-foreground">{{ selected ? formatVisitDate(selected.date) : '-' }}</span>
       </p>

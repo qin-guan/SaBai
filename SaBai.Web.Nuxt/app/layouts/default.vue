@@ -8,7 +8,6 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/s
  * Application shell: navy app bar (sidebar toggle, patient search, village),
  * activity sidebar (a drawer on phones) and the main work area.
  */
-const search = ref<{ focus: () => void }>()
 const header = ref<HTMLElement>()
 
 // Publish the app bar's height so sticky sub-navigation can sit beneath it.
@@ -17,6 +16,7 @@ useResizeObserver(header, ([entry]) => {
   document.documentElement.style.setProperty('--app-header-h', `${height}px`)
 })
 const showShortcuts = ref(false)
+const showSearch = ref(false)
 
 function onKeydown(event: KeyboardEvent) {
   const mod = event.ctrlKey || event.metaKey
@@ -28,13 +28,10 @@ function onKeydown(event: KeyboardEvent) {
     return
   }
 
-  // Alt+1…9: switch activity. Uses `code` so it works with any layout / on macOS.
-  if (event.altKey && !mod && /^Digit[1-9]$/.test(event.code)) {
-    const item = NAV_ITEMS.find(i => i.key === event.code.slice(5))
-    if (item) {
-      event.preventDefault()
-      navigateTo(item.href)
-    }
+  // Ctrl/⌘+K: command palette (works from anywhere, including inside fields).
+  if (mod && !event.altKey && (event.key === 'k' || event.key === 'K')) {
+    event.preventDefault()
+    showSearch.value = !showSearch.value
     return
   }
 
@@ -45,7 +42,7 @@ function onKeydown(event: KeyboardEvent) {
 
   if (event.key === '/') {
     event.preventDefault()
-    search.value?.focus()
+    showSearch.value = true
   }
   else if (event.key === '?') {
     event.preventDefault()
@@ -70,11 +67,11 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
         class="sticky top-0 z-30 flex items-center gap-2 bg-chrome px-2 py-1.5 pt-[max(0.375rem,env(safe-area-inset-top))] text-chrome-foreground shadow-sm"
       >
         <SidebarTrigger
-          class="size-8 text-chrome-foreground hover:bg-chrome-hover hover:text-white [@media(pointer:coarse)]:size-11"
+          class="size-8 text-chrome-foreground hover:bg-chrome-hover hover:text-white touch:size-11"
           aria-keyshortcuts="Control+B"
         />
         <div class="min-w-0 flex-1">
-          <PatientSearch ref="search" />
+          <SearchTrigger @open="showSearch = true" />
         </div>
         <div class="hidden md:block">
           <VillageSelector tone="chrome" />
@@ -82,7 +79,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
         <Button
           variant="ghost"
           size="icon"
-          class="text-chrome-foreground hover:bg-chrome-hover hover:text-white [@media(pointer:coarse)]:hidden"
+          class="text-chrome-foreground hover:bg-chrome-hover hover:text-white touch:hidden"
           aria-label="Keyboard shortcuts"
           aria-keyshortcuts="?"
           @click="showShortcuts = true"
@@ -94,6 +91,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
         <slot />
       </main>
     </SidebarInset>
+    <UniversalSearch v-model:open="showSearch" @show-shortcuts="showShortcuts = true" />
     <ShortcutsDialog v-if="showShortcuts" @close="showShortcuts = false" />
   </SidebarProvider>
 </template>

@@ -42,10 +42,10 @@ const patients = computed(() => data.value?.patients ?? [])
                 :village-code="patient.villageCode"
                 :village-color-hex="patient.villageColorHex"
                 :id="patient.id"
-                class="text-xs text-muted-foreground"
+                class="text-xs text-muted-foreground touch:text-sm"
               />
             </div>
-            <span class="inline-flex items-center gap-1 text-xs font-semibold text-primary">
+            <span class="inline-flex items-center gap-1 text-xs font-semibold text-primary touch:text-sm">
               <component :is="props.actionIcon" class="size-4" aria-hidden="true" />
               {{ props.actionLabel }}
             </span>

@@ -5,3 +5,4 @@ allowBuilds:
 packages:
   - SaBai.Sdk
   - SaBai.Web
+  - SaBai.Web.Nuxt

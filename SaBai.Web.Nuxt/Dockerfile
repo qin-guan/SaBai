@@ -9,7 +9,7 @@ RUN --mount=type=cache,target=/pnpm/store pnpm install --frozen-lockfile
 COPY SaBai.Web.Nuxt SaBai.Web.Nuxt
 COPY SaBai.Sdk SaBai.Sdk
 RUN pnpm --filter @sabai/sdk... build
-RUN pnpm --filter project-sabai... build
+RUN pnpm --filter project-sabai-web-nuxt... build
 
 FROM node:24-alpine AS runtime
 WORKDIR /app

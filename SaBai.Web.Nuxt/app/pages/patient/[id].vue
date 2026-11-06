@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PhArrowRight, PhScan } from '@phosphor-icons/vue'
+import { PhArrowRight } from '@phosphor-icons/vue'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 
@@ -43,17 +43,13 @@ useHead({ title: () => `${patient.value?.name ?? 'Patient'} · Sa'Bai` })
             title="Current visit"
             :description="current ? `${formatVisitDate(current.date)} · ${current.villageName}` : undefined"
           >
+            <template #actions>
+              <StartVisitButton :patient-id="patient.id" :name="patient.name" size="sm" />
+            </template>
             <StateMessage v-if="visitsLoading" kind="loading" message="Loading visits..." />
-            <div v-else-if="!current" class="flex flex-col items-start gap-2">
-              <p class="text-xs text-muted-foreground touch:text-sm">
-                No visits yet. Start a visit from Scan Face.
-              </p>
-              <Button as-child size="sm" variant="outline">
-                <NuxtLink :to="paths.scanFace()">
-                  <PhScan aria-hidden="true" /> Scan Face
-                </NuxtLink>
-              </Button>
-            </div>
+            <p v-else-if="!current" class="text-xs text-muted-foreground touch:text-sm">
+              No visits yet. Use New Visit to start one.
+            </p>
             <div v-else class="flex flex-col gap-3">
               <JourneyTracker :journey="current.journey" :patient-id="patient.id" :visit-id="current.id" />
               <div class="flex flex-wrap items-center gap-2">

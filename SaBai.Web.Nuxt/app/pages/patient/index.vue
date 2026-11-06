@@ -147,7 +147,7 @@ const emptyMessage = computed(() => {
   if (station.value && show.value === 'waiting')
     return `Nobody is waiting for ${stationLabel(station.value)}${scope.value === 'today' ? ' today' : ''}.`
   if (scope.value === 'today')
-    return 'No visits today yet. Start one from Scan Face.'
+    return 'No visits today yet. Start one from Scan Face (by face or search).'
   return 'No patients found. Register a patient from Scan Face.'
 })
 
@@ -170,7 +170,7 @@ const gridCols = 'md:grid-cols-[2.75rem_minmax(0,1fr)_minmax(0,20rem)_1rem]'
       <template #actions>
         <Button as-child variant="outline">
           <NuxtLink :to="paths.scanFace()">
-            <PhScan aria-hidden="true" /> Scan face / register
+            <PhScan aria-hidden="true" /> Start visit / register
           </NuxtLink>
         </Button>
       </template>

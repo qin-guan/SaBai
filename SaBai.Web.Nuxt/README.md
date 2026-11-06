@@ -62,6 +62,11 @@ station's form for the same visit, so a patient can be sent on from any screen.
   there are no per-row buttons.
   `/vitals`, `/vision`, `/consults` and `/dental` redirect there; they used to
   be four near-identical lists.
+- **Starting a visit** works without the camera too: Scan Face has a *Find
+  patient* search (name, any form of the ID, ID number, phone or village — the
+  same index as the universal search), and the patient record has a *New Visit*
+  button. Both use `<StartVisitButton>`, which asks before opening a second
+  visit for someone who already had one opened recently.
 - **The patient record** (`/patient/:id`) shows the current visit's journey
   with a *Next* button, the journey of every past visit, and the patient's
   details, edited in place with a save bar like the station forms.

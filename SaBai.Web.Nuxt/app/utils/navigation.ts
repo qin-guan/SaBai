@@ -33,7 +33,7 @@ export interface NavItem {
  * way and a patient's whole journey is visible from any of them.
  */
 export const NAV_ITEMS: NavItem[] = [
-  { name: 'Scan Face', href: paths.scanFace(), icon: PhScan, keywords: 'camera photo face match register new patient registration front desk visit' },
+  { name: 'Scan Face', href: paths.scanFace(), icon: PhScan, keywords: 'camera photo face match register new patient registration front desk visit start search find' },
   { name: 'Patients', href: paths.patient(), icon: PhUsers, keywords: 'patients records list demographics queue journey today' },
 ]
 

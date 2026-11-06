@@ -1,91 +1,17 @@
 <script setup lang="ts">
 import { PhUserFocus, PhUserPlus } from '@phosphor-icons/vue'
-import { useMutation, useQueryClient } from '@tanstack/vue-query'
-import { toast } from 'vue-sonner'
-import {
-  saBaiAPIEndpointsVisitsCreatePostEndpoint,
-  saBaiAPIEndpointsVisitsHasRecentGetEndpoint,
-} from '@sabai/sdk/clients'
 import { Button } from '@/components/ui/button'
 
 /**
- * Searches the face index for patients matching the captured photo and opens a
- * visit for the chosen match (then goes to their vitals). Asks for confirmation
- * when the patient already had a visit opened recently.
+ * Searches the face index for patients matching the captured photo; each match
+ * can start a visit (see StartVisitButton).
  */
 const props = defineProps<{ image: string }>()
 const emit = defineEmits<{ register: [] }>()
 
 useKeyShortcut('n', () => emit('register'))
-const { selectedVillageCodeId, isLoading: villageLoading } = useVillageCode()
-const queryClient = useQueryClient()
-const duplicate = ref<{ patientId: number, existingVisitDate: Date | null } | null>(null)
-const isCheckingDuplicate = ref(false)
-
 const search = useFaceSearch(() => props.image)
 const matches = computed(() => search.data.value ?? [])
-
-const createVisit = useMutation({
-  mutationFn: async (patientId: number) => {
-    if (!selectedVillageCodeId.value)
-      throw new Error('Please select a village code first.')
-    return saBaiAPIEndpointsVisitsCreatePostEndpoint({
-      ...apiConfig,
-      body: { patientId, villageCodeId: selectedVillageCodeId.value },
-      throwOnError: true,
-    }).unwrap()
-  },
-})
-
-const busy = computed(() => isCheckingDuplicate.value || createVisit.isPending.value)
-
-async function submitCreateVisit(patientId: number) {
-  try {
-    const visit = await createVisit.mutateAsync(patientId)
-    duplicate.value = null
-    // Refresh visit lists/counters so the new visit is visible everywhere.
-    await queryClient.invalidateQueries({ queryKey: queryKeys.patients() })
-    // Open vitals for the visit we just created, not whichever visit was cached.
-    await navigateTo(paths.vitalsDetail(patientId, visit.id))
-  }
-  catch (error) {
-    toast.error(getApiErrorMessage(error, 'Failed to start a visit for this patient.'))
-  }
-}
-
-async function select(patientId: number) {
-  if (!selectedVillageCodeId.value) {
-    toast.error('Please select a village code before starting a visit.')
-    return
-  }
-
-  isCheckingDuplicate.value = true
-  let recent: { hasRecentVisit: boolean, existingVisitDate?: string | null } | null
-  try {
-    recent = await saBaiAPIEndpointsVisitsHasRecentGetEndpoint({
-      ...apiConfig,
-      query: { patientId },
-      throwOnError: true,
-    }).unwrap()
-  }
-  catch {
-    // Don't block visit creation if the duplicate check itself fails.
-    recent = null
-  }
-  finally {
-    isCheckingDuplicate.value = false
-  }
-
-  if (recent?.hasRecentVisit) {
-    duplicate.value = {
-      patientId,
-      existingVisitDate: recent.existingVisitDate ? new Date(recent.existingVisitDate) : null,
-    }
-    return
-  }
-
-  await submitCreateVisit(patientId)
-}
 </script>
 
 <template>
@@ -123,14 +49,7 @@ async function select(patientId: number) {
               • <span class="font-semibold text-foreground">{{ Math.round(match.similarity * 100) }}% match</span>
             </p>
           </div>
-          <Button
-            variant="success"
-            :disabled="busy || villageLoading"
-            :aria-label="`Start a new visit for ${match.name}`"
-            @click="select(match.id)"
-          >
-            {{ busy ? 'Starting…' : 'New Visit' }}
-          </Button>
+          <StartVisitButton :patient-id="match.id" :name="match.name" />
         </div>
         <div class="flex flex-col gap-2 pl-[3.75rem]">
           <MatchVisits :patient-id="match.id" />
@@ -143,19 +62,4 @@ async function select(patientId: number) {
     </ol>
   </AppPanel>
 
-  <AppDialog v-if="duplicate" title="Duplicate Visit" size="sm" @close="duplicate = null">
-    <p>
-      A visit was just opened for this patient<template v-if="duplicate.existingVisitDate">
-        at {{ duplicate.existingVisitDate.toLocaleTimeString() }}
-      </template>. Start another visit anyway, or cancel to keep using it?
-    </p>
-    <template #footer>
-      <Button variant="outline" @click="duplicate = null">
-        Cancel
-      </Button>
-      <Button variant="success" :disabled="createVisit.isPending.value" @click="submitCreateVisit(duplicate.patientId)">
-        {{ createVisit.isPending.value ? 'Creating...' : 'Confirm' }}
-      </Button>
-    </template>
-  </AppDialog>
 </template>

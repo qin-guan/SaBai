@@ -3,8 +3,8 @@ import { PhUserPlus } from '@phosphor-icons/vue'
 import { Button } from '@/components/ui/button'
 
 /**
- * Front desk: capture a face, then either open a visit for a matching patient
- * or register a new one.
+ * Front desk: find the patient by face or by searching (name, ID, phone), then
+ * start a visit for them — or register a new patient.
  */
 type Mode = 'matching' | 'registering'
 const image = ref<string | null>(null)
@@ -27,7 +27,8 @@ useHead({ title: "Scan Face · Sa'Bai" })
       <AppPanel title="Capture" class="lg:sticky lg:top-16">
         <WebcamCapture v-model="image" :size="400" />
       </AppPanel>
-      <div class="min-w-0">
+      <div class="flex min-w-0 flex-col gap-3">
+        <PatientSearch v-if="mode === 'matching'" />
         <RegistrationForm v-if="mode === 'registering'" v-model:image="image" @match="mode = 'matching'" />
         <MatchingPatients v-else-if="image" :key="image" :image="image" @register="mode = 'registering'" />
         <AppPanel v-else title="Face matches">

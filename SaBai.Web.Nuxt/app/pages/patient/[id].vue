@@ -77,7 +77,12 @@ const details = computed(() => {
           <StateMessage v-if="visitsLoading" kind="loading" message="Loading visits..." />
           <StateMessage v-else-if="visits.length === 0" message="No visits recorded for this patient." />
           <ol v-else class="divide-y divide-border">
-            <li v-for="(visit, index) in visits" :key="visit.id" class="flex items-center justify-between gap-3 px-3 py-2">
+            <li v-for="(visit, index) in visits" :key="visit.id">
+              <NuxtLink
+                :to="paths.vitalsDetail(patientId, visit.id)"
+                class="flex items-center justify-between gap-3 px-3 py-2 hover:bg-muted focus-visible:bg-muted"
+                :aria-label="`Open visit #${visits.length - index} on ${new Date(visit.date).toLocaleDateString()}`"
+              >
               <div class="flex items-center gap-2">
                 <span
                   class="size-3 shrink-0"
@@ -102,6 +107,7 @@ const details = computed(() => {
                   {{ new Date(visit.date).toLocaleTimeString() }}
                 </p>
               </div>
+              </NuxtLink>
             </li>
           </ol>
         </AppPanel>

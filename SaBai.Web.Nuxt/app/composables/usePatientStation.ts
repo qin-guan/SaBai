@@ -14,13 +14,22 @@ export function usePatientStation(param: string, autoSelect: 'single' | 'latest'
   useRememberPatient(patientId)
 
   const visits = computed(() => visitsQuery.data.value?.visits)
-  const selectedVisitId = ref('')
+  // `?visit=<id>` deep-links to a specific visit (e.g. from the patient page).
+  const route = useRoute()
+  const requestedVisit = typeof route.query.visit === 'string' ? route.query.visit : ''
+  const selectedVisitId = ref(requestedVisit)
 
   watch(
     visits,
     (list) => {
-      if (!list || list.length === 0 || selectedVisitId.value)
+      if (!list || list.length === 0)
         return
+      if (selectedVisitId.value) {
+        // Ignore a deep-linked visit that doesn't belong to this patient.
+        if (list.some(v => v.id.toString() === selectedVisitId.value))
+          return
+        selectedVisitId.value = ''
+      }
       if (autoSelect === 'single' && list.length === 1) {
         selectedVisitId.value = list[0]!.id.toString()
       }

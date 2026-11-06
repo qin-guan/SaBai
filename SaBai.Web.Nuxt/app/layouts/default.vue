@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PhKeyboard } from '@phosphor-icons/vue'
+import { PhKeyboard, PhUserFocus } from '@phosphor-icons/vue'
 import { useResizeObserver } from '@vueuse/core'
 import { Button } from '@/components/ui/button'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
@@ -17,6 +17,8 @@ useResizeObserver(header, ([entry]) => {
 })
 const showShortcuts = ref(false)
 const showSearch = ref(false)
+const showFaceSearch = ref(false)
+const route = useRoute()
 
 function onKeydown(event: KeyboardEvent) {
   const mod = event.ctrlKey || event.metaKey
@@ -43,6 +45,10 @@ function onKeydown(event: KeyboardEvent) {
   if (event.key === '/') {
     event.preventDefault()
     showSearch.value = true
+  }
+  else if ((event.key === 'f' || event.key === 'F') && route.path !== paths.scanFace()) {
+    event.preventDefault()
+    showFaceSearch.value = true
   }
   else if (event.key === '?') {
     event.preventDefault()
@@ -73,6 +79,18 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
         <div class="min-w-0 flex-1">
           <SearchTrigger @open="showSearch = true" />
         </div>
+        <Button
+          v-if="route.path !== paths.scanFace()"
+          variant="ghost"
+          size="icon"
+          class="text-chrome-foreground hover:bg-chrome-hover hover:text-white"
+          aria-label="Find patient by face"
+          aria-keyshortcuts="F"
+          title="Find patient by face (F)"
+          @click="showFaceSearch = true"
+        >
+          <PhUserFocus aria-hidden="true" />
+        </Button>
         <div class="hidden md:block">
           <VillageSelector tone="chrome" />
         </div>
@@ -92,6 +110,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
       </main>
     </SidebarInset>
     <UniversalSearch v-model:open="showSearch" @show-shortcuts="showShortcuts = true" />
+    <FaceSearchDialog v-if="showFaceSearch" @close="showFaceSearch = false" />
     <ShortcutsDialog v-if="showShortcuts" @close="showShortcuts = false" />
   </SidebarProvider>
 </template>

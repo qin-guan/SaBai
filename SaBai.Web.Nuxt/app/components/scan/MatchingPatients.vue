@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { PhUserFocus, PhUserPlus } from '@phosphor-icons/vue'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
+import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { toast } from 'vue-sonner'
 import {
-  saBaiAPIEndpointsPatientsSearchByFacePostEndpoint,
   saBaiAPIEndpointsVisitsCreatePostEndpoint,
   saBaiAPIEndpointsVisitsHasRecentGetEndpoint,
 } from '@sabai/sdk/clients'
@@ -23,20 +22,7 @@ const queryClient = useQueryClient()
 const duplicate = ref<{ patientId: number, existingVisitDate: Date | null } | null>(null)
 const isCheckingDuplicate = ref(false)
 
-const search = useQuery({
-  queryKey: computed(() => queryKeys.faceSearch(props.image)),
-  retry: false,
-  queryFn: async () => {
-    const image = await dataUrlToFile(props.image, 'face-search')
-    const result = await saBaiAPIEndpointsPatientsSearchByFacePostEndpoint({
-      ...apiConfig,
-      body: { image },
-      query: { maxMatches: 5 },
-      throwOnError: true,
-    }).unwrap()
-    return result.matches
-  },
-})
+const search = useFaceSearch(() => props.image)
 const matches = computed(() => search.data.value ?? [])
 
 const createVisit = useMutation({
@@ -146,8 +132,12 @@ async function select(patientId: number) {
             {{ busy ? 'Starting…' : 'New Visit' }}
           </Button>
         </div>
-        <div class="pl-[3.75rem]">
+        <div class="flex flex-col gap-2 pl-[3.75rem]">
           <MatchVisits :patient-id="match.id" />
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-xs text-muted-foreground touch:text-sm">Go to</span>
+            <StationLinks :patient-id="match.id" />
+          </div>
         </div>
       </li>
     </ol>

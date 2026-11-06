@@ -79,10 +79,17 @@ const bloodPressureStatus = computed(() =>
 )
 const bmi = computed(() => computeBmi(form.value.height || null, form.value.weight || null))
 
+const formEl = ref<HTMLFormElement>()
+// Times this form for the queue's wait estimates.
+const serviceTimer = useServiceTimer('vitals', formEl, () => form.value)
+
 const queryClient = useQueryClient()
 const onSuccess = () => {
+  serviceTimer.saved()
   draft.clear(form.value)
   queryClient.invalidateQueries({ queryKey: queryKeys.vitals(props.visitId) })
+  // Refresh the journey bars and station queues.
+  queryClient.invalidateQueries({ queryKey: queryKeys.patients() })
   toast.success('Vitals saved successfully!')
 }
 const onError = (error: unknown) => toast.error(getApiErrorMessage(error, 'Failed to save vitals.'))
@@ -148,6 +155,7 @@ const diabetesLabelId = useId()
   <StateMessage v-if="isLoading" kind="loading" message="Loading Vitals" />
   <form
     v-else
+    ref="formEl"
     novalidate
     class="grid grid-cols-1 gap-3"
     :class="showChart && 'min-[1128px]:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]'"

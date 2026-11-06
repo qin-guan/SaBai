@@ -7,7 +7,7 @@ const { patient, visits, selectedVisitId, selectedVisit, isLoading } = usePatien
 <template>
   <StationPage
     v-model:visit-id="selectedVisitId"
-    :station="{ label: 'Dental', to: paths.dental() }"
+    station="dental"
     title="Dental Consultation"
     :patient="patient"
     :visits="visits"

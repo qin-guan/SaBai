@@ -5,6 +5,7 @@
 
 import type { SaBaiAPIEndpointsPatientsWithLatestVisitGetItem } from '../types/SaBaiAPIEndpointsPatientsWithLatestVisitGetItem'
 import { createSaBaiAPIDomainGender } from './createSaBaiAPIDomainGender'
+import { createSaBaiAPIEndpointsPatientsVisitJourney } from './createSaBaiAPIEndpointsPatientsVisitJourney'
 import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsPatientsWithLatestVisitGetItem<TData extends Partial<SaBaiAPIEndpointsPatientsWithLatestVisitGetItem> = object>(data?: TData)
@@ -31,6 +32,7 @@ export function createSaBaiAPIEndpointsPatientsWithLatestVisitGetItem<TData exte
   lastVisitId: faker.number.int(),
   hasPhoto: faker.datatype.boolean(),
   hasFace: faker.datatype.boolean(),
+  lastVisitJourney: createSaBaiAPIEndpointsPatientsVisitJourney(),
 }
   return {
     ...defaultFakeData,

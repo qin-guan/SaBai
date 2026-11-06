@@ -15,6 +15,13 @@ import {
 } from '@/components/ui/sidebar'
 
 const route = useRoute()
+
+const GROUPS = [
+  { label: 'Patients', items: NAV_ITEMS },
+  // Each station is the patient queue filtered to who it is waiting for.
+  { label: 'Stations', items: STATION_NAV_ITEMS },
+  { label: 'Pharmacy & admin', items: ADMIN_NAV_ITEMS },
+]
 const { isMobile, setOpenMobile } = useSidebar()
 
 // Close the mobile drawer after navigating.
@@ -47,19 +54,19 @@ async function signOut() {
       </div>
     </SidebarHeader>
     <SidebarContent>
-      <SidebarGroup>
-        <SidebarGroupLabel>Activities</SidebarGroupLabel>
+      <SidebarGroup v-for="group in GROUPS" :key="group.label">
+        <SidebarGroupLabel>{{ group.label }}</SidebarGroupLabel>
         <SidebarGroupContent>
           <SidebarMenu>
-            <SidebarMenuItem v-for="item in NAV_ITEMS" :key="item.href">
+            <SidebarMenuItem v-for="item in group.items" :key="item.href">
               <SidebarMenuButton
                 as-child
-                :is-active="isNavItemActive(item, route.path)"
+                :is-active="isNavItemActive(item, route)"
                 :tooltip="item.name"
               >
                 <NuxtLink
                   :to="item.href"
-                  :aria-current="isNavItemActive(item, route.path) ? 'page' : undefined"
+                  :aria-current="isNavItemActive(item, route) ? 'page' : undefined"
                 >
                   <component :is="item.icon" aria-hidden="true" />
                   <span class="flex-1">{{ item.name }}</span>

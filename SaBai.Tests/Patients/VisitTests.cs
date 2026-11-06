@@ -5,6 +5,7 @@ using SaBai.Tests.Support;
 using HasRecentVisitResponse = SaBai.API.Endpoints.Visits.HasRecent.Get.Response;
 using PatientVisitsResponse = SaBai.API.Endpoints.Patients.Visits.Get.Response;
 using VisitListResponse = SaBai.API.Endpoints.Visits.List.Get.Response;
+using WithLatestVisitResponse = SaBai.API.Endpoints.Patients.WithLatestVisit.Get.Response;
 
 namespace SaBai.Tests.Patients;
 
@@ -47,6 +48,43 @@ public sealed class VisitTests(AppFixture fixture)
         await Assert.That(nested.VillageCode).IsEqualTo(code);
         await Assert.That(nested.VillageName).IsEqualTo(village.Name);
         await Assert.That(nested.VillageColorHex).IsEqualTo("#778899");
+    }
+
+    [Test]
+    public async Task Visits_IncludeJourney()
+    {
+        // Arrange
+        var client = fixture.CreateHttpClient("api");
+        await client.LoginAsync();
+        var code = ClinicSamples.Code();
+        var village = await ClinicSamples.CreateVillageAsync(client, code);
+        var patient = await ClinicSamples.RegisterAsync(
+            client,
+            village.Id,
+            $"Journey {code}",
+            withVitals: true
+        );
+
+        // Act
+        var byPatient = await client.GetFromJsonAsync<PatientVisitsResponse>(
+            $"/patients/{patient.Id}/visits",
+            ApiJson.Options
+        );
+        var latest = await client.GetFromJsonAsync<WithLatestVisitResponse>(
+            "/patients/with-latest-visit",
+            ApiJson.Options
+        );
+        var journey = byPatient!.Visits.Single(x => x.Id == patient.VisitId).Journey;
+        var row = latest!.Patients.Single(x => x.Id == patient.Id);
+
+        // Assert
+        await Assert.That(journey.Vitals).IsTrue();
+        await Assert.That(journey.VitalsAt).IsNotNull();
+        await Assert.That(journey.Vision).IsFalse();
+        await Assert.That(journey.Consult).IsFalse();
+        await Assert.That(journey.Dental).IsFalse();
+        await Assert.That(journey.PharmacyOrders).IsEqualTo(0);
+        await Assert.That(row.LastVisitJourney).IsEqualTo(journey);
     }
 
     [Test]

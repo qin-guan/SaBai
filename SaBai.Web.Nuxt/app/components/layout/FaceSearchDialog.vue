@@ -4,20 +4,14 @@ import type { PatientLinkTarget } from '~/utils/paths'
 
 /**
  * Find a patient by face from anywhere. Capture a photo, pick a match and it
- * opens the station you are on (Vitals, Vision, Consults, Dental) for that
+ * opens the station you are on (Vitals, Vision, Consults, Dental), or the record for that
  * patient — or any other section via the quick links. Mount with v-if.
  */
 const emit = defineEmits<{ close: [] }>()
 
 const route = useRoute()
-const station = computed(() => route.meta.patientLink as PatientLinkTarget | undefined)
-const stationLabel = computed(() => ({
-  vitals: 'Vitals',
-  vision: 'Vision',
-  consults: 'Consults',
-  dental: 'Dental',
-  patient: 'record',
-})[station.value ?? 'patient'])
+const station = computed(() => patientTargetFor(route))
+const stationName = computed(() => (station.value === 'patient' ? 'record' : stationLabel(station.value)))
 
 const image = ref<string | null>(null)
 const search = useFaceSearch(image)
@@ -62,10 +56,10 @@ async function open(patientId: number, target: PatientLinkTarget | undefined = s
               </p>
             </div>
             <Button variant="success" @click="open(match.id)">
-              Open {{ stationLabel }}
+              Open {{ stationName }}
             </Button>
           </div>
-          <StationLinks :patient-id="match.id" :active="station" @navigate="emit('close')" />
+          <StationLinks :patient-id="match.id" :active="station === 'patient' ? undefined : station" @navigate="emit('close')" />
         </li>
       </ol>
     </div>

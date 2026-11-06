@@ -24,7 +24,7 @@ pnpm dev
 | `app/layouts/default.vue` | App shell: navy app bar, activity sidebar, global keyboard shortcuts. |
 | `app/components/ui` | shadcn-vue components (Lyra). Imported explicitly. |
 | `app/components/app` | Building blocks: `AppPanel`, `PageHeader`, `FormField`, `ChoiceGroup`, `AppDialog`, `SaveBar`… |
-| `app/components/patient` | Patient banner, worklist, visit selector, station page frame, edit dialog. |
+| `app/components/patient` | Patient banner, journey tracker, visit selector, station page frame, inline details form and edit dialog. |
 | `app/composables` | Vue Query data hooks over `@sabai/sdk/clients`, village selection, shortcuts. |
 | `app/utils` | Framework-free logic ported from SaBai.Web (formatting, vitals, splits, eyesight, dental mapping). |
 
@@ -44,6 +44,45 @@ stored under the same `localStorage` key (`villageCodeState`).
 | `?` | Shortcut help. |
 | `←`/`→` | Change the answer in a choice group (selecting the active answer again clears it). |
 | `Esc` | Close a dialog, or cancel an inline table edit (Enter saves it). |
+
+## Patient journey and queue
+
+Every visit moves through **Vitals → Vision → Consult → Dental (optional) →
+Pharmacy (optional)**. The API returns where each visit is (`journey` on
+`/patients/{id}/visits`, `lastVisitJourney` on `/patients/with-latest-visit`)
+and `<JourneyTracker>` shows it the same way everywhere: done steps in green,
+the next step highlighted, optional steps dashed. Every step links to that
+station's form for the same visit, so a patient can be sent on from any screen.
+
+- **`/patient` is the one patient queue.** Unfiltered it shows everyone seen
+  today and their journeys. A station card (or a sidebar *Stations* link)
+  filters it to `?station=vitals|vision|consults|dental|pharmacy`: who that
+  station is waiting for, most ready first, then longest waiting.
+  `/vitals`, `/vision`, `/consults` and `/dental` redirect there; they used to
+  be four near-identical lists.
+- **The patient record** (`/patient/:id`) shows the current visit's journey
+  with a *Next* button, the journey of every past visit, and the patient's
+  details, edited in place with a save bar like the station forms.
+- **Station screens** show the journey bar under the patient banner.
+
+Dental waits for patients who were referred or have finished their consult.
+Pharmacy waits for undispensed orders.
+
+### Wait estimates
+
+Each station card shows how many are waiting, the station's pace and how long
+its queue will take to clear. Each queued patient shows their place in line
+and estimated wait (`app/utils/waitTime.ts`):
+
+- **Measured throughput**: patients finished per minute in the last hour (or
+  today, if the last hour has fewer than 3), from when each record was saved.
+  The API stamps `RecordedAt` on vitals, eyesight and dental records; consults
+  and dispensed orders already have timestamps. This includes however many
+  staff work the station.
+- **Fallback: form timing.** With too little throughput data, the estimate
+  uses how long station forms take on this device: from the first key press or
+  tap to the save, scaled up for a partly filled form
+  (`app/utils/serviceTime.ts`, stored in `localStorage`, last 24 h).
 
 ## Universal search
 

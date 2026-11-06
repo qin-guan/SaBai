@@ -46,6 +46,45 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     public DbSet<Broadcast> Broadcasts => Set<Broadcast>();
 
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        StampRecordedAt();
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    public override Task<int> SaveChangesAsync(
+        bool acceptAllChangesOnSuccess,
+        CancellationToken cancellationToken = default
+    )
+    {
+        StampRecordedAt();
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+
+    /// <summary>
+    /// Stamps when a station record (vitals, eyesight, dental) was first saved,
+    /// whichever endpoint created it, so station throughput can be measured.
+    /// </summary>
+    private void StampRecordedAt()
+    {
+        var now = DateTimeOffset.UtcNow;
+        foreach (var entry in ChangeTracker.Entries().Where(x => x.State == EntityState.Added))
+        {
+            switch (entry.Entity)
+            {
+                case Vitals { RecordedAt: null } vitals:
+                    vitals.RecordedAt = now;
+                    break;
+                case Eyesight { RecordedAt: null } eyesight:
+                    eyesight.RecordedAt = now;
+                    break;
+                case DentalConsult { RecordedAt: null } dental:
+                    dental.RecordedAt = now;
+                    break;
+            }
+        }
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<StaffUser>(entity =>

@@ -5,6 +5,7 @@
 
 import * as z from 'zod'
 import { saBaiAPIDomainGenderSchema } from './saBaiAPIDomainGenderSchema'
+import { saBaiAPIEndpointsPatientsVisitJourneySchema } from './saBaiAPIEndpointsPatientsVisitJourneySchema'
 
 export const saBaiAPIEndpointsPatientsWithLatestVisitGetItemSchema = z.object({
   id: z.int32(),
@@ -27,4 +28,5 @@ export const saBaiAPIEndpointsPatientsWithLatestVisitGetItemSchema = z.object({
   lastVisitId: z.int32().nullable(),
   hasPhoto: z.boolean(),
   hasFace: z.boolean(),
+  lastVisitJourney: z.union([z.null(), saBaiAPIEndpointsPatientsVisitJourneySchema]),
 })

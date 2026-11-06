@@ -43,6 +43,8 @@ form.value = draft.resume(blank())
 nextKey = Math.max(0, ...form.value.diagnoses.map(d => d.key)) + 1
 const errors = ref<Record<string, string>>({})
 const formEl = ref<HTMLFormElement>()
+// Times this form for the queue's wait estimates.
+const serviceTimer = useServiceTimer('consults', formEl, () => form.value)
 
 function addDiagnosis() {
   form.value.diagnoses.push({ key: nextKey++, details: '', category: '' })
@@ -86,7 +88,11 @@ function submit() {
     },
     {
       onSuccess: () => {
+        // Before the form is cleared for the next consult.
+        serviceTimer.saved()
         queryClient.invalidateQueries({ queryKey: queryKeys.consults(props.visitId) })
+        // Refresh the journey bars and station queues.
+        queryClient.invalidateQueries({ queryKey: queryKeys.patients() })
         toast.success('Consult has been saved successfully!')
         form.value = blank()
         draft.clear(form.value)

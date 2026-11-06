@@ -2,6 +2,9 @@ namespace SaBai.API.Domain;
 
 public sealed class Vitals
 {
+    /// <summary>When the record was first saved; stamped by <c>AppDbContext</c>. Null for records from before it was tracked.</summary>
+    public DateTimeOffset? RecordedAt { get; set; }
+
     public int Id { get; set; }
 
     public int VisitId { get; set; }
@@ -41,6 +44,9 @@ public sealed class Vitals
 
 public sealed class Eyesight
 {
+    /// <summary>When the record was first saved; stamped by <c>AppDbContext</c>. Null for records from before it was tracked.</summary>
+    public DateTimeOffset? RecordedAt { get; set; }
+
     public int Id { get; set; }
 
     public int VisitId { get; set; }

@@ -10,9 +10,7 @@ import type { SaBaiAPIEndpointsPatientsGetResponse } from '@sabai/sdk/types'
 const props = defineProps<{ patient: SaBaiAPIEndpointsPatientsGetResponse }>()
 
 const allergy = computed(() => props.patient.drugAllergy?.trim())
-const hasAllergy = computed(
-  () => !!allergy.value && !/^(nil|nkda|none|no|-|n\/a|na)$/i.test(allergy.value),
-)
+const hasAllergy = computed(() => hasDrugAllergy(allergy.value))
 const cards = computed(() =>
   [
     props.patient.hasPoorCard && 'POOR',

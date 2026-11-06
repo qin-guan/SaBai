@@ -66,6 +66,8 @@ const baseline = ref('')
 const touched = ref(new Set<Key>())
 const isDirty = computed(() => JSON.stringify(form.value) !== baseline.value)
 const formEl = ref<HTMLFormElement>()
+// Times this form for the queue's wait estimates.
+const serviceTimer = useServiceTimer('vision', formEl, () => form.value)
 
 function load(values: EyesightFormValues) {
   form.value = { ...values }
@@ -140,7 +142,10 @@ function submit() {
   }
   const callbacks = {
     onSuccess: () => {
+      serviceTimer.saved()
       queryClient.invalidateQueries({ queryKey: queryKeys.eyesight(props.visitId) })
+      // Refresh the journey bars and station queues.
+      queryClient.invalidateQueries({ queryKey: queryKeys.patients() })
       toast.success('Vision record saved successfully!')
       load(data)
       draft.clear(data)

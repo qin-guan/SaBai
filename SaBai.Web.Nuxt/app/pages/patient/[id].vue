@@ -1,40 +1,29 @@
 <script setup lang="ts">
-import { PhPencilSimple } from '@phosphor-icons/vue'
+import { PhArrowRight, PhScan } from '@phosphor-icons/vue'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 
+/**
+ * The patient record: who they are, where today's visit is in the clinic
+ * (vitals → vision → consult → dental → pharmacy, each step opens that
+ * station), every past visit's journey, and their details — edited in place
+ * like the station forms.
+ */
 const patientId = useRouteId('id')
-const { data: patient, isLoading, isRefetching } = usePatient(patientId)
+const { data: patient, isLoading } = usePatient(patientId)
 const { data: visitsData, isLoading: visitsLoading } = usePatientVisits(patientId)
 const visits = computed(() => visitsData.value?.visits ?? [])
-const isEditing = ref(false)
+const current = computed(() => visits.value[0])
+const next = computed(() => (current.value ? nextStep(current.value.journey) : null))
+const progress = computed(() => (current.value ? requiredProgress(current.value.journey) : null))
 useRememberPatient(patientId)
 
 useHead({ title: () => `${patient.value?.name ?? 'Patient'} · Sa'Bai` })
-
-const details = computed(() => {
-  const p = patient.value
-  if (!p)
-    return []
-  return [
-    { label: 'ID', value: p.id.toString() },
-    { label: 'Name', value: p.name },
-    { label: 'Identification Number', value: p.identificationNumber || '-' },
-    { label: 'Contact Number', value: p.contactNo || '-' },
-    { label: 'Gender', value: p.gender },
-    { label: 'Date of Birth', value: new Date(p.dateOfBirth).toLocaleDateString() },
-    { label: 'Age', value: `${calculateAge(p.dateOfBirth)} years` },
-    { label: 'Drug Allergy', value: p.drugAllergy },
-    { label: 'POOR', value: String(p.hasPoorCard) },
-    { label: 'BS2', value: String(p.hasBS2Card) },
-    { label: 'Sabai Card', value: String(p.hasSabaiCard) },
-  ]
-})
 </script>
 
 <template>
   <div>
-    <div v-if="!patientId || isLoading || isRefetching" class="flex flex-col gap-2" role="status" aria-label="Loading patient">
+    <div v-if="!patientId || isLoading" class="flex flex-col gap-2" role="status" aria-label="Loading patient">
       <Skeleton class="h-16 w-full" />
       <Skeleton class="h-48 w-full" />
     </div>
@@ -44,76 +33,75 @@ const details = computed(() => {
     <template v-else>
       <PageHeader
         :title="patient.name"
-        description="Simple patient profile details"
         :breadcrumbs="[{ label: 'Home', to: '/' }, { label: 'Patients', to: paths.patient() }, { label: patient.name }]"
       />
-      <PatientBanner :patient="patient">
-        <template #actions>
-          <Button @click="isEditing = true">
-            <PhPencilSimple aria-hidden="true" /> Edit Patient Details
-          </Button>
-        </template>
-      </PatientBanner>
+      <PatientBanner :patient="patient" />
 
-      <div class="grid grid-cols-1 gap-3 xl:grid-cols-2">
-        <AppPanel title="Demographics" flush>
-          <dl class="grid grid-cols-1 sm:grid-cols-2">
-            <div
-              v-for="detail in details"
-              :key="detail.label"
-              class="grid grid-cols-[10rem_1fr] gap-2 border-b border-border px-3 py-1.5 sm:odd:border-r"
-            >
-              <dt class="text-xs font-semibold text-muted-foreground touch:text-sm">
-                {{ detail.label }}
-              </dt>
-              <dd class="break-words">
-                {{ detail.value }}
-              </dd>
+      <div class="grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] xl:items-start">
+        <div class="flex min-w-0 flex-col gap-3">
+          <AppPanel
+            title="Current visit"
+            :description="current ? `${formatVisitDate(current.date)} · ${current.villageName}` : undefined"
+          >
+            <StateMessage v-if="visitsLoading" kind="loading" message="Loading visits..." />
+            <div v-else-if="!current" class="flex flex-col items-start gap-2">
+              <p class="text-xs text-muted-foreground touch:text-sm">
+                No visits yet. Start a visit from Scan Face.
+              </p>
+              <Button as-child size="sm" variant="outline">
+                <NuxtLink :to="paths.scanFace()">
+                  <PhScan aria-hidden="true" /> Scan Face
+                </NuxtLink>
+              </Button>
             </div>
-          </dl>
-        </AppPanel>
+            <div v-else class="flex flex-col gap-3">
+              <JourneyTracker :journey="current.journey" :patient-id="patient.id" :visit-id="current.id" />
+              <div class="flex flex-wrap items-center gap-2">
+                <Button v-if="next" as-child variant="success">
+                  <NuxtLink :to="patientLinkFor(next.key, patient.id, current.id)">
+                    Next: {{ next.label }} <PhArrowRight aria-hidden="true" />
+                  </NuxtLink>
+                </Button>
+                <p v-else class="text-xs font-semibold text-success touch:text-sm">
+                  Visit complete — all needed stations done.
+                </p>
+                <p v-if="progress" class="text-xs text-muted-foreground touch:text-sm">
+                  {{ progress.done }} of {{ progress.total }} required stations done
+                </p>
+              </div>
+            </div>
+          </AppPanel>
 
-        <AppPanel title="Visit History" :description="visitsLoading ? undefined : `${visits.length} visits`" flush>
-          <StateMessage v-if="visitsLoading" kind="loading" message="Loading visits..." />
-          <StateMessage v-else-if="visits.length === 0" message="No visits recorded for this patient." />
-          <ol v-else class="divide-y divide-border">
-            <li v-for="(visit, index) in visits" :key="visit.id">
-              <NuxtLink
-                :to="paths.vitalsDetail(patientId, visit.id)"
-                class="flex items-center justify-between gap-3 px-3 py-2 hover:bg-muted focus-visible:bg-muted"
-                :aria-label="`Open visit #${visits.length - index} on ${new Date(visit.date).toLocaleDateString()}`"
-              >
-              <div class="flex items-center gap-2">
-                <span
-                  class="size-3 shrink-0"
-                  :style="{ backgroundColor: visit.villageColorHex }"
-                  :title="`Village: ${visit.villageName}`"
-                  aria-hidden="true"
-                />
-                <div>
-                  <p class="font-semibold">
-                    Visit #{{ visits.length - index }}
-                  </p>
-                  <p class="text-xs text-muted-foreground touch:text-sm">
-                    {{ visit.villageName }}
+          <AppPanel title="Visit history" :description="visitsLoading ? undefined : `${visits.length} visits`" flush>
+            <StateMessage v-if="visitsLoading" kind="loading" message="Loading visits..." />
+            <StateMessage v-else-if="visits.length === 0" message="No visits recorded for this patient." />
+            <ol v-else class="divide-y divide-border">
+              <li v-for="(visit, index) in visits" :key="visit.id" class="flex flex-col gap-1.5 px-3 py-2">
+                <div class="flex items-center justify-between gap-3">
+                  <div class="flex items-center gap-2">
+                    <span
+                      class="size-3 shrink-0"
+                      :style="{ backgroundColor: visit.villageColorHex }"
+                      :title="`Village: ${visit.villageName}`"
+                      aria-hidden="true"
+                    />
+                    <p class="font-semibold">
+                      Visit #{{ visits.length - index }}
+                      <span class="font-normal text-muted-foreground">· {{ visit.villageName }}</span>
+                    </p>
+                  </div>
+                  <p class="text-right text-xs text-muted-foreground touch:text-sm">
+                    {{ formatVisitDate(visit.date) }}
                   </p>
                 </div>
-              </div>
-              <div class="text-right">
-                <p class="font-semibold">
-                  {{ new Date(visit.date).toLocaleDateString() }}
-                </p>
-                <p class="text-xs text-muted-foreground touch:text-sm">
-                  {{ new Date(visit.date).toLocaleTimeString() }}
-                </p>
-              </div>
-              </NuxtLink>
-            </li>
-          </ol>
-        </AppPanel>
-      </div>
+                <JourneyTracker :journey="visit.journey" :patient-id="patient.id" :visit-id="visit.id" size="compact" />
+              </li>
+            </ol>
+          </AppPanel>
+        </div>
 
-      <EditPatientDialog v-if="isEditing" :patient="patient" @close="isEditing = false" />
+        <PatientDetailsForm :key="patient.id" :patient="patient" />
+      </div>
     </template>
   </div>
 </template>

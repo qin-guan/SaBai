@@ -25,19 +25,40 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             .Where(x => x.PatientId == req.PatientId)
             .OrderByDescending(x => x.Date)
             .ThenByDescending(x => x.Id)
+            .Select(x => new
+            {
+                x.Id,
+                x.Date,
+                x.PatientId,
+                PatientName = x.Patient.Name,
+                x.VillageCodeId,
+                VillageCode = x.VillageCode.Code,
+                VillageName = x.VillageCode.Name,
+                VillageColorHex = x.VillageCode.ColorHex,
+                x.Status,
+            })
+            .ToListAsync(ct);
+        var journeys = await VisitJourney.ForVisitsAsync(
+            db.Visits,
+            [.. visits.Select(x => x.Id)],
+            ct
+        );
+
+        var items = visits
             .Select(x => new Item(
                 x.Id,
                 x.Date,
                 x.PatientId,
-                x.Patient.Name,
+                x.PatientName,
                 x.VillageCodeId,
-                x.VillageCode.Code,
-                x.VillageCode.Name,
-                x.VillageCode.ColorHex,
-                x.Status
+                x.VillageCode,
+                x.VillageName,
+                x.VillageColorHex,
+                x.Status,
+                journeys.GetValueOrDefault(x.Id, VisitJourney.Empty)
             ))
-            .ToListAsync(ct);
+            .ToList();
 
-        await Send.OkAsync(new Response(visits), ct);
+        await Send.OkAsync(new Response(items), ct);
     }
 }

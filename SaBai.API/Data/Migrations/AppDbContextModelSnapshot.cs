@@ -307,6 +307,9 @@ namespace SaBai.API.Data.Migrations
                     b.Property<string>("RecommendedFacility")
                         .HasColumnType("text");
 
+                    b.Property<DateTimeOffset?>("RecordedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("ReferralNotes")
                         .HasColumnType("text");
 
@@ -429,6 +432,9 @@ namespace SaBai.API.Data.Migrations
 
                     b.Property<string>("LeftPrescribedGlassesDegree")
                         .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("RecordedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("RightAstigmatism")
                         .HasColumnType("text");
@@ -976,6 +982,9 @@ namespace SaBai.API.Data.Migrations
 
                     b.Property<string>("Others")
                         .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("RecordedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int?>("Systolic")
                         .HasColumnType("integer");

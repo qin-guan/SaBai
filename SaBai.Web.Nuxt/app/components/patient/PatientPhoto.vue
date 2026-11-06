@@ -24,7 +24,6 @@ const url = usePatientPhoto(
 </script>
 
 <template>
-    <template>
         <button
             v-if="url && props.zoomable"
             type="button"
@@ -43,6 +42,7 @@ const url = usePatientPhoto(
         </button>
         <img
             v-else-if="url"
+            :src="url"
             :alt="props.alt ?? 'Patient photo'"
             :width="props.size"
             :height="props.size"
@@ -58,7 +58,6 @@ const url = usePatientPhoto(
         >
             <PhUser :size="Math.round(props.size * 0.5)" aria-hidden="true" />
         </span>
-    </template>
 
     <template v-if="zoomed && url">
         <AppDialog

@@ -10,6 +10,7 @@ type Mode = 'matching' | 'registering'
 const image = ref<string | null>(null)
 const mode = ref<Mode>('matching')
 const { selectedVillage, isLoading } = useVillageCode()
+useKeyShortcut('n', () => { mode.value = 'registering' }, { enabled: () => mode.value === 'matching' && !image.value })
 useHead({ title: "Scan Face · Sa'Bai" })
 </script>
 
@@ -32,7 +33,7 @@ useHead({ title: "Scan Face · Sa'Bai" })
         <AppPanel v-else title="Face matches">
           <template #actions>
             <Button size="sm" @click="mode = 'registering'">
-              <PhUserPlus aria-hidden="true" /> Register New Patient
+              <PhUserPlus aria-hidden="true" /> Register New Patient <ShortcutHint class="hidden kb:inline-flex" keys="N" />
             </Button>
           </template>
           <StateMessage message="Capture a photo to search for matching patients." />

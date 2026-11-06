@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button'
 const props = defineProps<{ image: string }>()
 const emit = defineEmits<{ register: [] }>()
 
+useKeyShortcut('n', () => emit('register'))
 const { selectedVillageCodeId, isLoading: villageLoading } = useVillageCode()
 const duplicate = ref<{ patientId: number, existingVisitDate: Date | null } | null>(null)
 const isCheckingDuplicate = ref(false)
@@ -101,7 +102,7 @@ async function select(patientId: number) {
   <AppPanel title="Face matches" flush>
     <template #actions>
       <Button size="sm" @click="emit('register')">
-        <PhUserPlus aria-hidden="true" /> Register New Patient
+        <PhUserPlus aria-hidden="true" /> Register New Patient <ShortcutHint class="hidden kb:inline-flex" keys="N" />
       </Button>
     </template>
 
@@ -120,7 +121,7 @@ async function select(patientId: number) {
     <ol v-else class="divide-y divide-border" aria-label="Matching patients, best match first">
       <li v-for="match in matches" :key="match.id" class="flex flex-col gap-2 px-3 py-2">
         <div class="flex items-center gap-3">
-          <PatientPhoto :patient-id="match.id" :has-photo="match.hasPhoto" :size="48" alt="" />
+          <PatientPhoto :patient-id="match.id" :has-photo="match.hasPhoto" :size="48" alt="" zoomable :name="match.name" />
           <div class="min-w-0 flex-1">
             <p class="truncate text-sm font-semibold">
               {{ match.name }}

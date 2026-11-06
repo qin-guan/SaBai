@@ -85,13 +85,14 @@ async function submit() {
 }
 
 useSaveShortcut(submit)
+useKeyShortcut('m', () => emit('match'))
 </script>
 
 <template>
   <AppPanel title="Register new patient">
     <template #actions>
       <Button size="sm" variant="outline" @click="emit('match')">
-        <PhMagnifyingGlass aria-hidden="true" /> Match Instead
+        <PhMagnifyingGlass aria-hidden="true" /> Match Instead <ShortcutHint class="hidden kb:inline-flex" keys="M" />
       </Button>
     </template>
     <DraftNotice :restored-at="draft.restoredAt.value" @discard="form = draft.discard()" />

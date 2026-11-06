@@ -18,7 +18,7 @@ const route = useRoute()
 
 const GROUPS = [
   { label: 'Patients', items: NAV_ITEMS },
-  // Each station is the patient queue filtered to who it is waiting for.
+  // Each station is the patient list filtered to who it is waiting for.
   { label: 'Stations', items: STATION_NAV_ITEMS },
   { label: 'Pharmacy & admin', items: ADMIN_NAV_ITEMS },
 ]

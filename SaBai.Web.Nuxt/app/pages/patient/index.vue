@@ -7,17 +7,19 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
 /**
- * The patient queue — one page for every station.
+ * The patient list — one page for every station.
  *
  * Unfiltered it is the front desk's overview: everyone seen today and where
  * each is in their journey (vitals → vision → consult → dental → pharmacy).
  * With `?station=vitals` (the sidebar's station links) it becomes that
- * station's worklist: who is still waiting for it, longest-waiting first, and
- * one button that opens the station's form on the patient's current visit.
+ * station's worklist: who still needs it, earliest arrival first, and a row
+ * that opens the station's form on the patient's current visit.
  *
- * Wait estimates come from each station's measured throughput (records saved
- * in the last hour, or today), falling back to this device's form-fill times
- * — see utils/waitTime.ts and utils/serviceTime.ts.
+ * The station cards show how backlogged each station is: how many still need
+ * it and roughly how long someone sent there now would wait. The pace comes
+ * from each station's measured throughput (records saved in the last hour, or
+ * today), falling back to this device's form-fill times — see
+ * utils/waitTime.ts and utils/serviceTime.ts.
  */
 const route = useRoute()
 const station = computed<StationKey | undefined>(() =>
@@ -58,26 +60,11 @@ const matchesFilter = (p: Row) => {
     .some(v => v.toLowerCase().includes(needle))
 }
 
-/**
- * Each station's queue: who it is waiting for, most ready first (earlier steps
- * done, dental referrals), then whoever arrived earliest.
- */
-const queues = computed(() => {
-  const out = {} as Record<StationKey, Row[]>
-  for (const { key } of STATIONS) {
-    out[key] = inScope.value
-      .filter(p => p.lastVisitJourney && isWaitingFor(p.lastVisitJourney, key))
-      .sort((a, b) =>
-        stationPriority(a.lastVisitJourney!, key) - stationPriority(b.lastVisitJourney!, key)
-        || new Date(a.lastVisitDate!).getTime() - new Date(b.lastVisitDate!).getTime(),
-      )
-  }
-  return out
-})
+/** How many patients each station still has to see. */
 const waitingCounts = computed(() => {
   const counts = {} as Record<StationKey, number>
   for (const { key } of STATIONS)
-    counts[key] = queues.value[key].length
+    counts[key] = inScope.value.filter(p => p.lastVisitJourney && isWaitingFor(p.lastVisitJourney, key)).length
   return counts
 })
 
@@ -95,24 +82,6 @@ const throughput = computed(() => {
   }
   return out
 })
-const positions = computed(() => {
-  const out = {} as Record<StationKey, Map<number, number>>
-  for (const { key } of STATIONS)
-    out[key] = new Map(queues.value[key].map((p, i) => [p.id, i + 1]))
-  return out
-})
-/** Queue position (1 = next) and estimated wait for a patient at a station. */
-function waitAt(p: Row, key: StationKey) {
-  const position = positions.value[key].get(p.id)
-  if (!position)
-    return null
-  return { position, minutes: estimatedWaitMinutes(throughput.value[key], position) }
-}
-/** Waits are shown only in a station's waiting list, where the order is the queue. */
-const showWait = computed(() => !!station.value && show.value === 'waiting')
-const rowWait = (p: Row) => (showWait.value ? waitAt(p, station.value!) : null)
-/** Estimated time to clear a station's whole queue. */
-const clearMinutes = (key: StationKey) => estimatedWaitMinutes(throughput.value[key], waitingCounts.value[key])
 const basisNote = (t: StationThroughput) =>
   t.basis === 'form timing'
     ? `About ${formatRate(t.perMinute)}, from how long forms take on this device`
@@ -132,11 +101,11 @@ const rows = computed(() => {
     list = list.filter(p => isWaitingFor(p.lastVisitJourney!, s) === waiting)
   }
   if (show.value === 'waiting')
-    return queues.value[s].filter(matchesFilter)
+    list = [...list].sort((a, b) => new Date(a.lastVisitDate!).getTime() - new Date(b.lastVisitDate!).getTime())
   return list
 })
 
-/** The summary row: all patients, then each station's queue and wait. */
+/** The summary row: all patients, then each station's backlog and wait for someone sent now. */
 const stationCards = computed(() => [
   {
     key: undefined as StationKey | undefined,
@@ -148,16 +117,15 @@ const stationCards = computed(() => [
   ...STATIONS.map(({ key, label }) => {
     const t = throughput.value[key]
     const waiting = waitingCounts.value[key]
+    const minutes = stationWaitMinutes(t, waiting)
     const detail = !waiting
-      ? 'No queue'
-      : t.perMinute
-        ? `${formatWait(clearMinutes(key))} wait`
+      ? 'No wait'
+      : minutes !== null
+        ? `${formatWait(minutes)} wait`
         : 'Waiting'
     return { key: key as StationKey | undefined, label, count: waiting, detail, note: basisNote(t) }
   }),
 ])
-
-const ordinal = (n: number) => `${n}${n % 100 >= 11 && n % 100 <= 13 ? 'th' : ({ 1: 'st', 2: 'nd', 3: 'rd' } as Record<number, string>)[n % 10] ?? 'th'}`
 
 const SHOW_OPTIONS: { value: Show, label: string }[] = [
   { value: 'waiting', label: 'Waiting' },
@@ -166,7 +134,7 @@ const SHOW_OPTIONS: { value: Show, label: string }[] = [
 ]
 
 /**
- * Where a row leads: in a station queue, that station's form for the
+ * Where a row leads: in a station worklist, that station's form for the
  * patient's current visit; otherwise the patient record, which shows the
  * journey and the next step.
  */
@@ -179,7 +147,7 @@ const emptyMessage = computed(() => {
   if (station.value && show.value === 'waiting')
     return `Nobody is waiting for ${stationLabel(station.value)}${scope.value === 'today' ? ' today' : ''}.`
   if (scope.value === 'today')
-    return 'No visits today yet. Start one from Scan Face.'
+    return 'No visits today yet. Start one from Scan Face (by face or search).'
   return 'No patients found. Register a patient from Scan Face.'
 })
 
@@ -187,17 +155,13 @@ const timeOf = (date: string) => new Date(date).toLocaleTimeString(undefined, { 
 const dateOf = (date: string) => (isSameDay(date) ? `Arrived ${timeOf(date)}` : `Last visit ${new Date(date).toLocaleDateString()}`)
 
 // One grid for the heading and every row, so columns line up.
-const gridCols = computed(() =>
-  showWait.value
-    ? 'md:grid-cols-[2.75rem_minmax(0,1fr)_minmax(0,20rem)_6.5rem_1rem]'
-    : 'md:grid-cols-[2.75rem_minmax(0,1fr)_minmax(0,20rem)_1rem]',
-)
+const gridCols = 'md:grid-cols-[2.75rem_minmax(0,1fr)_minmax(0,20rem)_1rem]'
 </script>
 
 <template>
   <div class="flex flex-col gap-3">
     <PageHeader
-      :title="station ? `${stationLabel(station)} queue` : 'Patients'"
+      :title="station ? stationLabel(station) : 'Patients'"
       :breadcrumbs="station
         ? [{ label: 'Home', to: '/' }, { label: 'Patients', to: paths.patient() }, { label: stationLabel(station) }]
         : [{ label: 'Home', to: '/' }, { label: 'Patients' }]"
@@ -206,15 +170,16 @@ const gridCols = computed(() =>
       <template #actions>
         <Button as-child variant="outline">
           <NuxtLink :to="paths.scanFace()">
-            <PhScan aria-hidden="true" /> Scan face / register
+            <PhScan aria-hidden="true" /> Start visit / register
           </NuxtLink>
         </Button>
       </template>
     </PageHeader>
 
     <!--
-      Summary first: one card per station picks that queue (the same page,
-      filtered) and shows how many are waiting and roughly how long for.
+      Summary first: one card per station picks that worklist (the same page,
+      filtered) and shows how many are waiting and roughly how long someone
+      sent there now would wait.
     -->
     <nav aria-label="Stations" class="grid grid-cols-2 gap-px border border-border bg-border sm:grid-cols-3 lg:grid-cols-6">
       <NuxtLink
@@ -286,7 +251,6 @@ const gridCols = computed(() =>
           <span />
           <span>Patient</span>
           <span>Journey</span>
-          <span v-if="showWait">Est. wait</span>
           <span />
         </div>
         <ul class="divide-y divide-border">
@@ -323,19 +287,7 @@ const gridCols = computed(() =>
                 </p>
               </div>
 
-              <!-- Wait (station queues): beside the name on phones, its own column on wide screens. -->
-              <div v-if="showWait" class="text-right md:col-start-4 md:row-start-1 md:text-left">
-                <template v-if="rowWait(patient)">
-                  <p class="text-sm font-semibold whitespace-nowrap tabular-nums touch:text-base">
-                    {{ rowWait(patient)!.minutes !== null ? formatWait(rowWait(patient)!.minutes) : `${ordinal(rowWait(patient)!.position)} in line` }}
-                  </p>
-                  <p v-if="rowWait(patient)!.minutes !== null" class="text-[0.6875rem] whitespace-nowrap text-muted-foreground touch:text-xs">
-                    {{ ordinal(rowWait(patient)!.position) }} in line
-                  </p>
-                </template>
-              </div>
               <PhCaretRight
-                v-else
                 class="size-4 text-muted-foreground group-hover:text-primary md:hidden"
                 aria-hidden="true"
               />
@@ -354,8 +306,7 @@ const gridCols = computed(() =>
               </div>
 
               <PhCaretRight
-                class="hidden size-4 text-muted-foreground group-hover:text-primary md:block"
-                :class="showWait ? 'md:col-start-5' : 'md:col-start-4'"
+                class="hidden size-4 text-muted-foreground group-hover:text-primary md:col-start-4 md:block"
                 aria-hidden="true"
               />
             </NuxtLink>

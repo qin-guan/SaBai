@@ -80,7 +80,7 @@ const bloodPressureStatus = computed(() =>
 const bmi = computed(() => computeBmi(form.value.height || null, form.value.weight || null))
 
 const formEl = ref<HTMLFormElement>()
-// Times this form for the queue's wait estimates.
+// Times this form for the station wait estimate.
 const serviceTimer = useServiceTimer('vitals', formEl, () => form.value)
 
 const queryClient = useQueryClient()
@@ -88,7 +88,7 @@ const onSuccess = () => {
   serviceTimer.saved()
   draft.clear(form.value)
   queryClient.invalidateQueries({ queryKey: queryKeys.vitals(props.visitId) })
-  // Refresh the journey bars and station queues.
+  // Refresh the journey bars and station backlogs.
   queryClient.invalidateQueries({ queryKey: queryKeys.patients() })
   toast.success('Vitals saved successfully!')
 }

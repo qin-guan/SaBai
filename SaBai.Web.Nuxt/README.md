@@ -45,7 +45,7 @@ stored under the same `localStorage` key (`villageCodeState`).
 | `←`/`→` | Change the answer in a choice group (selecting the active answer again clears it). |
 | `Esc` | Close a dialog, or cancel an inline table edit (Enter saves it). |
 
-## Patient journey and queue
+## Patient journey and station backlog
 
 Every visit moves through **Vitals → Vision → Consult → Dental (optional) →
 Pharmacy (optional)**. The API returns where each visit is (`journey` on
@@ -54,15 +54,19 @@ and `<JourneyTracker>` shows it the same way everywhere: done steps in green,
 the next step highlighted, optional steps dashed. Every step links to that
 station's form for the same visit, so a patient can be sent on from any screen.
 
-- **`/patient` is the one patient queue.** Unfiltered it shows everyone seen
+- **`/patient` is the one patient list.** Unfiltered it shows everyone seen
   today and their journeys; a row opens the patient record. A station card
   (or a sidebar *Stations* link) filters it to
   `?station=vitals|vision|consults|dental|pharmacy`: who that station is
-  waiting for, most ready first, then longest waiting, with each patient's
-  estimated wait; a row opens that station's form. Each row is one link, so
+  waiting for, earliest arrival first; a row opens that station's form. Each row is one link, so
   there are no per-row buttons.
   `/vitals`, `/vision`, `/consults` and `/dental` redirect there; they used to
   be four near-identical lists.
+- **Starting a visit** works without the camera too: Scan Face has a *Find
+  patient* search (name, any form of the ID, ID number, phone or village — the
+  same index as the universal search), and the patient record has a *New Visit*
+  button. Both use `<StartVisitButton>`, which asks before opening a second
+  visit for someone who already had one opened recently.
 - **The patient record** (`/patient/:id`) shows the current visit's journey
   with a *Next* button, the journey of every past visit, and the patient's
   details, edited in place with a save bar like the station forms.
@@ -73,9 +77,10 @@ Pharmacy waits for undispensed orders.
 
 ### Wait estimates
 
-Each station card shows how many are waiting, the station's pace and how long
-its queue will take to clear. Each queued patient shows their place in line
-and estimated wait (`app/utils/waitTime.ts`):
+Each station card shows how backlogged the station is: how many are waiting
+and roughly how long someone sent there now would wait (waiting ÷ the
+station's pace, `app/utils/waitTime.ts`). There are no per-patient estimates.
+The pace comes from:
 
 - **Measured throughput**: patients finished per minute in the last hour (or
   today, if the last hour has fewer than 3), from when each record was saved.

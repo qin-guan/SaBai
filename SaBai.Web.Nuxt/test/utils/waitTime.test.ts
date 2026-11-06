@@ -1,5 +1,5 @@
 import type { Journey } from "~/utils/journey";
-import { estimatedWaitMinutes, formatRate, formatWait, stationThroughput, withServiceTimeFallback } from "~/utils/waitTime";
+import { stationWaitMinutes, formatRate, formatWait, stationThroughput, withServiceTimeFallback } from "~/utils/waitTime";
 import { formCompleteness, median, serviceSample } from "~/utils/serviceTime";
 
 const now = new Date(2026, 10, 6, 12, 0).getTime();
@@ -53,15 +53,15 @@ describe("stationThroughput", () => {
   });
 });
 
-describe("estimatedWaitMinutes", () => {
-  it("scales with queue position", () => {
+describe("stationWaitMinutes", () => {
+  it("is the time to see everyone already waiting", () => {
     const t = { perMinute: 0.1, samples: 6, basis: "last hour" as const };
-    expect(estimatedWaitMinutes(t, 1)).toBeCloseTo(10);
-    expect(estimatedWaitMinutes(t, 3)).toBeCloseTo(30);
+    expect(stationWaitMinutes(t, 0)).toBe(0);
+    expect(stationWaitMinutes(t, 3)).toBeCloseTo(30);
   });
 
   it("is null without a rate", () => {
-    expect(estimatedWaitMinutes({ perMinute: null, samples: 0, basis: null }, 1)).toBeNull();
+    expect(stationWaitMinutes({ perMinute: null, samples: 0, basis: null }, 1)).toBeNull();
   });
 });
 

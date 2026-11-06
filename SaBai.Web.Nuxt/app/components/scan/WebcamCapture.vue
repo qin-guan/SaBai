@@ -10,10 +10,12 @@ import { Button } from '@/components/ui/button'
  * Capture stays disabled until the browser delivers a live stream.
  */
 const image = defineModel<string | null>({ default: null })
-const props = withDefaults(defineProps<{ size?: number, autoOpenCamera?: boolean }>(), {
+const props = withDefaults(defineProps<{ size?: number, autoOpenCamera?: boolean, headGuide?: boolean }>(), {
   size: 250,
   autoOpenCamera: true,
+  headGuide: true,
 })
+const root = ref<HTMLElement>()
 const emit = defineEmits<{ cameraOpen: [open: boolean] }>()
 
 const video = ref<HTMLVideoElement>()
@@ -92,10 +94,15 @@ function capture() {
   canvas.getContext('2d')?.drawImage(el, 0, 0)
   image.value = canvas.toDataURL('image/jpeg', 1)
 }
+
+// Keyboard: C captures, R / T opens the camera or retakes.
+useKeyShortcut('c', capture, { enabled: () => cameraIsOpen.value && cameraReady.value, scope: root })
+useKeyShortcut('r', () => { openCamera(); image.value = null }, { enabled: () => !cameraIsOpen.value && !!image.value, scope: root })
+useKeyShortcut('t', openCamera, { enabled: () => !cameraIsOpen.value && !image.value, scope: root })
 </script>
 
 <template>
-  <div class="flex w-full flex-col items-center gap-2">
+  <div ref="root" class="flex w-full flex-col items-center gap-2">
     <p class="text-xs font-semibold touch:text-sm">
       Photo<span class="text-destructive" aria-hidden="true">*</span>
     </p>
@@ -114,6 +121,28 @@ function capture() {
       />
       <img v-else-if="image" :src="image" alt="Captured photo" class="size-full object-cover">
       <PhCamera v-else class="size-10 text-muted-foreground" aria-hidden="true" />
+      <!-- Head guide: line the face up inside the oval, shoulders below it. -->
+      <svg
+        v-if="cameraIsOpen && props.headGuide"
+        class="pointer-events-none absolute inset-0 size-full"
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+        data-testid="head-guide"
+      >
+        <defs>
+          <mask id="head-guide-mask">
+            <rect width="100" height="100" fill="white" />
+            <ellipse cx="50" cy="44" rx="23" ry="30" fill="black" />
+          </mask>
+        </defs>
+        <rect width="100" height="100" fill="black" fill-opacity="0.35" mask="url(#head-guide-mask)" />
+        <ellipse cx="50" cy="44" rx="23" ry="30" fill="none" stroke="white" stroke-width="0.8" stroke-dasharray="3 2" />
+      </svg>
+      <span
+        v-if="cameraIsOpen && props.headGuide && cameraReady"
+        class="pointer-events-none absolute inset-x-0 top-1 text-center text-xs text-white drop-shadow touch:text-sm"
+      >Fit your face inside the oval</span>
       <span
         v-if="cameraIsOpen && !cameraReady && !cameraError"
         class="absolute inset-x-0 bottom-0 bg-black/60 px-2 py-1 text-center text-xs text-white touch:text-sm"
@@ -128,7 +157,7 @@ function capture() {
     <div class="flex flex-wrap items-center justify-center gap-2">
       <template v-if="cameraIsOpen">
         <Button variant="success" :disabled="!cameraReady" @click="capture">
-          <PhCamera aria-hidden="true" /> Capture
+          <PhCamera aria-hidden="true" /> Capture <ShortcutHint class="hidden kb:inline-flex" keys="C" />
         </Button>
         <Button variant="outline" aria-label="Switch camera" :disabled="!cameraReady && !cameraError" @click="switchCamera">
           <PhCameraRotate aria-hidden="true" />
@@ -139,14 +168,14 @@ function capture() {
         </Button>
       </template>
       <Button v-else-if="!image" variant="success" @click="openCamera">
-        <PhCamera aria-hidden="true" /> Take Photo
+        <PhCamera aria-hidden="true" /> Take Photo <ShortcutHint class="hidden kb:inline-flex" keys="T" />
       </Button>
       <Button
         v-else
         variant="destructive"
         @click="() => { openCamera(); image = null }"
       >
-        <PhCameraRotate aria-hidden="true" /> Retake Photo
+        <PhCameraRotate aria-hidden="true" /> Retake Photo <ShortcutHint class="hidden kb:inline-flex" keys="R" />
       </Button>
     </div>
   </div>

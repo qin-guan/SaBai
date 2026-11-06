@@ -28,7 +28,7 @@ const cards = computed(() =>
     class="mb-3 flex flex-col gap-2 border border-band-border bg-banner px-3 py-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4"
   >
     <div class="flex min-w-0 items-center gap-3 sm:flex-1">
-    <PatientPhoto :patient-id="props.patient.id" :has-photo="props.patient.hasPhoto" :size="56" alt="" />
+    <PatientPhoto :patient-id="props.patient.id" :has-photo="props.patient.hasPhoto" :size="56" alt="" zoomable :name="props.patient.name" />
     <div class="min-w-0 flex-1">
       <p class="text-base font-bold leading-tight break-words">
         {{ props.patient.name }}

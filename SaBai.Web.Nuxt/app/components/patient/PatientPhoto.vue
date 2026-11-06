@@ -6,16 +6,32 @@ import { PhUser } from '@phosphor-icons/vue'
  * when they have none. `hasPhoto` skips the request when no photo exists.
  */
 const props = withDefaults(
-  defineProps<{ patientId: number, hasPhoto?: boolean, size?: number, alt?: string }>(),
-  { hasPhoto: false, size: 48 },
+  defineProps<{ patientId: number, hasPhoto?: boolean, size?: number, alt?: string, zoomable?: boolean, name?: string }>(),
+  { hasPhoto: false, size: 48, zoomable: false },
 )
+const zoomed = ref(false)
 const url = usePatientPhoto(() => props.patientId, () => props.hasPhoto)
 </script>
 
 <template>
+  <button
+    v-if="url && props.zoomable"
+    type="button"
+    class="shrink-0 cursor-zoom-in focus-visible:outline-2 focus-visible:outline-ring"
+    :aria-label="`Enlarge photo${props.name ? ` of ${props.name}` : ''}`"
+    @click.stop.prevent="zoomed = true"
+  >
+    <img
+      :src="url"
+      alt=""
+      :width="props.size"
+      :height="props.size"
+      class="border border-border bg-muted object-cover"
+      :style="{ width: `${props.size}px`, height: `${props.size}px` }"
+    >
+  </button>
   <img
-    v-if="url"
-    :src="url"
+    v-else-if="url"
     :alt="props.alt ?? 'Patient photo'"
     :width="props.size"
     :height="props.size"
@@ -31,4 +47,10 @@ const url = usePatientPhoto(() => props.patientId, () => props.hasPhoto)
   >
     <PhUser :size="Math.round(props.size * 0.5)" aria-hidden="true" />
   </span>
+</template>
+
+<template v-if="zoomed && url">
+  <AppDialog :title="props.name ?? 'Patient photo'" size="md" @close="zoomed = false">
+    <img :src="url" :alt="props.name ? `Photo of ${props.name}` : 'Patient photo'" class="mx-auto max-h-[70dvh] w-full object-contain">
+  </AppDialog>
 </template>

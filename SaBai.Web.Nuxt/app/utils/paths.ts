@@ -5,7 +5,8 @@ export const paths = {
   patientDetail: (patientId: number) => `/patient/${patientId}`,
   scanFace: () => "/scan-face",
   vitals: () => "/vitals",
-  vitalsDetail: (patientId: number) => `/vitals/${patientId}`,
+  vitalsDetail: (patientId: number, visitId?: number) =>
+    visitId === undefined ? `/vitals/${patientId}` : `/vitals/${patientId}?visit=${visitId}`,
   vision: () => "/vision",
   visionUpdateGlasses: (patientId: number) => `/vision/update-glasses/${patientId}`,
   dental: () => "/dental",

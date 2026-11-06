@@ -26,7 +26,7 @@ const selected = computed(() => props.visits?.find(v => v.id.toString() === mode
             Select a visit
           </NativeSelectOption>
           <NativeSelectOption v-for="visit in props.visits" :key="visit.id" :value="visit.id.toString()">
-            {{ formatVisitDate(visit.date) }} — {{ visit.villageName }}
+            Visit {{ props.visits.length - props.visits.indexOf(visit) }} · {{ formatVisitDate(visit.date) }} — {{ visit.villageName }}
           </NativeSelectOption>
         </NativeSelect>
       </div>

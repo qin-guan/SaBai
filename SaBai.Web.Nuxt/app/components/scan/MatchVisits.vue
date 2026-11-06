@@ -13,13 +13,13 @@ const visits = computed(() => data.value?.visits ?? [])
     No previous visits.
   </p>
   <ul v-else class="flex flex-wrap gap-1.5" :aria-label="`Existing visits (${visits.length})`">
-    <li v-for="visit in visits" :key="visit.id">
+    <li v-for="(visit, index) in visits" :key="visit.id">
       <NuxtLink
         :to="paths.vitalsDetail(patientId, visit.id)"
         class="inline-flex items-center gap-1.5 border border-border px-2 py-0.5 text-xs hover:bg-muted touch:text-sm"
       >
         <span class="size-2 shrink-0" :style="{ backgroundColor: visit.villageColorHex }" aria-hidden="true" />
-        {{ formatVisitDate(visit.date) }} — {{ visit.villageName }}
+        #{{ visits.length - index }} · {{ formatVisitDate(visit.date) }} — {{ visit.villageName }}
       </NuxtLink>
     </li>
   </ul>

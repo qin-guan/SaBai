@@ -1,6 +1,6 @@
 <script setup lang="ts">
 definePageMeta({ patientLink: 'vitals' })
-const { patient, visits, selectedVisitId, selectedVisit, isLoading } = usePatientStation('id', 'single')
+const { patient, visits, selectedVisitId, selectedVisit, isLoading } = usePatientStation('id', 'latest')
 </script>
 
 <template>

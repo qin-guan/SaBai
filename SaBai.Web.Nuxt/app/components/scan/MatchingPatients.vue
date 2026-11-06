@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { PhUserFocus, PhUserPlus } from '@phosphor-icons/vue'
-import { useMutation, useQuery } from '@tanstack/vue-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import { toast } from 'vue-sonner'
 import {
   saBaiAPIEndpointsPatientsSearchByFacePostEndpoint,
@@ -19,6 +19,7 @@ const emit = defineEmits<{ register: [] }>()
 
 useKeyShortcut('n', () => emit('register'))
 const { selectedVillageCodeId, isLoading: villageLoading } = useVillageCode()
+const queryClient = useQueryClient()
 const duplicate = ref<{ patientId: number, existingVisitDate: Date | null } | null>(null)
 const isCheckingDuplicate = ref(false)
 
@@ -54,9 +55,12 @@ const busy = computed(() => isCheckingDuplicate.value || createVisit.isPending.v
 
 async function submitCreateVisit(patientId: number) {
   try {
-    await createVisit.mutateAsync(patientId)
+    const visit = await createVisit.mutateAsync(patientId)
     duplicate.value = null
-    await navigateTo(paths.vitalsDetail(patientId))
+    // Refresh visit lists/counters so the new visit is visible everywhere.
+    await queryClient.invalidateQueries({ queryKey: queryKeys.patients() })
+    // Open vitals for the visit we just created, not whichever visit was cached.
+    await navigateTo(paths.vitalsDetail(patientId, visit.id))
   }
   catch (error) {
     toast.error(getApiErrorMessage(error, 'Failed to start a visit for this patient.'))
@@ -151,9 +155,9 @@ async function select(patientId: number) {
 
   <AppDialog v-if="duplicate" title="Duplicate Visit" size="sm" @close="duplicate = null">
     <p>
-      A visit already exists for this patient<template v-if="duplicate.existingVisitDate">
+      A visit was just opened for this patient<template v-if="duplicate.existingVisitDate">
         at {{ duplicate.existingVisitDate.toLocaleTimeString() }}
-      </template>. Are you sure you want to create another?
+      </template>. Start another visit anyway, or cancel to keep using it?
     </p>
     <template #footer>
       <Button variant="outline" @click="duplicate = null">

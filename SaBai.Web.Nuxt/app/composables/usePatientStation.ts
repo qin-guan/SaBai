@@ -3,9 +3,10 @@
  * dental): the patient, their visits and the selected visit.
  *
  * `autoSelect`:
- *  - "single": pick the visit automatically only when there is exactly one
- *    (vitals, vision, consults — same as SaBai.Web).
- *  - "latest": default to the most recent visit (dental).
+ *  - "single": pick the visit automatically only when there is exactly one.
+ *  - "latest": default to the most recent visit, so scanning a face and
+ *    starting a visit lands on the new visit even if the patient has several
+ *    (all stations).
  */
 export function usePatientStation(param: string, autoSelect: 'single' | 'latest') {
   const patientId = useRouteId(param)

@@ -10,7 +10,7 @@ JetBrains Mono).
 ```bash
 pnpm install                     # from the repo root (pnpm workspace)
 pnpm --filter @sabai/sdk build   # the app imports the generated SDK
-cp .env.example .env             # NUXT_PUBLIC_API_URL → SaBai.API
+cp .env.example .env             # NUXT_API_URL → SaBai.API (server-side)
 pnpm dev
 ```
 

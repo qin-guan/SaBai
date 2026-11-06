@@ -2,19 +2,13 @@
  * Shared configuration passed to every @sabai/sdk call.
  *
  * The generated SDK has no configurable client instance, so `baseURL` and the
- * bearer `auth` resolver are spread into each call. `baseURL` is set once at
- * startup from runtime config (see plugins/api.ts).
+ * bearer `auth` resolver are spread into each call. Requests go to this app's
+ * own server under `/api`, which proxies them to SaBai.API
+ * (server/api/[...path].ts), so the API never has to be reachable from the
+ * browser.
  */
-let baseURL = "http://localhost:5250";
-
-export function setApiBaseUrl(url: string) {
-  baseURL = url;
-}
-
 export const apiConfig = {
-  get baseURL() {
-    return baseURL;
-  },
+  baseURL: "/api",
   auth: () => getToken(),
 };
 

@@ -12,8 +12,6 @@ function redirectToLogin(): void {
 }
 
 export default defineNuxtPlugin((nuxtApp) => {
-  setApiBaseUrl(useRuntimeConfig().public.apiUrl as string);
-
   // A 401 means the bearer token is missing or expired: drop it and bounce to
   // the login page from one place rather than in every query.
   const queryClient = new QueryClient({

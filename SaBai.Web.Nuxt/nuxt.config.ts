@@ -14,10 +14,10 @@ export default defineNuxtConfig({
   // shadcn components in components/ui are imported explicitly.
   components: [{ path: '~/components', pathPrefix: false, ignore: ['ui/**'] }],
   runtimeConfig: {
-    public: {
-      // Base URL of SaBai.API; override with NUXT_PUBLIC_API_URL.
-      apiUrl: 'http://localhost:5250',
-    },
+    // Server-only URL of SaBai.API, which may sit on an internal network the
+    // browser cannot reach. The browser calls this server under /api and
+    // server/api/[...path].ts proxies to it. Override with NUXT_API_URL.
+    apiUrl: 'http://localhost:5250',
   },
   app: {
     head: {

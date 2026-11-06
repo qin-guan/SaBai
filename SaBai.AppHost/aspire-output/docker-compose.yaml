@@ -139,7 +139,7 @@ services:
       context: "."
       dockerfile: "SaBai.Web.Nuxt/Dockerfile"
     environment:
-      NUXT_PUBLIC_API_URL: "http://api:${API_PORT}"
+      NUXT_API_URL: "http://api:${API_PORT}"
       PORT: "3000"
       HOSTNAME: "0.0.0.0"
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://compose-dashboard:18889"

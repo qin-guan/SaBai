@@ -2,7 +2,12 @@
 /** Existing visits for a face match; each opens that visit's vitals. */
 const props = defineProps<{ patientId: number }>()
 const { data, isLoading } = usePatientVisits(() => props.patientId)
-const visits = computed(() => data.value?.visits ?? [])
+// Most recent first; numbered oldest = #1 so the newest carries the highest number.
+const visits = computed(() =>
+  [...(data.value?.visits ?? [])].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime() || b.id - a.id,
+  ),
+)
 </script>
 
 <template>
@@ -12,11 +17,11 @@ const visits = computed(() => data.value?.visits ?? [])
   <p v-else-if="visits.length === 0" class="text-xs text-muted-foreground touch:text-sm">
     No previous visits.
   </p>
-  <ul v-else class="flex flex-wrap gap-1.5" :aria-label="`Existing visits (${visits.length})`">
+  <ul v-else class="flex flex-col gap-1" :aria-label="`Existing visits (${visits.length})`">
     <li v-for="(visit, index) in visits" :key="visit.id">
       <NuxtLink
         :to="paths.vitalsDetail(patientId, visit.id)"
-        class="inline-flex items-center gap-1.5 border border-border px-2 py-0.5 text-xs hover:bg-muted touch:text-sm"
+        class="flex items-center gap-2 border border-border px-2 py-1 text-xs hover:bg-muted touch:text-sm"
       >
         <span class="size-2 shrink-0" :style="{ backgroundColor: visit.villageColorHex }" aria-hidden="true" />
         #{{ visits.length - index }} · {{ formatVisitDate(visit.date) }} — {{ visit.villageName }}

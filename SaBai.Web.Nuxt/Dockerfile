@@ -18,4 +18,4 @@ ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 COPY --from=build --chown=node:node /app/SaBai.Web.Nuxt/.output .
 USER node
-ENTRYPOINT ["node","SaBai.Web.Nuxt.output/server/index.mjs"]
+ENTRYPOINT ["node","SaBai.Web.Nuxt/.output/server/index.mjs"]

@@ -1,8 +1,13 @@
 <script setup lang="ts">
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { PhPlus } from '@phosphor-icons/vue'
+import { Button } from '@/components/ui/button'
+import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 useHead({ title: "Medication Brands · Sa'Bai" })
 const { data: brands, isLoading, isError } = useMedicationBrands()
+// For the active ingredient names and the ingredient picker.
+const { data: ingredients, isLoading: ingredientsLoading } = useMedicationIngredients()
+const adding = ref(false)
 </script>
 
 <template>
@@ -15,7 +20,13 @@ const { data: brands, isLoading, isError } = useMedicationBrands()
         { label: 'Medication Stock', to: paths.medicationStock() },
         { label: 'Medication Brands' },
       ]"
-    />
+    >
+      <template #actions>
+        <Button :disabled="ingredientsLoading" @click="adding = true">
+          <PhPlus aria-hidden="true" /> Add Brand
+        </Button>
+      </template>
+    </PageHeader>
     <AppPanel title="Brands" flush>
       <StateMessage v-if="isError" kind="error" message="An error has occurred!" />
       <StateMessage v-else-if="isLoading" kind="loading" message="Loading brands..." />
@@ -25,25 +36,18 @@ const { data: brands, isLoading, isError } = useMedicationBrands()
           <TableRow>
             <TableHead>Brand ID</TableHead>
             <TableHead>Name</TableHead>
+            <TableHead>Active Ingredient</TableHead>
             <TableHead>Remarks</TableHead>
-            <TableHead>Active Ingredient ID</TableHead>
+            <TableHead class="text-right">
+              Actions
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          <TableRow v-for="brand in brands" :key="brand.id">
-            <TableCell data-label="Brand ID" class="tabular-nums">
-              {{ brand.id }}
-            </TableCell>
-            <TableCell data-label="Name" class="font-semibold">
-              {{ brand.name }}
-            </TableCell>
-            <TableCell data-label="Remarks">{{ brand.remarks }}</TableCell>
-            <TableCell data-label="Active Ingr. ID" class="tabular-nums">
-              {{ brand.activeIngredientId }}
-            </TableCell>
-          </TableRow>
+          <BrandRow v-for="brand in brands" :key="brand.id" :brand="brand" :ingredients="ingredients ?? []" />
         </TableBody>
       </Table>
     </AppPanel>
+    <AddBrandDialog v-if="adding" :ingredients="ingredients ?? []" @close="adding = false" />
   </div>
 </template>

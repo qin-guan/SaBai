@@ -5,7 +5,30 @@ export default defineNuxtConfig({
   modules: ['@nuxt/a11y', '@nuxt/fonts', '@nuxt/hints', '@nuxt/icon/module', '@nuxt/image', '@nuxt/scripts', 'shadcn-nuxt'],
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
-  css: ['~/assets/css/tailwind.css'],
+  // The app is a pure client of SaBai.API: auth is a bearer token in a cookie,
+  // patient photos are fetched as authenticated blobs and the webcam is
+  // browser-only, so it renders on the client like SaBai.Web does.
+  ssr: false,
+  css: ['~/assets/css/main.css'],
+  // App components are referenced by file name (<PatientBanner>, <AppPanel>…).
+  // shadcn components in components/ui are imported explicitly.
+  components: [{ path: '~/components', pathPrefix: false, ignore: ['ui/**'] }],
+  runtimeConfig: {
+    public: {
+      // Base URL of SaBai.API; override with NUXT_PUBLIC_API_URL.
+      apiUrl: 'http://localhost:5250',
+    },
+  },
+  app: {
+    head: {
+      title: "Sa'Bai",
+      htmlAttrs: { lang: 'en' },
+      meta: [
+        { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
+        { name: 'theme-color', content: '#1f3a5f' },
+      ],
+    },
+  },
   vite: {
     plugins: [
       tailwindcss(),

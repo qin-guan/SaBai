@@ -84,7 +84,7 @@ builder
 const string webCorsPolicy = "web";
 var allowedOrigins =
     builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
-    ?? ["http://localhost:3000"];
+    ?? ["http://localhost:3000", "http://localhost:3300"];
 builder.Services.AddCors(options =>
     options.AddPolicy(
         webCorsPolicy,

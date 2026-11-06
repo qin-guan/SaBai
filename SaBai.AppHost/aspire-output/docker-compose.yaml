@@ -137,9 +137,9 @@ services:
   frontend:
     build:
       context: "."
-      dockerfile: "SaBai.Web/Dockerfile"
+      dockerfile: "SaBai.Web.Nuxt/Dockerfile"
     environment:
-      NEXT_PUBLIC_API_URL: "http://api:${API_PORT}"
+      NUXT_PUBLIC_API_URL: "http://api:${API_PORT}"
       PORT: "3000"
       HOSTNAME: "0.0.0.0"
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://compose-dashboard:18889"
@@ -168,4 +168,4 @@ volumes:
     driver: "local"
 configs:
   pgadmin__pgadmin4_servers.json:
-    content: "{\n  \"Servers\": {\n    \"1\": {\n      \"Name\": \"postgres\",\n      \"Group\": \"Servers\",\n      \"Host\": \"postgres\",\n      \"Port\": 5432,\n      \"Username\": \"postgres\",\n      \"SSLMode\": \"prefer\",\n      \"MaintenanceDB\": \"postgres\",\n      \"PasswordExecCommand\": \"echo \\u0027h_6{sT4SM~WHaruzxuUNVd\\u0027\"\n    }\n  }\n}"
+    content: "{\n  \"Servers\": {\n    \"1\": {\n      \"Name\": \"postgres\",\n      \"Group\": \"Servers\",\n      \"Host\": \"postgres\",\n      \"Port\": 5432,\n      \"Username\": \"postgres\",\n      \"SSLMode\": \"prefer\",\n      \"MaintenanceDB\": \"postgres\",\n      \"PasswordExecCommand\": \"echo \\u00278R834zjqYbSDw4bx~q7!RA\\u0027\"\n    }\n  }\n}"

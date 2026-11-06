@@ -77,24 +77,21 @@ if (!builder.ExecutionContext.IsPublishMode)
 {
     builder
         .AddNextJsApp("frontend", "../SaBai.Web")
-        .WithPnpm()
+        .WithPnpm(false)
         .WithEnvironment("NEXT_PUBLIC_API_URL", api.GetEndpoint("http"))
         .WithHttpEndpoint(port: 3000, env: "PORT")
+        .WaitFor(api);
+
+    builder
+        .AddJavaScriptApp("frontend-nuxt", "../SaBai.Web.Nuxt", "dev")
+        .WithPnpm(false)
+        .WithEnvironment("NUXT_PUBLIC_API_URL", api.GetEndpoint("http"))
+        .WithHttpEndpoint(port: 3300, env: "PORT")
         .WaitFor(api);
 }
 
 if (builder.ExecutionContext.IsPublishMode)
 {
-    // Build from the repo root so pnpm can resolve the SDK workspace package.
-    var frontend = builder
-        .AddDockerfile("frontend", "..", "SaBai.Web/Dockerfile")
-        .WithEnvironment("NEXT_PUBLIC_API_URL", api.GetEndpoint("http"))
-        .WithEnvironment("PORT", "3000")
-        .WithEnvironment("HOSTNAME", "0.0.0.0")
-        .WithHttpEndpoint(port: 3000, targetPort: 3000)
-        .WithOtlpExporter()
-        .WaitFor(api);
-
     builder
         .AddDockerComposeEnvironment("compose")
         .WithProperties(env =>
@@ -137,13 +134,24 @@ if (builder.ExecutionContext.IsPublishMode)
         }
     );
 
+    // Build from the repo root so pnpm can resolve the SDK workspace package.
+    var frontend = builder
+        .AddDockerfile("frontend", "..", "SaBai.Web.Nuxt/Dockerfile")
+        .WithEnvironment("NUXT_PUBLIC_API_URL", api.GetEndpoint("http"))
+        .WithEnvironment("PORT", "3000")
+        .WithEnvironment("HOSTNAME", "0.0.0.0")
+        .WithHttpEndpoint(port: 3000, targetPort: 3000)
+        .WithOtlpExporter()
+        .WaitFor(api);
+
+
     frontend.PublishAsDockerComposeService(
         (_, service) =>
         {
             service.Name = "frontend";
             service.Image = null;
             service.Ports = ["3000:3000"];
-            service.Build = new Build { Context = ".", Dockerfile = "SaBai.Web/Dockerfile" };
+            service.Build = new Build { Context = ".", Dockerfile = "SaBai.Web.Nuxt/Dockerfile" };
         }
     );
 }

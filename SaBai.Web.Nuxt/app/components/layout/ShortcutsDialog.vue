@@ -6,6 +6,7 @@ const groups = [
     title: 'Global',
     items: [
       { keys: 'Ctrl+K  or  /', label: 'Search patients, sections and actions' },
+      { keys: 'F', label: 'Find a patient by face scan (opens the current station)' },
       { keys: 'Ctrl+B', label: 'Collapse / expand sidebar' },
       { keys: '?', label: 'Show this help' },
     ],

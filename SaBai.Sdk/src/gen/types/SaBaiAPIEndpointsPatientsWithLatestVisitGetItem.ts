@@ -4,6 +4,7 @@
 */
 
 import type { SaBaiAPIDomainGenderKey } from './SaBaiAPIDomainGender'
+import type { SaBaiAPIEndpointsPatientsVisitJourney } from './SaBaiAPIEndpointsPatientsVisitJourney'
 
 export type SaBaiAPIEndpointsPatientsWithLatestVisitGetItem = {
     /**
@@ -51,4 +52,5 @@ export type SaBaiAPIEndpointsPatientsWithLatestVisitGetItem = {
     lastVisitId: number | null;
     hasPhoto: boolean;
     hasFace: boolean;
+    lastVisitJourney: SaBaiAPIEndpointsPatientsVisitJourney | null;
 };

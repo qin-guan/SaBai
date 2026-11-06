@@ -1,105 +1,30 @@
 <script setup lang="ts">
 import { PhFloppyDisk } from '@phosphor-icons/vue'
-import { useMutation, useQueryClient } from '@tanstack/vue-query'
-import { toast } from 'vue-sonner'
-import { saBaiAPIEndpointsPatientsUpdatePatchEndpoint } from '@sabai/sdk/clients'
 import type { SaBaiAPIEndpointsPatientsGetResponse } from '@sabai/sdk/types'
 import { Button } from '@/components/ui/button'
 
 /**
- * Edits an existing patient's details. Optionally captures a new photo, which
- * replaces the profile photo and re-enrolls the patient's face.
+ * Quick edit of a patient's details from a station screen, without leaving
+ * the form in progress. The patient record edits the same fields inline
+ * (<PatientDetailsForm>).
  */
 const props = defineProps<{ patient: SaBaiAPIEndpointsPatientsGetResponse }>()
 const emit = defineEmits<{ close: [] }>()
 
-const initial: PatientFormValues = {
-  name: props.patient.name,
-  identificationNumber: props.patient.identificationNumber ?? '',
-  contactNo: props.patient.contactNo ?? '',
-  gender: props.patient.gender,
-  drugAllergy: props.patient.drugAllergy,
-  // <input type="date"> only accepts yyyy-MM-dd.
-  dateOfBirth: toDateInputValue(props.patient.dateOfBirth),
-  hasPoorCard: props.patient.hasPoorCard,
-  hasBS2Card: props.patient.hasBS2Card,
-  hasSabaiCard: props.patient.hasSabaiCard,
-}
-const form = ref<PatientFormValues>({ ...initial })
-const draft = useFormDraft(`edit-patient:${props.patient.id}`, form)
-form.value = draft.resume(initial)
-const errors = ref<Partial<Record<keyof PatientFormValues, string>>>({})
-const newPhoto = ref<string | null>(null)
 const formEl = ref<HTMLFormElement>()
+const { form, draft, errors, newPhoto, isSaving, submit } = usePatientEditForm(() => props.patient, formEl)
 
-const queryClient = useQueryClient()
-const update = useMutation({
-  mutationFn: (values: PatientFormValues) =>
-    saBaiAPIEndpointsPatientsUpdatePatchEndpoint({
-      ...apiConfig,
-      path: { id: props.patient.id },
-      body: {
-        name: values.name,
-        identificationNumber: values.identificationNumber,
-        contactNo: values.contactNo,
-        gender: values.gender as 'male' | 'female',
-        dateOfBirth: new Date(values.dateOfBirth).toISOString(),
-        drugAllergy: values.drugAllergy,
-        hasPoorCard: values.hasPoorCard,
-        hasBS2Card: values.hasBS2Card,
-        hasSabaiCard: values.hasSabaiCard,
-      },
-      throwOnError: true,
-    }).unwrap(),
-})
-
-async function submit() {
-  if (update.isPending.value)
-    return
-  errors.value = validatePatientForm(form.value)
-  if (Object.keys(errors.value).length) {
-    focusFirstInvalid(formEl.value)
-    return
-  }
-
-  try {
-    await update.mutateAsync(form.value)
-  }
-  catch (error) {
-    console.error('Error updating patient:', error)
-    // Surface a known conflict (duplicate ID) directly; otherwise a generic message.
-    toast.error(
-      getApiErrorStatus(error) === 409
-        ? getApiErrorMessage(error, 'Failed to update patient. Please try again.')
-        : 'Failed to update patient. Please try again.',
-    )
-    return
-  }
-
-  if (newPhoto.value) {
-    try {
-      await setPatientPhotoAndFace(props.patient.id, newPhoto.value)
-      queryClient.invalidateQueries({ queryKey: queryKeys.patientPhoto(props.patient.id) })
-      newPhoto.value = null
-    }
-    catch (error) {
-      console.error('Error saving patient photo/face:', error)
-      toast.error(getApiErrorMessage(error, 'Patient updated, but the photo or face could not be saved.'))
-    }
-  }
-
-  queryClient.invalidateQueries({ queryKey: queryKeys.patients() })
-  draft.clear(form.value)
-  toast.success('Patient details updated successfully!')
-  emit('close')
+async function save() {
+  if (await submit())
+    emit('close')
 }
 
-useSaveShortcut(submit)
+useSaveShortcut(save)
 </script>
 
 <template>
   <AppDialog title="Edit Patient Details" size="lg" @close="emit('close')">
-    <form id="edit-patient-form" ref="formEl" novalidate class="flex flex-col gap-4" @submit.prevent="submit"
+    <form id="edit-patient-form" ref="formEl" novalidate class="flex flex-col gap-4" @submit.prevent="save"
     @keydown.enter="enterMovesToNextField">
       <DraftNotice :restored-at="draft.restoredAt.value" class="mb-0" @discard="form = draft.discard()" />
       <PatientFields v-model="form" :errors="errors" />
@@ -119,9 +44,9 @@ useSaveShortcut(submit)
       <Button variant="outline" @click="emit('close')">
         Cancel
       </Button>
-      <Button type="submit" form="edit-patient-form" variant="success" :disabled="update.isPending.value">
+      <Button type="submit" form="edit-patient-form" variant="success" :disabled="isSaving">
         <PhFloppyDisk aria-hidden="true" />
-        {{ update.isPending.value ? 'Saving...' : 'Save Changes' }}
+        {{ isSaving ? 'Saving...' : 'Save Changes' }}
       </Button>
     </template>
   </AppDialog>

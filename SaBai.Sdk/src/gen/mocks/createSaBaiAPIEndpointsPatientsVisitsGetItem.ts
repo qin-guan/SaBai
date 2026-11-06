@@ -4,6 +4,7 @@
 */
 
 import type { SaBaiAPIEndpointsPatientsVisitsGetItem } from '../types/SaBaiAPIEndpointsPatientsVisitsGetItem'
+import { createSaBaiAPIEndpointsPatientsVisitJourney } from './createSaBaiAPIEndpointsPatientsVisitJourney'
 import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsPatientsVisitsGetItem<TData extends Partial<SaBaiAPIEndpointsPatientsVisitsGetItem> = object>(data?: TData)
@@ -19,6 +20,7 @@ export function createSaBaiAPIEndpointsPatientsVisitsGetItem<TData extends Parti
   villageName: faker.string.alpha(),
   villageColorHex: faker.string.alpha(),
   status: faker.string.alpha(),
+  journey: createSaBaiAPIEndpointsPatientsVisitJourney(),
 }
   return {
     ...defaultFakeData,

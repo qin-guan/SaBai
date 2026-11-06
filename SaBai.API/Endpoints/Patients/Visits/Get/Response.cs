@@ -3,7 +3,7 @@ namespace SaBai.API.Endpoints.Patients.Visits.Get;
 /// <summary>Visits for one patient, newest first.</summary>
 public sealed record Response(IReadOnlyList<Item> Visits);
 
-/// <summary>A visit joined to its patient and village.</summary>
+/// <summary>A visit joined to its patient and village, with where it is in the clinic flow.</summary>
 public sealed record Item(
     int Id,
     DateTimeOffset Date,
@@ -13,5 +13,6 @@ public sealed record Item(
     string VillageCode,
     string VillageName,
     string VillageColorHex,
-    string Status
+    string Status,
+    VisitJourney Journey
 );

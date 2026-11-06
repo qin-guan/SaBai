@@ -1,4 +1,6 @@
 import {
+  hasDrugAllergy,
+  isSameDay,
   formatPatientCode,
   formatPatientId,
   toDateInputValue,
@@ -88,3 +90,22 @@ describe("calculateAge", () => {
   });
 });
 
+
+describe("hasDrugAllergy", () => {
+  it("flags a recorded allergy", () => {
+    expect(hasDrugAllergy("Penicillin")).toBe(true);
+  });
+
+  it("ignores empty and 'none' answers", () => {
+    for (const value of [null, "", " ", "nil", "NKDA", "None", "-", "n/a"])
+      expect(hasDrugAllergy(value)).toBe(false);
+  });
+});
+
+describe("isSameDay", () => {
+  it("compares local calendar days", () => {
+    const now = new Date(2026, 10, 6, 9, 0);
+    expect(isSameDay(new Date(2026, 10, 6, 23, 59), now)).toBe(true);
+    expect(isSameDay(new Date(2026, 10, 5, 23, 59), now)).toBe(false);
+  });
+});

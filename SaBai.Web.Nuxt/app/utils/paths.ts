@@ -1,18 +1,24 @@
+import type { StationKey } from "./journey";
+
+const withVisit = (path: string, visitId?: number) =>
+  visitId === undefined ? path : `${path}?visit=${visitId}`;
+
 export const paths = {
   home: () => "/",
   login: () => "/login",
-  patient: () => "/patient",
+  /** The patient queue; `station` filters it to who that station is waiting for. */
+  patient: (station?: StationKey) => (station ? `/patient?station=${station}` : "/patient"),
   patientDetail: (patientId: number) => `/patient/${patientId}`,
   scanFace: () => "/scan-face",
   vitals: () => "/vitals",
-  vitalsDetail: (patientId: number, visitId?: number) =>
-    visitId === undefined ? `/vitals/${patientId}` : `/vitals/${patientId}?visit=${visitId}`,
+  vitalsDetail: (patientId: number, visitId?: number) => withVisit(`/vitals/${patientId}`, visitId),
   vision: () => "/vision",
-  visionUpdateGlasses: (patientId: number) => `/vision/update-glasses/${patientId}`,
+  visionUpdateGlasses: (patientId: number, visitId?: number) =>
+    withVisit(`/vision/update-glasses/${patientId}`, visitId),
   dental: () => "/dental",
-  dentalDetail: (patientId: number) => `/dental/${patientId}`,
+  dentalDetail: (patientId: number, visitId?: number) => withVisit(`/dental/${patientId}`, visitId),
   consults: () => "/consults",
-  consultsDetail: (patientId: number) => `/consults/${patientId}`,
+  consultsDetail: (patientId: number, visitId?: number) => withVisit(`/consults/${patientId}`, visitId),
   medicationStock: () => "/medication-stock",
   medicationBrands: () => "/medication-brands",
   medicationActiveIngredients: () => "/medication-active-ingredients",
@@ -21,19 +27,22 @@ export const paths = {
   settingsVillageCodes: () => "/settings/village-codes",
 };
 
-/** Which station page a patient search result should open, per page. */
-export type PatientLinkTarget = "patient" | "vitals" | "vision" | "consults" | "dental";
+/** Which page a patient link opens: their record, or one station's form. */
+export type PatientLinkTarget = "patient" | StationKey;
 
-export function patientLinkFor(target: PatientLinkTarget | undefined, patientId: number) {
+export function patientLinkFor(target: PatientLinkTarget | undefined, patientId: number, visitId?: number) {
   switch (target) {
     case "vitals":
-      return paths.vitalsDetail(patientId);
+      return paths.vitalsDetail(patientId, visitId);
     case "vision":
-      return paths.visionUpdateGlasses(patientId);
+      return paths.visionUpdateGlasses(patientId, visitId);
     case "consults":
-      return paths.consultsDetail(patientId);
+      return paths.consultsDetail(patientId, visitId);
     case "dental":
-      return paths.dentalDetail(patientId);
+      return paths.dentalDetail(patientId, visitId);
+    case "pharmacy":
+      // Dispensing has no per-patient screen yet; the orders page is the pharmacy station.
+      return paths.orders();
     default:
       return paths.patientDetail(patientId);
   }

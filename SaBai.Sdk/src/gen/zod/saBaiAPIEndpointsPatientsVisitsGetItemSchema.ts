@@ -4,6 +4,7 @@
 */
 
 import * as z from 'zod'
+import { saBaiAPIEndpointsPatientsVisitJourneySchema } from './saBaiAPIEndpointsPatientsVisitJourneySchema'
 
 export const saBaiAPIEndpointsPatientsVisitsGetItemSchema = z.object({
   id: z.int32(),
@@ -15,4 +16,5 @@ export const saBaiAPIEndpointsPatientsVisitsGetItemSchema = z.object({
   villageName: z.string(),
   villageColorHex: z.string(),
   status: z.string(),
+  journey: saBaiAPIEndpointsPatientsVisitJourneySchema,
 })

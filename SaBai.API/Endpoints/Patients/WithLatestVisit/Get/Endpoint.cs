@@ -44,6 +44,11 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<Response>
             })
             .ToListAsync(ct);
         var latest = await LatestVisitsAsync([.. rows.Select(x => x.Id)], ct);
+        var journeys = await VisitJourney.ForVisitsAsync(
+            db.Visits,
+            [.. latest.Values.Select(x => x.Id)],
+            ct
+        );
 
         var patients = rows.Select(x =>
             {
@@ -78,7 +83,8 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<Response>
                 x.Last?.Date,
                 x.Last?.Id,
                 x.Row.PhotoStoredFileName != null,
-                x.Row.LatestFaceId != null
+                x.Row.LatestFaceId != null,
+                x.Last is not null ? journeys.GetValueOrDefault(x.Last.Id) : null
             ))
             .ToList();
 

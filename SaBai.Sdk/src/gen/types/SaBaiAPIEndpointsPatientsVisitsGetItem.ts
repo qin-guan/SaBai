@@ -3,6 +3,8 @@
 * Do not edit manually.
 */
 
+import type { SaBaiAPIEndpointsPatientsVisitJourney } from './SaBaiAPIEndpointsPatientsVisitJourney'
+
 export type SaBaiAPIEndpointsPatientsVisitsGetItem = {
     /**
      * @description
@@ -33,4 +35,5 @@ export type SaBaiAPIEndpointsPatientsVisitsGetItem = {
     villageName: string;
     villageColorHex: string;
     status: string;
+    journey: SaBaiAPIEndpointsPatientsVisitJourney;
 };

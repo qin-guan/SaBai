@@ -31,6 +31,8 @@ const draft = useFormDraft(() => `dental:${props.visitId}`, form)
 const baseline = ref('')
 const isDirty = computed(() => JSON.stringify(form.value) !== baseline.value)
 const formEl = ref<HTMLFormElement>()
+// Times this form for the queue's wait estimates.
+const serviceTimer = useServiceTimer('dental', formEl, () => form.value)
 
 function load(values: DentalFormValues) {
   form.value = values
@@ -63,7 +65,10 @@ const save = useMutation({
       throwOnError: true,
     }).unwrap(),
   onSuccess: (saved) => {
+    serviceTimer.saved()
     queryClient.setQueryData(queryKeys.dental(props.visitId), saved)
+    // Refresh the journey bars and station queues.
+    queryClient.invalidateQueries({ queryKey: queryKeys.patients() })
     const values = toDentalFormValues(saved as DentalResponse)
     load(values)
     draft.clear(values)

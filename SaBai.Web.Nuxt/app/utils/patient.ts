@@ -47,3 +47,18 @@ export function patientMatches(
     (patient.identificationNumber?.toLowerCase() ?? "").includes(needle)
   );
 }
+
+/**
+ * True when a recorded drug allergy is a real allergy, not a "none" answer
+ * ("nil", "NKDA", "-", …), so it can be flagged in red.
+ */
+export function hasDrugAllergy(drugAllergy: string | null | undefined) {
+  const value = drugAllergy?.trim();
+  return !!value && !/^(nil|nkda|none|no|-|n\/a|na)$/i.test(value);
+}
+
+/** Whether a date falls on the same local calendar day as `now`. */
+export function isSameDay(date: Date | string, now = new Date()) {
+  const d = new Date(date);
+  return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+}

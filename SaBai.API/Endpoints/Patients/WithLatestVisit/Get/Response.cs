@@ -5,7 +5,7 @@ namespace SaBai.API.Endpoints.Patients.WithLatestVisit.Get;
 /// <summary>Patients with a visit first, then by latest visit date descending.</summary>
 public sealed record Response(IReadOnlyList<Item> Patients);
 
-/// <summary>A patient row including village color and latest visit.</summary>
+/// <summary>A patient row including village color, latest visit and where that visit is in the clinic flow.</summary>
 public sealed record Item(
     int Id,
     string Name,
@@ -26,5 +26,6 @@ public sealed record Item(
     DateTimeOffset? LastVisitDate,
     int? LastVisitId,
     bool HasPhoto,
-    bool HasFace
+    bool HasFace,
+    VisitJourney? LastVisitJourney
 );

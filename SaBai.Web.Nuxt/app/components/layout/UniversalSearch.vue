@@ -32,19 +32,15 @@ const patients = computed(() => patientsData.value?.patients ?? [])
 const patientsById = computed(() => new Map(patients.value.map(p => [p.id, p])))
 const patientIndex = computed(() => buildPatientIndex(patients.value))
 
-const pages = [...NAV_ITEMS, ...SUB_PAGES]
+const pages = [...ALL_NAV_ITEMS, ...SUB_PAGES]
 const pageIndex = buildPageIndex(pages.map(p => ({ id: p.href, title: p.name, keywords: p.keywords })))
 
 const { recentIds, remember } = useRecentPatients()
 
-const stationTarget = computed(() => route.meta.patientLink as PatientLinkTarget | undefined)
-const stationName = computed(() => ({
-  vitals: 'Vitals',
-  vision: 'Vision',
-  consults: 'Consults',
-  dental: 'Dental',
-  patient: 'patient record',
-})[stationTarget.value ?? 'patient'])
+const stationTarget = computed(() => patientTargetFor(route))
+const stationName = computed(() =>
+  stationTarget.value === 'patient' ? 'patient record' : stationLabel(stationTarget.value),
+)
 
 type Patient = (typeof patients.value)[number]
 interface Item {
@@ -104,7 +100,7 @@ const groups = computed<Group[]>(() => {
     const recent = recentIds.value.map(id => patientsById.value.get(id)).filter((p): p is Patient => !!p)
     return [
       { title: 'Recent patients', items: recent.map(patientItem) },
-      { title: 'Go to', items: NAV_ITEMS.map(pageItem) },
+      { title: 'Go to', items: ALL_NAV_ITEMS.map(pageItem) },
     ].filter(g => g.items.length)
   }
   const patientHits = searchIndex(patientIndex.value, q)

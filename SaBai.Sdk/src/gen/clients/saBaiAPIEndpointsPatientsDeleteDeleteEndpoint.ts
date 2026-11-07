@@ -8,11 +8,12 @@ import type { SaBaiAPIEndpointsPatientsDeleteDeleteEndpointOptions, SaBaiAPIEndp
 import { client, withUnwrap } from '../.kubb/client'
 
 /**
- * @summary Delete a patient
+ * @description Admin only. Removes the patient's visits, consults, orders, files, photo and faces.
+ * @summary Permanently delete a patient and all of their records
  * {@link /patients/:id}
  */
 export function saBaiAPIEndpointsPatientsDeleteDeleteEndpoint<ThrowOnError extends boolean = true>(options: Options<SaBaiAPIEndpointsPatientsDeleteDeleteEndpointOptions, ThrowOnError>): Unwrappable<RequestResult<SaBaiAPIEndpointsPatientsDeleteDeleteEndpointResponses, ThrowOnError>> {
   const { client: request = client, ...config } = options
 
-  return withUnwrap(request({ method: 'DELETE', url: '/patients/{id}', security: [{ type: 'apiKey', name: 'sabai.auth', in: 'cookie', scopes: ['admin', 'member'] }], ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<SaBaiAPIEndpointsPatientsDeleteDeleteEndpointResponses, ThrowOnError>>)
+  return withUnwrap(request({ method: 'DELETE', url: '/patients/{id}', security: [{ type: 'apiKey', name: 'sabai.auth', in: 'cookie', scopes: ['admin'] }], ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<SaBaiAPIEndpointsPatientsDeleteDeleteEndpointResponses, ThrowOnError>>)
 }

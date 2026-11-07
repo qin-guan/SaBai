@@ -34,7 +34,11 @@ useHead({ title: () => `${patient.value?.name ?? 'Patient'} · Sa'Bai` })
       <PageHeader
         :title="patient.name"
         :breadcrumbs="[{ label: 'Home', to: '/' }, { label: 'Patients', to: paths.patient() }, { label: patient.name }]"
-      />
+      >
+        <template #actions>
+          <DeletePatientButton v-if="!visitsLoading" :patient="patient" :visit-count="visits.length" />
+        </template>
+      </PageHeader>
       <PatientBanner :patient="patient" />
 
       <div class="grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] xl:items-start">

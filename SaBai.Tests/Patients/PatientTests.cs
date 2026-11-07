@@ -196,23 +196,6 @@ public sealed class PatientTests(AppFixture fixture)
     }
 
     [Test]
-    public async Task Delete_WhenVisitExists_ReturnsConflict()
-    {
-        // Arrange
-        var client = fixture.CreateApiClient();
-        await client.LoginAsync();
-        var code = ClinicSamples.Code();
-        var village = await ClinicSamples.CreateVillageAsync(client, code);
-        var patient = await ClinicSamples.RegisterAsync(client, village.Id, $"Kept {code}");
-
-        // Act
-        var deleted = await client.DeleteAsync($"/patients/{patient.Id}");
-
-        // Assert
-        await Assert.That(deleted.StatusCode).IsEqualTo(HttpStatusCode.Conflict);
-    }
-
-    [Test]
     public async Task Get_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange

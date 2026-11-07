@@ -13,6 +13,7 @@ import withDefaultLayout from "@/components/layouts/withDefaultLayout";
 import { useState } from "react";
 import Modal from "@/components/interactive/Modal";
 import EditPatientForm from "@/components/patient/EditPatientForm";
+import DeletePatientButton from "@/components/patient/DeletePatientButton";
 import { Button } from "@/components/interactive/Button/Button";
 
 function parsePatientId(id: string | string[] | undefined) {
@@ -115,6 +116,9 @@ export default function PatientPage() {
               onClick={() => setIsEditingPatient(true)}
               className="shrink-0"
             />
+            {!visitsLoading && (
+              <DeletePatientButton patient={patient} visitCount={visits.length} />
+            )}
           </div>
 
           {isEditingPatient && (

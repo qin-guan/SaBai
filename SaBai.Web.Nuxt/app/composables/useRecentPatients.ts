@@ -18,17 +18,26 @@ function read(): number[] {
 export function useRecentPatients() {
   const ids = useState<number[]>('recent-patients', () => (import.meta.client ? read() : []))
 
-  function remember(id: number | null | undefined) {
-    if (!id)
-      return
-    ids.value = [id, ...ids.value.filter(x => x !== id)].slice(0, MAX)
+  function save(next: number[]) {
+    ids.value = next
     try {
-      window.localStorage.setItem(KEY, JSON.stringify(ids.value))
+      window.localStorage.setItem(KEY, JSON.stringify(next))
     }
     catch {}
   }
 
-  return { recentIds: readonly(ids), remember }
+  function remember(id: number | null | undefined) {
+    if (!id)
+      return
+    save([id, ...ids.value.filter(x => x !== id)].slice(0, MAX))
+  }
+
+  /** Drops a patient from the list, e.g. after they are deleted. */
+  function forget(id: number) {
+    save(ids.value.filter(x => x !== id))
+  }
+
+  return { recentIds: readonly(ids), remember, forget }
 }
 
 /** Remembers the patient whose page is open. */

@@ -1178,8 +1178,8 @@ export function getServer() {
 
 
   server.registerTool("SaBaiAPIEndpointsPatientsDeleteDeleteEndpoint", {
-    title: "Delete a patient",
-    description: "Make a DELETE request to /patients/{id}",
+    title: "Permanently delete a patient and all of their records",
+    description: "Admin only. Removes the patient's visits, consults, orders, files, photo and faces.",
     outputSchema: z.object({ data: saBaiAPIEndpointsPatientsDeleteDeleteEndpointStatus204Schema }),
     inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsPatientsDeleteDeleteEndpointPathIdSchema }) }),
   }, async ({ path }, ctx) => {

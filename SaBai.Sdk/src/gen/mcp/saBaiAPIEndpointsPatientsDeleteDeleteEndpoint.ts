@@ -8,7 +8,8 @@ import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server
 import { saBaiAPIEndpointsPatientsDeleteDeleteEndpoint } from '../clients/saBaiAPIEndpointsPatientsDeleteDeleteEndpoint'
 
 /**
- * @summary Delete a patient
+ * @description Admin only. Removes the patient's visits, consults, orders, files, photo and faces.
+ * @summary Permanently delete a patient and all of their records
  * {@link /patients/:id}
  */
 export async function saBaiAPIEndpointsPatientsDeleteDeleteEndpointHandler({ path }: SaBaiAPIEndpointsPatientsDeleteDeleteEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {

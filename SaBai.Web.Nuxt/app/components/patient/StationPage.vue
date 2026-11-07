@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 /**
  * Frame for a per-patient station screen: page header, patient banner (with
- * "Edit Patient Details" and a link to the full record), visit selector, the
+ * "Edit details" and a link to the full record), visit selector, the
  * visit's journey (where the patient has been and goes next — each step opens
  * that station on the same visit), then the station form in the default slot
  * (rendered only once a visit is chosen).
@@ -31,7 +31,7 @@ const isEditing = ref(false)
 const crumbs = computed<Crumb[]>(() => [
   { label: 'Home', to: '/' },
   { label: stationLabel(props.station), to: paths.patient(props.station) },
-  { label: props.patient ? `${props.title} — ${props.patient.name}` : props.title },
+  { label: props.patient?.name ?? props.title },
 ])
 
 useHead({ title: () => `${props.title}${props.patient ? ` — ${props.patient.name}` : ''} · Sa'Bai` })
@@ -47,7 +47,7 @@ useHead({ title: () => `${props.title}${props.patient ? ` — ${props.patient.na
     </div>
     <StateMessage v-else-if="!props.patient" kind="error" message="Patient not found" />
     <template v-else>
-      <PageHeader :title="`${props.title} — ${props.patient.name}`" :breadcrumbs="crumbs" />
+      <PageHeader :title="`${props.title} — ${props.patient.name}`" :breadcrumbs="crumbs" hide-title />
       <PatientBanner :patient="props.patient">
         <template #actions>
           <Button v-if="props.allowEdit" variant="outline" @click="isEditing = true">
@@ -65,19 +65,26 @@ useHead({ title: () => `${props.title}${props.patient ? ` — ${props.patient.na
         :visits="props.visits"
         :summary-prefix="props.summaryPrefix"
         :empty-message="props.emptyMessage"
-      />
-      <div
-        v-if="props.selectedVisit"
-        class="mb-3 flex flex-col gap-1.5 border border-border bg-card px-3 py-2 sm:flex-row sm:items-center sm:gap-3"
       >
-        <span class="text-xs font-semibold whitespace-nowrap touch:text-sm">Journey</span>
-        <JourneyTracker
-          :journey="props.selectedVisit.journey"
-          :patient-id="props.patient.id"
-          :visit-id="props.selectedVisit.id"
-          :active="props.station"
-        />
-      </div>
+        <template v-if="props.selectedVisit">
+          <!-- Phones: one row of equal steps instead of three wrapped lines. -->
+          <JourneyTracker
+            class="sm:hidden"
+            :journey="props.selectedVisit.journey"
+            :patient-id="props.patient.id"
+            :visit-id="props.selectedVisit.id"
+            :active="props.station"
+            size="compact"
+          />
+          <JourneyTracker
+            class="max-sm:hidden"
+            :journey="props.selectedVisit.journey"
+            :patient-id="props.patient.id"
+            :visit-id="props.selectedVisit.id"
+            :active="props.station"
+          />
+        </template>
+      </VisitSelector>
       <slot v-if="props.selectedVisit" :visit="props.selectedVisit" :patient="props.patient" />
       <div
         v-else-if="props.visits && props.visits.length > 0"

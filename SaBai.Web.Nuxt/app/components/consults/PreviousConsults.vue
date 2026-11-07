@@ -29,7 +29,7 @@ const trailing = [
       </p>
       <template v-for="f in fields" :key="f.key">
         <div v-if="consult[f.key]">
-          <p class="text-[0.6875rem] touch:text-xs font-bold uppercase tracking-wide text-muted-foreground">
+          <p class="text-[0.6875rem] touch:text-xs font-semibold text-muted-foreground">
             {{ f.label }}
           </p>
           <p class="whitespace-pre-wrap break-words">
@@ -38,7 +38,7 @@ const trailing = [
         </div>
       </template>
       <div v-if="consult.diagnoses.length > 0">
-        <p class="text-[0.6875rem] touch:text-xs font-bold uppercase tracking-wide text-muted-foreground">
+        <p class="text-[0.6875rem] touch:text-xs font-semibold text-muted-foreground">
           Diagnoses
         </p>
         <ul class="mt-0.5 flex flex-col gap-0.5">
@@ -49,7 +49,7 @@ const trailing = [
       </div>
       <template v-for="f in trailing" :key="f.key">
         <div v-if="consult[f.key]">
-          <p class="text-[0.6875rem] touch:text-xs font-bold uppercase tracking-wide text-muted-foreground">
+          <p class="text-[0.6875rem] touch:text-xs font-semibold text-muted-foreground">
             {{ f.label }}
           </p>
           <p class="whitespace-pre-wrap break-words">

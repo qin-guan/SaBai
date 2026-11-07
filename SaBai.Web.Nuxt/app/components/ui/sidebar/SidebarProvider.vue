@@ -11,7 +11,16 @@ const props = withDefaults(defineProps<{
   open?: boolean
   class?: HTMLAttributes['class']
 }>(), {
-  defaultOpen: !defaultDocument?.cookie.includes(`${SIDEBAR_COOKIE_NAME}=false`),
+  // An explicit choice (cookie) wins; otherwise start as an icon rail on
+  // tablet-width screens so the work area gets the room, expanded on laptops.
+  defaultOpen: () => {
+    const cookie = defaultDocument?.cookie ?? ''
+    if (cookie.includes(`${SIDEBAR_COOKIE_NAME}=false`))
+      return false
+    if (cookie.includes(`${SIDEBAR_COOKIE_NAME}=true`))
+      return true
+    return typeof window === 'undefined' || window.innerWidth >= 1100
+  },
   open: undefined,
 })
 

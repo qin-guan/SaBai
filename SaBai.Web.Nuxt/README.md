@@ -2,8 +2,10 @@
 
 Nuxt 4 port of `SaBai.Web` (Next.js). Same features and API calls, with a
 utilitarian clinical UI modelled on EHR software (EPIC Hyperspace) and built on
-shadcn-vue's **Lyra** style (`reka-lyra`: square corners, compact controls,
-JetBrains Mono).
+shadcn-vue's **Lyra** style (`reka-lyra`: square corners, compact controls).
+Text is set in **Atkinson Hyperlegible Next**, with **Atkinson Hyperlegible
+Mono** for IDs and codes: both were drawn so look-alike characters (1/l/I, 0/O,
+5/S) never get confused, which matters for patient IDs, doses and readings.
 
 ## Run
 
@@ -121,11 +123,22 @@ reload or closed tab does not lose work. A restored draft is announced with a
 and — together with recent patients — are wiped on sign-out because they hold
 patient data.
 
+## Screen sizes
+
+- **Laptops (13–15")**: the patient list is a column grid (patient, ID,
+  age/sex, arrival time and time in clinic, journey) with ~40px rows, and data
+  tables use ~36px rows. Station screens put the visit picker and journey in
+  one strip under the patient banner so the form starts higher.
+- **Tablets**: below 1100px the sidebar starts as an icon rail (Ctrl/⌘+B or the
+  toggle expands it; the choice is remembered). The patient list folds ID, age
+  and arrival into one line under the name, with the journey beside it.
+
 ## Phones
 
 Below 640px (or on any touch screen) the dense desktop sizing steps up: body
 text 15px, labels/hints 14px, inputs 16px (no iOS zoom-on-focus) and every
-control 44px tall. Form grids collapse to one column, the sidebar becomes a
+control 44px tall. Form grids collapse to one column (short numeric vitals stay two
+per row), the station journey becomes one row of equal steps, the sidebar becomes a
 drawer, worklists become tappable rows, wide tables (stock, ingredients,
 brands, village codes) stack into labelled cards, dialogs go full-screen and
 the save bar sticks to the bottom with full-width buttons. Keyboard hints are

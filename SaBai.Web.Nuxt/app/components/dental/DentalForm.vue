@@ -150,7 +150,7 @@ const extraIds = { brushingFrequency: useId(), sugarConsumption: useId(), referr
       </AppPanel>
 
       <AppPanel :id="SECTIONS[2].id" :step="3" :title="SECTIONS[2].title">
-        <h3 class="mb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground touch:text-sm">
+        <h3 class="mb-2 text-xs font-semibold text-muted-foreground touch:text-sm">
           A. Extraoral examination
         </h3>
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -165,7 +165,7 @@ const extraIds = { brushingFrequency: useId(), sugarConsumption: useId(), referr
             </NativeSelect>
           </FormField>
         </div>
-        <h3 class="mt-4 mb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground touch:text-sm">
+        <h3 class="mt-4 mb-2 text-xs font-semibold text-muted-foreground touch:text-sm">
           B. Intraoral examination
         </h3>
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -203,7 +203,7 @@ const extraIds = { brushingFrequency: useId(), sugarConsumption: useId(), referr
       </AppPanel>
 
       <AppPanel :id="SECTIONS[4].id" :step="5" :title="SECTIONS[4].title" flush>
-        <div class="hidden grid-cols-[6rem_11rem_1fr_1fr_1fr] gap-2 border-b border-border bg-stripe px-3 py-1 text-[0.6875rem] touch:text-xs font-bold uppercase tracking-wide text-muted-foreground md:grid" aria-hidden="true">
+        <div class="hidden grid-cols-[6rem_11rem_1fr_1fr_1fr] gap-2 border-b border-border bg-stripe px-3 py-1 text-[0.6875rem] touch:text-xs font-semibold text-muted-foreground md:grid" aria-hidden="true">
           <span>Treatment</span><span>Status</span><span>Date</span><span>Operator</span><span>Tooth no.</span>
         </div>
         <div

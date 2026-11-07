@@ -152,10 +152,24 @@ const emptyMessage = computed(() => {
 })
 
 const timeOf = (date: string) => new Date(date).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
-const dateOf = (date: string) => (isSameDay(date) ? `Arrived ${timeOf(date)}` : `Last visit ${new Date(date).toLocaleDateString()}`)
+const dateOf = (date: string) => (isSameDay(date) ? timeOf(date) : new Date(date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: '2-digit' }))
 
-// One grid for the heading and every row, so columns line up.
-const gridCols = 'md:grid-cols-[2.75rem_minmax(0,1fr)_minmax(0,20rem)_1rem]'
+/** Time in clinic so far ("42 min", "1 h 05"), for today's arrivals only. */
+function waited(date: string | null) {
+  if (!date || !isSameDay(date))
+    return ''
+  const minutes = Math.max(0, Math.floor((now.value.getTime() - new Date(date).getTime()) / 60_000))
+  return minutes < 60 ? `${minutes} min` : `${Math.floor(minutes / 60)} h ${String(minutes % 60).padStart(2, '0')}`
+}
+const arrivedLabel = computed(() => (scope.value === 'today' ? 'Arrived' : 'Last visit'))
+
+/*
+ * One grid for the heading and every row, so columns line up:
+ *   phone   photo | patient (meta below)     | ›     journey on its own line
+ *   tablet  photo | patient (meta below)     | journey | ›
+ *   laptop  photo | patient | ID | age | arrived | journey | ›
+ */
+const gridCols = 'md:grid-cols-[2rem_minmax(0,1fr)_minmax(15rem,22rem)_1rem] lg:grid-cols-[2rem_minmax(9rem,1fr)_5.5rem_4rem_8.5rem_minmax(17rem,24rem)_1rem]'
 </script>
 
 <template>
@@ -177,27 +191,27 @@ const gridCols = 'md:grid-cols-[2.75rem_minmax(0,1fr)_minmax(0,20rem)_1rem]'
     </PageHeader>
 
     <!--
-      Summary first: one card per station picks that worklist (the same page,
+      Summary first: one cell per station picks that worklist (the same page,
       filtered) and shows how many are waiting and roughly how long someone
       sent there now would wait.
     -->
-    <nav aria-label="Stations" class="grid grid-cols-2 gap-px border border-border bg-border sm:grid-cols-3 lg:grid-cols-6">
+    <nav aria-label="Stations" class="grid grid-cols-3 gap-px border border-border bg-border lg:grid-cols-6">
       <NuxtLink
         v-for="card in stationCards"
         :key="card.key ?? 'all'"
         :to="queryWith('station', card.key)"
-        class="flex flex-col gap-1 bg-card px-3 py-2 hover:bg-accent focus-visible:bg-accent"
+        class="flex min-w-0 flex-col gap-0.5 bg-card px-2.5 py-1.5 hover:bg-accent focus-visible:bg-accent sm:px-3"
         :class="station === card.key && 'bg-accent shadow-[inset_0_-3px_0_var(--color-primary)]'"
         :aria-current="station === card.key ? 'page' : undefined"
         :title="card.note"
       >
         <span class="flex items-baseline justify-between gap-2">
-          <span class="text-[0.6875rem] font-bold tracking-wide text-chrome uppercase touch:text-xs">{{ card.label }}</span>
-          <span class="text-lg leading-none font-bold tabular-nums" :class="card.count === 0 && 'text-muted-foreground'">
+          <span class="truncate text-xs font-bold text-chrome touch:text-sm">{{ card.label }}</span>
+          <span class="text-lg leading-tight font-bold tabular-nums" :class="card.count === 0 && 'text-muted-foreground'">
             {{ isLoading ? '–' : card.count }}
           </span>
         </span>
-        <span class="text-xs text-muted-foreground tabular-nums touch:text-sm">{{ card.detail }}</span>
+        <span class="truncate text-xs text-muted-foreground tabular-nums touch:text-[0.8125rem]">{{ card.detail }}</span>
         <span v-if="card.note" class="sr-only">{{ card.note }}</span>
       </NuxtLink>
     </nav>
@@ -213,20 +227,22 @@ const gridCols = 'md:grid-cols-[2.75rem_minmax(0,1fr)_minmax(0,20rem)_1rem]'
           <PhMagnifyingGlass class="pointer-events-none absolute top-1/2 left-2 size-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
           <Input v-model="filter" type="search" class="h-7 bg-card pl-7 text-xs touch:h-11" placeholder="Name, ID or phone" aria-label="Filter patients" />
         </div>
-        <Segmented
-          v-if="station"
-          label="Show"
-          :options="SHOW_OPTIONS.map(o => ({ ...o, to: queryWith('show', o.value === 'waiting' ? undefined : o.value) }))"
-          :value="show"
-        />
-        <Segmented
-          label="Visits"
-          :options="[
-            { value: 'today', label: 'Today', to: queryWith('scope', undefined) },
-            { value: 'all', label: 'All time', to: queryWith('scope', 'all') },
-          ]"
-          :value="scope"
-        />
+        <div class="flex flex-wrap gap-2">
+          <Segmented
+            v-if="station"
+            label="Show"
+            :options="SHOW_OPTIONS.map(o => ({ ...o, to: queryWith('show', o.value === 'waiting' ? undefined : o.value) }))"
+            :value="show"
+          />
+          <Segmented
+            label="Visits"
+            :options="[
+              { value: 'today', label: 'Today', to: queryWith('scope', undefined) },
+              { value: 'all', label: 'All time', to: queryWith('scope', 'all') },
+            ]"
+            :value="scope"
+          />
+        </div>
       </template>
 
       <StateMessage v-if="isError" kind="error" message="Patients could not be loaded. Check the connection and reload." />
@@ -242,14 +258,17 @@ const gridCols = 'md:grid-cols-[2.75rem_minmax(0,1fr)_minmax(0,20rem)_1rem]'
         </Button>
       </div>
       <template v-else>
-        <!-- Column headings (wide screens); rows share the same grid. -->
+        <!-- Column headings (tablet and up); rows share the same grid. -->
         <div
-          class="hidden border-b border-border bg-muted/50 px-3 py-1 text-[0.6875rem] font-semibold tracking-wide text-muted-foreground uppercase md:grid md:gap-x-4"
+          class="sticky top-[var(--app-header-h)] z-[2] hidden gap-x-3 border-b border-input bg-band px-3 py-1 text-xs font-semibold text-chrome md:grid"
           :class="gridCols"
           aria-hidden="true"
         >
           <span />
           <span>Patient</span>
+          <span class="hidden lg:block">ID</span>
+          <span class="hidden lg:block">Age / sex</span>
+          <span class="hidden lg:block">{{ arrivedLabel }}</span>
           <span>Journey</span>
           <span />
         </div>
@@ -258,41 +277,58 @@ const gridCols = 'md:grid-cols-[2.75rem_minmax(0,1fr)_minmax(0,20rem)_1rem]'
             <!-- The whole row is the link: one target per patient, no repeated buttons. -->
             <NuxtLink
               :to="rowLink(patient)"
-              class="group grid grid-cols-[2.75rem_minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 px-3 py-2.5 hover:bg-accent/60 focus-visible:bg-accent focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+              class="group grid grid-cols-[2.5rem_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1.5 px-3 py-2 hover:bg-accent/60 focus-visible:bg-accent focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring md:py-1.5 lg:py-1"
               :class="gridCols"
             >
               <span class="sr-only">{{ station ? `Open ${stationLabel(station)}:` : 'Open record:' }}</span>
-              <PatientPhoto :patient-id="patient.id" :has-photo="patient.hasPhoto" :size="44" alt="" />
+              <span class="flex size-10 overflow-hidden md:size-8 [&>*]:size-full!">
+                <PatientPhoto :patient-id="patient.id" :has-photo="patient.hasPhoto" :size="40" alt="" />
+              </span>
 
               <div class="min-w-0">
-                <p class="flex min-w-0 items-center gap-2">
-                  <span class="truncate text-sm font-semibold group-hover:text-primary touch:text-base">{{ patient.name }}</span>
+                <p class="flex min-w-0 items-center gap-1.5">
+                  <span class="min-w-[4ch] shrink truncate text-sm font-semibold group-hover:text-primary touch:text-base">{{ patient.name }}</span>
                   <span
                     v-if="hasDrugAllergy(patient.drugAllergy)"
-                    class="inline-flex shrink-0 items-center gap-1 border border-destructive bg-destructive-subtle px-1 text-[0.6875rem] font-semibold text-destructive touch:text-xs"
+                    class="inline-flex max-w-[55%] shrink-0 items-center gap-1 border border-destructive bg-destructive-subtle px-1 text-[0.6875rem] font-semibold text-destructive touch:text-xs"
                     :title="`Drug allergy: ${patient.drugAllergy}`"
                   >
-                    <PhWarning class="size-3" aria-hidden="true" />
-                    <span class="max-w-32 truncate">{{ patient.drugAllergy }}</span>
+                    <PhWarning class="size-3 shrink-0" aria-hidden="true" />
+                    <span class="truncate"><span class="sr-only">Drug allergy: </span>{{ patient.drugAllergy }}</span>
                   </span>
                 </p>
-                <p class="flex flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground touch:text-sm">
+                <!-- Below laptop width the columns fold into one meta line. -->
+                <p class="flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground lg:hidden touch:text-[0.8125rem]">
                   <PatientCode :village-code="patient.villageCode" :village-color-hex="patient.villageColorHex" :id="patient.id" />
-                  <span aria-hidden="true">·</span>
                   <span>{{ calculateAge(patient.dateOfBirth) }} y <span class="capitalize">{{ patient.gender }}</span></span>
-                  <template v-if="patient.lastVisitDate">
-                    <span aria-hidden="true">·</span>
-                    <span>{{ dateOf(patient.lastVisitDate) }}</span>
-                  </template>
+                  <span v-if="patient.lastVisitDate" class="tabular-nums">
+                    {{ dateOf(patient.lastVisitDate) }}<template v-if="waited(patient.lastVisitDate)">
+                      <span> · {{ waited(patient.lastVisitDate) }}</span>
+                    </template>
+                  </span>
                 </p>
               </div>
+
+              <span class="hidden text-xs text-muted-foreground lg:block">
+                <PatientCode :village-code="patient.villageCode" :village-color-hex="patient.villageColorHex" :id="patient.id" />
+              </span>
+              <span class="hidden text-xs lg:block">
+                {{ calculateAge(patient.dateOfBirth) }} y <span class="text-muted-foreground">{{ patient.gender === 'female' ? 'F' : 'M' }}</span>
+              </span>
+              <span class="hidden text-xs whitespace-nowrap tabular-nums lg:block">
+                <template v-if="patient.lastVisitDate">
+                  {{ dateOf(patient.lastVisitDate) }}
+                  <span v-if="waited(patient.lastVisitDate)" class="text-muted-foreground" :title="`In clinic for ${waited(patient.lastVisitDate)}`">· {{ waited(patient.lastVisitDate) }}</span>
+                </template>
+                <span v-else class="text-muted-foreground">—</span>
+              </span>
 
               <PhCaretRight
                 class="size-4 text-muted-foreground group-hover:text-primary md:hidden"
                 aria-hidden="true"
               />
 
-              <div class="col-span-3 min-w-0 md:col-span-1 md:col-start-3 md:row-start-1">
+              <div class="col-span-3 min-w-0 md:col-span-1 md:col-start-3 md:row-start-1 lg:col-start-6">
                 <JourneyTracker
                   v-if="patient.lastVisitJourney && patient.lastVisitId"
                   :journey="patient.lastVisitJourney"
@@ -306,7 +342,7 @@ const gridCols = 'md:grid-cols-[2.75rem_minmax(0,1fr)_minmax(0,20rem)_1rem]'
               </div>
 
               <PhCaretRight
-                class="hidden size-4 text-muted-foreground group-hover:text-primary md:col-start-4 md:block"
+                class="hidden size-4 text-muted-foreground group-hover:text-primary md:col-start-4 md:block lg:col-start-7"
                 aria-hidden="true"
               />
             </NuxtLink>

@@ -222,7 +222,7 @@ const resultSummary = computed(() => {
             <template v-for="group in groups" :key="group.title">
               <li
                 role="presentation"
-                class="flex items-center gap-1.5 px-3 pt-2 pb-1 text-[0.6875rem] font-bold tracking-wide text-chrome uppercase touch:text-xs"
+                class="flex items-center gap-1.5 px-3 pt-2 pb-1 text-xs font-semibold text-chrome touch:text-xs"
               >
                 <PhClockCounterClockwise v-if="group.title === 'Recent patients'" class="size-3.5" aria-hidden="true" />
                 {{ group.title }}

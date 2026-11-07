@@ -34,6 +34,7 @@ useHead({ title: () => `${patient.value?.name ?? 'Patient'} · Sa'Bai` })
       <PageHeader
         :title="patient.name"
         :breadcrumbs="[{ label: 'Home', to: '/' }, { label: 'Patients', to: paths.patient() }, { label: patient.name }]"
+        hide-title
       />
       <PatientBanner :patient="patient" />
 

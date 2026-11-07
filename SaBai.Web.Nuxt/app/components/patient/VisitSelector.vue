@@ -18,21 +18,26 @@ const selected = computed(() => props.visits?.find(v => v.id.toString() === mode
 <template>
   <div class="mb-3 border border-border bg-card px-3 py-2">
     <StateMessage v-if="!props.visits || props.visits.length === 0" kind="warning" :message="props.emptyMessage" />
-    <div v-else class="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-      <label :for="id" class="text-xs font-semibold whitespace-nowrap touch:text-sm">Choose visit</label>
-      <div class="w-full sm:max-w-xs">
-        <NativeSelect :id="id" v-model="model">
-          <NativeSelectOption value="">
-            Select a visit
-          </NativeSelectOption>
-          <NativeSelectOption v-for="visit in props.visits" :key="visit.id" :value="visit.id.toString()">
-            Visit {{ props.visits.length - props.visits.indexOf(visit) }} · {{ formatVisitDate(visit.date) }} — {{ visit.villageName }}
-          </NativeSelectOption>
-        </NativeSelect>
+    <div v-else class="flex flex-col gap-2 lg:flex-row lg:items-center lg:gap-4">
+      <div class="flex min-w-0 flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
+        <label :for="id" class="text-xs font-semibold whitespace-nowrap touch:text-sm">Visit</label>
+        <div class="w-full sm:w-72">
+          <NativeSelect :id="id" v-model="model">
+            <NativeSelectOption value="">
+              Select a visit
+            </NativeSelectOption>
+            <NativeSelectOption v-for="visit in props.visits" :key="visit.id" :value="visit.id.toString()">
+              #{{ props.visits.length - props.visits.indexOf(visit) }} · {{ formatVisitDate(visit.date) }} · {{ visit.villageName }}
+            </NativeSelectOption>
+          </NativeSelect>
+        </div>
       </div>
-      <p v-if="props.summaryPrefix" class="text-xs text-muted-foreground touch:text-sm" aria-live="polite">
-        {{ props.summaryPrefix }}
-        <span class="font-semibold text-foreground">{{ selected ? formatVisitDate(selected.date) : '-' }}</span>
+      <!-- The visit's journey sits beside the picker (one strip instead of two). -->
+      <div v-if="$slots.default" class="min-w-0 border-border lg:border-l lg:pl-4">
+        <slot />
+      </div>
+      <p v-if="props.summaryPrefix" class="sr-only" aria-live="polite">
+        {{ props.summaryPrefix }} {{ selected ? formatVisitDate(selected.date) : '-' }}
       </p>
     </div>
   </div>

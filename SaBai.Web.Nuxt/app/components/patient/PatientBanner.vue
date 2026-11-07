@@ -26,9 +26,9 @@ const cards = computed(() =>
     class="mb-3 flex flex-col gap-2 border border-band-border bg-banner px-3 py-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4"
   >
     <div class="flex min-w-0 items-center gap-3 sm:flex-1">
-    <PatientPhoto :patient-id="props.patient.id" :has-photo="props.patient.hasPhoto" :size="56" alt="" zoomable :name="props.patient.name" />
+    <PatientPhoto :patient-id="props.patient.id" :has-photo="props.patient.hasPhoto" :size="48" alt="" zoomable :name="props.patient.name" />
     <div class="min-w-0 flex-1">
-      <p class="text-base font-bold leading-tight break-words">
+      <p class="text-base font-bold leading-tight break-words sm:text-lg">
         {{ props.patient.name }}
       </p>
       <dl class="mt-0.5 flex flex-wrap gap-x-4 gap-y-0.5 text-xs touch:text-sm">
@@ -37,7 +37,7 @@ const cards = computed(() =>
             ID
           </dt>
           <dd class="font-mono font-semibold">
-            {{ formatPatientId(props.patient.id) }}
+            {{ formatPatientCode(props.patient.villageCode, props.patient.id) }}
           </dd>
         </div>
         <div class="flex gap-1">
@@ -76,7 +76,7 @@ const cards = computed(() =>
       <PhWarning v-if="hasAllergy" class="size-4" aria-hidden="true" />
       <span>Allergies: {{ allergy || 'Not recorded' }}</span>
     </div>
-    <div v-if="$slots.actions" class="flex flex-wrap gap-2">
+    <div v-if="$slots.actions" class="flex flex-wrap gap-2 max-sm:[&>*]:flex-1">
       <slot name="actions" />
     </div>
   </section>

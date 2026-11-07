@@ -172,7 +172,7 @@ useSaveShortcut(submit)
           :key="section.title"
           class="grid grid-cols-1 gap-3 py-3 first:pt-0 md:grid-cols-[12rem_1fr_1fr] md:items-start"
         >
-          <h3 class="text-xs font-bold uppercase tracking-wide text-chrome md:pt-6 touch:text-sm">
+          <h3 class="text-[0.8125rem] font-bold text-chrome md:pt-6 touch:text-sm">
             {{ section.title }}
           </h3>
           <FormField

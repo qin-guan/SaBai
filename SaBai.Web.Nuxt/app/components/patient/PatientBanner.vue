@@ -18,10 +18,8 @@ const cards = computed(() =>
 </script>
 
 <template>
-  <section
-    aria-label="Patient"
-    class="mb-3 flex flex-col gap-2 border border-band-border bg-banner px-3 py-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4"
-  >
+  <section aria-label="Patient" class="mb-3 border border-band-border bg-banner">
+    <div class="flex flex-col gap-2 px-3 py-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4">
     <div class="flex min-w-0 items-center gap-3 sm:flex-1">
     <PatientPhoto :patient-id="props.patient.id" :has-photo="props.patient.hasPhoto" :size="48" alt="" zoomable :name="props.patient.name" />
     <div class="min-w-0 flex-1">
@@ -66,9 +64,11 @@ const cards = computed(() =>
       </dl>
     </div>
     </div>
-    <AllergyFlag :allergy="props.patient.drugAllergy" variant="full" class="sm:max-w-sm" />
     <div v-if="$slots.actions" class="flex flex-wrap gap-2 max-sm:[&>*]:flex-1">
       <slot name="actions" />
     </div>
+    </div>
+    <!-- Like a red allergy wristband: always attached to the patient, full width. -->
+    <AllergyFlag :allergy="props.patient.drugAllergy" variant="full" />
   </section>
 </template>

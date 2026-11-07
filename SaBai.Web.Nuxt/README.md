@@ -101,9 +101,11 @@ content stays mounted, so typed input is kept.
 
 The free-text answer is split into separate allergies
 (`parseDrugAllergies`: commas, semicolons, slashes, new lines, "and"). Lists
-show one fixed-width chip with the first allergy and a "+N" count (an
-*Allergies* column on laptops); the patient banner lists every allergy as its
-own chip under a counted heading, never hidden behind a click.
+show a small solid red tag with the first allergy and a "+N" count (an
+*Allergies* column on laptops). The patient banner ends in a full-width red
+band, like an allergy wristband, listing every allergy as plain text — never
+hidden behind a click. "None"-style answers show a quiet "No known drug
+allergies" line; an empty answer shows an amber prompt to ask the patient.
 
 Dental waits for patients who were referred or have finished their consult.
 Pharmacy waits for undispensed orders.

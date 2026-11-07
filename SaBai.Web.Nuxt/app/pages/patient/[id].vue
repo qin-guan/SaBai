@@ -86,11 +86,7 @@ useHead({ title: () => `${patient.value?.name ?? 'Patient'} · Sa'Bai` })
             <StateMessage v-else-if="visits.length === 0" message="No visits recorded for this patient." />
             <ol v-else class="divide-y divide-border">
               <li v-for="(visit, index) in visits" :key="visit.id" class="flex flex-col gap-1.5 px-3 py-2">
-                <NuxtLink
-                  :to="visitLink(visit.journey, patient.id, visit.id).to"
-                  class="group flex items-center justify-between gap-3"
-                  :title="`${visitLink(visit.journey, patient.id, visit.id).label} for visit #${visits.length - index}`"
-                >
+                <div class="flex items-center justify-between gap-3">
                   <div class="flex items-center gap-2">
                     <span
                       class="size-3 shrink-0"
@@ -98,7 +94,7 @@ useHead({ title: () => `${patient.value?.name ?? 'Patient'} · Sa'Bai` })
                       :title="`Village: ${visit.villageName}`"
                       aria-hidden="true"
                     />
-                    <p class="font-semibold group-hover:text-primary group-hover:underline">
+                    <p class="font-semibold">
                       Visit #{{ visits.length - index }}
                       <span class="font-normal text-muted-foreground">· {{ visit.villageName }}</span>
                     </p>
@@ -106,7 +102,7 @@ useHead({ title: () => `${patient.value?.name ?? 'Patient'} · Sa'Bai` })
                   <p class="text-right text-xs text-muted-foreground touch:text-sm">
                     {{ formatVisitDate(visit.date) }}
                   </p>
-                </NuxtLink>
+                </div>
                 <JourneyTracker :journey="visit.journey" :patient-id="patient.id" :visit-id="visit.id" size="compact" />
               </li>
             </ol>

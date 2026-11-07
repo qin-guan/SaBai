@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { PhCheck, PhCircle, PhCircleDashed } from '@phosphor-icons/vue'
+import { NuxtLink } from '#components'
 import type { Journey, StationKey, StepState } from '~/utils/journey'
 
 /**
@@ -62,7 +63,7 @@ function status(step: { key: StationKey, state: StepState, detail: string }) {
   >
     <li v-for="step in steps" :key="step.key" class="min-w-0">
       <component
-        :is="props.links ? resolveComponent('NuxtLink') : 'span'"
+        :is="props.links ? NuxtLink : 'span'"
         :to="props.links ? patientLinkFor(step.key, props.patientId, props.visitId) : undefined"
         class="flex h-full min-w-0 flex-col justify-center gap-px border px-1.5 py-1 sm:px-2 touch:py-1.5"
         :class="[
@@ -96,7 +97,7 @@ function status(step: { key: StationKey, state: StepState, detail: string }) {
   >
     <li v-for="step in steps" :key="step.key" class="flex min-w-0 flex-1 items-center">
       <component
-        :is="props.links ? resolveComponent('NuxtLink') : 'span'"
+        :is="props.links ? NuxtLink : 'span'"
         :to="props.links ? patientLinkFor(step.key, props.patientId, props.visitId) : undefined"
         class="inline-flex w-full min-w-0 items-center justify-center border px-1 py-0.5 text-xs font-semibold whitespace-nowrap touch:py-1.5"
         :class="[

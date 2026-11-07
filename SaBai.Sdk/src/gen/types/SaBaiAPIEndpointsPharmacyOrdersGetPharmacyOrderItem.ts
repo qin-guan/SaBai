@@ -4,19 +4,19 @@
 */
 
 export type SaBaiAPIEndpointsPharmacyOrdersGetPharmacyOrderItem = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    orderId: number;
-    medicationName: string;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    quantity: number;
-    isLowStock: boolean;
-    dosageInstructions: string;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  orderId: number;
+  medicationName: string;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  quantity: number;
+  isLowStock: boolean;
+  dosageInstructions: string;
 };

@@ -7,27 +7,25 @@ import type { SaBaiAPIEndpointsReferralsGetResponse } from '../types/SaBaiAPIEnd
 import { createSaBaiAPIDomainReferralState } from './createSaBaiAPIDomainReferralState'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsReferralsGetResponse<TData extends Partial<SaBaiAPIEndpointsReferralsGetResponse> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsReferralsGetResponse<TData extends Partial<SaBaiAPIEndpointsReferralsGetResponse> = object>(data?: TData) {
   const defaultFakeData = {
-  id: faker.number.int(),
-  referredFor: faker.string.alpha(),
-  referralNotes: faker.string.alpha(),
-  referralState: createSaBaiAPIDomainReferralState(),
-  referralOutcome: faker.string.alpha(),
-  consultId: faker.number.int(),
-  createdAt: faker.date.anytime().toISOString(),
-  consultDate: faker.date.anytime().toISOString(),
-  doctorId: faker.string.uuid(),
-  patientId: faker.number.int(),
-  patientName: faker.string.alpha(),
-  hasPhoto: faker.datatype.boolean(),
-  villageCodeId: faker.number.int(),
-  villageCode: faker.string.alpha(),
-  villageColorHex: faker.string.alpha(),
-  doctorNickname: faker.string.alpha(),
-}
+    id: faker.number.int(),
+    referredFor: faker.string.alpha(),
+    referralNotes: faker.string.alpha(),
+    referralState: createSaBaiAPIDomainReferralState(),
+    referralOutcome: faker.string.alpha(),
+    consultId: faker.number.int(),
+    createdAt: faker.date.anytime().toISOString(),
+    consultDate: faker.date.anytime().toISOString(),
+    doctorId: faker.string.uuid(),
+    patientId: faker.number.int(),
+    patientName: faker.string.alpha(),
+    hasPhoto: faker.datatype.boolean(),
+    villageCodeId: faker.number.int(),
+    villageCode: faker.string.alpha(),
+    villageColorHex: faker.string.alpha(),
+    doctorNickname: faker.string.alpha(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

@@ -23,3 +23,7 @@ export const saBaiAPIEndpointsChildVitalsUpdatePatchEndpointResponseSchema = saB
 export const saBaiAPIEndpointsChildVitalsUpdatePatchEndpointErrorSchema = z.union([saBaiAPIEndpointsChildVitalsUpdatePatchEndpointStatus400Schema, saBaiAPIEndpointsChildVitalsUpdatePatchEndpointStatus401Schema, saBaiAPIEndpointsChildVitalsUpdatePatchEndpointStatus403Schema])
 
 export const saBaiAPIEndpointsChildVitalsUpdatePatchEndpointBodySchema = saBaiAPIEndpointsChildVitalsUpdatePatchRequestSchema
+
+export const saBaiAPIEndpointsChildVitalsUpdatePatchEndpointPathSchema = z.object({
+  id: z.int32(),
+})

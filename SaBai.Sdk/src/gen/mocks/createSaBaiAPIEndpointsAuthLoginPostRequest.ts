@@ -6,13 +6,12 @@
 import type { SaBaiAPIEndpointsAuthLoginPostRequest } from '../types/SaBaiAPIEndpointsAuthLoginPostRequest'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsAuthLoginPostRequest<TData extends Partial<SaBaiAPIEndpointsAuthLoginPostRequest> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsAuthLoginPostRequest<TData extends Partial<SaBaiAPIEndpointsAuthLoginPostRequest> = object>(data?: TData) {
   const defaultFakeData = {
-  email: faker.internet.email(),
-  password: faker.string.alpha({ length: 1 }),
-}
+    userName: faker.string.alpha({ length: 1 }),
+    password: faker.string.alpha({ length: 1 }),
+    rememberMe: faker.datatype.boolean(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

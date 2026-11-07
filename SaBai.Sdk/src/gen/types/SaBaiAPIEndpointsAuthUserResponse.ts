@@ -3,25 +3,32 @@
 * Do not edit manually.
 */
 
-import type { SaBaiAPIDomainStaffRoleKey } from './SaBaiAPIDomainStaffRole'
+import type { SystemCollectionsGenericIReadOnlyListOfSystemString } from './SystemCollectionsGenericIReadOnlyListOfSystemString'
 
 export type SaBaiAPIEndpointsAuthUserResponse = {
-    /**
-     * @description
-     * Format: `uuid`
-     * @type string
-    */
-    id: string;
-    workOsUserId: string;
-    username: string;
-    email: string;
-    nickname: string;
-    role: SaBaiAPIDomainStaffRoleKey;
-    isLocked: boolean;
-    /**
-     * @description
-     * Format: `date-time`
-     * @type string
-    */
-    createdAt: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string
+   */
+  id: string;
+  userName: string;
+  email: string | null;
+  nickname: string;
+  roles: SystemCollectionsGenericIReadOnlyListOfSystemString;
+  isLocked: boolean;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string
+   */
+  lockoutEnd: string | null;
+  twoFactorEnabled: boolean;
+  hasPassword: boolean;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string
+   */
+  createdAt: string;
 };

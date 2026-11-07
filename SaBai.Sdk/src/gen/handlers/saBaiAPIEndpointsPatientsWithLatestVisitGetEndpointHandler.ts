@@ -4,10 +4,10 @@
 */
 
 import type { SaBaiAPIEndpointsPatientsWithLatestVisitGetEndpointResponse, SaBaiAPIEndpointsPatientsWithLatestVisitGetEndpointStatus401, SaBaiAPIEndpointsPatientsWithLatestVisitGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsPatientsWithLatestVisitGetEndpoint'
-import { http } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsPatientsWithLatestVisitGetEndpointHandlerResponse200(data: SaBaiAPIEndpointsPatientsWithLatestVisitGetEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -16,22 +16,22 @@ export function saBaiAPIEndpointsPatientsWithLatestVisitGetEndpointHandlerRespon
 }
 
 export function saBaiAPIEndpointsPatientsWithLatestVisitGetEndpointHandlerResponse401(data?: SaBaiAPIEndpointsPatientsWithLatestVisitGetEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsPatientsWithLatestVisitGetEndpointHandlerResponse403(data?: SaBaiAPIEndpointsPatientsWithLatestVisitGetEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsPatientsWithLatestVisitGetEndpointHandler(data?: SaBaiAPIEndpointsPatientsWithLatestVisitGetEndpointResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>)) {
-  return http.get(`/patients/with-latest-visit`, function handler(info) {
+export function saBaiAPIEndpointsPatientsWithLatestVisitGetEndpointHandler(data?: SaBaiAPIEndpointsPatientsWithLatestVisitGetEndpointResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>), options?: { baseURL?: string }) {
+  return http.get(`${options?.baseURL ?? ''}/patients/with-latest-visit`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

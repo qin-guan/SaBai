@@ -6,23 +6,23 @@
 import type { SaBaiAPIEndpointsFacesFaceDto } from './SaBaiAPIEndpointsFacesFaceDto'
 
 export type SaBaiAPIEndpointsPatientsFacesPostResponse = {
-    /**
-     * @description
-     * Format: `uuid`
-     * @type string
-    */
-    faceId: string;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    patientId: number;
-    face: SaBaiAPIEndpointsFacesFaceDto;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    facesDetected: number;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string
+   */
+  faceId: string;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  patientId: number;
+  face: SaBaiAPIEndpointsFacesFaceDto;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  facesDetected: number;
 };

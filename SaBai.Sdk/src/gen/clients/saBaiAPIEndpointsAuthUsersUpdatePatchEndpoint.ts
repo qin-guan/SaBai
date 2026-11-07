@@ -8,11 +8,12 @@ import type { SaBaiAPIEndpointsAuthUsersUpdatePatchEndpointOptions, SaBaiAPIEndp
 import { client, withUnwrap } from '../.kubb/client'
 
 /**
+ * @description Role changes reach the user's open sessions within a minute, without signing them out.
  * @summary Update a staff user
  * {@link /auth/users/:id}
  */
 export function saBaiAPIEndpointsAuthUsersUpdatePatchEndpoint<ThrowOnError extends boolean = true>(options: Options<SaBaiAPIEndpointsAuthUsersUpdatePatchEndpointOptions, ThrowOnError>): Unwrappable<RequestResult<SaBaiAPIEndpointsAuthUsersUpdatePatchEndpointResponses, ThrowOnError>> {
   const { client: request = client, ...config } = options
 
-  return withUnwrap(request({ method: 'PATCH', url: '/auth/users/{id}', security: [{ type: 'http', scheme: 'bearer' }], ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<SaBaiAPIEndpointsAuthUsersUpdatePatchEndpointResponses, ThrowOnError>>)
+  return withUnwrap(request({ method: 'PATCH', url: '/auth/users/{id}', security: [{ type: 'apiKey', name: 'sabai.auth', in: 'cookie', scopes: ['admin'] }], contentType: { request: 'application/json' }, ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<SaBaiAPIEndpointsAuthUsersUpdatePatchEndpointResponses, ThrowOnError>>)
 }

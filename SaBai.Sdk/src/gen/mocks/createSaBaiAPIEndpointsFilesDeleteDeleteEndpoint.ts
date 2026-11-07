@@ -3,16 +3,14 @@
 * Do not edit manually.
 */
 
-import type { SaBaiAPIEndpointsFilesDeleteDeleteEndpointPath, SaBaiAPIEndpointsFilesDeleteDeleteEndpointResponse, SaBaiAPIEndpointsFilesDeleteDeleteEndpointStatus200, SaBaiAPIEndpointsFilesDeleteDeleteEndpointStatus401, SaBaiAPIEndpointsFilesDeleteDeleteEndpointStatus403 } from '../types/SaBaiAPIEndpointsFilesDeleteDeleteEndpoint'
+import type { SaBaiAPIEndpointsFilesDeleteDeleteEndpointPath, SaBaiAPIEndpointsFilesDeleteDeleteEndpointResponse, SaBaiAPIEndpointsFilesDeleteDeleteEndpointStatus200 } from '../types/SaBaiAPIEndpointsFilesDeleteDeleteEndpoint'
 import { createSaBaiAPIEndpointsFilesDeleteDeleteResponse } from './createSaBaiAPIEndpointsFilesDeleteDeleteResponse'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsFilesDeleteDeleteEndpointPath<TData extends Partial<SaBaiAPIEndpointsFilesDeleteDeleteEndpointPath> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsFilesDeleteDeleteEndpointPath<TData extends Partial<SaBaiAPIEndpointsFilesDeleteDeleteEndpointPath> = object>(data?: TData) {
   const defaultFakeData = {
-  id: faker.number.int(),
-}
+    id: faker.number.int(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

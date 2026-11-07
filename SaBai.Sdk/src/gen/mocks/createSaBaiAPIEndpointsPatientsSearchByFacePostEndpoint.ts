@@ -3,18 +3,16 @@
 * Do not edit manually.
 */
 
-import type { SaBaiAPIEndpointsPatientsSearchByFacePostEndpointBody, SaBaiAPIEndpointsPatientsSearchByFacePostEndpointQuery, SaBaiAPIEndpointsPatientsSearchByFacePostEndpointResponse, SaBaiAPIEndpointsPatientsSearchByFacePostEndpointStatus200, SaBaiAPIEndpointsPatientsSearchByFacePostEndpointStatus401, SaBaiAPIEndpointsPatientsSearchByFacePostEndpointStatus403 } from '../types/SaBaiAPIEndpointsPatientsSearchByFacePostEndpoint'
+import type { SaBaiAPIEndpointsPatientsSearchByFacePostEndpointBody, SaBaiAPIEndpointsPatientsSearchByFacePostEndpointQuery, SaBaiAPIEndpointsPatientsSearchByFacePostEndpointResponse, SaBaiAPIEndpointsPatientsSearchByFacePostEndpointStatus200 } from '../types/SaBaiAPIEndpointsPatientsSearchByFacePostEndpoint'
 import { createSaBaiAPIEndpointsPatientsSearchByFacePostRequest } from './createSaBaiAPIEndpointsPatientsSearchByFacePostRequest'
 import { createSaBaiAPIEndpointsPatientsSearchByFacePostResponse } from './createSaBaiAPIEndpointsPatientsSearchByFacePostResponse'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsPatientsSearchByFacePostEndpointQuery<TData extends Partial<SaBaiAPIEndpointsPatientsSearchByFacePostEndpointQuery> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsPatientsSearchByFacePostEndpointQuery<TData extends Partial<SaBaiAPIEndpointsPatientsSearchByFacePostEndpointQuery> = object>(data?: TData) {
   const defaultFakeData = {
-  threshold: faker.number.float(),
-  maxMatches: faker.number.int(),
-}
+    threshold: faker.number.float(),
+    maxMatches: faker.number.int(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsPatientsPhotoPutEndpointOptions } from '../types/SaBaiAPIEndpointsPatientsPhotoPutEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsPatientsPhotoPutEndpoint } from '../clients/saBaiAPIEndpointsPatientsPhotoPutEndpoint'
 
 /**
  * @summary Set or replace a patient's profile photo
  * {@link /patients/:id/photo}
  */
-export async function saBaiAPIEndpointsPatientsPhotoPutEndpointHandler({ path, body }: SaBaiAPIEndpointsPatientsPhotoPutEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsPatientsPhotoPutEndpoint({ path, body, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsPatientsPhotoPutEndpointHandler({ path, body }: SaBaiAPIEndpointsPatientsPhotoPutEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsPatientsPhotoPutEndpoint({ path, body, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

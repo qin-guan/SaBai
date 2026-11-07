@@ -8,20 +8,21 @@ import type { SaBaiAPIEndpointsVillageCodesUpdatePatchRequest } from './SaBaiAPI
 import type { SaBaiAPIEndpointsVillageCodesUpdatePatchResponse } from './SaBaiAPIEndpointsVillageCodesUpdatePatchResponse'
 
 export type SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
 };
 
 export type SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointStatus200 = SaBaiAPIEndpointsVillageCodesUpdatePatchResponse;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointStatus401 = unknown;
@@ -31,20 +32,20 @@ export type SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointStatus403 = unknown;
 export type SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointBody = SaBaiAPIEndpointsVillageCodesUpdatePatchRequest;
 
 export type SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointOptions = {
-    body: SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointBody;
-    path: SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointPath;
-    query?: never;
-    headers?: never;
+  body: SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointBody;
+  path: SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointResponses = {
-    "200": SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointStatus200;
-    "400": SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointStatus400;
-    "401": SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointStatus401;
-    "403": SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointStatus403;
+  '200': SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointStatus200;
+  '400': SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointStatus400;
+  '401': SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointStatus401;
+  '403': SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointResponse = SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointStatus200;

@@ -4,7 +4,7 @@
 */
 
 export type SaBaiAPIEndpointsPersonsDeleteEndpointPath = {
-    personId: string;
+  personId: string;
 };
 
 export type SaBaiAPIEndpointsPersonsDeleteEndpointStatus204 = unknown;
@@ -14,19 +14,19 @@ export type SaBaiAPIEndpointsPersonsDeleteEndpointStatus401 = unknown;
 export type SaBaiAPIEndpointsPersonsDeleteEndpointStatus403 = unknown;
 
 export type SaBaiAPIEndpointsPersonsDeleteEndpointOptions = {
-    body?: never;
-    path: SaBaiAPIEndpointsPersonsDeleteEndpointPath;
-    query?: never;
-    headers?: never;
+  body?: never;
+  path: SaBaiAPIEndpointsPersonsDeleteEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsPersonsDeleteEndpointResponses = {
-    "204": SaBaiAPIEndpointsPersonsDeleteEndpointStatus204;
-    "401": SaBaiAPIEndpointsPersonsDeleteEndpointStatus401;
-    "403": SaBaiAPIEndpointsPersonsDeleteEndpointStatus403;
+  '204': SaBaiAPIEndpointsPersonsDeleteEndpointStatus204;
+  '401': SaBaiAPIEndpointsPersonsDeleteEndpointStatus401;
+  '403': SaBaiAPIEndpointsPersonsDeleteEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsPersonsDeleteEndpointResponse = SaBaiAPIEndpointsPersonsDeleteEndpointStatus204;

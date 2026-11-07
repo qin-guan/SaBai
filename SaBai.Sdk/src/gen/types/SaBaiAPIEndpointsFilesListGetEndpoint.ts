@@ -6,13 +6,13 @@
 import type { SystemCollectionsGenericListOfSaBaiAPIEndpointsFilesListGetResponse } from './SystemCollectionsGenericListOfSaBaiAPIEndpointsFilesListGetResponse'
 
 export type SaBaiAPIEndpointsFilesListGetEndpointQuery = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer | undefined
-    */
-    patientId?: number | null;
-    deleted?: string | null;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer | undefined
+   */
+  patientId?: number | null;
+  deleted?: string | null;
 };
 
 export type SaBaiAPIEndpointsFilesListGetEndpointStatus200 = SystemCollectionsGenericListOfSaBaiAPIEndpointsFilesListGetResponse;
@@ -22,19 +22,19 @@ export type SaBaiAPIEndpointsFilesListGetEndpointStatus401 = unknown;
 export type SaBaiAPIEndpointsFilesListGetEndpointStatus403 = unknown;
 
 export type SaBaiAPIEndpointsFilesListGetEndpointOptions = {
-    body?: never;
-    path?: never;
-    query?: SaBaiAPIEndpointsFilesListGetEndpointQuery;
-    headers?: never;
+  body?: never;
+  path?: never;
+  query?: SaBaiAPIEndpointsFilesListGetEndpointQuery;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsFilesListGetEndpointResponses = {
-    "200": SaBaiAPIEndpointsFilesListGetEndpointStatus200;
-    "401": SaBaiAPIEndpointsFilesListGetEndpointStatus401;
-    "403": SaBaiAPIEndpointsFilesListGetEndpointStatus403;
+  '200': SaBaiAPIEndpointsFilesListGetEndpointStatus200;
+  '401': SaBaiAPIEndpointsFilesListGetEndpointStatus401;
+  '403': SaBaiAPIEndpointsFilesListGetEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsFilesListGetEndpointResponse = SaBaiAPIEndpointsFilesListGetEndpointStatus200;

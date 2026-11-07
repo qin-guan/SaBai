@@ -4,17 +4,17 @@
 */
 
 export type SaBaiAPIEndpointsMedicationBrandsUpdatePatchRequestOp144491D9C6BF = {
-    /**
-     * @minLength 0
-     * @maxLength 255
-     * @type string | undefined
-    */
-    name?: string | null;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer | undefined
-    */
-    activeIngredientId?: number;
-    remarks: string;
+  /**
+   * @minLength 0
+   * @maxLength 255
+   * @type string | undefined
+   */
+  name?: string | null;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer | undefined
+   */
+  activeIngredientId?: number;
+  remarks: string;
 };

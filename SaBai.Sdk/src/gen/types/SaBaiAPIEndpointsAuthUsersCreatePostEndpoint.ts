@@ -10,9 +10,10 @@ import type { SaBaiAPIEndpointsAuthUsersCreatePostRequest } from './SaBaiAPIEndp
 export type SaBaiAPIEndpointsAuthUsersCreatePostEndpointStatus200 = SaBaiAPIEndpointsAuthUserResponse;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsAuthUsersCreatePostEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsAuthUsersCreatePostEndpointStatus401 = unknown;
@@ -22,20 +23,20 @@ export type SaBaiAPIEndpointsAuthUsersCreatePostEndpointStatus403 = unknown;
 export type SaBaiAPIEndpointsAuthUsersCreatePostEndpointBody = SaBaiAPIEndpointsAuthUsersCreatePostRequest;
 
 export type SaBaiAPIEndpointsAuthUsersCreatePostEndpointOptions = {
-    body: SaBaiAPIEndpointsAuthUsersCreatePostEndpointBody;
-    path?: never;
-    query?: never;
-    headers?: never;
+  body: SaBaiAPIEndpointsAuthUsersCreatePostEndpointBody;
+  path?: never;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsAuthUsersCreatePostEndpointResponses = {
-    "200": SaBaiAPIEndpointsAuthUsersCreatePostEndpointStatus200;
-    "400": SaBaiAPIEndpointsAuthUsersCreatePostEndpointStatus400;
-    "401": SaBaiAPIEndpointsAuthUsersCreatePostEndpointStatus401;
-    "403": SaBaiAPIEndpointsAuthUsersCreatePostEndpointStatus403;
+  '200': SaBaiAPIEndpointsAuthUsersCreatePostEndpointStatus200;
+  '400': SaBaiAPIEndpointsAuthUsersCreatePostEndpointStatus400;
+  '401': SaBaiAPIEndpointsAuthUsersCreatePostEndpointStatus401;
+  '403': SaBaiAPIEndpointsAuthUsersCreatePostEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsAuthUsersCreatePostEndpointResponse = SaBaiAPIEndpointsAuthUsersCreatePostEndpointStatus200;

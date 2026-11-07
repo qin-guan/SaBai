@@ -12,7 +12,7 @@ public sealed class PharmacyTests(AppFixture fixture)
     public async Task Catalog_CreateAndSplit_HidesConsumedParent()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
         var suffix = Guid.NewGuid().ToString("N")[..8];
         var ingredient = await CreateIngredientAsync(client, $"Ingredient {suffix}", fallBelow: 5);
@@ -95,7 +95,7 @@ public sealed class PharmacyTests(AppFixture fixture)
     public async Task Split_QuantityMismatch_ReturnsConflict()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
         var suffix = Guid.NewGuid().ToString("N")[..8];
         var ingredient = await CreateIngredientAsync(client, $"Mismatch {suffix}", fallBelow: 2);
@@ -155,7 +155,7 @@ public sealed class PharmacyTests(AppFixture fixture)
     public async Task Order_CreateApproveCancel_ChangesStockOnlyWhenApproved()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
         var suffix = Guid.NewGuid().ToString("N")[..8];
         var ingredient = await CreateIngredientAsync(
@@ -287,7 +287,7 @@ public sealed class PharmacyTests(AppFixture fixture)
     public async Task MedicationHistory_WithoutBrandId_ReturnsBadRequest()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
 
         // Act

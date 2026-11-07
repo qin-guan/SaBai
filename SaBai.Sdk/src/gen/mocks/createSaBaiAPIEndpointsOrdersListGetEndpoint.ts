@@ -3,16 +3,14 @@
 * Do not edit manually.
 */
 
-import type { SaBaiAPIEndpointsOrdersListGetEndpointQuery, SaBaiAPIEndpointsOrdersListGetEndpointResponse, SaBaiAPIEndpointsOrdersListGetEndpointStatus200, SaBaiAPIEndpointsOrdersListGetEndpointStatus401, SaBaiAPIEndpointsOrdersListGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsOrdersListGetEndpoint'
+import type { SaBaiAPIEndpointsOrdersListGetEndpointQuery, SaBaiAPIEndpointsOrdersListGetEndpointResponse, SaBaiAPIEndpointsOrdersListGetEndpointStatus200 } from '../types/SaBaiAPIEndpointsOrdersListGetEndpoint'
 import { createSystemCollectionsGenericListOfSaBaiAPIEndpointsOrdersListGetResponse } from './createSystemCollectionsGenericListOfSaBaiAPIEndpointsOrdersListGetResponse'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsOrdersListGetEndpointQuery<TData extends Partial<SaBaiAPIEndpointsOrdersListGetEndpointQuery> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsOrdersListGetEndpointQuery<TData extends Partial<SaBaiAPIEndpointsOrdersListGetEndpointQuery> = object>(data?: TData) {
   const defaultFakeData = {
-  status: faker.string.alpha(),
-}
+    status: faker.string.alpha(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

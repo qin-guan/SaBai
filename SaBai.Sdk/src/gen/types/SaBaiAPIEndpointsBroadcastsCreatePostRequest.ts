@@ -6,16 +6,16 @@
 import type { SaBaiAPIDomainBroadcastSeverityKey } from './SaBaiAPIDomainBroadcastSeverity'
 
 export type SaBaiAPIEndpointsBroadcastsCreatePostRequest = {
-    /**
-     * @minLength 0
-     * @maxLength 255
-     * @type string
-    */
-    title: string;
-    /**
-     * @minLength 1
-     * @type string
-    */
-    body: string;
-    severity?: SaBaiAPIDomainBroadcastSeverityKey;
+  /**
+   * @minLength 0
+   * @maxLength 255
+   * @type string
+   */
+  title: string;
+  /**
+   * @minLength 1
+   * @type string
+   */
+  body: string;
+  severity?: SaBaiAPIDomainBroadcastSeverityKey;
 };

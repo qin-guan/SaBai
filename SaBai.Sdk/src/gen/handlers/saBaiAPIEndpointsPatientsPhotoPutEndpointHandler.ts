@@ -4,11 +4,12 @@
 */
 
 import type { SaBaiAPIEndpointsPatientsPhotoPutEndpointResponse, SaBaiAPIEndpointsPatientsPhotoPutEndpointStatus401, SaBaiAPIEndpointsPatientsPhotoPutEndpointStatus403, SaBaiAPIEndpointsPatientsPhotoPutEndpointBody } from '../types/SaBaiAPIEndpointsPatientsPhotoPutEndpoint'
-import type { HttpResponseResolver } from 'msw'
-import { http } from 'msw'
+import type { HttpResponseResolver } from 'msw/http'
+import type { DefaultBodyType } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsPatientsPhotoPutEndpointHandlerResponse200(data: SaBaiAPIEndpointsPatientsPhotoPutEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -17,22 +18,22 @@ export function saBaiAPIEndpointsPatientsPhotoPutEndpointHandlerResponse200(data
 }
 
 export function saBaiAPIEndpointsPatientsPhotoPutEndpointHandlerResponse401(data?: SaBaiAPIEndpointsPatientsPhotoPutEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsPatientsPhotoPutEndpointHandlerResponse403(data?: SaBaiAPIEndpointsPatientsPhotoPutEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsPatientsPhotoPutEndpointHandler(data?: SaBaiAPIEndpointsPatientsPhotoPutEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsPatientsPhotoPutEndpointBody>) {
-  return http.put<Record<string, string>, SaBaiAPIEndpointsPatientsPhotoPutEndpointBody>(`/patients/:id/photo`, function handler(info) {
+export function saBaiAPIEndpointsPatientsPhotoPutEndpointHandler(data?: SaBaiAPIEndpointsPatientsPhotoPutEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsPatientsPhotoPutEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsPatientsPhotoPutEndpointBody : DefaultBodyType>, options?: { baseURL?: string }) {
+  return http.put<Record<string, string>, SaBaiAPIEndpointsPatientsPhotoPutEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsPatientsPhotoPutEndpointBody : DefaultBodyType>(`${options?.baseURL ?? ''}/patients/:id/photo`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

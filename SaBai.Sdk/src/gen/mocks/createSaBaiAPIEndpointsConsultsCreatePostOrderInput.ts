@@ -6,15 +6,13 @@
 import type { SaBaiAPIEndpointsConsultsCreatePostOrderInput } from '../types/SaBaiAPIEndpointsConsultsCreatePostOrderInput'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsConsultsCreatePostOrderInput<TData extends Partial<SaBaiAPIEndpointsConsultsCreatePostOrderInput> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsConsultsCreatePostOrderInput<TData extends Partial<SaBaiAPIEndpointsConsultsCreatePostOrderInput> = object>(data?: TData) {
   const defaultFakeData = {
-  medicationBrandId: faker.number.int(),
-  quantity: faker.number.int(),
-  dosageInstructions: faker.string.alpha(),
-  remarks: faker.string.alpha(),
-}
+    medicationBrandId: faker.number.int(),
+    quantity: faker.number.int(),
+    dosageInstructions: faker.string.alpha(),
+    remarks: faker.string.alpha(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

@@ -6,12 +6,12 @@
 import type { SaBaiAPIEndpointsVillageCodesGetResponse } from './SaBaiAPIEndpointsVillageCodesGetResponse'
 
 export type SaBaiAPIEndpointsVillageCodesGetEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
 };
 
 export type SaBaiAPIEndpointsVillageCodesGetEndpointStatus200 = SaBaiAPIEndpointsVillageCodesGetResponse;
@@ -21,19 +21,19 @@ export type SaBaiAPIEndpointsVillageCodesGetEndpointStatus401 = unknown;
 export type SaBaiAPIEndpointsVillageCodesGetEndpointStatus403 = unknown;
 
 export type SaBaiAPIEndpointsVillageCodesGetEndpointOptions = {
-    body?: never;
-    path: SaBaiAPIEndpointsVillageCodesGetEndpointPath;
-    query?: never;
-    headers?: never;
+  body?: never;
+  path: SaBaiAPIEndpointsVillageCodesGetEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsVillageCodesGetEndpointResponses = {
-    "200": SaBaiAPIEndpointsVillageCodesGetEndpointStatus200;
-    "401": SaBaiAPIEndpointsVillageCodesGetEndpointStatus401;
-    "403": SaBaiAPIEndpointsVillageCodesGetEndpointStatus403;
+  '200': SaBaiAPIEndpointsVillageCodesGetEndpointStatus200;
+  '401': SaBaiAPIEndpointsVillageCodesGetEndpointStatus401;
+  '403': SaBaiAPIEndpointsVillageCodesGetEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsVillageCodesGetEndpointResponse = SaBaiAPIEndpointsVillageCodesGetEndpointStatus200;

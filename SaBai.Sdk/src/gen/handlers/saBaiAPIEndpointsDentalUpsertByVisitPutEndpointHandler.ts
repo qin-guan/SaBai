@@ -4,11 +4,12 @@
 */
 
 import type { SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointResponse, SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointStatus400, SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointStatus401, SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointStatus403, SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointBody } from '../types/SaBaiAPIEndpointsDentalUpsertByVisitPutEndpoint'
-import type { HttpResponseResolver } from 'msw'
-import { http } from 'msw'
+import type { HttpResponseResolver } from 'msw/http'
+import type { DefaultBodyType } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsDentalUpsertByVisitPutEndpointHandlerResponse200(data: SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -17,7 +18,7 @@ export function saBaiAPIEndpointsDentalUpsertByVisitPutEndpointHandlerResponse20
 }
 
 export function saBaiAPIEndpointsDentalUpsertByVisitPutEndpointHandlerResponse400(data: SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointStatus400) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 400,
     headers: {
       'Content-Type': 'application/problem+json'
@@ -26,22 +27,22 @@ export function saBaiAPIEndpointsDentalUpsertByVisitPutEndpointHandlerResponse40
 }
 
 export function saBaiAPIEndpointsDentalUpsertByVisitPutEndpointHandlerResponse401(data?: SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsDentalUpsertByVisitPutEndpointHandlerResponse403(data?: SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsDentalUpsertByVisitPutEndpointHandler(data?: SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointBody>) {
-  return http.put<Record<string, string>, SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointBody>(`/visits/:visitId/dental`, function handler(info) {
+export function saBaiAPIEndpointsDentalUpsertByVisitPutEndpointHandler(data?: SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointBody : DefaultBodyType>, options?: { baseURL?: string }) {
+  return http.put<Record<string, string>, SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointBody : DefaultBodyType>(`${options?.baseURL ?? ''}/visits/:visitId/dental`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

@@ -7,5 +7,5 @@
  * @description
  * Format: `date`
  * @type string
-*/
+ */
 export type SystemNullableOfSystemDateOnly = string;

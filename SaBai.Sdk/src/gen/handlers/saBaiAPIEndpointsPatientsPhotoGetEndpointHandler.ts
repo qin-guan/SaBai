@@ -4,31 +4,31 @@
 */
 
 import type { SaBaiAPIEndpointsPatientsPhotoGetEndpointResponse, SaBaiAPIEndpointsPatientsPhotoGetEndpointStatus401, SaBaiAPIEndpointsPatientsPhotoGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsPatientsPhotoGetEndpoint'
-import { http } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsPatientsPhotoGetEndpointHandlerResponse204(data?: SaBaiAPIEndpointsPatientsPhotoGetEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 204,
   })
 }
 
 export function saBaiAPIEndpointsPatientsPhotoGetEndpointHandlerResponse401(data?: SaBaiAPIEndpointsPatientsPhotoGetEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsPatientsPhotoGetEndpointHandlerResponse403(data?: SaBaiAPIEndpointsPatientsPhotoGetEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsPatientsPhotoGetEndpointHandler(data?: string | number | boolean | null | object | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>)) {
-  return http.get(`/patients/:id/photo`, function handler(info) {
+export function saBaiAPIEndpointsPatientsPhotoGetEndpointHandler(data?: string | number | boolean | null | object | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>), options?: { baseURL?: string }) {
+  return http.get(`${options?.baseURL ?? ''}/patients/:id/photo`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 204,
       })
     })

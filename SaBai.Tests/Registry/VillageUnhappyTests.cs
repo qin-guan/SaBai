@@ -11,7 +11,7 @@ public sealed class VillageUnhappyTests(AppFixture fixture)
     public async Task Get_HiddenVillage_ReturnsCode()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var code = $"V{ClinicSetup.Suffix()}";
         var id = await ClinicSetup.CreateVillageAsync(client, code);
@@ -36,7 +36,7 @@ public sealed class VillageUnhappyTests(AppFixture fixture)
     public async Task Create_InvalidColorHex_ReturnsBadRequest()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var code = $"V{ClinicSetup.Suffix()}";
 
@@ -60,7 +60,7 @@ public sealed class VillageUnhappyTests(AppFixture fixture)
     public async Task Create_EmptyName_ReturnsBadRequest()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var code = $"V{ClinicSetup.Suffix()}";
 
@@ -84,7 +84,7 @@ public sealed class VillageUnhappyTests(AppFixture fixture)
     public async Task Get_MissingVillage_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
 
         // Act
@@ -98,7 +98,7 @@ public sealed class VillageUnhappyTests(AppFixture fixture)
     public async Task Patch_MissingVillage_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
 
         // Act
@@ -116,7 +116,7 @@ public sealed class VillageUnhappyTests(AppFixture fixture)
     public async Task Delete_MissingVillage_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
 
         // Act
@@ -130,7 +130,7 @@ public sealed class VillageUnhappyTests(AppFixture fixture)
     public async Task List_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
 
         // Act
         var response = await client.GetAsync("/village-codes");

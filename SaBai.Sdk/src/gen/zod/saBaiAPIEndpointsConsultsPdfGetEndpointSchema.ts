@@ -16,3 +16,7 @@ export const saBaiAPIEndpointsConsultsPdfGetEndpointStatus403Schema = z.unknown(
 export const saBaiAPIEndpointsConsultsPdfGetEndpointResponseSchema = saBaiAPIEndpointsConsultsPdfGetEndpointStatus204Schema
 
 export const saBaiAPIEndpointsConsultsPdfGetEndpointErrorSchema = z.union([saBaiAPIEndpointsConsultsPdfGetEndpointStatus401Schema, saBaiAPIEndpointsConsultsPdfGetEndpointStatus403Schema])
+
+export const saBaiAPIEndpointsConsultsPdfGetEndpointPathSchema = z.object({
+  id: z.int32(),
+})

@@ -4,8 +4,8 @@
 */
 
 export type SaBaiAPIEndpointsVisionGetAcuityResponse = {
-    leftEyeDegree: string | null;
-    rightEyeDegree: string | null;
-    leftEyePinhole: string | null;
-    rightEyePinhole: string | null;
+  leftEyeDegree: string | null;
+  rightEyeDegree: string | null;
+  leftEyePinhole: string | null;
+  rightEyePinhole: string | null;
 };

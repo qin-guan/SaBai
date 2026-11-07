@@ -7,30 +7,28 @@ import type { SaBaiAPIEndpointsPatientsListGetItem } from '../types/SaBaiAPIEndp
 import { createSaBaiAPIDomainGender } from './createSaBaiAPIDomainGender'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsPatientsListGetItem<TData extends Partial<SaBaiAPIEndpointsPatientsListGetItem> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsPatientsListGetItem<TData extends Partial<SaBaiAPIEndpointsPatientsListGetItem> = object>(data?: TData) {
   const defaultFakeData = {
-  id: faker.number.int(),
-  name: faker.string.alpha(),
-  identificationNumber: faker.string.alpha(),
-  contactNo: faker.string.alpha(),
-  gender: createSaBaiAPIDomainGender(),
-  dateOfBirth: faker.date.anytime().toISOString(),
-  drugAllergy: faker.string.alpha(),
-  hasPoorCard: faker.datatype.boolean(),
-  hasBS2Card: faker.datatype.boolean(),
-  hasSabaiCard: faker.datatype.boolean(),
-  toGetReport: faker.datatype.boolean(),
-  villageCodeId: faker.number.int(),
-  villageCode: faker.string.alpha(),
-  displayId: faker.string.alpha(),
-  filterString: faker.string.alpha(),
-  lastVisitDate: faker.date.anytime().toISOString(),
-  lastVisitId: faker.number.int(),
-  hasPhoto: faker.datatype.boolean(),
-  hasFace: faker.datatype.boolean(),
-}
+    id: faker.number.int(),
+    name: faker.string.alpha(),
+    identificationNumber: faker.string.alpha(),
+    contactNo: faker.string.alpha(),
+    gender: createSaBaiAPIDomainGender(),
+    dateOfBirth: faker.date.anytime().toISOString(),
+    drugAllergy: faker.string.alpha(),
+    hasPoorCard: faker.datatype.boolean(),
+    hasBS2Card: faker.datatype.boolean(),
+    hasSabaiCard: faker.datatype.boolean(),
+    toGetReport: faker.datatype.boolean(),
+    villageCodeId: faker.number.int(),
+    villageCode: faker.string.alpha(),
+    displayId: faker.string.alpha(),
+    filterString: faker.string.alpha(),
+    lastVisitDate: faker.date.anytime().toISOString(),
+    lastVisitId: faker.number.int(),
+    hasPhoto: faker.datatype.boolean(),
+    hasFace: faker.datatype.boolean(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

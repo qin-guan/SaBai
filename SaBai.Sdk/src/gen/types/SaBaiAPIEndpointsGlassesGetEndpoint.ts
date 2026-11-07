@@ -7,20 +7,21 @@ import type { FastEndpointsProblemDetails } from './FastEndpointsProblemDetails'
 import type { SaBaiAPIEndpointsGlassesGetResponse } from './SaBaiAPIEndpointsGlassesGetResponse'
 
 export type SaBaiAPIEndpointsGlassesGetEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
 };
 
 export type SaBaiAPIEndpointsGlassesGetEndpointStatus200 = SaBaiAPIEndpointsGlassesGetResponse;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsGlassesGetEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsGlassesGetEndpointStatus401 = unknown;
@@ -28,20 +29,20 @@ export type SaBaiAPIEndpointsGlassesGetEndpointStatus401 = unknown;
 export type SaBaiAPIEndpointsGlassesGetEndpointStatus403 = unknown;
 
 export type SaBaiAPIEndpointsGlassesGetEndpointOptions = {
-    body?: never;
-    path: SaBaiAPIEndpointsGlassesGetEndpointPath;
-    query?: never;
-    headers?: never;
+  body?: never;
+  path: SaBaiAPIEndpointsGlassesGetEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsGlassesGetEndpointResponses = {
-    "200": SaBaiAPIEndpointsGlassesGetEndpointStatus200;
-    "400": SaBaiAPIEndpointsGlassesGetEndpointStatus400;
-    "401": SaBaiAPIEndpointsGlassesGetEndpointStatus401;
-    "403": SaBaiAPIEndpointsGlassesGetEndpointStatus403;
+  '200': SaBaiAPIEndpointsGlassesGetEndpointStatus200;
+  '400': SaBaiAPIEndpointsGlassesGetEndpointStatus400;
+  '401': SaBaiAPIEndpointsGlassesGetEndpointStatus401;
+  '403': SaBaiAPIEndpointsGlassesGetEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsGlassesGetEndpointResponse = SaBaiAPIEndpointsGlassesGetEndpointStatus200;

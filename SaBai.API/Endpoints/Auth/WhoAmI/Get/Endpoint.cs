@@ -1,11 +1,11 @@
 using FastEndpoints;
+using Microsoft.AspNetCore.Identity;
 using SaBai.API.Auth;
-using SaBai.API.Data;
 using SaBai.API.Domain;
 
 namespace SaBai.API.Endpoints.Auth.WhoAmI.Get;
 
-public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<Response>
+public sealed class Endpoint(UserManager<StaffUser> users) : EndpointWithoutRequest<Response>
 {
     public override void Configure()
     {
@@ -16,11 +16,7 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<Response>
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var user = await db.StaffUsers.FirstOrNotFoundAsync(
-            x => x.Id == User.Id(),
-            "Staff user was not found.",
-            ct
-        );
-        await Send.OkAsync(new Response(UserResponse.From(user)), ct);
+        var user = await users.GetCurrentAsync(User);
+        await Send.OkAsync(new Response(await UserResponse.FromAsync(user, users)), ct);
     }
 }

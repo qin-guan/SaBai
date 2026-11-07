@@ -16,3 +16,7 @@ export const saBaiAPIEndpointsPersonsDeleteEndpointStatus403Schema = z.unknown()
 export const saBaiAPIEndpointsPersonsDeleteEndpointResponseSchema = saBaiAPIEndpointsPersonsDeleteEndpointStatus204Schema
 
 export const saBaiAPIEndpointsPersonsDeleteEndpointErrorSchema = z.union([saBaiAPIEndpointsPersonsDeleteEndpointStatus401Schema, saBaiAPIEndpointsPersonsDeleteEndpointStatus403Schema])
+
+export const saBaiAPIEndpointsPersonsDeleteEndpointPathSchema = z.object({
+  personId: z.string(),
+})

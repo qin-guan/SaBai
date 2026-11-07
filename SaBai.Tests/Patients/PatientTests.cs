@@ -16,7 +16,7 @@ public sealed class PatientTests(AppFixture fixture)
     public async Task Create_PersistsPatientVisitAndVitals()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var code = ClinicSamples.Code();
         var village = await ClinicSamples.CreateVillageAsync(
@@ -92,7 +92,7 @@ public sealed class PatientTests(AppFixture fixture)
     public async Task List_FiltersNameAndVillageCodeIgnoringCase()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var code = ClinicSamples.Code().ToUpperInvariant();
         var village = await ClinicSamples.CreateVillageAsync(client, code);
@@ -124,7 +124,7 @@ public sealed class PatientTests(AppFixture fixture)
     public async Task WithLatestVisit_PutsVisitedPatientsBeforeVisitLessOnes()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var code = ClinicSamples.Code();
         var village = await ClinicSamples.CreateVillageAsync(client, code, colorHex: "#ABCDEF");
@@ -162,7 +162,7 @@ public sealed class PatientTests(AppFixture fixture)
     public async Task Patch_DuplicateIdentificationNumber_ReturnsConflict()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var code = ClinicSamples.Code();
         var village = await ClinicSamples.CreateVillageAsync(client, code);
@@ -199,7 +199,7 @@ public sealed class PatientTests(AppFixture fixture)
     public async Task Delete_WhenVisitExists_ReturnsConflict()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var code = ClinicSamples.Code();
         var village = await ClinicSamples.CreateVillageAsync(client, code);
@@ -216,7 +216,7 @@ public sealed class PatientTests(AppFixture fixture)
     public async Task Get_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
 
         // Act
         var response = await client.GetAsync("/patients");

@@ -19,3 +19,7 @@ export const saBaiAPIEndpointsChildVitalsDeleteEndpointStatus403Schema = z.unkno
 export const saBaiAPIEndpointsChildVitalsDeleteEndpointResponseSchema = saBaiAPIEndpointsChildVitalsDeleteEndpointStatus204Schema
 
 export const saBaiAPIEndpointsChildVitalsDeleteEndpointErrorSchema = z.union([saBaiAPIEndpointsChildVitalsDeleteEndpointStatus400Schema, saBaiAPIEndpointsChildVitalsDeleteEndpointStatus401Schema, saBaiAPIEndpointsChildVitalsDeleteEndpointStatus403Schema])
+
+export const saBaiAPIEndpointsChildVitalsDeleteEndpointPathSchema = z.object({
+  id: z.int32(),
+})

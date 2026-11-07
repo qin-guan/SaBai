@@ -6,18 +6,16 @@
 import type { SaBaiAPIEndpointsVillageCodesCreatePostResponse } from '../types/SaBaiAPIEndpointsVillageCodesCreatePostResponse'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsVillageCodesCreatePostResponse<TData extends Partial<SaBaiAPIEndpointsVillageCodesCreatePostResponse> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsVillageCodesCreatePostResponse<TData extends Partial<SaBaiAPIEndpointsVillageCodesCreatePostResponse> = object>(data?: TData) {
   const defaultFakeData = {
-  id: faker.number.int(),
-  code: faker.string.alpha(),
-  name: faker.string.alpha(),
-  colorHex: faker.string.alpha(),
-  isVisible: faker.datatype.boolean(),
-  createdAt: faker.date.anytime().toISOString(),
-  updatedAt: faker.date.anytime().toISOString(),
-}
+    id: faker.number.int(),
+    code: faker.string.alpha(),
+    name: faker.string.alpha(),
+    colorHex: faker.string.alpha(),
+    isVisible: faker.datatype.boolean(),
+    createdAt: faker.date.anytime().toISOString(),
+    updatedAt: faker.date.anytime().toISOString(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

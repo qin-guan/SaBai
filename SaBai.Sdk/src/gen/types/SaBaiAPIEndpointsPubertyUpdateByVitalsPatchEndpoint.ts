@@ -8,20 +8,21 @@ import type { SaBaiAPIEndpointsPubertyUpdateByVitalsPatchRequest } from './SaBai
 import type { SaBaiAPIEndpointsPubertyUpdateByVitalsPatchResponse } from './SaBaiAPIEndpointsPubertyUpdateByVitalsPatchResponse'
 
 export type SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    vitalsId: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  vitalsId: number;
 };
 
 export type SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointStatus200 = SaBaiAPIEndpointsPubertyUpdateByVitalsPatchResponse;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointStatus401 = unknown;
@@ -31,20 +32,20 @@ export type SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointStatus403 = unkno
 export type SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointBody = SaBaiAPIEndpointsPubertyUpdateByVitalsPatchRequest;
 
 export type SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointOptions = {
-    body: SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointBody;
-    path: SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointPath;
-    query?: never;
-    headers?: never;
+  body: SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointBody;
+  path: SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointResponses = {
-    "200": SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointStatus200;
-    "400": SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointStatus400;
-    "401": SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointStatus401;
-    "403": SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointStatus403;
+  '200': SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointStatus200;
+  '400': SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointStatus400;
+  '401': SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointStatus401;
+  '403': SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointResponse = SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointStatus200;

@@ -4,9 +4,9 @@
 */
 
 export const saBaiAPIDomainBroadcastSeverity = {
-    info: "info",
-    warning: "warning",
-    critical: "critical"
+  info: 'info',
+  warning: 'warning',
+  critical: 'critical',
 } as const;
 
 export type SaBaiAPIDomainBroadcastSeverityKey = (typeof saBaiAPIDomainBroadcastSeverity)[keyof typeof saBaiAPIDomainBroadcastSeverity];

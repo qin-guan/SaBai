@@ -4,7 +4,7 @@
 */
 
 export type SaBaiAPIEndpointsGlassesUpdatePatchRequest = {
-    leftGlassesDegree?: string | null;
-    rightGlassesDegree?: string | null;
-    notes?: string | null;
+  leftGlassesDegree?: string | null;
+  rightGlassesDegree?: string | null;
+  notes?: string | null;
 };

@@ -7,18 +7,18 @@ import type { SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPharmacyOr
 import type { SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPharmacyOrdersGetPharmacyOrderItem } from './SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPharmacyOrdersGetPharmacyOrderItem'
 
 export type SaBaiAPIEndpointsPharmacyOrdersGetVisitBundle = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    visitId: number;
-    /**
-     * @description
-     * Format: `date-time`
-     * @type string
-    */
-    visitDate: string;
-    orders: SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPharmacyOrdersGetPharmacyOrderItem;
-    diagnoses: SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPharmacyOrdersGetDiagnosisItem;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  visitId: number;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string
+   */
+  visitDate: string;
+  orders: SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPharmacyOrdersGetPharmacyOrderItem;
+  diagnoses: SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPharmacyOrdersGetDiagnosisItem;
 };

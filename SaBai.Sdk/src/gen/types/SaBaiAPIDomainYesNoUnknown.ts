@@ -4,9 +4,9 @@
 */
 
 export const saBaiAPIDomainYesNoUnknown = {
-    Yes: "Yes",
-    No: "No",
-    Unknown: "Unknown"
+  Yes: 'Yes',
+  No: 'No',
+  Unknown: 'Unknown',
 } as const;
 
 export type SaBaiAPIDomainYesNoUnknownKey = (typeof saBaiAPIDomainYesNoUnknown)[keyof typeof saBaiAPIDomainYesNoUnknown];

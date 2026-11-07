@@ -4,8 +4,8 @@
 */
 
 export const saBaiAPIDomainMouthOpening = {
-    Normal: "Normal",
-    Limited: "Limited"
+  Normal: 'Normal',
+  Limited: 'Limited',
 } as const;
 
 export type SaBaiAPIDomainMouthOpeningKey = (typeof saBaiAPIDomainMouthOpening)[keyof typeof saBaiAPIDomainMouthOpening];

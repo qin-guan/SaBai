@@ -4,10 +4,10 @@
 */
 
 import type { SaBaiAPIEndpointsHealthcheckGetEndpointResponse } from '../types/SaBaiAPIEndpointsHealthcheckGetEndpoint'
-import { http } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsHealthcheckGetEndpointHandlerResponse200(data: SaBaiAPIEndpointsHealthcheckGetEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -15,11 +15,11 @@ export function saBaiAPIEndpointsHealthcheckGetEndpointHandlerResponse200(data: 
   })
 }
 
-export function saBaiAPIEndpointsHealthcheckGetEndpointHandler(data?: SaBaiAPIEndpointsHealthcheckGetEndpointResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>)) {
-  return http.get(`/healthcheck`, function handler(info) {
+export function saBaiAPIEndpointsHealthcheckGetEndpointHandler(data?: SaBaiAPIEndpointsHealthcheckGetEndpointResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>), options?: { baseURL?: string }) {
+  return http.get(`${options?.baseURL ?? ''}/healthcheck`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

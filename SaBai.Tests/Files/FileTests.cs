@@ -12,7 +12,7 @@ public sealed class FileTests(AppFixture fixture)
     public async Task Upload_SoftDelete_HidesFromDefaultList_UntilRestore()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
         var suffix = Guid.NewGuid().ToString("N")[..8];
         var patientId = await CreatePatientAsync(client, suffix);
@@ -65,7 +65,7 @@ public sealed class FileTests(AppFixture fixture)
     public async Task Upload_WithoutFile_ReturnsBadRequest()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
         var patientId = await CreatePatientAsync(client, Guid.NewGuid().ToString("N")[..8]);
         using var content = new MultipartFormDataContent();

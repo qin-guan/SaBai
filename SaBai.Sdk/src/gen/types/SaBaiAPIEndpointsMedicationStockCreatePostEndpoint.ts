@@ -10,9 +10,10 @@ import type { SaBaiAPIEndpointsMedicationStockCreatePostResponse } from './SaBai
 export type SaBaiAPIEndpointsMedicationStockCreatePostEndpointStatus200 = SaBaiAPIEndpointsMedicationStockCreatePostResponse;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsMedicationStockCreatePostEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsMedicationStockCreatePostEndpointStatus401 = unknown;
@@ -22,20 +23,20 @@ export type SaBaiAPIEndpointsMedicationStockCreatePostEndpointStatus403 = unknow
 export type SaBaiAPIEndpointsMedicationStockCreatePostEndpointBody = SaBaiAPIEndpointsMedicationStockCreatePostRequest;
 
 export type SaBaiAPIEndpointsMedicationStockCreatePostEndpointOptions = {
-    body: SaBaiAPIEndpointsMedicationStockCreatePostEndpointBody;
-    path?: never;
-    query?: never;
-    headers?: never;
+  body: SaBaiAPIEndpointsMedicationStockCreatePostEndpointBody;
+  path?: never;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsMedicationStockCreatePostEndpointResponses = {
-    "200": SaBaiAPIEndpointsMedicationStockCreatePostEndpointStatus200;
-    "400": SaBaiAPIEndpointsMedicationStockCreatePostEndpointStatus400;
-    "401": SaBaiAPIEndpointsMedicationStockCreatePostEndpointStatus401;
-    "403": SaBaiAPIEndpointsMedicationStockCreatePostEndpointStatus403;
+  '200': SaBaiAPIEndpointsMedicationStockCreatePostEndpointStatus200;
+  '400': SaBaiAPIEndpointsMedicationStockCreatePostEndpointStatus400;
+  '401': SaBaiAPIEndpointsMedicationStockCreatePostEndpointStatus401;
+  '403': SaBaiAPIEndpointsMedicationStockCreatePostEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsMedicationStockCreatePostEndpointResponse = SaBaiAPIEndpointsMedicationStockCreatePostEndpointStatus200;

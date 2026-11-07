@@ -4,10 +4,10 @@
 */
 
 import type { SaBaiAPIEndpointsPersonsFacesGetEndpointResponse, SaBaiAPIEndpointsPersonsFacesGetEndpointStatus401, SaBaiAPIEndpointsPersonsFacesGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsPersonsFacesGetEndpoint'
-import { http } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsPersonsFacesGetEndpointHandlerResponse200(data: SaBaiAPIEndpointsPersonsFacesGetEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -16,22 +16,22 @@ export function saBaiAPIEndpointsPersonsFacesGetEndpointHandlerResponse200(data:
 }
 
 export function saBaiAPIEndpointsPersonsFacesGetEndpointHandlerResponse401(data?: SaBaiAPIEndpointsPersonsFacesGetEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsPersonsFacesGetEndpointHandlerResponse403(data?: SaBaiAPIEndpointsPersonsFacesGetEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsPersonsFacesGetEndpointHandler(data?: SaBaiAPIEndpointsPersonsFacesGetEndpointResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>)) {
-  return http.get(`/persons/:personId/faces`, function handler(info) {
+export function saBaiAPIEndpointsPersonsFacesGetEndpointHandler(data?: SaBaiAPIEndpointsPersonsFacesGetEndpointResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>), options?: { baseURL?: string }) {
+  return http.get(`${options?.baseURL ?? ''}/persons/:personId/faces`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

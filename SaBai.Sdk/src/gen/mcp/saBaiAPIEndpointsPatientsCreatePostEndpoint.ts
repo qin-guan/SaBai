@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsPatientsCreatePostEndpointOptions } from '../types/SaBaiAPIEndpointsPatientsCreatePostEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsPatientsCreatePostEndpoint } from '../clients/saBaiAPIEndpointsPatientsCreatePostEndpoint'
 
 /**
  * @summary Register a patient and open a visit
  * {@link /patients}
  */
-export async function saBaiAPIEndpointsPatientsCreatePostEndpointHandler({ body }: SaBaiAPIEndpointsPatientsCreatePostEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsPatientsCreatePostEndpoint({ body, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsPatientsCreatePostEndpointHandler({ body }: SaBaiAPIEndpointsPatientsCreatePostEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsPatientsCreatePostEndpoint({ body, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

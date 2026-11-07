@@ -4,11 +4,12 @@
 */
 
 import type { SaBaiAPIEndpointsChildVitalsUpdatePatchEndpointResponse, SaBaiAPIEndpointsChildVitalsUpdatePatchEndpointStatus400, SaBaiAPIEndpointsChildVitalsUpdatePatchEndpointStatus401, SaBaiAPIEndpointsChildVitalsUpdatePatchEndpointStatus403, SaBaiAPIEndpointsChildVitalsUpdatePatchEndpointBody } from '../types/SaBaiAPIEndpointsChildVitalsUpdatePatchEndpoint'
-import type { HttpResponseResolver } from 'msw'
-import { http } from 'msw'
+import type { HttpResponseResolver } from 'msw/http'
+import type { DefaultBodyType } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsChildVitalsUpdatePatchEndpointHandlerResponse200(data: SaBaiAPIEndpointsChildVitalsUpdatePatchEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -17,7 +18,7 @@ export function saBaiAPIEndpointsChildVitalsUpdatePatchEndpointHandlerResponse20
 }
 
 export function saBaiAPIEndpointsChildVitalsUpdatePatchEndpointHandlerResponse400(data: SaBaiAPIEndpointsChildVitalsUpdatePatchEndpointStatus400) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 400,
     headers: {
       'Content-Type': 'application/problem+json'
@@ -26,22 +27,22 @@ export function saBaiAPIEndpointsChildVitalsUpdatePatchEndpointHandlerResponse40
 }
 
 export function saBaiAPIEndpointsChildVitalsUpdatePatchEndpointHandlerResponse401(data?: SaBaiAPIEndpointsChildVitalsUpdatePatchEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsChildVitalsUpdatePatchEndpointHandlerResponse403(data?: SaBaiAPIEndpointsChildVitalsUpdatePatchEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsChildVitalsUpdatePatchEndpointHandler(data?: SaBaiAPIEndpointsChildVitalsUpdatePatchEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsChildVitalsUpdatePatchEndpointBody>) {
-  return http.patch<Record<string, string>, SaBaiAPIEndpointsChildVitalsUpdatePatchEndpointBody>(`/child-vitals/:id`, function handler(info) {
+export function saBaiAPIEndpointsChildVitalsUpdatePatchEndpointHandler(data?: SaBaiAPIEndpointsChildVitalsUpdatePatchEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsChildVitalsUpdatePatchEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsChildVitalsUpdatePatchEndpointBody : DefaultBodyType>, options?: { baseURL?: string }) {
+  return http.patch<Record<string, string>, SaBaiAPIEndpointsChildVitalsUpdatePatchEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsChildVitalsUpdatePatchEndpointBody : DefaultBodyType>(`${options?.baseURL ?? ''}/child-vitals/:id`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

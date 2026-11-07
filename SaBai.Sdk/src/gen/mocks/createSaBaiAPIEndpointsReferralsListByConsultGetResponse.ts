@@ -7,18 +7,16 @@ import type { SaBaiAPIEndpointsReferralsListByConsultGetResponse } from '../type
 import { createSaBaiAPIDomainReferralState } from './createSaBaiAPIDomainReferralState'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsReferralsListByConsultGetResponse<TData extends Partial<SaBaiAPIEndpointsReferralsListByConsultGetResponse> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsReferralsListByConsultGetResponse<TData extends Partial<SaBaiAPIEndpointsReferralsListByConsultGetResponse> = object>(data?: TData) {
   const defaultFakeData = {
-  id: faker.number.int(),
-  referredFor: faker.string.alpha(),
-  referralNotes: faker.string.alpha(),
-  referralState: createSaBaiAPIDomainReferralState(),
-  referralOutcome: faker.string.alpha(),
-  consultId: faker.number.int(),
-  createdAt: faker.date.anytime().toISOString(),
-}
+    id: faker.number.int(),
+    referredFor: faker.string.alpha(),
+    referralNotes: faker.string.alpha(),
+    referralState: createSaBaiAPIDomainReferralState(),
+    referralOutcome: faker.string.alpha(),
+    consultId: faker.number.int(),
+    createdAt: faker.date.anytime().toISOString(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

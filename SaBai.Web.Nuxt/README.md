@@ -28,9 +28,16 @@ pnpm dev
 | `app/composables` | Vue Query data hooks over `@sabai/sdk/clients`, village selection, shortcuts. |
 | `app/utils` | Framework-free logic ported from SaBai.Web (formatting, vitals, splits, eyesight, dental mapping). |
 
-Auth works as in SaBai.Web: the JWT from `POST /auth/login` is kept in the
-`sabai_token` cookie, `middleware/auth.global.ts` guards routes, and any 401
-clears the token and returns to `/login?redirectTo=…`. The selected village is
+Auth is an HttpOnly session cookie (`sabai.auth`) set by the API's
+`POST /auth/login` (ASP.NET Core Identity) and passed through the `/api` proxy,
+so no token is handled in JS. `middleware/auth.global.ts` asks `/auth/whoami`
+who is signed in (cached by Vue Query), guards routes and admin-only pages
+(`definePageMeta({ requiresAdmin: true })`), and any 401 returns to
+`/login?redirectTo=…`. Login asks for an authenticator code when the account has
+two-factor on. Admins manage staff under Settings → Staff Users
+(`pages/settings/users.vue`: create, edit roles, set passwords, lock/unlock,
+reset two-factor); everyone can change their password and set up two-factor
+under My Account (`pages/account.vue`). The selected village is
 stored under the same `localStorage` key (`villageCodeState`).
 
 ## Keyboard

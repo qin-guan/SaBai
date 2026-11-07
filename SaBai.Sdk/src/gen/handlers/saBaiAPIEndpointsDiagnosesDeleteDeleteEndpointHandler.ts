@@ -4,31 +4,31 @@
 */
 
 import type { SaBaiAPIEndpointsDiagnosesDeleteDeleteEndpointResponse, SaBaiAPIEndpointsDiagnosesDeleteDeleteEndpointStatus401, SaBaiAPIEndpointsDiagnosesDeleteDeleteEndpointStatus403 } from '../types/SaBaiAPIEndpointsDiagnosesDeleteDeleteEndpoint'
-import { http } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsDiagnosesDeleteDeleteEndpointHandlerResponse204(data?: SaBaiAPIEndpointsDiagnosesDeleteDeleteEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 204,
   })
 }
 
 export function saBaiAPIEndpointsDiagnosesDeleteDeleteEndpointHandlerResponse401(data?: SaBaiAPIEndpointsDiagnosesDeleteDeleteEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsDiagnosesDeleteDeleteEndpointHandlerResponse403(data?: SaBaiAPIEndpointsDiagnosesDeleteDeleteEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsDiagnosesDeleteDeleteEndpointHandler(data?: string | number | boolean | null | object | ((info: Parameters<Parameters<typeof http.delete>[1]>[0]) => Response | Promise<Response>)) {
-  return http.delete(`/diagnoses/:id`, function handler(info) {
+export function saBaiAPIEndpointsDiagnosesDeleteDeleteEndpointHandler(data?: string | number | boolean | null | object | ((info: Parameters<Parameters<typeof http.delete>[1]>[0]) => Response | Promise<Response>), options?: { baseURL?: string }) {
+  return http.delete(`${options?.baseURL ?? ''}/diagnoses/:id`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 204,
       })
     })

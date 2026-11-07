@@ -198,7 +198,7 @@ public sealed class LargeClinicStressTests(AppFixture fixture)
 
     private async Task<HttpClient> ClientAsync()
     {
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         client.Timeout = TimeSpan.FromMinutes(5);
         await client.LoginAsync();
         return client;
@@ -257,7 +257,7 @@ public sealed class LargeClinicStressTests(AppFixture fixture)
     private async Task<StressData> LoadOrSeedAsync(CancellationToken ct)
     {
         // Logging in seeds the staff accounts, so the doctor exists.
-        var doctor = fixture.CreateHttpClient("api");
+        var doctor = fixture.CreateApiClient();
         await doctor.LoginAsync(ClinicApi.DoctorEmail);
         var doctorId = (await doctor.WhoAmIAsync()).Id;
 

@@ -4,10 +4,10 @@
 */
 
 import type { SaBaiAPIEndpointsFilesDeleteDeleteEndpointResponse, SaBaiAPIEndpointsFilesDeleteDeleteEndpointStatus401, SaBaiAPIEndpointsFilesDeleteDeleteEndpointStatus403 } from '../types/SaBaiAPIEndpointsFilesDeleteDeleteEndpoint'
-import { http } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsFilesDeleteDeleteEndpointHandlerResponse200(data: SaBaiAPIEndpointsFilesDeleteDeleteEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -16,22 +16,22 @@ export function saBaiAPIEndpointsFilesDeleteDeleteEndpointHandlerResponse200(dat
 }
 
 export function saBaiAPIEndpointsFilesDeleteDeleteEndpointHandlerResponse401(data?: SaBaiAPIEndpointsFilesDeleteDeleteEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsFilesDeleteDeleteEndpointHandlerResponse403(data?: SaBaiAPIEndpointsFilesDeleteDeleteEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsFilesDeleteDeleteEndpointHandler(data?: SaBaiAPIEndpointsFilesDeleteDeleteEndpointResponse | ((info: Parameters<Parameters<typeof http.delete>[1]>[0]) => Response | Promise<Response>)) {
-  return http.delete(`/files/:id`, function handler(info) {
+export function saBaiAPIEndpointsFilesDeleteDeleteEndpointHandler(data?: SaBaiAPIEndpointsFilesDeleteDeleteEndpointResponse | ((info: Parameters<Parameters<typeof http.delete>[1]>[0]) => Response | Promise<Response>), options?: { baseURL?: string }) {
+  return http.delete(`${options?.baseURL ?? ''}/files/:id`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

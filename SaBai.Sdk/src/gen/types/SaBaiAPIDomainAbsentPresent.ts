@@ -4,8 +4,8 @@
 */
 
 export const saBaiAPIDomainAbsentPresent = {
-    Absent: "Absent",
-    Present: "Present"
+  Absent: 'Absent',
+  Present: 'Present',
 } as const;
 
 export type SaBaiAPIDomainAbsentPresentKey = (typeof saBaiAPIDomainAbsentPresent)[keyof typeof saBaiAPIDomainAbsentPresent];

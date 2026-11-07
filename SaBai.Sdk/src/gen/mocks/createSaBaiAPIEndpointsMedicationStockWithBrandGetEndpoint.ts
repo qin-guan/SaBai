@@ -3,7 +3,7 @@
 * Do not edit manually.
 */
 
-import type { SaBaiAPIEndpointsMedicationStockWithBrandGetEndpointResponse, SaBaiAPIEndpointsMedicationStockWithBrandGetEndpointStatus200, SaBaiAPIEndpointsMedicationStockWithBrandGetEndpointStatus401, SaBaiAPIEndpointsMedicationStockWithBrandGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsMedicationStockWithBrandGetEndpoint'
+import type { SaBaiAPIEndpointsMedicationStockWithBrandGetEndpointResponse, SaBaiAPIEndpointsMedicationStockWithBrandGetEndpointStatus200 } from '../types/SaBaiAPIEndpointsMedicationStockWithBrandGetEndpoint'
 import { createSystemCollectionsGenericListOfSaBaiAPIEndpointsMedicationStockWithBrandGetResponse } from './createSystemCollectionsGenericListOfSaBaiAPIEndpointsMedicationStockWithBrandGetResponse'
 import { fakerEN as faker } from '@faker-js/faker'
 

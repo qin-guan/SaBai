@@ -4,9 +4,9 @@
 */
 
 export const saBaiAPIDomainCariesStatus = {
-    Absent: "Absent",
-    NonCavitated: "NonCavitated",
-    Cavitated: "Cavitated"
+  Absent: 'Absent',
+  NonCavitated: 'NonCavitated',
+  Cavitated: 'Cavitated',
 } as const;
 
 export type SaBaiAPIDomainCariesStatusKey = (typeof saBaiAPIDomainCariesStatus)[keyof typeof saBaiAPIDomainCariesStatus];

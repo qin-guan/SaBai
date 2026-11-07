@@ -22,3 +22,8 @@ export const saBaiAPIEndpointsPatientsSearchByFacePostEndpointResponseSchema = s
 export const saBaiAPIEndpointsPatientsSearchByFacePostEndpointErrorSchema = z.union([saBaiAPIEndpointsPatientsSearchByFacePostEndpointStatus401Schema, saBaiAPIEndpointsPatientsSearchByFacePostEndpointStatus403Schema])
 
 export const saBaiAPIEndpointsPatientsSearchByFacePostEndpointBodySchema = saBaiAPIEndpointsPatientsSearchByFacePostRequestSchema
+
+export const saBaiAPIEndpointsPatientsSearchByFacePostEndpointQuerySchema = z.object({
+  threshold: z.number().nullish(),
+  maxMatches: z.int32(),
+})

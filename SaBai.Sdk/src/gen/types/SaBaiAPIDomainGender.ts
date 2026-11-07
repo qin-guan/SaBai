@@ -4,8 +4,8 @@
 */
 
 export const saBaiAPIDomainGender = {
-    male: "male",
-    female: "female"
+  male: 'male',
+  female: 'female',
 } as const;
 
 export type SaBaiAPIDomainGenderKey = (typeof saBaiAPIDomainGender)[keyof typeof saBaiAPIDomainGender];

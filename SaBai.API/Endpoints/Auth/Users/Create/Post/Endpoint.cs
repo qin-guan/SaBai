@@ -1,55 +1,45 @@
 using FastEndpoints;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using SaBai.API.Auth;
-using SaBai.API.Data;
 using SaBai.API.Domain;
 
 namespace SaBai.API.Endpoints.Auth.Users.Create.Post;
 
-public sealed class Endpoint(AppDbContext db, IWorkOsDirectory directory)
-    : Endpoint<Request, UserResponse>
+public sealed class Endpoint(UserManager<StaffUser> users) : Endpoint<Request, UserResponse>
 {
     public override void Configure()
     {
         Post("/auth/users");
         Roles(StaffRoles.Admin);
-        Summary(s => s.Summary = "Create a staff user in WorkOS");
+        Summary(s => s.Summary = "Create a staff user");
     }
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var email = req.Email.Trim();
-        var username = req.Username.Trim();
-        if (await db.StaffUsers.AnyAsync(x => x.Email == email || x.Username == username, ct))
+        var userName = req.UserName.Trim();
+        var email = string.IsNullOrWhiteSpace(req.Email) ? null : req.Email.Trim();
+        if (email is not null && await users.FindByEmailAsync(email) is not null)
         {
-            throw new ConflictException("A user with this email or username already exists.");
+            throw new ConflictException("A user with this email already exists.");
         }
 
-        var id = Guid.CreateVersion7();
-        var identity = await directory.CreateUserAsync(
-            email,
-            req.Password,
-            req.Nickname,
-            null,
-            id.ToString(),
-            ct
-        );
         var user = new StaffUser
         {
-            Id = id,
-            WorkOsUserId = identity.Id,
-            Username = username,
+            Id = Guid.CreateVersion7(),
+            UserName = userName,
             Email = email,
-            Nickname = string.IsNullOrWhiteSpace(req.Nickname) ? username : req.Nickname.Trim(),
-            Role = req.Role,
+            EmailConfirmed = email is not null,
+            Nickname = string.IsNullOrWhiteSpace(req.Nickname) ? userName : req.Nickname.Trim(),
             CreatedAt = DateTimeOffset.UtcNow,
         };
-        db.StaffUsers.Add(user);
-        await db.SaveChangesAsync(ct);
+        (await users.CreateAsync(user, req.Password)).ThrowIfFailed();
+
+        var roles = req.Roles is { Count: > 0 } ? req.Roles.Distinct() : [StaffRoles.Member];
+        (await users.AddToRolesAsync(user, roles)).ThrowIfFailed();
 
         await Send.CreatedAtAsync<Get.Endpoint>(
             new { user.Id },
-            UserResponse.From(user),
+            await UserResponse.FromAsync(user, users),
             cancellation: ct
         );
     }

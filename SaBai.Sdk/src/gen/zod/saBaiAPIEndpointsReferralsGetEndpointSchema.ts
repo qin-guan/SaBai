@@ -17,3 +17,7 @@ export const saBaiAPIEndpointsReferralsGetEndpointStatus403Schema = z.unknown()
 export const saBaiAPIEndpointsReferralsGetEndpointResponseSchema = saBaiAPIEndpointsReferralsGetEndpointStatus200Schema
 
 export const saBaiAPIEndpointsReferralsGetEndpointErrorSchema = z.union([saBaiAPIEndpointsReferralsGetEndpointStatus401Schema, saBaiAPIEndpointsReferralsGetEndpointStatus403Schema])
+
+export const saBaiAPIEndpointsReferralsGetEndpointPathSchema = z.object({
+  id: z.int32(),
+})

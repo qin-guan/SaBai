@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsPatientsUpdatePatchEndpointOptions } from '../types/SaBaiAPIEndpointsPatientsUpdatePatchEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsPatientsUpdatePatchEndpoint } from '../clients/saBaiAPIEndpointsPatientsUpdatePatchEndpoint'
 
 /**
  * @summary Update a patient
  * {@link /patients/:id}
  */
-export async function saBaiAPIEndpointsPatientsUpdatePatchEndpointHandler({ path, body }: SaBaiAPIEndpointsPatientsUpdatePatchEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsPatientsUpdatePatchEndpoint({ path, body, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsPatientsUpdatePatchEndpointHandler({ path, body }: SaBaiAPIEndpointsPatientsUpdatePatchEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsPatientsUpdatePatchEndpoint({ path, body, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

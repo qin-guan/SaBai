@@ -7,12 +7,12 @@ import type { SaBaiAPIEndpointsConsultsUpdatePatchRequest } from './SaBaiAPIEndp
 import type { SaBaiAPIEndpointsConsultsUpdatePatchResponse } from './SaBaiAPIEndpointsConsultsUpdatePatchResponse'
 
 export type SaBaiAPIEndpointsConsultsUpdatePatchEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
 };
 
 export type SaBaiAPIEndpointsConsultsUpdatePatchEndpointStatus200 = SaBaiAPIEndpointsConsultsUpdatePatchResponse;
@@ -24,19 +24,19 @@ export type SaBaiAPIEndpointsConsultsUpdatePatchEndpointStatus403 = unknown;
 export type SaBaiAPIEndpointsConsultsUpdatePatchEndpointBody = SaBaiAPIEndpointsConsultsUpdatePatchRequest;
 
 export type SaBaiAPIEndpointsConsultsUpdatePatchEndpointOptions = {
-    body: SaBaiAPIEndpointsConsultsUpdatePatchEndpointBody;
-    path: SaBaiAPIEndpointsConsultsUpdatePatchEndpointPath;
-    query?: never;
-    headers?: never;
+  body: SaBaiAPIEndpointsConsultsUpdatePatchEndpointBody;
+  path: SaBaiAPIEndpointsConsultsUpdatePatchEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsConsultsUpdatePatchEndpointResponses = {
-    "200": SaBaiAPIEndpointsConsultsUpdatePatchEndpointStatus200;
-    "401": SaBaiAPIEndpointsConsultsUpdatePatchEndpointStatus401;
-    "403": SaBaiAPIEndpointsConsultsUpdatePatchEndpointStatus403;
+  '200': SaBaiAPIEndpointsConsultsUpdatePatchEndpointStatus200;
+  '401': SaBaiAPIEndpointsConsultsUpdatePatchEndpointStatus401;
+  '403': SaBaiAPIEndpointsConsultsUpdatePatchEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsConsultsUpdatePatchEndpointResponse = SaBaiAPIEndpointsConsultsUpdatePatchEndpointStatus200;

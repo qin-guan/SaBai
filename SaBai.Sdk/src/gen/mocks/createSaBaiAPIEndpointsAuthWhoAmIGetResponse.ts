@@ -6,12 +6,10 @@
 import type { SaBaiAPIEndpointsAuthWhoAmIGetResponse } from '../types/SaBaiAPIEndpointsAuthWhoAmIGetResponse'
 import { createSaBaiAPIEndpointsAuthUserResponse } from './createSaBaiAPIEndpointsAuthUserResponse'
 
-export function createSaBaiAPIEndpointsAuthWhoAmIGetResponse<TData extends Partial<SaBaiAPIEndpointsAuthWhoAmIGetResponse> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsAuthWhoAmIGetResponse<TData extends Partial<SaBaiAPIEndpointsAuthWhoAmIGetResponse> = object>(data?: TData) {
   const defaultFakeData = {
-  user: createSaBaiAPIEndpointsAuthUserResponse(),
-}
+    user: createSaBaiAPIEndpointsAuthUserResponse(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

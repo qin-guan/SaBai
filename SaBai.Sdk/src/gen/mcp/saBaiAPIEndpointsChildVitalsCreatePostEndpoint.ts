@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsChildVitalsCreatePostEndpointOptions } from '../types/SaBaiAPIEndpointsChildVitalsCreatePostEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsChildVitalsCreatePostEndpoint } from '../clients/saBaiAPIEndpointsChildVitalsCreatePostEndpoint'
 
 /**
  * @summary Record child vitals
  * {@link /child-vitals}
  */
-export async function saBaiAPIEndpointsChildVitalsCreatePostEndpointHandler({ body }: SaBaiAPIEndpointsChildVitalsCreatePostEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsChildVitalsCreatePostEndpoint({ body, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsChildVitalsCreatePostEndpointHandler({ body }: SaBaiAPIEndpointsChildVitalsCreatePostEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsChildVitalsCreatePostEndpoint({ body, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

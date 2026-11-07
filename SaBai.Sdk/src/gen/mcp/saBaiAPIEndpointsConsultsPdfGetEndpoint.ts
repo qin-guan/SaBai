@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsConsultsPdfGetEndpointOptions } from '../types/SaBaiAPIEndpointsConsultsPdfGetEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsConsultsPdfGetEndpoint } from '../clients/saBaiAPIEndpointsConsultsPdfGetEndpoint'
 
 /**
  * @summary Download a consult as a PDF
  * {@link /consults/:id/pdf}
  */
-export async function saBaiAPIEndpointsConsultsPdfGetEndpointHandler({ path }: SaBaiAPIEndpointsConsultsPdfGetEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsConsultsPdfGetEndpoint({ path, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsConsultsPdfGetEndpointHandler({ path }: SaBaiAPIEndpointsConsultsPdfGetEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsConsultsPdfGetEndpoint({ path, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

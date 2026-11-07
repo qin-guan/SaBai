@@ -3,18 +3,16 @@
 * Do not edit manually.
 */
 
-import type { SaBaiAPIEndpointsEyesightUpdatePatchEndpointBody, SaBaiAPIEndpointsEyesightUpdatePatchEndpointPath, SaBaiAPIEndpointsEyesightUpdatePatchEndpointResponse, SaBaiAPIEndpointsEyesightUpdatePatchEndpointStatus200, SaBaiAPIEndpointsEyesightUpdatePatchEndpointStatus400, SaBaiAPIEndpointsEyesightUpdatePatchEndpointStatus401, SaBaiAPIEndpointsEyesightUpdatePatchEndpointStatus403 } from '../types/SaBaiAPIEndpointsEyesightUpdatePatchEndpoint'
+import type { SaBaiAPIEndpointsEyesightUpdatePatchEndpointBody, SaBaiAPIEndpointsEyesightUpdatePatchEndpointPath, SaBaiAPIEndpointsEyesightUpdatePatchEndpointResponse, SaBaiAPIEndpointsEyesightUpdatePatchEndpointStatus200, SaBaiAPIEndpointsEyesightUpdatePatchEndpointStatus400 } from '../types/SaBaiAPIEndpointsEyesightUpdatePatchEndpoint'
 import { createFastEndpointsProblemDetails } from './createFastEndpointsProblemDetails'
 import { createSaBaiAPIEndpointsEyesightUpdatePatchRequest } from './createSaBaiAPIEndpointsEyesightUpdatePatchRequest'
 import { createSaBaiAPIEndpointsEyesightUpdatePatchResponse } from './createSaBaiAPIEndpointsEyesightUpdatePatchResponse'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsEyesightUpdatePatchEndpointPath<TData extends Partial<SaBaiAPIEndpointsEyesightUpdatePatchEndpointPath> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsEyesightUpdatePatchEndpointPath<TData extends Partial<SaBaiAPIEndpointsEyesightUpdatePatchEndpointPath> = object>(data?: TData) {
   const defaultFakeData = {
-  id: faker.number.int(),
-}
+    id: faker.number.int(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

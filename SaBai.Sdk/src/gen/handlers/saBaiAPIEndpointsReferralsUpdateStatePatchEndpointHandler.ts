@@ -4,11 +4,12 @@
 */
 
 import type { SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointResponse, SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointStatus400, SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointStatus401, SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointStatus403, SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointBody } from '../types/SaBaiAPIEndpointsReferralsUpdateStatePatchEndpoint'
-import type { HttpResponseResolver } from 'msw'
-import { http } from 'msw'
+import type { HttpResponseResolver } from 'msw/http'
+import type { DefaultBodyType } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsReferralsUpdateStatePatchEndpointHandlerResponse200(data: SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -17,7 +18,7 @@ export function saBaiAPIEndpointsReferralsUpdateStatePatchEndpointHandlerRespons
 }
 
 export function saBaiAPIEndpointsReferralsUpdateStatePatchEndpointHandlerResponse400(data: SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointStatus400) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 400,
     headers: {
       'Content-Type': 'application/problem+json'
@@ -26,22 +27,22 @@ export function saBaiAPIEndpointsReferralsUpdateStatePatchEndpointHandlerRespons
 }
 
 export function saBaiAPIEndpointsReferralsUpdateStatePatchEndpointHandlerResponse401(data?: SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsReferralsUpdateStatePatchEndpointHandlerResponse403(data?: SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsReferralsUpdateStatePatchEndpointHandler(data?: SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointBody>) {
-  return http.patch<Record<string, string>, SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointBody>(`/referrals/:id/state`, function handler(info) {
+export function saBaiAPIEndpointsReferralsUpdateStatePatchEndpointHandler(data?: SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointBody : DefaultBodyType>, options?: { baseURL?: string }) {
+  return http.patch<Record<string, string>, SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointBody : DefaultBodyType>(`${options?.baseURL ?? ''}/referrals/:id/state`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

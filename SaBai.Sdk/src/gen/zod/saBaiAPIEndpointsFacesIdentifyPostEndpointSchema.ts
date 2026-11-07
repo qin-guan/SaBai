@@ -22,3 +22,8 @@ export const saBaiAPIEndpointsFacesIdentifyPostEndpointResponseSchema = saBaiAPI
 export const saBaiAPIEndpointsFacesIdentifyPostEndpointErrorSchema = z.union([saBaiAPIEndpointsFacesIdentifyPostEndpointStatus401Schema, saBaiAPIEndpointsFacesIdentifyPostEndpointStatus403Schema])
 
 export const saBaiAPIEndpointsFacesIdentifyPostEndpointBodySchema = saBaiAPIEndpointsFacesIdentifyPostRequestSchema
+
+export const saBaiAPIEndpointsFacesIdentifyPostEndpointQuerySchema = z.object({
+  threshold: z.number().nullish(),
+  maxMatches: z.int32(),
+})

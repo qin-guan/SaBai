@@ -12,19 +12,19 @@ export type SaBaiAPIEndpointsPatientsWithLatestVisitGetEndpointStatus401 = unkno
 export type SaBaiAPIEndpointsPatientsWithLatestVisitGetEndpointStatus403 = unknown;
 
 export type SaBaiAPIEndpointsPatientsWithLatestVisitGetEndpointOptions = {
-    body?: never;
-    path?: never;
-    query?: never;
-    headers?: never;
+  body?: never;
+  path?: never;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsPatientsWithLatestVisitGetEndpointResponses = {
-    "200": SaBaiAPIEndpointsPatientsWithLatestVisitGetEndpointStatus200;
-    "401": SaBaiAPIEndpointsPatientsWithLatestVisitGetEndpointStatus401;
-    "403": SaBaiAPIEndpointsPatientsWithLatestVisitGetEndpointStatus403;
+  '200': SaBaiAPIEndpointsPatientsWithLatestVisitGetEndpointStatus200;
+  '401': SaBaiAPIEndpointsPatientsWithLatestVisitGetEndpointStatus401;
+  '403': SaBaiAPIEndpointsPatientsWithLatestVisitGetEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsPatientsWithLatestVisitGetEndpointResponse = SaBaiAPIEndpointsPatientsWithLatestVisitGetEndpointStatus200;

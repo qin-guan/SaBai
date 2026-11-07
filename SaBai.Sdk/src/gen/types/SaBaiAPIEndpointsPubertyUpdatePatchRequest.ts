@@ -4,40 +4,40 @@
 */
 
 export type SaBaiAPIEndpointsPubertyUpdatePatchRequest = {
-    pubarche?: boolean | null;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer | undefined
-    */
-    pubarcheAge?: number | null;
-    thelarche?: boolean | null;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer | undefined
-    */
-    thelarcheAge?: number | null;
-    menarche?: boolean | null;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer | undefined
-    */
-    menarcheAge?: number | null;
-    voiceChange?: boolean | null;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer | undefined
-    */
-    voiceChangeAge?: number | null;
-    testicularGrowth?: boolean | null;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer | undefined
-    */
-    testicularGrowthAge?: number | null;
-    additionalNotes?: string | null;
+  pubarche?: boolean | null;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer | undefined
+   */
+  pubarcheAge?: number | null;
+  thelarche?: boolean | null;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer | undefined
+   */
+  thelarcheAge?: number | null;
+  menarche?: boolean | null;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer | undefined
+   */
+  menarcheAge?: number | null;
+  voiceChange?: boolean | null;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer | undefined
+   */
+  voiceChangeAge?: number | null;
+  testicularGrowth?: boolean | null;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer | undefined
+   */
+  testicularGrowthAge?: number | null;
+  additionalNotes?: string | null;
 };

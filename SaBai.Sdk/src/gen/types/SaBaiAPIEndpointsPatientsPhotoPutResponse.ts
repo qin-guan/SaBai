@@ -4,11 +4,11 @@
 */
 
 export type SaBaiAPIEndpointsPatientsPhotoPutResponse = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
-    hasPhoto: boolean;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
+  hasPhoto: boolean;
 };

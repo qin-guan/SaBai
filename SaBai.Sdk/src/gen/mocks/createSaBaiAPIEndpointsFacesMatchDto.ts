@@ -6,14 +6,12 @@
 import type { SaBaiAPIEndpointsFacesMatchDto } from '../types/SaBaiAPIEndpointsFacesMatchDto'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsFacesMatchDto<TData extends Partial<SaBaiAPIEndpointsFacesMatchDto> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsFacesMatchDto<TData extends Partial<SaBaiAPIEndpointsFacesMatchDto> = object>(data?: TData) {
   const defaultFakeData = {
-  personId: faker.string.alpha(),
-  faceId: faker.string.uuid(),
-  similarity: faker.number.float(),
-}
+    personId: faker.string.alpha(),
+    faceId: faker.string.uuid(),
+    similarity: faker.number.float(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

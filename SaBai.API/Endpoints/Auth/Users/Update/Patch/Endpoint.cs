@@ -1,49 +1,50 @@
 using FastEndpoints;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using SaBai.API.Auth;
-using SaBai.API.Data;
 using SaBai.API.Domain;
 
 namespace SaBai.API.Endpoints.Auth.Users.Update.Patch;
 
-public sealed class Endpoint(AppDbContext db, IWorkOsDirectory directory)
-    : Endpoint<Request, UserResponse>
+public sealed class Endpoint(UserManager<StaffUser> users) : Endpoint<Request, UserResponse>
 {
     public override void Configure()
     {
         Patch("/auth/users/{Id}");
         Roles(StaffRoles.Admin);
-        Summary(s => s.Summary = "Update a staff user");
+        Summary(s =>
+        {
+            s.Summary = "Update a staff user";
+            s.Description =
+                "Role changes reach the user's open sessions within a minute, without signing them out.";
+        });
     }
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var user = await db.StaffUsers.FirstOrNotFoundAsync(
-            x => x.Id == req.Id,
-            "Staff user was not found.",
-            ct
-        );
+        var user = await users.FindByIdOrNotFoundAsync(req.Id);
 
-        if (req.Username is not null)
+        if (req.UserName is not null && req.UserName.Trim() != user.UserName)
         {
-            var username = req.Username.Trim();
-            if (await db.StaffUsers.AnyAsync(x => x.Id != user.Id && x.Username == username, ct))
-            {
-                throw new ConflictException("A user with this username already exists.");
-            }
-
-            user.Username = username;
+            (await users.SetUserNameAsync(user, req.UserName.Trim())).ThrowIfFailed();
         }
 
         if (req.Email is not null)
         {
-            var email = req.Email.Trim();
-            if (await db.StaffUsers.AnyAsync(x => x.Id != user.Id && x.Email == email, ct))
+            var email = string.IsNullOrWhiteSpace(req.Email) ? null : req.Email.Trim();
+            if (
+                email is not null
+                && await users.FindByEmailAsync(email) is { } other
+                && other.Id != user.Id
+            )
             {
                 throw new ConflictException("A user with this email already exists.");
             }
 
-            user.Email = email;
+            if (email != user.Email)
+            {
+                (await users.SetEmailAsync(user, email)).ThrowIfFailed();
+                user.EmailConfirmed = email is not null;
+            }
         }
 
         if (req.Nickname is not null)
@@ -51,17 +52,34 @@ public sealed class Endpoint(AppDbContext db, IWorkOsDirectory directory)
             user.Nickname = req.Nickname.Trim();
         }
 
-        if (req.Role is { } role)
+        (await users.UpdateAsync(user)).ThrowIfFailed();
+
+        if (req.Roles is not null)
         {
-            user.Role = role;
+            var wanted = req.Roles.Distinct().ToList();
+            var current = await users.GetRolesAsync(user);
+            if (
+                user.Id == User.Id()
+                && current.Contains(StaffRoles.Admin)
+                && !wanted.Contains(StaffRoles.Admin)
+            )
+            {
+                throw new BadRequestException("You cannot remove your own admin role.");
+            }
+
+            var remove = current.Except(wanted).ToList();
+            var add = wanted.Except(current).ToList();
+            if (remove.Count > 0)
+            {
+                (await users.RemoveFromRolesAsync(user, remove)).ThrowIfFailed();
+            }
+
+            if (add.Count > 0)
+            {
+                (await users.AddToRolesAsync(user, add)).ThrowIfFailed();
+            }
         }
 
-        if (!string.IsNullOrWhiteSpace(req.Password))
-        {
-            await directory.UpdatePasswordAsync(user.WorkOsUserId, req.Password, ct);
-        }
-
-        await db.SaveChangesAsync(ct);
-        await Send.OkAsync(UserResponse.From(user), ct);
+        await Send.OkAsync(await UserResponse.FromAsync(user, users), ct);
     }
 }

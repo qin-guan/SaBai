@@ -4,10 +4,10 @@
 */
 
 export const saBaiAPIDomainPlaqueLevel = {
-    None: "None",
-    Mild: "Mild",
-    Moderate: "Moderate",
-    Heavy: "Heavy"
+  None: 'None',
+  Mild: 'Mild',
+  Moderate: 'Moderate',
+  Heavy: 'Heavy',
 } as const;
 
 export type SaBaiAPIDomainPlaqueLevelKey = (typeof saBaiAPIDomainPlaqueLevel)[keyof typeof saBaiAPIDomainPlaqueLevel];

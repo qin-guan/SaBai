@@ -8,20 +8,21 @@ import type { SaBaiAPIEndpointsEyesightUpdateByVisitPatchRequest } from './SaBai
 import type { SaBaiAPIEndpointsEyesightUpdateByVisitPatchResponse } from './SaBaiAPIEndpointsEyesightUpdateByVisitPatchResponse'
 
 export type SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    visitId: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  visitId: number;
 };
 
 export type SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointStatus200 = SaBaiAPIEndpointsEyesightUpdateByVisitPatchResponse;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointStatus401 = unknown;
@@ -31,20 +32,20 @@ export type SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointStatus403 = unkno
 export type SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointBody = SaBaiAPIEndpointsEyesightUpdateByVisitPatchRequest;
 
 export type SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointOptions = {
-    body: SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointBody;
-    path: SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointPath;
-    query?: never;
-    headers?: never;
+  body: SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointBody;
+  path: SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointResponses = {
-    "200": SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointStatus200;
-    "400": SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointStatus400;
-    "401": SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointStatus401;
-    "403": SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointStatus403;
+  '200': SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointStatus200;
+  '400': SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointStatus400;
+  '401': SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointStatus401;
+  '403': SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointResponse = SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointStatus200;

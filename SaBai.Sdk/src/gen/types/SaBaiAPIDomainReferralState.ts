@@ -4,13 +4,13 @@
 */
 
 export const saBaiAPIDomainReferralState = {
-    New: "New",
-    Seen: "Seen",
-    Outgoing: "Outgoing",
-    Completed: "Completed",
-    CompletedSuccess: "CompletedSuccess",
-    CompletedFailure: "CompletedFailure",
-    None: "None"
+  New: 'New',
+  Seen: 'Seen',
+  Outgoing: 'Outgoing',
+  Completed: 'Completed',
+  CompletedSuccess: 'CompletedSuccess',
+  CompletedFailure: 'CompletedFailure',
+  None: 'None',
 } as const;
 
 export type SaBaiAPIDomainReferralStateKey = (typeof saBaiAPIDomainReferralState)[keyof typeof saBaiAPIDomainReferralState];

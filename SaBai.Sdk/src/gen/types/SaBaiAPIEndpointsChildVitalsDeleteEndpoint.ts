@@ -6,20 +6,21 @@
 import type { FastEndpointsProblemDetails } from './FastEndpointsProblemDetails'
 
 export type SaBaiAPIEndpointsChildVitalsDeleteEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
 };
 
 export type SaBaiAPIEndpointsChildVitalsDeleteEndpointStatus204 = unknown;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsChildVitalsDeleteEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsChildVitalsDeleteEndpointStatus401 = unknown;
@@ -27,20 +28,20 @@ export type SaBaiAPIEndpointsChildVitalsDeleteEndpointStatus401 = unknown;
 export type SaBaiAPIEndpointsChildVitalsDeleteEndpointStatus403 = unknown;
 
 export type SaBaiAPIEndpointsChildVitalsDeleteEndpointOptions = {
-    body?: never;
-    path: SaBaiAPIEndpointsChildVitalsDeleteEndpointPath;
-    query?: never;
-    headers?: never;
+  body?: never;
+  path: SaBaiAPIEndpointsChildVitalsDeleteEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsChildVitalsDeleteEndpointResponses = {
-    "204": SaBaiAPIEndpointsChildVitalsDeleteEndpointStatus204;
-    "400": SaBaiAPIEndpointsChildVitalsDeleteEndpointStatus400;
-    "401": SaBaiAPIEndpointsChildVitalsDeleteEndpointStatus401;
-    "403": SaBaiAPIEndpointsChildVitalsDeleteEndpointStatus403;
+  '204': SaBaiAPIEndpointsChildVitalsDeleteEndpointStatus204;
+  '400': SaBaiAPIEndpointsChildVitalsDeleteEndpointStatus400;
+  '401': SaBaiAPIEndpointsChildVitalsDeleteEndpointStatus401;
+  '403': SaBaiAPIEndpointsChildVitalsDeleteEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsChildVitalsDeleteEndpointResponse = SaBaiAPIEndpointsChildVitalsDeleteEndpointStatus204;

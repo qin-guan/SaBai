@@ -1,50 +1,103 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
-import { useMutation } from "@tanstack/react-query";
-import { saBaiAPIEndpointsAuthLoginPostEndpointMutationOptions } from "@sabai/sdk/hooks";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  saBaiAPIEndpointsAuthLoginPostEndpointMutationOptions,
+  saBaiAPIEndpointsAuthLoginRecoveryCodePostEndpointMutationOptions,
+  saBaiAPIEndpointsAuthLoginTwoFactorPostEndpointMutationOptions,
+} from "@sabai/sdk/hooks";
+import type { SaBaiAPIEndpointsAuthSignInResponse } from "@sabai/sdk/types";
 import { apiConfig } from "@/lib/api/config";
-import { getApiErrorMessage } from "@/lib/api/errors";
-import { setToken } from "@/lib/api/token";
+import { getApiErrorMessage, getApiErrorStatus } from "@/lib/api/errors";
 import { paths } from "@/utils/paths";
+
+type Step = "password" | "code" | "recovery";
 
 function useLogin() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const queryClient = useQueryClient();
+  const [step, setStep] = useState<Step>("password");
+  const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
+  const [code, setCode] = useState("");
+  const [rememberMachine, setRememberMachine] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const login = useMutation(
     saBaiAPIEndpointsAuthLoginPostEndpointMutationOptions(apiConfig),
   );
+  const twoFactor = useMutation(
+    saBaiAPIEndpointsAuthLoginTwoFactorPostEndpointMutationOptions(apiConfig),
+  );
+  const recovery = useMutation(
+    saBaiAPIEndpointsAuthLoginRecoveryCodePostEndpointMutationOptions(apiConfig),
+  );
+
+  const submit = (): Promise<SaBaiAPIEndpointsAuthSignInResponse> => {
+    if (step === "password") {
+      return login.mutateAsync({ body: { userName, password } });
+    }
+    if (step === "recovery") {
+      return recovery.mutateAsync({ body: { recoveryCode: code } });
+    }
+    return twoFactor.mutateAsync({ body: { code, rememberMachine } });
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
 
     try {
-      const result = await login.mutateAsync({ body: { email, password } });
-      setToken(result.accessToken, result.expiresAt);
+      const result = await submit();
+      if (result.requiresTwoFactor || !result.user) {
+        // Password accepted; the account has two-factor on.
+        setStep("code");
+        setCode("");
+        return;
+      }
 
+      queryClient.clear();
       const { redirectTo } = router.query;
       router.push(
-        typeof redirectTo === "string" && redirectTo
+        typeof redirectTo === "string" && redirectTo.startsWith("/")
           ? redirectTo
           : paths.home(),
       );
     } catch (err) {
-      setError(getApiErrorMessage(err, "Invalid email or password."));
+      const status = getApiErrorStatus(err);
+      if (step !== "password" && status === 401) {
+        setError("That code is not valid.");
+      } else if (status === 401) {
+        setError("Invalid username or password.");
+      } else {
+        setError(getApiErrorMessage(err, "Unable to sign in."));
+      }
     }
   };
 
+  const reset = () => {
+    setStep("password");
+    setPassword("");
+    setCode("");
+    setError(null);
+  };
+
   return {
-    email,
-    setEmail,
+    step,
+    setStep,
+    userName,
+    setUserName,
     password,
     setPassword,
-    loading: login.isPending,
+    code,
+    setCode,
+    rememberMachine,
+    setRememberMachine,
+    loading: login.isPending || twoFactor.isPending || recovery.isPending,
     error,
     handleSubmit,
+    reset,
   };
 }
 
@@ -77,13 +130,20 @@ const inputClass =
 
 export default function Login() {
   const {
-    email,
-    setEmail,
+    step,
+    setStep,
+    userName,
+    setUserName,
     password,
     setPassword,
+    code,
+    setCode,
+    rememberMachine,
+    setRememberMachine,
     loading,
     error,
     handleSubmit,
+    reset,
   } = useLogin();
 
   return (
@@ -110,50 +170,92 @@ export default function Login() {
               className="mx-auto mb-4"
             />
             <h2 className="text-2xl font-bold text-slate-900">Welcome</h2>
-            <p className="mt-2 text-sm text-slate-500">Log in to Sabai.</p>
+            <p className="mt-2 text-sm text-slate-500">
+              {step === "password"
+                ? "Log in to Sabai."
+                : step === "code"
+                  ? "Enter the 6-digit code from your authenticator app."
+                  : "Enter one of your saved recovery codes."}
+            </p>
           </div>
 
           {/* Form */}
           <form className="space-y-4" onSubmit={handleSubmit}>
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-slate-700 mb-1"
-              >
-                Email address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className={inputClass}
-                placeholder="you@example.com"
-              />
-            </div>
+            {step === "password" ? (
+              <>
+                <div>
+                  <label
+                    htmlFor="username"
+                    className="block text-sm font-medium text-slate-700 mb-1"
+                  >
+                    Username or email
+                  </label>
+                  <input
+                    id="username"
+                    name="username"
+                    autoComplete="username"
+                    autoCapitalize="none"
+                    required
+                    value={userName}
+                    onChange={(e) => setUserName(e.target.value)}
+                    className={inputClass}
+                  />
+                </div>
 
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-slate-700 mb-1"
-              >
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className={inputClass}
-                placeholder="••••••••"
-              />
-            </div>
+                <div>
+                  <label
+                    htmlFor="password"
+                    className="block text-sm font-medium text-slate-700 mb-1"
+                  >
+                    Password
+                  </label>
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    autoComplete="current-password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className={inputClass}
+                    placeholder="••••••••"
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                <div>
+                  <label
+                    htmlFor="code"
+                    className="block text-sm font-medium text-slate-700 mb-1"
+                  >
+                    {step === "code" ? "Authentication code" : "Recovery code"}
+                  </label>
+                  <input
+                    id="code"
+                    name="code"
+                    inputMode={step === "code" ? "numeric" : "text"}
+                    autoComplete="one-time-code"
+                    autoCapitalize="none"
+                    required
+                    autoFocus
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                    className={`${inputClass} font-mono tracking-widest`}
+                  />
+                </div>
+                {step === "code" && (
+                  <label className="flex items-center gap-2 text-sm text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={rememberMachine}
+                      onChange={(e) => setRememberMachine(e.target.checked)}
+                    />
+                    Don&apos;t ask for a code on this device again
+                  </label>
+                )}
+              </>
+            )}
 
             {error && <ErrorBanner message={error} />}
 
@@ -162,8 +264,36 @@ export default function Login() {
               disabled={loading}
               className="flex w-full justify-center rounded-lg bg-violet-600 px-3 py-2.5 text-sm font-semibold text-white hover:bg-violet-700 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
             >
-              {loading ? "Signing in..." : "Continue"}
+              {loading
+                ? "Signing in..."
+                : step === "password"
+                  ? "Continue"
+                  : "Verify"}
             </button>
+
+            {step !== "password" && (
+              <div className="flex justify-between text-sm">
+                <button
+                  type="button"
+                  className="text-violet-700 hover:underline"
+                  onClick={reset}
+                >
+                  Back
+                </button>
+                <button
+                  type="button"
+                  className="text-violet-700 hover:underline"
+                  onClick={() => {
+                    setCode("");
+                    setStep(step === "code" ? "recovery" : "code");
+                  }}
+                >
+                  {step === "code"
+                    ? "Use a recovery code"
+                    : "Use authenticator code"}
+                </button>
+              </div>
+            )}
           </form>
         </div>
       </div>

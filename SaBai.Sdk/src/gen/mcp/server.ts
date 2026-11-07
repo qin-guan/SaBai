@@ -3,12 +3,24 @@
 * Do not edit manually.
 */
 
+import { saBaiAPIEndpointsAuthAccountAuthenticatorPostEndpointHandler } from './saBaiAPIEndpointsAuthAccountAuthenticatorPostEndpoint'
+import { saBaiAPIEndpointsAuthAccountPasswordPostEndpointHandler } from './saBaiAPIEndpointsAuthAccountPasswordPostEndpoint'
+import { saBaiAPIEndpointsAuthAccountRecoveryCodesPostEndpointHandler } from './saBaiAPIEndpointsAuthAccountRecoveryCodesPostEndpoint'
+import { saBaiAPIEndpointsAuthAccountTwoFactorDisablePostEndpointHandler } from './saBaiAPIEndpointsAuthAccountTwoFactorDisablePostEndpoint'
+import { saBaiAPIEndpointsAuthAccountTwoFactorEnablePostEndpointHandler } from './saBaiAPIEndpointsAuthAccountTwoFactorEnablePostEndpoint'
+import { saBaiAPIEndpointsAuthAccountTwoFactorGetEndpointHandler } from './saBaiAPIEndpointsAuthAccountTwoFactorGetEndpoint'
 import { saBaiAPIEndpointsAuthLoginPostEndpointHandler } from './saBaiAPIEndpointsAuthLoginPostEndpoint'
+import { saBaiAPIEndpointsAuthLoginRecoveryCodePostEndpointHandler } from './saBaiAPIEndpointsAuthLoginRecoveryCodePostEndpoint'
+import { saBaiAPIEndpointsAuthLoginTwoFactorPostEndpointHandler } from './saBaiAPIEndpointsAuthLoginTwoFactorPostEndpoint'
+import { saBaiAPIEndpointsAuthLogoutPostEndpointHandler } from './saBaiAPIEndpointsAuthLogoutPostEndpoint'
+import { saBaiAPIEndpointsAuthRolesListGetEndpointHandler } from './saBaiAPIEndpointsAuthRolesListGetEndpoint'
 import { saBaiAPIEndpointsAuthUsersCreatePostEndpointHandler } from './saBaiAPIEndpointsAuthUsersCreatePostEndpoint'
 import { saBaiAPIEndpointsAuthUsersDeleteDeleteEndpointHandler } from './saBaiAPIEndpointsAuthUsersDeleteDeleteEndpoint'
 import { saBaiAPIEndpointsAuthUsersGetEndpointHandler } from './saBaiAPIEndpointsAuthUsersGetEndpoint'
 import { saBaiAPIEndpointsAuthUsersListGetEndpointHandler } from './saBaiAPIEndpointsAuthUsersListGetEndpoint'
 import { saBaiAPIEndpointsAuthUsersLockPostEndpointHandler } from './saBaiAPIEndpointsAuthUsersLockPostEndpoint'
+import { saBaiAPIEndpointsAuthUsersResetPasswordPostEndpointHandler } from './saBaiAPIEndpointsAuthUsersResetPasswordPostEndpoint'
+import { saBaiAPIEndpointsAuthUsersResetTwoFactorPostEndpointHandler } from './saBaiAPIEndpointsAuthUsersResetTwoFactorPostEndpoint'
 import { saBaiAPIEndpointsAuthUsersUnlockPostEndpointHandler } from './saBaiAPIEndpointsAuthUsersUnlockPostEndpoint'
 import { saBaiAPIEndpointsAuthUsersUpdatePatchEndpointHandler } from './saBaiAPIEndpointsAuthUsersUpdatePatchEndpoint'
 import { saBaiAPIEndpointsAuthWhoAmIGetEndpointHandler } from './saBaiAPIEndpointsAuthWhoAmIGetEndpoint'
@@ -130,12 +142,24 @@ import { saBaiAPIEndpointsVitalsGetEndpointHandler } from './saBaiAPIEndpointsVi
 import { saBaiAPIEndpointsVitalsListByPatientGetEndpointHandler } from './saBaiAPIEndpointsVitalsListByPatientGetEndpoint'
 import { saBaiAPIEndpointsVitalsUpdateByVisitPatchEndpointHandler } from './saBaiAPIEndpointsVitalsUpdateByVisitPatchEndpoint'
 import { saBaiAPIEndpointsVitalsUpdatePatchEndpointHandler } from './saBaiAPIEndpointsVitalsUpdatePatchEndpoint'
+import { saBaiAPIEndpointsAuthAccountAuthenticatorPostEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsAuthAccountAuthenticatorPostEndpointSchema'
+import { saBaiAPIEndpointsAuthAccountPasswordPostEndpointBodySchema, saBaiAPIEndpointsAuthAccountPasswordPostEndpointStatus204Schema } from '../zod/saBaiAPIEndpointsAuthAccountPasswordPostEndpointSchema'
+import { saBaiAPIEndpointsAuthAccountRecoveryCodesPostEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsAuthAccountRecoveryCodesPostEndpointSchema'
+import { saBaiAPIEndpointsAuthAccountTwoFactorDisablePostEndpointBodySchema, saBaiAPIEndpointsAuthAccountTwoFactorDisablePostEndpointStatus204Schema } from '../zod/saBaiAPIEndpointsAuthAccountTwoFactorDisablePostEndpointSchema'
+import { saBaiAPIEndpointsAuthAccountTwoFactorEnablePostEndpointBodySchema, saBaiAPIEndpointsAuthAccountTwoFactorEnablePostEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsAuthAccountTwoFactorEnablePostEndpointSchema'
+import { saBaiAPIEndpointsAuthAccountTwoFactorGetEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsAuthAccountTwoFactorGetEndpointSchema'
 import { saBaiAPIEndpointsAuthLoginPostEndpointBodySchema, saBaiAPIEndpointsAuthLoginPostEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsAuthLoginPostEndpointSchema'
+import { saBaiAPIEndpointsAuthLoginRecoveryCodePostEndpointBodySchema, saBaiAPIEndpointsAuthLoginRecoveryCodePostEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsAuthLoginRecoveryCodePostEndpointSchema'
+import { saBaiAPIEndpointsAuthLoginTwoFactorPostEndpointBodySchema, saBaiAPIEndpointsAuthLoginTwoFactorPostEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsAuthLoginTwoFactorPostEndpointSchema'
+import { saBaiAPIEndpointsAuthLogoutPostEndpointStatus204Schema } from '../zod/saBaiAPIEndpointsAuthLogoutPostEndpointSchema'
+import { saBaiAPIEndpointsAuthRolesListGetEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsAuthRolesListGetEndpointSchema'
 import { saBaiAPIEndpointsAuthUsersCreatePostEndpointBodySchema, saBaiAPIEndpointsAuthUsersCreatePostEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsAuthUsersCreatePostEndpointSchema'
 import { saBaiAPIEndpointsAuthUsersDeleteDeleteEndpointPathIdSchema, saBaiAPIEndpointsAuthUsersDeleteDeleteEndpointStatus204Schema } from '../zod/saBaiAPIEndpointsAuthUsersDeleteDeleteEndpointSchema'
 import { saBaiAPIEndpointsAuthUsersGetEndpointPathIdSchema, saBaiAPIEndpointsAuthUsersGetEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsAuthUsersGetEndpointSchema'
 import { saBaiAPIEndpointsAuthUsersListGetEndpointQueryEmailSchema, saBaiAPIEndpointsAuthUsersListGetEndpointQueryIsLockedSchema, saBaiAPIEndpointsAuthUsersListGetEndpointQueryRoleSchema, saBaiAPIEndpointsAuthUsersListGetEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsAuthUsersListGetEndpointSchema'
 import { saBaiAPIEndpointsAuthUsersLockPostEndpointPathIdSchema, saBaiAPIEndpointsAuthUsersLockPostEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsAuthUsersLockPostEndpointSchema'
+import { saBaiAPIEndpointsAuthUsersResetPasswordPostEndpointBodySchema, saBaiAPIEndpointsAuthUsersResetPasswordPostEndpointPathIdSchema, saBaiAPIEndpointsAuthUsersResetPasswordPostEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsAuthUsersResetPasswordPostEndpointSchema'
+import { saBaiAPIEndpointsAuthUsersResetTwoFactorPostEndpointPathIdSchema, saBaiAPIEndpointsAuthUsersResetTwoFactorPostEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsAuthUsersResetTwoFactorPostEndpointSchema'
 import { saBaiAPIEndpointsAuthUsersUnlockPostEndpointPathIdSchema, saBaiAPIEndpointsAuthUsersUnlockPostEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsAuthUsersUnlockPostEndpointSchema'
 import { saBaiAPIEndpointsAuthUsersUpdatePatchEndpointBodySchema, saBaiAPIEndpointsAuthUsersUpdatePatchEndpointPathIdSchema, saBaiAPIEndpointsAuthUsersUpdatePatchEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsAuthUsersUpdatePatchEndpointSchema'
 import { saBaiAPIEndpointsAuthWhoAmIGetEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsAuthWhoAmIGetEndpointSchema'
@@ -257,8 +281,8 @@ import { saBaiAPIEndpointsVitalsGetEndpointPathIdSchema, saBaiAPIEndpointsVitals
 import { saBaiAPIEndpointsVitalsListByPatientGetEndpointPathPatientIdSchema, saBaiAPIEndpointsVitalsListByPatientGetEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsVitalsListByPatientGetEndpointSchema'
 import { saBaiAPIEndpointsVitalsUpdateByVisitPatchEndpointBodySchema, saBaiAPIEndpointsVitalsUpdateByVisitPatchEndpointPathVisitIdSchema, saBaiAPIEndpointsVitalsUpdateByVisitPatchEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsVitalsUpdateByVisitPatchEndpointSchema'
 import { saBaiAPIEndpointsVitalsUpdatePatchEndpointBodySchema, saBaiAPIEndpointsVitalsUpdatePatchEndpointPathIdSchema, saBaiAPIEndpointsVitalsUpdatePatchEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsVitalsUpdatePatchEndpointSchema'
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
+import { serveStdio } from '@modelcontextprotocol/server/stdio'
+import { McpServer } from '@modelcontextprotocol/server'
 import { z } from 'zod'
 
 export function getServer() {
@@ -267,1262 +291,1377 @@ export function getServer() {
     version: '1.0.0',
   })
 
+  server.registerTool("SaBaiAPIEndpointsAuthAccountAuthenticatorPostEndpoint", {
+    title: "Start authenticator (TOTP) setup",
+    description: "Generates a new authenticator secret. Two-factor stays off until the code from the app is confirmed with `POST /auth/account/two-factor/enable`.",
+    outputSchema: z.object({ data: saBaiAPIEndpointsAuthAccountAuthenticatorPostEndpointStatus200Schema }),
+  }, async (ctx) => {
+    return saBaiAPIEndpointsAuthAccountAuthenticatorPostEndpointHandler(ctx)
+  })
+
+
+  server.registerTool("SaBaiAPIEndpointsAuthAccountPasswordPostEndpoint", {
+    title: "Change your password",
+    description: "Signs out your other sessions; this one stays signed in.",
+    outputSchema: z.object({ data: saBaiAPIEndpointsAuthAccountPasswordPostEndpointStatus204Schema }),
+    inputSchema: z.object({ body: saBaiAPIEndpointsAuthAccountPasswordPostEndpointBodySchema }),
+  }, async ({ body }, ctx) => {
+    return saBaiAPIEndpointsAuthAccountPasswordPostEndpointHandler({ body }, ctx)
+  })
+
+
+  server.registerTool("SaBaiAPIEndpointsAuthAccountRecoveryCodesPostEndpoint", {
+    title: "Replace your recovery codes",
+    description: "Make a POST request to /auth/account/recovery-codes",
+    outputSchema: z.object({ data: saBaiAPIEndpointsAuthAccountRecoveryCodesPostEndpointStatus200Schema }),
+  }, async (ctx) => {
+    return saBaiAPIEndpointsAuthAccountRecoveryCodesPostEndpointHandler(ctx)
+  })
+
+
+  server.registerTool("SaBaiAPIEndpointsAuthAccountTwoFactorGetEndpoint", {
+    title: "Get your two-factor status",
+    description: "Make a GET request to /auth/account/two-factor",
+    outputSchema: z.object({ data: saBaiAPIEndpointsAuthAccountTwoFactorGetEndpointStatus200Schema }),
+  }, async (ctx) => {
+    return saBaiAPIEndpointsAuthAccountTwoFactorGetEndpointHandler(ctx)
+  })
+
+
+  server.registerTool("SaBaiAPIEndpointsAuthAccountTwoFactorDisablePostEndpoint", {
+    title: "Turn off two-factor authentication",
+    description: "Make a POST request to /auth/account/two-factor/disable",
+    outputSchema: z.object({ data: saBaiAPIEndpointsAuthAccountTwoFactorDisablePostEndpointStatus204Schema }),
+    inputSchema: z.object({ body: saBaiAPIEndpointsAuthAccountTwoFactorDisablePostEndpointBodySchema }),
+  }, async ({ body }, ctx) => {
+    return saBaiAPIEndpointsAuthAccountTwoFactorDisablePostEndpointHandler({ body }, ctx)
+  })
+
+
+  server.registerTool("SaBaiAPIEndpointsAuthAccountTwoFactorEnablePostEndpoint", {
+    title: "Turn on two-factor authentication",
+    description: "Confirms the authenticator from `POST /auth/account/authenticator` and returns ten one-time recovery codes.",
+    outputSchema: z.object({ data: saBaiAPIEndpointsAuthAccountTwoFactorEnablePostEndpointStatus200Schema }),
+    inputSchema: z.object({ body: saBaiAPIEndpointsAuthAccountTwoFactorEnablePostEndpointBodySchema }),
+  }, async ({ body }, ctx) => {
+    return saBaiAPIEndpointsAuthAccountTwoFactorEnablePostEndpointHandler({ body }, ctx)
+  })
+
+
   server.registerTool("SaBaiAPIEndpointsAuthLoginPostEndpoint", {
-    title: "Sign in with email and password",
-    description: "Authenticates with WorkOS and returns a bearer token for this API.",
-    outputSchema: { data: saBaiAPIEndpointsAuthLoginPostEndpointStatus200Schema },
-    inputSchema: { body: saBaiAPIEndpointsAuthLoginPostEndpointBodySchema },
-  }, async ({ body }, request) => {
-    return saBaiAPIEndpointsAuthLoginPostEndpointHandler({ body }, request)
+    title: "Sign in with username and password",
+    description: "Checks the password with ASP.NET Core Identity and sets the session cookie. Repeated failures lock the account for a few minutes. When the account has two-factor on, no session is created yet: `requiresTwoFactor` is true and the client continues with `POST /auth/login/two-factor`.",
+    outputSchema: z.object({ data: saBaiAPIEndpointsAuthLoginPostEndpointStatus200Schema }),
+    inputSchema: z.object({ body: saBaiAPIEndpointsAuthLoginPostEndpointBodySchema }),
+  }, async ({ body }, ctx) => {
+    return saBaiAPIEndpointsAuthLoginPostEndpointHandler({ body }, ctx)
+  })
+
+
+  server.registerTool("SaBaiAPIEndpointsAuthLoginRecoveryCodePostEndpoint", {
+    title: "Finish sign-in with a one-time recovery code",
+    description: "Must follow a `POST /auth/login` that returned `requiresTwoFactor`. Each recovery code works once.",
+    outputSchema: z.object({ data: saBaiAPIEndpointsAuthLoginRecoveryCodePostEndpointStatus200Schema }),
+    inputSchema: z.object({ body: saBaiAPIEndpointsAuthLoginRecoveryCodePostEndpointBodySchema }),
+  }, async ({ body }, ctx) => {
+    return saBaiAPIEndpointsAuthLoginRecoveryCodePostEndpointHandler({ body }, ctx)
+  })
+
+
+  server.registerTool("SaBaiAPIEndpointsAuthLoginTwoFactorPostEndpoint", {
+    title: "Finish sign-in with an authenticator code",
+    description: "Must follow a `POST /auth/login` that returned `requiresTwoFactor`. Sets the session cookie on success.",
+    outputSchema: z.object({ data: saBaiAPIEndpointsAuthLoginTwoFactorPostEndpointStatus200Schema }),
+    inputSchema: z.object({ body: saBaiAPIEndpointsAuthLoginTwoFactorPostEndpointBodySchema }),
+  }, async ({ body }, ctx) => {
+    return saBaiAPIEndpointsAuthLoginTwoFactorPostEndpointHandler({ body }, ctx)
+  })
+
+
+  server.registerTool("SaBaiAPIEndpointsAuthLogoutPostEndpoint", {
+    title: "Sign out and clear the session cookie",
+    description: "Make a POST request to /auth/logout",
+    outputSchema: z.object({ data: saBaiAPIEndpointsAuthLogoutPostEndpointStatus204Schema }),
+  }, async (ctx) => {
+    return saBaiAPIEndpointsAuthLogoutPostEndpointHandler(ctx)
+  })
+
+
+  server.registerTool("SaBaiAPIEndpointsAuthRolesListGetEndpoint", {
+    title: "List assignable roles",
+    description: "Make a GET request to /auth/roles",
+    outputSchema: z.object({ data: saBaiAPIEndpointsAuthRolesListGetEndpointStatus200Schema }),
+  }, async (ctx) => {
+    return saBaiAPIEndpointsAuthRolesListGetEndpointHandler(ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsAuthUsersListGetEndpoint", {
     title: "List staff users",
     description: "Make a GET request to /auth/users",
-    outputSchema: { data: saBaiAPIEndpointsAuthUsersListGetEndpointStatus200Schema },
-    inputSchema: { query: z.object({ "role": saBaiAPIEndpointsAuthUsersListGetEndpointQueryRoleSchema, "email": saBaiAPIEndpointsAuthUsersListGetEndpointQueryEmailSchema, "isLocked": saBaiAPIEndpointsAuthUsersListGetEndpointQueryIsLockedSchema }) },
-  }, async ({ query }, request) => {
-    return saBaiAPIEndpointsAuthUsersListGetEndpointHandler({ query }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsAuthUsersListGetEndpointStatus200Schema }),
+    inputSchema: z.object({ query: z.object({ "role": saBaiAPIEndpointsAuthUsersListGetEndpointQueryRoleSchema, "email": saBaiAPIEndpointsAuthUsersListGetEndpointQueryEmailSchema, "isLocked": saBaiAPIEndpointsAuthUsersListGetEndpointQueryIsLockedSchema }) }),
+  }, async ({ query }, ctx) => {
+    return saBaiAPIEndpointsAuthUsersListGetEndpointHandler({ query }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsAuthUsersCreatePostEndpoint", {
-    title: "Create a staff user in WorkOS",
+    title: "Create a staff user",
     description: "Make a POST request to /auth/users",
-    outputSchema: { data: saBaiAPIEndpointsAuthUsersCreatePostEndpointStatus200Schema },
-    inputSchema: { body: saBaiAPIEndpointsAuthUsersCreatePostEndpointBodySchema },
-  }, async ({ body }, request) => {
-    return saBaiAPIEndpointsAuthUsersCreatePostEndpointHandler({ body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsAuthUsersCreatePostEndpointStatus200Schema }),
+    inputSchema: z.object({ body: saBaiAPIEndpointsAuthUsersCreatePostEndpointBodySchema }),
+  }, async ({ body }, ctx) => {
+    return saBaiAPIEndpointsAuthUsersCreatePostEndpointHandler({ body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsAuthUsersUpdatePatchEndpoint", {
     title: "Update a staff user",
-    description: "Make a PATCH request to /auth/users/{id}",
-    outputSchema: { data: saBaiAPIEndpointsAuthUsersUpdatePatchEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsAuthUsersUpdatePatchEndpointPathIdSchema }), body: saBaiAPIEndpointsAuthUsersUpdatePatchEndpointBodySchema },
-  }, async ({ path, body }, request) => {
-    return saBaiAPIEndpointsAuthUsersUpdatePatchEndpointHandler({ path, body }, request)
+    description: "Role changes reach the user's open sessions within a minute, without signing them out.",
+    outputSchema: z.object({ data: saBaiAPIEndpointsAuthUsersUpdatePatchEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsAuthUsersUpdatePatchEndpointPathIdSchema }), body: saBaiAPIEndpointsAuthUsersUpdatePatchEndpointBodySchema }),
+  }, async ({ path, body }, ctx) => {
+    return saBaiAPIEndpointsAuthUsersUpdatePatchEndpointHandler({ path, body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsAuthUsersGetEndpoint", {
     title: "Get a staff user",
     description: "Make a GET request to /auth/users/{id}",
-    outputSchema: { data: saBaiAPIEndpointsAuthUsersGetEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsAuthUsersGetEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsAuthUsersGetEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsAuthUsersGetEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsAuthUsersGetEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsAuthUsersGetEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsAuthUsersDeleteDeleteEndpoint", {
     title: "User deletion is disabled",
     description: "Make a DELETE request to /auth/users/{id}",
-    outputSchema: { data: saBaiAPIEndpointsAuthUsersDeleteDeleteEndpointStatus204Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsAuthUsersDeleteDeleteEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsAuthUsersDeleteDeleteEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsAuthUsersDeleteDeleteEndpointStatus204Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsAuthUsersDeleteDeleteEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsAuthUsersDeleteDeleteEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsAuthUsersLockPostEndpoint", {
     title: "Lock a staff account",
-    description: "Make a POST request to /auth/users/{id}/lock",
-    outputSchema: { data: saBaiAPIEndpointsAuthUsersLockPostEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsAuthUsersLockPostEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsAuthUsersLockPostEndpointHandler({ path }, request)
+    description: "Blocks sign-in until unlocked and ends the user's open sessions within a minute.",
+    outputSchema: z.object({ data: saBaiAPIEndpointsAuthUsersLockPostEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsAuthUsersLockPostEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsAuthUsersLockPostEndpointHandler({ path }, ctx)
+  })
+
+
+  server.registerTool("SaBaiAPIEndpointsAuthUsersResetPasswordPostEndpoint", {
+    title: "Set a staff user's password",
+    description: "Replaces the password (or sets one for accounts without), and ends the user's open sessions within a minute.",
+    outputSchema: z.object({ data: saBaiAPIEndpointsAuthUsersResetPasswordPostEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsAuthUsersResetPasswordPostEndpointPathIdSchema }), body: saBaiAPIEndpointsAuthUsersResetPasswordPostEndpointBodySchema }),
+  }, async ({ path, body }, ctx) => {
+    return saBaiAPIEndpointsAuthUsersResetPasswordPostEndpointHandler({ path, body }, ctx)
+  })
+
+
+  server.registerTool("SaBaiAPIEndpointsAuthUsersResetTwoFactorPostEndpoint", {
+    title: "Turn off a staff user's two-factor authentication",
+    description: "For a lost phone: turns two-factor off and discards the authenticator secret, so the user can sign in with just their password and set it up again.",
+    outputSchema: z.object({ data: saBaiAPIEndpointsAuthUsersResetTwoFactorPostEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsAuthUsersResetTwoFactorPostEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsAuthUsersResetTwoFactorPostEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsAuthUsersUnlockPostEndpoint", {
     title: "Unlock a staff account",
-    description: "Make a POST request to /auth/users/{id}/unlock",
-    outputSchema: { data: saBaiAPIEndpointsAuthUsersUnlockPostEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsAuthUsersUnlockPostEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsAuthUsersUnlockPostEndpointHandler({ path }, request)
+    description: "Also clears a temporary lock from too many failed sign-ins.",
+    outputSchema: z.object({ data: saBaiAPIEndpointsAuthUsersUnlockPostEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsAuthUsersUnlockPostEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsAuthUsersUnlockPostEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsAuthWhoAmIGetEndpoint", {
     title: "Return the signed-in staff user",
     description: "Make a GET request to /auth/whoami",
-    outputSchema: { data: saBaiAPIEndpointsAuthWhoAmIGetEndpointStatus200Schema },
-  }, async (request) => {
-    return saBaiAPIEndpointsAuthWhoAmIGetEndpointHandler(request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsAuthWhoAmIGetEndpointStatus200Schema }),
+  }, async (ctx) => {
+    return saBaiAPIEndpointsAuthWhoAmIGetEndpointHandler(ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsBroadcastsListGetEndpoint", {
     title: "List broadcasts",
     description: "Make a GET request to /broadcasts",
-    outputSchema: { data: saBaiAPIEndpointsBroadcastsListGetEndpointStatus200Schema },
-  }, async (request) => {
-    return saBaiAPIEndpointsBroadcastsListGetEndpointHandler(request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsBroadcastsListGetEndpointStatus200Schema }),
+  }, async (ctx) => {
+    return saBaiAPIEndpointsBroadcastsListGetEndpointHandler(ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsBroadcastsCreatePostEndpoint", {
     title: "Create a broadcast",
     description: "Make a POST request to /broadcasts",
-    outputSchema: { data: saBaiAPIEndpointsBroadcastsCreatePostEndpointStatus200Schema },
-    inputSchema: { body: saBaiAPIEndpointsBroadcastsCreatePostEndpointBodySchema },
-  }, async ({ body }, request) => {
-    return saBaiAPIEndpointsBroadcastsCreatePostEndpointHandler({ body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsBroadcastsCreatePostEndpointStatus200Schema }),
+    inputSchema: z.object({ body: saBaiAPIEndpointsBroadcastsCreatePostEndpointBodySchema }),
+  }, async ({ body }, ctx) => {
+    return saBaiAPIEndpointsBroadcastsCreatePostEndpointHandler({ body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsBroadcastsDeleteDeleteEndpoint", {
     title: "Delete a broadcast",
     description: "Make a DELETE request to /broadcasts/{id}",
-    outputSchema: { data: saBaiAPIEndpointsBroadcastsDeleteDeleteEndpointStatus204Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsBroadcastsDeleteDeleteEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsBroadcastsDeleteDeleteEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsBroadcastsDeleteDeleteEndpointStatus204Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsBroadcastsDeleteDeleteEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsBroadcastsDeleteDeleteEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsBroadcastsPublishPostEndpoint", {
     title: "Publish a broadcast",
     description: "Make a POST request to /broadcasts/{id}/publish",
-    outputSchema: { data: saBaiAPIEndpointsBroadcastsPublishPostEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsBroadcastsPublishPostEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsBroadcastsPublishPostEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsBroadcastsPublishPostEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsBroadcastsPublishPostEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsBroadcastsPublishPostEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsChildVitalsCreatePostEndpoint", {
     title: "Record child vitals",
     description: "Make a POST request to /child-vitals",
-    outputSchema: { data: saBaiAPIEndpointsChildVitalsCreatePostEndpointStatus200Schema },
-    inputSchema: { body: saBaiAPIEndpointsChildVitalsCreatePostEndpointBodySchema },
-  }, async ({ body }, request) => {
-    return saBaiAPIEndpointsChildVitalsCreatePostEndpointHandler({ body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsChildVitalsCreatePostEndpointStatus200Schema }),
+    inputSchema: z.object({ body: saBaiAPIEndpointsChildVitalsCreatePostEndpointBodySchema }),
+  }, async ({ body }, ctx) => {
+    return saBaiAPIEndpointsChildVitalsCreatePostEndpointHandler({ body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsChildVitalsUpdatePatchEndpoint", {
     title: "Update child vitals",
     description: "Make a PATCH request to /child-vitals/{id}",
-    outputSchema: { data: saBaiAPIEndpointsChildVitalsUpdatePatchEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsChildVitalsUpdatePatchEndpointPathIdSchema }), body: saBaiAPIEndpointsChildVitalsUpdatePatchEndpointBodySchema },
-  }, async ({ path, body }, request) => {
-    return saBaiAPIEndpointsChildVitalsUpdatePatchEndpointHandler({ path, body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsChildVitalsUpdatePatchEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsChildVitalsUpdatePatchEndpointPathIdSchema }), body: saBaiAPIEndpointsChildVitalsUpdatePatchEndpointBodySchema }),
+  }, async ({ path, body }, ctx) => {
+    return saBaiAPIEndpointsChildVitalsUpdatePatchEndpointHandler({ path, body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsChildVitalsGetEndpoint", {
     title: "Get child vitals by id",
     description: "Make a GET request to /child-vitals/{id}",
-    outputSchema: { data: saBaiAPIEndpointsChildVitalsGetEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsChildVitalsGetEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsChildVitalsGetEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsChildVitalsGetEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsChildVitalsGetEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsChildVitalsGetEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsChildVitalsDeleteEndpoint", {
     title: "Delete child vitals",
     description: "Make a DELETE request to /child-vitals/{id}",
-    outputSchema: { data: saBaiAPIEndpointsChildVitalsDeleteEndpointStatus204Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsChildVitalsDeleteEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsChildVitalsDeleteEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsChildVitalsDeleteEndpointStatus204Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsChildVitalsDeleteEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsChildVitalsDeleteEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsConsultsCreatePostEndpoint", {
     title: "Record a consult with diagnoses and optional prescriptions",
     description: "Make a POST request to /consults",
-    outputSchema: { data: saBaiAPIEndpointsConsultsCreatePostEndpointStatus200Schema },
-    inputSchema: { body: saBaiAPIEndpointsConsultsCreatePostEndpointBodySchema },
-  }, async ({ body }, request) => {
-    return saBaiAPIEndpointsConsultsCreatePostEndpointHandler({ body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsConsultsCreatePostEndpointStatus200Schema }),
+    inputSchema: z.object({ body: saBaiAPIEndpointsConsultsCreatePostEndpointBodySchema }),
+  }, async ({ body }, ctx) => {
+    return saBaiAPIEndpointsConsultsCreatePostEndpointHandler({ body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsReferralsListByConsultGetEndpoint", {
     title: "List referrals for a consult, newest first",
     description: "Make a GET request to /consults/{consultId}/referrals",
-    outputSchema: { data: saBaiAPIEndpointsReferralsListByConsultGetEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "consultId": saBaiAPIEndpointsReferralsListByConsultGetEndpointPathConsultIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsReferralsListByConsultGetEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsReferralsListByConsultGetEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "consultId": saBaiAPIEndpointsReferralsListByConsultGetEndpointPathConsultIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsReferralsListByConsultGetEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsConsultsUpdatePatchEndpoint", {
     title: "Update consult text within 24 hours",
     description: "Make a PATCH request to /consults/{id}",
-    outputSchema: { data: saBaiAPIEndpointsConsultsUpdatePatchEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsConsultsUpdatePatchEndpointPathIdSchema }), body: saBaiAPIEndpointsConsultsUpdatePatchEndpointBodySchema },
-  }, async ({ path, body }, request) => {
-    return saBaiAPIEndpointsConsultsUpdatePatchEndpointHandler({ path, body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsConsultsUpdatePatchEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsConsultsUpdatePatchEndpointPathIdSchema }), body: saBaiAPIEndpointsConsultsUpdatePatchEndpointBodySchema }),
+  }, async ({ path, body }, ctx) => {
+    return saBaiAPIEndpointsConsultsUpdatePatchEndpointHandler({ path, body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsConsultsGetEndpoint", {
     title: "Get a consult",
     description: "Make a GET request to /consults/{id}",
-    outputSchema: { data: saBaiAPIEndpointsConsultsGetEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsConsultsGetEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsConsultsGetEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsConsultsGetEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsConsultsGetEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsConsultsGetEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsConsultsDeleteDeleteEndpoint", {
     title: "Delete a consult and its diagnoses",
     description: "Make a DELETE request to /consults/{id}",
-    outputSchema: { data: saBaiAPIEndpointsConsultsDeleteDeleteEndpointStatus204Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsConsultsDeleteDeleteEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsConsultsDeleteDeleteEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsConsultsDeleteDeleteEndpointStatus204Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsConsultsDeleteDeleteEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsConsultsDeleteDeleteEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsConsultsPdfGetEndpoint", {
     title: "Download a consult as a PDF",
     description: "Make a GET request to /consults/{id}/pdf",
-    outputSchema: { data: saBaiAPIEndpointsConsultsPdfGetEndpointStatus204Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsConsultsPdfGetEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsConsultsPdfGetEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsConsultsPdfGetEndpointStatus204Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsConsultsPdfGetEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsConsultsPdfGetEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsDiagnosesListGetEndpoint", {
     title: "List diagnoses, optionally for one consult",
     description: "Make a GET request to /diagnoses",
-    outputSchema: { data: saBaiAPIEndpointsDiagnosesListGetEndpointStatus200Schema },
-    inputSchema: { query: z.object({ "consultId": saBaiAPIEndpointsDiagnosesListGetEndpointQueryConsultIdSchema }) },
-  }, async ({ query }, request) => {
-    return saBaiAPIEndpointsDiagnosesListGetEndpointHandler({ query }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsDiagnosesListGetEndpointStatus200Schema }),
+    inputSchema: z.object({ query: z.object({ "consultId": saBaiAPIEndpointsDiagnosesListGetEndpointQueryConsultIdSchema }) }),
+  }, async ({ query }, ctx) => {
+    return saBaiAPIEndpointsDiagnosesListGetEndpointHandler({ query }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsDiagnosesCreatePostEndpoint", {
     title: "Add a diagnosis to a consult",
     description: "Make a POST request to /diagnoses",
-    outputSchema: { data: saBaiAPIEndpointsDiagnosesCreatePostEndpointStatus200Schema },
-    inputSchema: { body: saBaiAPIEndpointsDiagnosesCreatePostEndpointBodySchema },
-  }, async ({ body }, request) => {
-    return saBaiAPIEndpointsDiagnosesCreatePostEndpointHandler({ body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsDiagnosesCreatePostEndpointStatus200Schema }),
+    inputSchema: z.object({ body: saBaiAPIEndpointsDiagnosesCreatePostEndpointBodySchema }),
+  }, async ({ body }, ctx) => {
+    return saBaiAPIEndpointsDiagnosesCreatePostEndpointHandler({ body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsDiagnosesUpdatePatchEndpoint", {
     title: "Update a diagnosis",
     description: "Make a PATCH request to /diagnoses/{id}",
-    outputSchema: { data: saBaiAPIEndpointsDiagnosesUpdatePatchEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsDiagnosesUpdatePatchEndpointPathIdSchema }), body: saBaiAPIEndpointsDiagnosesUpdatePatchEndpointBodySchema },
-  }, async ({ path, body }, request) => {
-    return saBaiAPIEndpointsDiagnosesUpdatePatchEndpointHandler({ path, body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsDiagnosesUpdatePatchEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsDiagnosesUpdatePatchEndpointPathIdSchema }), body: saBaiAPIEndpointsDiagnosesUpdatePatchEndpointBodySchema }),
+  }, async ({ path, body }, ctx) => {
+    return saBaiAPIEndpointsDiagnosesUpdatePatchEndpointHandler({ path, body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsDiagnosesGetEndpoint", {
     title: "Get a diagnosis",
     description: "Make a GET request to /diagnoses/{id}",
-    outputSchema: { data: saBaiAPIEndpointsDiagnosesGetEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsDiagnosesGetEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsDiagnosesGetEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsDiagnosesGetEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsDiagnosesGetEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsDiagnosesGetEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsDiagnosesDeleteDeleteEndpoint", {
     title: "Delete a diagnosis",
     description: "Make a DELETE request to /diagnoses/{id}",
-    outputSchema: { data: saBaiAPIEndpointsDiagnosesDeleteDeleteEndpointStatus204Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsDiagnosesDeleteDeleteEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsDiagnosesDeleteDeleteEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsDiagnosesDeleteDeleteEndpointStatus204Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsDiagnosesDeleteDeleteEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsDiagnosesDeleteDeleteEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsEyesightCreatePostEndpoint", {
     title: "Record eyesight for a visit",
     description: "Make a POST request to /eyesight",
-    outputSchema: { data: saBaiAPIEndpointsEyesightCreatePostEndpointStatus200Schema },
-    inputSchema: { body: saBaiAPIEndpointsEyesightCreatePostEndpointBodySchema },
-  }, async ({ body }, request) => {
-    return saBaiAPIEndpointsEyesightCreatePostEndpointHandler({ body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsEyesightCreatePostEndpointStatus200Schema }),
+    inputSchema: z.object({ body: saBaiAPIEndpointsEyesightCreatePostEndpointBodySchema }),
+  }, async ({ body }, ctx) => {
+    return saBaiAPIEndpointsEyesightCreatePostEndpointHandler({ body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsEyesightUpdatePatchEndpoint", {
     title: "Update eyesight",
     description: "Make a PATCH request to /eyesight/{id}",
-    outputSchema: { data: saBaiAPIEndpointsEyesightUpdatePatchEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsEyesightUpdatePatchEndpointPathIdSchema }), body: saBaiAPIEndpointsEyesightUpdatePatchEndpointBodySchema },
-  }, async ({ path, body }, request) => {
-    return saBaiAPIEndpointsEyesightUpdatePatchEndpointHandler({ path, body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsEyesightUpdatePatchEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsEyesightUpdatePatchEndpointPathIdSchema }), body: saBaiAPIEndpointsEyesightUpdatePatchEndpointBodySchema }),
+  }, async ({ path, body }, ctx) => {
+    return saBaiAPIEndpointsEyesightUpdatePatchEndpointHandler({ path, body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsEyesightGetEndpoint", {
     title: "Get eyesight by id",
     description: "Make a GET request to /eyesight/{id}",
-    outputSchema: { data: saBaiAPIEndpointsEyesightGetEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsEyesightGetEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsEyesightGetEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsEyesightGetEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsEyesightGetEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsEyesightGetEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsEyesightDeleteEndpoint", {
     title: "Delete eyesight",
     description: "Make a DELETE request to /eyesight/{id}",
-    outputSchema: { data: saBaiAPIEndpointsEyesightDeleteEndpointStatus204Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsEyesightDeleteEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsEyesightDeleteEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsEyesightDeleteEndpointStatus204Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsEyesightDeleteEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsEyesightDeleteEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsFacesDetectPostEndpoint", {
     title: "Detect faces and their five-point landmarks in an image.",
     description: "Make a POST request to /faces/detect",
-    outputSchema: { data: saBaiAPIEndpointsFacesDetectPostEndpointStatus200Schema },
-    inputSchema: { body: saBaiAPIEndpointsFacesDetectPostEndpointBodySchema },
-  }, async ({ body }, request) => {
-    return saBaiAPIEndpointsFacesDetectPostEndpointHandler({ body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsFacesDetectPostEndpointStatus200Schema }),
+    inputSchema: z.object({ body: saBaiAPIEndpointsFacesDetectPostEndpointBodySchema }),
+  }, async ({ body }, ctx) => {
+    return saBaiAPIEndpointsFacesDetectPostEndpointHandler({ body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsFacesIdentifyPostEndpoint", {
     title: "Identify every face in an image against the enrolled people.",
     description: "Make a POST request to /faces/identify",
-    outputSchema: { data: saBaiAPIEndpointsFacesIdentifyPostEndpointStatus200Schema },
-    inputSchema: { query: z.object({ "threshold": saBaiAPIEndpointsFacesIdentifyPostEndpointQueryThresholdSchema, "maxMatches": saBaiAPIEndpointsFacesIdentifyPostEndpointQueryMaxMatchesSchema }), body: saBaiAPIEndpointsFacesIdentifyPostEndpointBodySchema },
-  }, async ({ query, body }, request) => {
-    return saBaiAPIEndpointsFacesIdentifyPostEndpointHandler({ query, body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsFacesIdentifyPostEndpointStatus200Schema }),
+    inputSchema: z.object({ query: z.object({ "threshold": saBaiAPIEndpointsFacesIdentifyPostEndpointQueryThresholdSchema, "maxMatches": saBaiAPIEndpointsFacesIdentifyPostEndpointQueryMaxMatchesSchema }), body: saBaiAPIEndpointsFacesIdentifyPostEndpointBodySchema }),
+  }, async ({ query, body }, ctx) => {
+    return saBaiAPIEndpointsFacesIdentifyPostEndpointHandler({ query, body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsFacesVerifyPostEndpoint", {
     title: "Compare the most prominent face in two images (1:1 verification).",
     description: "Make a POST request to /faces/verify",
-    outputSchema: { data: saBaiAPIEndpointsFacesVerifyPostEndpointStatus200Schema },
-    inputSchema: { body: saBaiAPIEndpointsFacesVerifyPostEndpointBodySchema },
-  }, async ({ body }, request) => {
-    return saBaiAPIEndpointsFacesVerifyPostEndpointHandler({ body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsFacesVerifyPostEndpointStatus200Schema }),
+    inputSchema: z.object({ body: saBaiAPIEndpointsFacesVerifyPostEndpointBodySchema }),
+  }, async ({ body }, ctx) => {
+    return saBaiAPIEndpointsFacesVerifyPostEndpointHandler({ body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsFacesDeleteEndpoint", {
     title: "Delete a single enrolled face.",
     description: "Make a DELETE request to /faces/{faceId}",
-    outputSchema: { data: saBaiAPIEndpointsFacesDeleteEndpointStatus204Schema },
-    inputSchema: { path: z.object({ "faceId": saBaiAPIEndpointsFacesDeleteEndpointPathFaceIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsFacesDeleteEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsFacesDeleteEndpointStatus204Schema }),
+    inputSchema: z.object({ path: z.object({ "faceId": saBaiAPIEndpointsFacesDeleteEndpointPathFaceIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsFacesDeleteEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsFilesListGetEndpoint", {
     title: "List clinical files",
     description: "Make a GET request to /files",
-    outputSchema: { data: saBaiAPIEndpointsFilesListGetEndpointStatus200Schema },
-    inputSchema: { query: z.object({ "patientId": saBaiAPIEndpointsFilesListGetEndpointQueryPatientIdSchema, "deleted": saBaiAPIEndpointsFilesListGetEndpointQueryDeletedSchema }) },
-  }, async ({ query }, request) => {
-    return saBaiAPIEndpointsFilesListGetEndpointHandler({ query }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsFilesListGetEndpointStatus200Schema }),
+    inputSchema: z.object({ query: z.object({ "patientId": saBaiAPIEndpointsFilesListGetEndpointQueryPatientIdSchema, "deleted": saBaiAPIEndpointsFilesListGetEndpointQueryDeletedSchema }) }),
+  }, async ({ query }, ctx) => {
+    return saBaiAPIEndpointsFilesListGetEndpointHandler({ query }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsFilesCreatePostEndpoint", {
     title: "Upload clinical files to RustFS",
     description: "Make a POST request to /files",
-    outputSchema: { data: saBaiAPIEndpointsFilesCreatePostEndpointStatus200Schema },
-    inputSchema: { body: saBaiAPIEndpointsFilesCreatePostEndpointBodySchema },
-  }, async ({ body }, request) => {
-    return saBaiAPIEndpointsFilesCreatePostEndpointHandler({ body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsFilesCreatePostEndpointStatus200Schema }),
+    inputSchema: z.object({ body: saBaiAPIEndpointsFilesCreatePostEndpointBodySchema }),
+  }, async ({ body }, ctx) => {
+    return saBaiAPIEndpointsFilesCreatePostEndpointHandler({ body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsFilesUpdatePatchEndpoint", {
     title: "Update clinical file metadata",
     description: "Make a PATCH request to /files/{id}",
-    outputSchema: { data: saBaiAPIEndpointsFilesUpdatePatchEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsFilesUpdatePatchEndpointPathIdSchema }), body: saBaiAPIEndpointsFilesUpdatePatchEndpointBodySchema },
-  }, async ({ path, body }, request) => {
-    return saBaiAPIEndpointsFilesUpdatePatchEndpointHandler({ path, body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsFilesUpdatePatchEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsFilesUpdatePatchEndpointPathIdSchema }), body: saBaiAPIEndpointsFilesUpdatePatchEndpointBodySchema }),
+  }, async ({ path, body }, ctx) => {
+    return saBaiAPIEndpointsFilesUpdatePatchEndpointHandler({ path, body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsFilesGetEndpoint", {
     title: "Get a clinical file",
     description: "Make a GET request to /files/{id}",
-    outputSchema: { data: saBaiAPIEndpointsFilesGetEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsFilesGetEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsFilesGetEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsFilesGetEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsFilesGetEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsFilesGetEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsFilesDeleteDeleteEndpoint", {
     title: "Soft-delete a clinical file",
     description: "Make a DELETE request to /files/{id}",
-    outputSchema: { data: saBaiAPIEndpointsFilesDeleteDeleteEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsFilesDeleteDeleteEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsFilesDeleteDeleteEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsFilesDeleteDeleteEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsFilesDeleteDeleteEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsFilesDeleteDeleteEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsFilesContentGetEndpoint", {
     title: "Download a clinical file from RustFS",
     description: "Make a GET request to /files/{id}/content",
-    outputSchema: { data: saBaiAPIEndpointsFilesContentGetEndpointStatus204Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsFilesContentGetEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsFilesContentGetEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsFilesContentGetEndpointStatus204Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsFilesContentGetEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsFilesContentGetEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsFilesRestorePostEndpoint", {
     title: "Restore a soft-deleted clinical file",
     description: "Make a POST request to /files/{id}/restore",
-    outputSchema: { data: saBaiAPIEndpointsFilesRestorePostEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsFilesRestorePostEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsFilesRestorePostEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsFilesRestorePostEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsFilesRestorePostEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsFilesRestorePostEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsGlassesGetByVisitGetEndpoint", {
     title: "Get prescribed glasses for a visit",
     description: "Make a GET request to /glasses",
-    outputSchema: { data: saBaiAPIEndpointsGlassesGetByVisitGetEndpointStatus200Schema },
-    inputSchema: { query: z.object({ "visitId": saBaiAPIEndpointsGlassesGetByVisitGetEndpointQueryVisitIdSchema }) },
-  }, async ({ query }, request) => {
-    return saBaiAPIEndpointsGlassesGetByVisitGetEndpointHandler({ query }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsGlassesGetByVisitGetEndpointStatus200Schema }),
+    inputSchema: z.object({ query: z.object({ "visitId": saBaiAPIEndpointsGlassesGetByVisitGetEndpointQueryVisitIdSchema }) }),
+  }, async ({ query }, ctx) => {
+    return saBaiAPIEndpointsGlassesGetByVisitGetEndpointHandler({ query }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsGlassesCreatePostEndpoint", {
     title: "Record prescribed glasses for a visit",
     description: "Make a POST request to /glasses",
-    outputSchema: { data: saBaiAPIEndpointsGlassesCreatePostEndpointStatus200Schema },
-    inputSchema: { body: saBaiAPIEndpointsGlassesCreatePostEndpointBodySchema },
-  }, async ({ body }, request) => {
-    return saBaiAPIEndpointsGlassesCreatePostEndpointHandler({ body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsGlassesCreatePostEndpointStatus200Schema }),
+    inputSchema: z.object({ body: saBaiAPIEndpointsGlassesCreatePostEndpointBodySchema }),
+  }, async ({ body }, ctx) => {
+    return saBaiAPIEndpointsGlassesCreatePostEndpointHandler({ body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsGlassesUpdatePatchEndpoint", {
     title: "Update prescribed glasses",
     description: "Make a PATCH request to /glasses/{id}",
-    outputSchema: { data: saBaiAPIEndpointsGlassesUpdatePatchEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsGlassesUpdatePatchEndpointPathIdSchema }), body: saBaiAPIEndpointsGlassesUpdatePatchEndpointBodySchema },
-  }, async ({ path, body }, request) => {
-    return saBaiAPIEndpointsGlassesUpdatePatchEndpointHandler({ path, body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsGlassesUpdatePatchEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsGlassesUpdatePatchEndpointPathIdSchema }), body: saBaiAPIEndpointsGlassesUpdatePatchEndpointBodySchema }),
+  }, async ({ path, body }, ctx) => {
+    return saBaiAPIEndpointsGlassesUpdatePatchEndpointHandler({ path, body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsGlassesGetEndpoint", {
     title: "Get prescribed glasses by id",
     description: "Make a GET request to /glasses/{id}",
-    outputSchema: { data: saBaiAPIEndpointsGlassesGetEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsGlassesGetEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsGlassesGetEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsGlassesGetEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsGlassesGetEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsGlassesGetEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsHealthcheckGetEndpoint", {
     title: "Public liveness string",
     description: "Make a GET request to /healthcheck",
-    outputSchema: { data: saBaiAPIEndpointsHealthcheckGetEndpointStatus200Schema },
-  }, async (request) => {
-    return saBaiAPIEndpointsHealthcheckGetEndpointHandler(request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsHealthcheckGetEndpointStatus200Schema }),
+  }, async (ctx) => {
+    return saBaiAPIEndpointsHealthcheckGetEndpointHandler(ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2", {
     title: "Update a medication brand",
     description: "Make a PATCH request to /medication-brands",
-    outputSchema: { data: saBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Status200Schema },
-    inputSchema: { body: saBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2BodySchema },
-  }, async ({ body }, request) => {
-    return saBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Handler({ body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Status200Schema }),
+    inputSchema: z.object({ body: saBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2BodySchema }),
+  }, async ({ body }, ctx) => {
+    return saBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Handler({ body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsMedicationBrandsListGetEndpoint", {
     title: "List medication brands",
     description: "Make a GET request to /medication-brands",
-    outputSchema: { data: saBaiAPIEndpointsMedicationBrandsListGetEndpointStatus200Schema },
-  }, async (request) => {
-    return saBaiAPIEndpointsMedicationBrandsListGetEndpointHandler(request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsMedicationBrandsListGetEndpointStatus200Schema }),
+  }, async (ctx) => {
+    return saBaiAPIEndpointsMedicationBrandsListGetEndpointHandler(ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsMedicationBrandsCreatePostEndpoint", {
     title: "Create a medication brand",
     description: "Make a POST request to /medication-brands",
-    outputSchema: { data: saBaiAPIEndpointsMedicationBrandsCreatePostEndpointStatus200Schema },
-    inputSchema: { body: saBaiAPIEndpointsMedicationBrandsCreatePostEndpointBodySchema },
-  }, async ({ body }, request) => {
-    return saBaiAPIEndpointsMedicationBrandsCreatePostEndpointHandler({ body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsMedicationBrandsCreatePostEndpointStatus200Schema }),
+    inputSchema: z.object({ body: saBaiAPIEndpointsMedicationBrandsCreatePostEndpointBodySchema }),
+  }, async ({ body }, ctx) => {
+    return saBaiAPIEndpointsMedicationBrandsCreatePostEndpointHandler({ body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsMedicationBrandsWithIngredientGetEndpoint", {
     title: "List medication brands with ingredient names",
     description: "Make a GET request to /medication-brands/with-ingredient",
-    outputSchema: { data: saBaiAPIEndpointsMedicationBrandsWithIngredientGetEndpointStatus200Schema },
-  }, async (request) => {
-    return saBaiAPIEndpointsMedicationBrandsWithIngredientGetEndpointHandler(request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsMedicationBrandsWithIngredientGetEndpointStatus200Schema }),
+  }, async (ctx) => {
+    return saBaiAPIEndpointsMedicationBrandsWithIngredientGetEndpointHandler(ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint1", {
     title: "Update a medication brand",
     description: "Make a PATCH request to /medication-brands/{id}",
-    outputSchema: { data: saBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint1Status200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint1PathIdSchema }), body: saBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint1BodySchema },
-  }, async ({ path, body }, request) => {
-    return saBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint1Handler({ path, body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint1Status200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint1PathIdSchema }), body: saBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint1BodySchema }),
+  }, async ({ path, body }, ctx) => {
+    return saBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint1Handler({ path, body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsMedicationBrandsDeleteDeleteEndpoint", {
     title: "Delete a medication brand",
     description: "Make a DELETE request to /medication-brands/{id}",
-    outputSchema: { data: saBaiAPIEndpointsMedicationBrandsDeleteDeleteEndpointStatus204Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsMedicationBrandsDeleteDeleteEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsMedicationBrandsDeleteDeleteEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsMedicationBrandsDeleteDeleteEndpointStatus204Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsMedicationBrandsDeleteDeleteEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsMedicationBrandsDeleteDeleteEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsMedicationHistoryGetEndpoint", {
     title: "List approved dispenses and stock adjustments for a brand",
     description: "Make a GET request to /medication-history",
-    outputSchema: { data: saBaiAPIEndpointsMedicationHistoryGetEndpointStatus200Schema },
-    inputSchema: { query: z.object({ "brandId": saBaiAPIEndpointsMedicationHistoryGetEndpointQueryBrandIdSchema }) },
-  }, async ({ query }, request) => {
-    return saBaiAPIEndpointsMedicationHistoryGetEndpointHandler({ query }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsMedicationHistoryGetEndpointStatus200Schema }),
+    inputSchema: z.object({ query: z.object({ "brandId": saBaiAPIEndpointsMedicationHistoryGetEndpointQueryBrandIdSchema }) }),
+  }, async ({ query }, ctx) => {
+    return saBaiAPIEndpointsMedicationHistoryGetEndpointHandler({ query }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsMedicationIngredientsListGetEndpoint", {
     title: "List medication active ingredients",
     description: "Make a GET request to /medication-ingredients",
-    outputSchema: { data: saBaiAPIEndpointsMedicationIngredientsListGetEndpointStatus200Schema },
-  }, async (request) => {
-    return saBaiAPIEndpointsMedicationIngredientsListGetEndpointHandler(request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsMedicationIngredientsListGetEndpointStatus200Schema }),
+  }, async (ctx) => {
+    return saBaiAPIEndpointsMedicationIngredientsListGetEndpointHandler(ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsMedicationIngredientsCreatePostEndpoint", {
     title: "Create a medication active ingredient",
     description: "Make a POST request to /medication-ingredients",
-    outputSchema: { data: saBaiAPIEndpointsMedicationIngredientsCreatePostEndpointStatus200Schema },
-    inputSchema: { body: saBaiAPIEndpointsMedicationIngredientsCreatePostEndpointBodySchema },
-  }, async ({ body }, request) => {
-    return saBaiAPIEndpointsMedicationIngredientsCreatePostEndpointHandler({ body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsMedicationIngredientsCreatePostEndpointStatus200Schema }),
+    inputSchema: z.object({ body: saBaiAPIEndpointsMedicationIngredientsCreatePostEndpointBodySchema }),
+  }, async ({ body }, ctx) => {
+    return saBaiAPIEndpointsMedicationIngredientsCreatePostEndpointHandler({ body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsMedicationIngredientsUpdatePutEndpoint", {
     title: "Replace a medication active ingredient",
     description: "Make a PUT request to /medication-ingredients/{id}",
-    outputSchema: { data: saBaiAPIEndpointsMedicationIngredientsUpdatePutEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsMedicationIngredientsUpdatePutEndpointPathIdSchema }), body: saBaiAPIEndpointsMedicationIngredientsUpdatePutEndpointBodySchema },
-  }, async ({ path, body }, request) => {
-    return saBaiAPIEndpointsMedicationIngredientsUpdatePutEndpointHandler({ path, body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsMedicationIngredientsUpdatePutEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsMedicationIngredientsUpdatePutEndpointPathIdSchema }), body: saBaiAPIEndpointsMedicationIngredientsUpdatePutEndpointBodySchema }),
+  }, async ({ path, body }, ctx) => {
+    return saBaiAPIEndpointsMedicationIngredientsUpdatePutEndpointHandler({ path, body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpoint", {
     title: "Delete a medication active ingredient",
     description: "Make a DELETE request to /medication-ingredients/{id}",
-    outputSchema: { data: saBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpointStatus204Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpointStatus204Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsMedicationStockListGetEndpoint", {
     title: "List medication stock excluding empty lots",
     description: "Make a GET request to /medication-stock",
-    outputSchema: { data: saBaiAPIEndpointsMedicationStockListGetEndpointStatus200Schema },
-  }, async (request) => {
-    return saBaiAPIEndpointsMedicationStockListGetEndpointHandler(request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsMedicationStockListGetEndpointStatus200Schema }),
+  }, async (ctx) => {
+    return saBaiAPIEndpointsMedicationStockListGetEndpointHandler(ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsMedicationStockCreatePostEndpoint", {
     title: "Create a medication stock lot",
     description: "Make a POST request to /medication-stock",
-    outputSchema: { data: saBaiAPIEndpointsMedicationStockCreatePostEndpointStatus200Schema },
-    inputSchema: { body: saBaiAPIEndpointsMedicationStockCreatePostEndpointBodySchema },
-  }, async ({ body }, request) => {
-    return saBaiAPIEndpointsMedicationStockCreatePostEndpointHandler({ body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsMedicationStockCreatePostEndpointStatus200Schema }),
+    inputSchema: z.object({ body: saBaiAPIEndpointsMedicationStockCreatePostEndpointBodySchema }),
+  }, async ({ body }, ctx) => {
+    return saBaiAPIEndpointsMedicationStockCreatePostEndpointHandler({ body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsMedicationStockWithBrandGetEndpoint", {
     title: "List medication stock with brand and ingredient names",
     description: "Make a GET request to /medication-stock/with-brand",
-    outputSchema: { data: saBaiAPIEndpointsMedicationStockWithBrandGetEndpointStatus200Schema },
-  }, async (request) => {
-    return saBaiAPIEndpointsMedicationStockWithBrandGetEndpointHandler(request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsMedicationStockWithBrandGetEndpointStatus200Schema }),
+  }, async (ctx) => {
+    return saBaiAPIEndpointsMedicationStockWithBrandGetEndpointHandler(ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsMedicationStockUpdatePatchEndpoint", {
     title: "Update stock location, status, or remarks",
     description: "Make a PATCH request to /medication-stock/{id}",
-    outputSchema: { data: saBaiAPIEndpointsMedicationStockUpdatePatchEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsMedicationStockUpdatePatchEndpointPathIdSchema }), body: saBaiAPIEndpointsMedicationStockUpdatePatchEndpointBodySchema },
-  }, async ({ path, body }, request) => {
-    return saBaiAPIEndpointsMedicationStockUpdatePatchEndpointHandler({ path, body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsMedicationStockUpdatePatchEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsMedicationStockUpdatePatchEndpointPathIdSchema }), body: saBaiAPIEndpointsMedicationStockUpdatePatchEndpointBodySchema }),
+  }, async ({ path, body }, ctx) => {
+    return saBaiAPIEndpointsMedicationStockUpdatePatchEndpointHandler({ path, body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsMedicationStockAdjustmentsPostEndpoint", {
     title: "Adjust a stock lot quantity",
     description: "Make a POST request to /medication-stock/{id}/adjustments",
-    outputSchema: { data: saBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointPathIdSchema }), body: saBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointBodySchema },
-  }, async ({ path, body }, request) => {
-    return saBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointHandler({ path, body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointPathIdSchema }), body: saBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointBodySchema }),
+  }, async ({ path, body }, ctx) => {
+    return saBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointHandler({ path, body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsMedicationStockSplitsPostEndpoint", {
     title: "Split a stock lot into child lots",
     description: "Make a POST request to /medication-stock/{id}/splits",
-    outputSchema: { data: saBaiAPIEndpointsMedicationStockSplitsPostEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsMedicationStockSplitsPostEndpointPathIdSchema }), body: saBaiAPIEndpointsMedicationStockSplitsPostEndpointBodySchema },
-  }, async ({ path, body }, request) => {
-    return saBaiAPIEndpointsMedicationStockSplitsPostEndpointHandler({ path, body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsMedicationStockSplitsPostEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsMedicationStockSplitsPostEndpointPathIdSchema }), body: saBaiAPIEndpointsMedicationStockSplitsPostEndpointBodySchema }),
+  }, async ({ path, body }, ctx) => {
+    return saBaiAPIEndpointsMedicationStockSplitsPostEndpointHandler({ path, body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsOrdersListGetEndpoint", {
     title: "List medication orders",
     description: "Make a GET request to /orders",
-    outputSchema: { data: saBaiAPIEndpointsOrdersListGetEndpointStatus200Schema },
-    inputSchema: { query: z.object({ "status": saBaiAPIEndpointsOrdersListGetEndpointQueryStatusSchema }) },
-  }, async ({ query }, request) => {
-    return saBaiAPIEndpointsOrdersListGetEndpointHandler({ query }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsOrdersListGetEndpointStatus200Schema }),
+    inputSchema: z.object({ query: z.object({ "status": saBaiAPIEndpointsOrdersListGetEndpointQueryStatusSchema }) }),
+  }, async ({ query }, ctx) => {
+    return saBaiAPIEndpointsOrdersListGetEndpointHandler({ query }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsOrdersCreatePostEndpoint", {
     title: "Create a pending medication order",
     description: "Make a POST request to /orders",
-    outputSchema: { data: saBaiAPIEndpointsOrdersCreatePostEndpointStatus200Schema },
-    inputSchema: { body: saBaiAPIEndpointsOrdersCreatePostEndpointBodySchema },
-  }, async ({ body }, request) => {
-    return saBaiAPIEndpointsOrdersCreatePostEndpointHandler({ body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsOrdersCreatePostEndpointStatus200Schema }),
+    inputSchema: z.object({ body: saBaiAPIEndpointsOrdersCreatePostEndpointBodySchema }),
+  }, async ({ body }, ctx) => {
+    return saBaiAPIEndpointsOrdersCreatePostEndpointHandler({ body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsOrdersUpdatePatchEndpoint", {
     title: "Update or approve a medication order",
     description: "Make a PATCH request to /orders/{id}",
-    outputSchema: { data: saBaiAPIEndpointsOrdersUpdatePatchEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsOrdersUpdatePatchEndpointPathIdSchema }), body: saBaiAPIEndpointsOrdersUpdatePatchEndpointBodySchema },
-  }, async ({ path, body }, request) => {
-    return saBaiAPIEndpointsOrdersUpdatePatchEndpointHandler({ path, body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsOrdersUpdatePatchEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsOrdersUpdatePatchEndpointPathIdSchema }), body: saBaiAPIEndpointsOrdersUpdatePatchEndpointBodySchema }),
+  }, async ({ path, body }, ctx) => {
+    return saBaiAPIEndpointsOrdersUpdatePatchEndpointHandler({ path, body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsOrdersGetEndpoint", {
     title: "Get a medication order",
     description: "Make a GET request to /orders/{id}",
-    outputSchema: { data: saBaiAPIEndpointsOrdersGetEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsOrdersGetEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsOrdersGetEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsOrdersGetEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsOrdersGetEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsOrdersGetEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsOrdersDeleteDeleteEndpoint", {
     title: "Delete a medication order without reversing stock",
     description: "Make a DELETE request to /orders/{id}",
-    outputSchema: { data: saBaiAPIEndpointsOrdersDeleteDeleteEndpointStatus204Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsOrdersDeleteDeleteEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsOrdersDeleteDeleteEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsOrdersDeleteDeleteEndpointStatus204Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsOrdersDeleteDeleteEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsOrdersDeleteDeleteEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsPatientConsultGetEndpoint", {
     title: "Load the consult workspace for a visit",
     description: "Make a GET request to /patient-consult",
-    outputSchema: { data: saBaiAPIEndpointsPatientConsultGetEndpointStatus200Schema },
-    inputSchema: { query: z.object({ "visitId": saBaiAPIEndpointsPatientConsultGetEndpointQueryVisitIdSchema }) },
-  }, async ({ query }, request) => {
-    return saBaiAPIEndpointsPatientConsultGetEndpointHandler({ query }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsPatientConsultGetEndpointStatus200Schema }),
+    inputSchema: z.object({ query: z.object({ "visitId": saBaiAPIEndpointsPatientConsultGetEndpointQueryVisitIdSchema }) }),
+  }, async ({ query }, ctx) => {
+    return saBaiAPIEndpointsPatientConsultGetEndpointHandler({ query }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsPatientRecordsGetEndpoint", {
     title: "Load the patient chart for a visit",
     description: "Make a GET request to /patient-records",
-    outputSchema: { data: saBaiAPIEndpointsPatientRecordsGetEndpointStatus200Schema },
-    inputSchema: { query: z.object({ "visitId": saBaiAPIEndpointsPatientRecordsGetEndpointQueryVisitIdSchema }) },
-  }, async ({ query }, request) => {
-    return saBaiAPIEndpointsPatientRecordsGetEndpointHandler({ query }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsPatientRecordsGetEndpointStatus200Schema }),
+    inputSchema: z.object({ query: z.object({ "visitId": saBaiAPIEndpointsPatientRecordsGetEndpointQueryVisitIdSchema }) }),
+  }, async ({ query }, ctx) => {
+    return saBaiAPIEndpointsPatientRecordsGetEndpointHandler({ query }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsPatientsListGetEndpoint", {
     title: "List patients",
     description: "Make a GET request to /patients",
-    outputSchema: { data: saBaiAPIEndpointsPatientsListGetEndpointStatus200Schema },
-    inputSchema: { query: z.object({ "name": saBaiAPIEndpointsPatientsListGetEndpointQueryNameSchema, "villageCode": saBaiAPIEndpointsPatientsListGetEndpointQueryVillageCodeSchema }) },
-  }, async ({ query }, request) => {
-    return saBaiAPIEndpointsPatientsListGetEndpointHandler({ query }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsPatientsListGetEndpointStatus200Schema }),
+    inputSchema: z.object({ query: z.object({ "name": saBaiAPIEndpointsPatientsListGetEndpointQueryNameSchema, "villageCode": saBaiAPIEndpointsPatientsListGetEndpointQueryVillageCodeSchema }) }),
+  }, async ({ query }, ctx) => {
+    return saBaiAPIEndpointsPatientsListGetEndpointHandler({ query }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsPatientsCreatePostEndpoint", {
     title: "Register a patient and open a visit",
     description: "Make a POST request to /patients",
-    outputSchema: { data: saBaiAPIEndpointsPatientsCreatePostEndpointStatus200Schema },
-    inputSchema: { body: saBaiAPIEndpointsPatientsCreatePostEndpointBodySchema },
-  }, async ({ body }, request) => {
-    return saBaiAPIEndpointsPatientsCreatePostEndpointHandler({ body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsPatientsCreatePostEndpointStatus200Schema }),
+    inputSchema: z.object({ body: saBaiAPIEndpointsPatientsCreatePostEndpointBodySchema }),
+  }, async ({ body }, ctx) => {
+    return saBaiAPIEndpointsPatientsCreatePostEndpointHandler({ body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsPatientsSearchByFacePostEndpoint", {
     title: "Search for patients by face photo",
     description: "Make a POST request to /patients/search-by-face",
-    outputSchema: { data: saBaiAPIEndpointsPatientsSearchByFacePostEndpointStatus200Schema },
-    inputSchema: { query: z.object({ "threshold": saBaiAPIEndpointsPatientsSearchByFacePostEndpointQueryThresholdSchema, "maxMatches": saBaiAPIEndpointsPatientsSearchByFacePostEndpointQueryMaxMatchesSchema }), body: saBaiAPIEndpointsPatientsSearchByFacePostEndpointBodySchema },
-  }, async ({ query, body }, request) => {
-    return saBaiAPIEndpointsPatientsSearchByFacePostEndpointHandler({ query, body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsPatientsSearchByFacePostEndpointStatus200Schema }),
+    inputSchema: z.object({ query: z.object({ "threshold": saBaiAPIEndpointsPatientsSearchByFacePostEndpointQueryThresholdSchema, "maxMatches": saBaiAPIEndpointsPatientsSearchByFacePostEndpointQueryMaxMatchesSchema }), body: saBaiAPIEndpointsPatientsSearchByFacePostEndpointBodySchema }),
+  }, async ({ query, body }, ctx) => {
+    return saBaiAPIEndpointsPatientsSearchByFacePostEndpointHandler({ query, body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsPatientsWithLatestVisitGetEndpoint", {
     title: "List patients with their latest visit",
     description: "Make a GET request to /patients/with-latest-visit",
-    outputSchema: { data: saBaiAPIEndpointsPatientsWithLatestVisitGetEndpointStatus200Schema },
-  }, async (request) => {
-    return saBaiAPIEndpointsPatientsWithLatestVisitGetEndpointHandler(request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsPatientsWithLatestVisitGetEndpointStatus200Schema }),
+  }, async (ctx) => {
+    return saBaiAPIEndpointsPatientsWithLatestVisitGetEndpointHandler(ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsPatientsUpdatePatchEndpoint", {
     title: "Update a patient",
     description: "Make a PATCH request to /patients/{id}",
-    outputSchema: { data: saBaiAPIEndpointsPatientsUpdatePatchEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsPatientsUpdatePatchEndpointPathIdSchema }), body: saBaiAPIEndpointsPatientsUpdatePatchEndpointBodySchema },
-  }, async ({ path, body }, request) => {
-    return saBaiAPIEndpointsPatientsUpdatePatchEndpointHandler({ path, body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsPatientsUpdatePatchEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsPatientsUpdatePatchEndpointPathIdSchema }), body: saBaiAPIEndpointsPatientsUpdatePatchEndpointBodySchema }),
+  }, async ({ path, body }, ctx) => {
+    return saBaiAPIEndpointsPatientsUpdatePatchEndpointHandler({ path, body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsPatientsGetEndpoint", {
     title: "Get a patient",
     description: "Make a GET request to /patients/{id}",
-    outputSchema: { data: saBaiAPIEndpointsPatientsGetEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsPatientsGetEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsPatientsGetEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsPatientsGetEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsPatientsGetEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsPatientsGetEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsPatientsDeleteDeleteEndpoint", {
     title: "Delete a patient",
     description: "Make a DELETE request to /patients/{id}",
-    outputSchema: { data: saBaiAPIEndpointsPatientsDeleteDeleteEndpointStatus204Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsPatientsDeleteDeleteEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsPatientsDeleteDeleteEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsPatientsDeleteDeleteEndpointStatus204Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsPatientsDeleteDeleteEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsPatientsDeleteDeleteEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsPatientsFacesPostEndpoint", {
     title: "Enroll a face for a patient.",
     description: "Uses the most prominent face in the image. Enroll several photos per patient for better accuracy.",
-    outputSchema: { data: saBaiAPIEndpointsPatientsFacesPostEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsPatientsFacesPostEndpointPathIdSchema }), body: saBaiAPIEndpointsPatientsFacesPostEndpointBodySchema },
-  }, async ({ path, body }, request) => {
-    return saBaiAPIEndpointsPatientsFacesPostEndpointHandler({ path, body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsPatientsFacesPostEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsPatientsFacesPostEndpointPathIdSchema }), body: saBaiAPIEndpointsPatientsFacesPostEndpointBodySchema }),
+  }, async ({ path, body }, ctx) => {
+    return saBaiAPIEndpointsPatientsFacesPostEndpointHandler({ path, body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsPatientsFacesGetEndpoint", {
     title: "List the faces enrolled for a patient",
     description: "Make a GET request to /patients/{id}/faces",
-    outputSchema: { data: saBaiAPIEndpointsPatientsFacesGetEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsPatientsFacesGetEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsPatientsFacesGetEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsPatientsFacesGetEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsPatientsFacesGetEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsPatientsFacesGetEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsPatientsFacesDeleteEndpoint", {
     title: "Delete an enrolled face for a patient",
     description: "Make a DELETE request to /patients/{id}/faces/{faceId}",
-    outputSchema: { data: saBaiAPIEndpointsPatientsFacesDeleteEndpointStatus204Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsPatientsFacesDeleteEndpointPathIdSchema, "faceId": saBaiAPIEndpointsPatientsFacesDeleteEndpointPathFaceIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsPatientsFacesDeleteEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsPatientsFacesDeleteEndpointStatus204Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsPatientsFacesDeleteEndpointPathIdSchema, "faceId": saBaiAPIEndpointsPatientsFacesDeleteEndpointPathFaceIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsPatientsFacesDeleteEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsPatientsPhotoPutEndpoint", {
     title: "Set or replace a patient's profile photo",
     description: "Make a PUT request to /patients/{id}/photo",
-    outputSchema: { data: saBaiAPIEndpointsPatientsPhotoPutEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsPatientsPhotoPutEndpointPathIdSchema }), body: saBaiAPIEndpointsPatientsPhotoPutEndpointBodySchema },
-  }, async ({ path, body }, request) => {
-    return saBaiAPIEndpointsPatientsPhotoPutEndpointHandler({ path, body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsPatientsPhotoPutEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsPatientsPhotoPutEndpointPathIdSchema }), body: saBaiAPIEndpointsPatientsPhotoPutEndpointBodySchema }),
+  }, async ({ path, body }, ctx) => {
+    return saBaiAPIEndpointsPatientsPhotoPutEndpointHandler({ path, body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsPatientsPhotoGetEndpoint", {
     title: "Download a patient's profile photo",
     description: "Make a GET request to /patients/{id}/photo",
-    outputSchema: { data: saBaiAPIEndpointsPatientsPhotoGetEndpointStatus204Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsPatientsPhotoGetEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsPatientsPhotoGetEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsPatientsPhotoGetEndpointStatus204Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsPatientsPhotoGetEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsPatientsPhotoGetEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsPatientsPhotoDeleteEndpoint", {
     title: "Remove a patient's profile photo",
     description: "Make a DELETE request to /patients/{id}/photo",
-    outputSchema: { data: saBaiAPIEndpointsPatientsPhotoDeleteEndpointStatus204Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsPatientsPhotoDeleteEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsPatientsPhotoDeleteEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsPatientsPhotoDeleteEndpointStatus204Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsPatientsPhotoDeleteEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsPatientsPhotoDeleteEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsEyesightListByPatientGetEndpoint", {
     title: "List a patient's eyesight records",
     description: "Make a GET request to /patients/{patientId}/eyesight",
-    outputSchema: { data: saBaiAPIEndpointsEyesightListByPatientGetEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "patientId": saBaiAPIEndpointsEyesightListByPatientGetEndpointPathPatientIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsEyesightListByPatientGetEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsEyesightListByPatientGetEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "patientId": saBaiAPIEndpointsEyesightListByPatientGetEndpointPathPatientIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsEyesightListByPatientGetEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsPatientsVisitsGetEndpoint", {
     title: "List visits for a patient",
     description: "Make a GET request to /patients/{patientId}/visits",
-    outputSchema: { data: saBaiAPIEndpointsPatientsVisitsGetEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "patientId": saBaiAPIEndpointsPatientsVisitsGetEndpointPathPatientIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsPatientsVisitsGetEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsPatientsVisitsGetEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "patientId": saBaiAPIEndpointsPatientsVisitsGetEndpointPathPatientIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsPatientsVisitsGetEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsVitalsListByPatientGetEndpoint", {
     title: "List a patient's vitals",
     description: "Make a GET request to /patients/{patientId}/vitals",
-    outputSchema: { data: saBaiAPIEndpointsVitalsListByPatientGetEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "patientId": saBaiAPIEndpointsVitalsListByPatientGetEndpointPathPatientIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsVitalsListByPatientGetEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsVitalsListByPatientGetEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "patientId": saBaiAPIEndpointsVitalsListByPatientGetEndpointPathPatientIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsVitalsListByPatientGetEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsPersonsDeleteEndpoint", {
     title: "Delete every face enrolled for a person.",
     description: "Make a DELETE request to /persons/{personId}",
-    outputSchema: { data: saBaiAPIEndpointsPersonsDeleteEndpointStatus204Schema },
-    inputSchema: { path: z.object({ "personId": saBaiAPIEndpointsPersonsDeleteEndpointPathPersonIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsPersonsDeleteEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsPersonsDeleteEndpointStatus204Schema }),
+    inputSchema: z.object({ path: z.object({ "personId": saBaiAPIEndpointsPersonsDeleteEndpointPathPersonIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsPersonsDeleteEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsPersonsFacesPostEndpoint", {
     title: "Enroll a face for a person.",
     description: "Uses the most prominent face in the image. Enroll several photos per person for better accuracy.",
-    outputSchema: { data: saBaiAPIEndpointsPersonsFacesPostEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "personId": saBaiAPIEndpointsPersonsFacesPostEndpointPathPersonIdSchema }), body: saBaiAPIEndpointsPersonsFacesPostEndpointBodySchema },
-  }, async ({ path, body }, request) => {
-    return saBaiAPIEndpointsPersonsFacesPostEndpointHandler({ path, body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsPersonsFacesPostEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "personId": saBaiAPIEndpointsPersonsFacesPostEndpointPathPersonIdSchema }), body: saBaiAPIEndpointsPersonsFacesPostEndpointBodySchema }),
+  }, async ({ path, body }, ctx) => {
+    return saBaiAPIEndpointsPersonsFacesPostEndpointHandler({ path, body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsPersonsFacesGetEndpoint", {
     title: "List the faces enrolled for a person.",
     description: "Make a GET request to /persons/{personId}/faces",
-    outputSchema: { data: saBaiAPIEndpointsPersonsFacesGetEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "personId": saBaiAPIEndpointsPersonsFacesGetEndpointPathPersonIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsPersonsFacesGetEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsPersonsFacesGetEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "personId": saBaiAPIEndpointsPersonsFacesGetEndpointPathPersonIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsPersonsFacesGetEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsPharmacyOrdersGetEndpoint", {
     title: "List pending pharmacy orders grouped by patient and visit",
     description: "Make a GET request to /pharmacy-orders",
-    outputSchema: { data: saBaiAPIEndpointsPharmacyOrdersGetEndpointStatus200Schema },
-  }, async (request) => {
-    return saBaiAPIEndpointsPharmacyOrdersGetEndpointHandler(request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsPharmacyOrdersGetEndpointStatus200Schema }),
+  }, async (ctx) => {
+    return saBaiAPIEndpointsPharmacyOrdersGetEndpointHandler(ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsPubertyCreatePostEndpoint", {
     title: "Record a puberty assessment",
     description: "Make a POST request to /puberty",
-    outputSchema: { data: saBaiAPIEndpointsPubertyCreatePostEndpointStatus200Schema },
-    inputSchema: { body: saBaiAPIEndpointsPubertyCreatePostEndpointBodySchema },
-  }, async ({ body }, request) => {
-    return saBaiAPIEndpointsPubertyCreatePostEndpointHandler({ body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsPubertyCreatePostEndpointStatus200Schema }),
+    inputSchema: z.object({ body: saBaiAPIEndpointsPubertyCreatePostEndpointBodySchema }),
+  }, async ({ body }, ctx) => {
+    return saBaiAPIEndpointsPubertyCreatePostEndpointHandler({ body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsPubertyUpdatePatchEndpoint", {
     title: "Update a puberty assessment",
     description: "Make a PATCH request to /puberty/{id}",
-    outputSchema: { data: saBaiAPIEndpointsPubertyUpdatePatchEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsPubertyUpdatePatchEndpointPathIdSchema }), body: saBaiAPIEndpointsPubertyUpdatePatchEndpointBodySchema },
-  }, async ({ path, body }, request) => {
-    return saBaiAPIEndpointsPubertyUpdatePatchEndpointHandler({ path, body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsPubertyUpdatePatchEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsPubertyUpdatePatchEndpointPathIdSchema }), body: saBaiAPIEndpointsPubertyUpdatePatchEndpointBodySchema }),
+  }, async ({ path, body }, ctx) => {
+    return saBaiAPIEndpointsPubertyUpdatePatchEndpointHandler({ path, body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsPubertyGetEndpoint", {
     title: "Get a puberty assessment by id",
     description: "Make a GET request to /puberty/{id}",
-    outputSchema: { data: saBaiAPIEndpointsPubertyGetEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsPubertyGetEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsPubertyGetEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsPubertyGetEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsPubertyGetEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsPubertyGetEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsPubertyDeleteEndpoint", {
     title: "Delete a puberty assessment",
     description: "Make a DELETE request to /puberty/{id}",
-    outputSchema: { data: saBaiAPIEndpointsPubertyDeleteEndpointStatus204Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsPubertyDeleteEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsPubertyDeleteEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsPubertyDeleteEndpointStatus204Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsPubertyDeleteEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsPubertyDeleteEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsReferralsListGetEndpoint", {
     title: "List referrals, newest first",
     description: "Make a GET request to /referrals",
-    outputSchema: { data: saBaiAPIEndpointsReferralsListGetEndpointStatus200Schema },
-  }, async (request) => {
-    return saBaiAPIEndpointsReferralsListGetEndpointHandler(request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsReferralsListGetEndpointStatus200Schema }),
+  }, async (ctx) => {
+    return saBaiAPIEndpointsReferralsListGetEndpointHandler(ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsReferralsCreatePostEndpoint", {
     title: "Open a referral for a consult",
     description: "Make a POST request to /referrals",
-    outputSchema: { data: saBaiAPIEndpointsReferralsCreatePostEndpointStatus200Schema },
-    inputSchema: { body: saBaiAPIEndpointsReferralsCreatePostEndpointBodySchema },
-  }, async ({ body }, request) => {
-    return saBaiAPIEndpointsReferralsCreatePostEndpointHandler({ body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsReferralsCreatePostEndpointStatus200Schema }),
+    inputSchema: z.object({ body: saBaiAPIEndpointsReferralsCreatePostEndpointBodySchema }),
+  }, async ({ body }, ctx) => {
+    return saBaiAPIEndpointsReferralsCreatePostEndpointHandler({ body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsReferralsGetEndpoint", {
     title: "Get a referral",
     description: "Make a GET request to /referrals/{id}",
-    outputSchema: { data: saBaiAPIEndpointsReferralsGetEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsReferralsGetEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsReferralsGetEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsReferralsGetEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsReferralsGetEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsReferralsGetEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsReferralsUpdateStatePatchEndpoint", {
     title: "Set a referral state from any prior state",
     description: "Make a PATCH request to /referrals/{id}/state",
-    outputSchema: { data: saBaiAPIEndpointsReferralsUpdateStatePatchEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsReferralsUpdateStatePatchEndpointPathIdSchema }), body: saBaiAPIEndpointsReferralsUpdateStatePatchEndpointBodySchema },
-  }, async ({ path, body }, request) => {
-    return saBaiAPIEndpointsReferralsUpdateStatePatchEndpointHandler({ path, body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsReferralsUpdateStatePatchEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsReferralsUpdateStatePatchEndpointPathIdSchema }), body: saBaiAPIEndpointsReferralsUpdateStatePatchEndpointBodySchema }),
+  }, async ({ path, body }, ctx) => {
+    return saBaiAPIEndpointsReferralsUpdateStatePatchEndpointHandler({ path, body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsVillageCodesListGetEndpoint", {
     title: "List village codes",
     description: "Make a GET request to /village-codes",
-    outputSchema: { data: saBaiAPIEndpointsVillageCodesListGetEndpointStatus200Schema },
-    inputSchema: { query: z.object({ "includeHidden": saBaiAPIEndpointsVillageCodesListGetEndpointQueryIncludeHiddenSchema }) },
-  }, async ({ query }, request) => {
-    return saBaiAPIEndpointsVillageCodesListGetEndpointHandler({ query }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsVillageCodesListGetEndpointStatus200Schema }),
+    inputSchema: z.object({ query: z.object({ "includeHidden": saBaiAPIEndpointsVillageCodesListGetEndpointQueryIncludeHiddenSchema }) }),
+  }, async ({ query }, ctx) => {
+    return saBaiAPIEndpointsVillageCodesListGetEndpointHandler({ query }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsVillageCodesCreatePostEndpoint", {
     title: "Create a village code",
     description: "Make a POST request to /village-codes",
-    outputSchema: { data: saBaiAPIEndpointsVillageCodesCreatePostEndpointStatus200Schema },
-    inputSchema: { body: saBaiAPIEndpointsVillageCodesCreatePostEndpointBodySchema },
-  }, async ({ body }, request) => {
-    return saBaiAPIEndpointsVillageCodesCreatePostEndpointHandler({ body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsVillageCodesCreatePostEndpointStatus200Schema }),
+    inputSchema: z.object({ body: saBaiAPIEndpointsVillageCodesCreatePostEndpointBodySchema }),
+  }, async ({ body }, ctx) => {
+    return saBaiAPIEndpointsVillageCodesCreatePostEndpointHandler({ body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsVillageCodesUpdatePatchEndpoint", {
     title: "Update a village code",
     description: "Make a PATCH request to /village-codes/{id}",
-    outputSchema: { data: saBaiAPIEndpointsVillageCodesUpdatePatchEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsVillageCodesUpdatePatchEndpointPathIdSchema }), body: saBaiAPIEndpointsVillageCodesUpdatePatchEndpointBodySchema },
-  }, async ({ path, body }, request) => {
-    return saBaiAPIEndpointsVillageCodesUpdatePatchEndpointHandler({ path, body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsVillageCodesUpdatePatchEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsVillageCodesUpdatePatchEndpointPathIdSchema }), body: saBaiAPIEndpointsVillageCodesUpdatePatchEndpointBodySchema }),
+  }, async ({ path, body }, ctx) => {
+    return saBaiAPIEndpointsVillageCodesUpdatePatchEndpointHandler({ path, body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsVillageCodesGetEndpoint", {
     title: "Get a village code",
     description: "Make a GET request to /village-codes/{id}",
-    outputSchema: { data: saBaiAPIEndpointsVillageCodesGetEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsVillageCodesGetEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsVillageCodesGetEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsVillageCodesGetEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsVillageCodesGetEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsVillageCodesGetEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsVillageCodesDeleteDeleteEndpoint", {
     title: "Delete a village code",
     description: "Make a DELETE request to /village-codes/{id}",
-    outputSchema: { data: saBaiAPIEndpointsVillageCodesDeleteDeleteEndpointStatus204Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsVillageCodesDeleteDeleteEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsVillageCodesDeleteDeleteEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsVillageCodesDeleteDeleteEndpointStatus204Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsVillageCodesDeleteDeleteEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsVillageCodesDeleteDeleteEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsVisionGetEndpoint", {
     title: "Get the vision composite for a visit",
     description: "Make a GET request to /vision",
-    outputSchema: { data: saBaiAPIEndpointsVisionGetEndpointStatus200Schema },
-    inputSchema: { query: z.object({ "visitId": saBaiAPIEndpointsVisionGetEndpointQueryVisitIdSchema }) },
-  }, async ({ query }, request) => {
-    return saBaiAPIEndpointsVisionGetEndpointHandler({ query }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsVisionGetEndpointStatus200Schema }),
+    inputSchema: z.object({ query: z.object({ "visitId": saBaiAPIEndpointsVisionGetEndpointQueryVisitIdSchema }) }),
+  }, async ({ query }, ctx) => {
+    return saBaiAPIEndpointsVisionGetEndpointHandler({ query }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsVisitsListGetEndpoint", {
     title: "List visits",
     description: "Make a GET request to /visits",
-    outputSchema: { data: saBaiAPIEndpointsVisitsListGetEndpointStatus200Schema },
-    inputSchema: { query: z.object({ "patientId": saBaiAPIEndpointsVisitsListGetEndpointQueryPatientIdSchema }) },
-  }, async ({ query }, request) => {
-    return saBaiAPIEndpointsVisitsListGetEndpointHandler({ query }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsVisitsListGetEndpointStatus200Schema }),
+    inputSchema: z.object({ query: z.object({ "patientId": saBaiAPIEndpointsVisitsListGetEndpointQueryPatientIdSchema }) }),
+  }, async ({ query }, ctx) => {
+    return saBaiAPIEndpointsVisitsListGetEndpointHandler({ query }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsVisitsCreatePostEndpoint", {
     title: "Create a visit",
     description: "Make a POST request to /visits",
-    outputSchema: { data: saBaiAPIEndpointsVisitsCreatePostEndpointStatus200Schema },
-    inputSchema: { body: saBaiAPIEndpointsVisitsCreatePostEndpointBodySchema },
-  }, async ({ body }, request) => {
-    return saBaiAPIEndpointsVisitsCreatePostEndpointHandler({ body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsVisitsCreatePostEndpointStatus200Schema }),
+    inputSchema: z.object({ body: saBaiAPIEndpointsVisitsCreatePostEndpointBodySchema }),
+  }, async ({ body }, ctx) => {
+    return saBaiAPIEndpointsVisitsCreatePostEndpointHandler({ body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsVisitsHasRecentGetEndpoint", {
     title: "Check whether a patient had a visit opened in the last minute",
     description: "Make a GET request to /visits/recent",
-    outputSchema: { data: saBaiAPIEndpointsVisitsHasRecentGetEndpointStatus200Schema },
-    inputSchema: { query: z.object({ "patientId": saBaiAPIEndpointsVisitsHasRecentGetEndpointQueryPatientIdSchema }) },
-  }, async ({ query }, request) => {
-    return saBaiAPIEndpointsVisitsHasRecentGetEndpointHandler({ query }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsVisitsHasRecentGetEndpointStatus200Schema }),
+    inputSchema: z.object({ query: z.object({ "patientId": saBaiAPIEndpointsVisitsHasRecentGetEndpointQueryPatientIdSchema }) }),
+  }, async ({ query }, ctx) => {
+    return saBaiAPIEndpointsVisitsHasRecentGetEndpointHandler({ query }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsVisitsUpdatePatchEndpoint", {
     title: "Update a visit",
     description: "Make a PATCH request to /visits/{id}",
-    outputSchema: { data: saBaiAPIEndpointsVisitsUpdatePatchEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsVisitsUpdatePatchEndpointPathIdSchema }), body: saBaiAPIEndpointsVisitsUpdatePatchEndpointBodySchema },
-  }, async ({ path, body }, request) => {
-    return saBaiAPIEndpointsVisitsUpdatePatchEndpointHandler({ path, body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsVisitsUpdatePatchEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsVisitsUpdatePatchEndpointPathIdSchema }), body: saBaiAPIEndpointsVisitsUpdatePatchEndpointBodySchema }),
+  }, async ({ path, body }, ctx) => {
+    return saBaiAPIEndpointsVisitsUpdatePatchEndpointHandler({ path, body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsVisitsGetEndpoint", {
     title: "Get a visit",
     description: "Make a GET request to /visits/{id}",
-    outputSchema: { data: saBaiAPIEndpointsVisitsGetEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsVisitsGetEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsVisitsGetEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsVisitsGetEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsVisitsGetEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsVisitsGetEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsVisitsDeleteDeleteEndpoint", {
     title: "Delete a visit",
     description: "Make a DELETE request to /visits/{id}",
-    outputSchema: { data: saBaiAPIEndpointsVisitsDeleteDeleteEndpointStatus204Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsVisitsDeleteDeleteEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsVisitsDeleteDeleteEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsVisitsDeleteDeleteEndpointStatus204Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsVisitsDeleteDeleteEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsVisitsDeleteDeleteEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsConsultsListByVisitGetEndpoint", {
     title: "List consults for a visit, newest first",
     description: "Make a GET request to /visits/{visitId}/consults",
-    outputSchema: { data: saBaiAPIEndpointsConsultsListByVisitGetEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "visitId": saBaiAPIEndpointsConsultsListByVisitGetEndpointPathVisitIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsConsultsListByVisitGetEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsConsultsListByVisitGetEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "visitId": saBaiAPIEndpointsConsultsListByVisitGetEndpointPathVisitIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsConsultsListByVisitGetEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsDentalUpsertByVisitPutEndpoint", {
     title: "Save the dental consultation for a visit, creating it if needed",
     description: "Make a PUT request to /visits/{visitId}/dental",
-    outputSchema: { data: saBaiAPIEndpointsDentalUpsertByVisitPutEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "visitId": saBaiAPIEndpointsDentalUpsertByVisitPutEndpointPathVisitIdSchema }), body: saBaiAPIEndpointsDentalUpsertByVisitPutEndpointBodySchema },
-  }, async ({ path, body }, request) => {
-    return saBaiAPIEndpointsDentalUpsertByVisitPutEndpointHandler({ path, body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsDentalUpsertByVisitPutEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "visitId": saBaiAPIEndpointsDentalUpsertByVisitPutEndpointPathVisitIdSchema }), body: saBaiAPIEndpointsDentalUpsertByVisitPutEndpointBodySchema }),
+  }, async ({ path, body }, ctx) => {
+    return saBaiAPIEndpointsDentalUpsertByVisitPutEndpointHandler({ path, body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsDentalGetByVisitGetEndpoint", {
     title: "Get the dental consultation for a visit",
     description: "Make a GET request to /visits/{visitId}/dental",
-    outputSchema: { data: saBaiAPIEndpointsDentalGetByVisitGetEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "visitId": saBaiAPIEndpointsDentalGetByVisitGetEndpointPathVisitIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsDentalGetByVisitGetEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsDentalGetByVisitGetEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "visitId": saBaiAPIEndpointsDentalGetByVisitGetEndpointPathVisitIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsDentalGetByVisitGetEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpoint", {
     title: "Update eyesight for a visit",
     description: "Make a PATCH request to /visits/{visitId}/eyesight",
-    outputSchema: { data: saBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "visitId": saBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointPathVisitIdSchema }), body: saBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointBodySchema },
-  }, async ({ path, body }, request) => {
-    return saBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointHandler({ path, body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "visitId": saBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointPathVisitIdSchema }), body: saBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointBodySchema }),
+  }, async ({ path, body }, ctx) => {
+    return saBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointHandler({ path, body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsEyesightGetByVisitGetEndpoint", {
     title: "Get eyesight for a visit",
     description: "Make a GET request to /visits/{visitId}/eyesight",
-    outputSchema: { data: saBaiAPIEndpointsEyesightGetByVisitGetEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "visitId": saBaiAPIEndpointsEyesightGetByVisitGetEndpointPathVisitIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsEyesightGetByVisitGetEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsEyesightGetByVisitGetEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "visitId": saBaiAPIEndpointsEyesightGetByVisitGetEndpointPathVisitIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsEyesightGetByVisitGetEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsVitalsUpdateByVisitPatchEndpoint", {
     title: "Update vitals for a visit",
     description: "Make a PATCH request to /visits/{visitId}/vitals",
-    outputSchema: { data: saBaiAPIEndpointsVitalsUpdateByVisitPatchEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "visitId": saBaiAPIEndpointsVitalsUpdateByVisitPatchEndpointPathVisitIdSchema }), body: saBaiAPIEndpointsVitalsUpdateByVisitPatchEndpointBodySchema },
-  }, async ({ path, body }, request) => {
-    return saBaiAPIEndpointsVitalsUpdateByVisitPatchEndpointHandler({ path, body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsVitalsUpdateByVisitPatchEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "visitId": saBaiAPIEndpointsVitalsUpdateByVisitPatchEndpointPathVisitIdSchema }), body: saBaiAPIEndpointsVitalsUpdateByVisitPatchEndpointBodySchema }),
+  }, async ({ path, body }, ctx) => {
+    return saBaiAPIEndpointsVitalsUpdateByVisitPatchEndpointHandler({ path, body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsVitalsGetByVisitGetEndpoint", {
     title: "Get vitals for a visit",
     description: "Make a GET request to /visits/{visitId}/vitals",
-    outputSchema: { data: saBaiAPIEndpointsVitalsGetByVisitGetEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "visitId": saBaiAPIEndpointsVitalsGetByVisitGetEndpointPathVisitIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsVitalsGetByVisitGetEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsVitalsGetByVisitGetEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "visitId": saBaiAPIEndpointsVitalsGetByVisitGetEndpointPathVisitIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsVitalsGetByVisitGetEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsVitalsCreatePostEndpoint", {
     title: "Record vitals for a visit",
     description: "Make a POST request to /vitals",
-    outputSchema: { data: saBaiAPIEndpointsVitalsCreatePostEndpointStatus200Schema },
-    inputSchema: { body: saBaiAPIEndpointsVitalsCreatePostEndpointBodySchema },
-  }, async ({ body }, request) => {
-    return saBaiAPIEndpointsVitalsCreatePostEndpointHandler({ body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsVitalsCreatePostEndpointStatus200Schema }),
+    inputSchema: z.object({ body: saBaiAPIEndpointsVitalsCreatePostEndpointBodySchema }),
+  }, async ({ body }, ctx) => {
+    return saBaiAPIEndpointsVitalsCreatePostEndpointHandler({ body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsVitalsUpdatePatchEndpoint", {
     title: "Update vitals",
     description: "Make a PATCH request to /vitals/{id}",
-    outputSchema: { data: saBaiAPIEndpointsVitalsUpdatePatchEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsVitalsUpdatePatchEndpointPathIdSchema }), body: saBaiAPIEndpointsVitalsUpdatePatchEndpointBodySchema },
-  }, async ({ path, body }, request) => {
-    return saBaiAPIEndpointsVitalsUpdatePatchEndpointHandler({ path, body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsVitalsUpdatePatchEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsVitalsUpdatePatchEndpointPathIdSchema }), body: saBaiAPIEndpointsVitalsUpdatePatchEndpointBodySchema }),
+  }, async ({ path, body }, ctx) => {
+    return saBaiAPIEndpointsVitalsUpdatePatchEndpointHandler({ path, body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsVitalsGetEndpoint", {
     title: "Get vitals by id",
     description: "Make a GET request to /vitals/{id}",
-    outputSchema: { data: saBaiAPIEndpointsVitalsGetEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsVitalsGetEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsVitalsGetEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsVitalsGetEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsVitalsGetEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsVitalsGetEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsVitalsDeleteEndpoint", {
     title: "Delete vitals",
     description: "Make a DELETE request to /vitals/{id}",
-    outputSchema: { data: saBaiAPIEndpointsVitalsDeleteEndpointStatus204Schema },
-    inputSchema: { path: z.object({ "id": saBaiAPIEndpointsVitalsDeleteEndpointPathIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsVitalsDeleteEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsVitalsDeleteEndpointStatus204Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsVitalsDeleteEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsVitalsDeleteEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpoint", {
     title: "Update child vitals for a vitals record",
     description: "Make a PATCH request to /vitals/{vitalsId}/child-vitals",
-    outputSchema: { data: saBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "vitalsId": saBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointPathVitalsIdSchema }), body: saBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointBodySchema },
-  }, async ({ path, body }, request) => {
-    return saBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointHandler({ path, body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "vitalsId": saBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointPathVitalsIdSchema }), body: saBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointBodySchema }),
+  }, async ({ path, body }, ctx) => {
+    return saBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointHandler({ path, body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpoint", {
     title: "Get child vitals for a vitals record",
     description: "Make a GET request to /vitals/{vitalsId}/child-vitals",
-    outputSchema: { data: saBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "vitalsId": saBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointPathVitalsIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "vitalsId": saBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointPathVitalsIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointHandler({ path }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpoint", {
     title: "Update the puberty assessment for vitals",
     description: "Make a PATCH request to /vitals/{vitalsId}/puberty",
-    outputSchema: { data: saBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "vitalsId": saBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointPathVitalsIdSchema }), body: saBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointBodySchema },
-  }, async ({ path, body }, request) => {
-    return saBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointHandler({ path, body }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "vitalsId": saBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointPathVitalsIdSchema }), body: saBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointBodySchema }),
+  }, async ({ path, body }, ctx) => {
+    return saBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointHandler({ path, body }, ctx)
   })
 
 
   server.registerTool("SaBaiAPIEndpointsPubertyGetByVitalsGetEndpoint", {
     title: "Get the puberty assessment for vitals",
     description: "Make a GET request to /vitals/{vitalsId}/puberty",
-    outputSchema: { data: saBaiAPIEndpointsPubertyGetByVitalsGetEndpointStatus200Schema },
-    inputSchema: { path: z.object({ "vitalsId": saBaiAPIEndpointsPubertyGetByVitalsGetEndpointPathVitalsIdSchema }) },
-  }, async ({ path }, request) => {
-    return saBaiAPIEndpointsPubertyGetByVitalsGetEndpointHandler({ path }, request)
+    outputSchema: z.object({ data: saBaiAPIEndpointsPubertyGetByVitalsGetEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "vitalsId": saBaiAPIEndpointsPubertyGetByVitalsGetEndpointPathVitalsIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsPubertyGetByVitalsGetEndpointHandler({ path }, ctx)
   })
 
   return server
@@ -1531,12 +1670,7 @@ export function getServer() {
 export const server = getServer()
 
 export async function startServer() {
-  try {
-      const transport = new StdioServerTransport()
-      await server.connect(transport)
-
-    } catch (error) {
-      console.error('Failed to start server:', error)
-      process.exit(1)
-    }
+  return serveStdio(getServer, {
+      onerror: (error) => console.error('MCP server error:', error),
+    })
 }

@@ -6,14 +6,12 @@
 import type { SaBaiAPIFaceRecognitionStoredFace } from '../types/SaBaiAPIFaceRecognitionStoredFace'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIFaceRecognitionStoredFace<TData extends Partial<SaBaiAPIFaceRecognitionStoredFace> = object>(data?: TData)
-
-{
+export function createSaBaiAPIFaceRecognitionStoredFace<TData extends Partial<SaBaiAPIFaceRecognitionStoredFace> = object>(data?: TData) {
   const defaultFakeData = {
-  faceId: faker.string.uuid(),
-  personId: faker.string.alpha(),
-  createdAt: faker.date.anytime().toISOString(),
-}
+    faceId: faker.string.uuid(),
+    personId: faker.string.alpha(),
+    createdAt: faker.date.anytime().toISOString(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

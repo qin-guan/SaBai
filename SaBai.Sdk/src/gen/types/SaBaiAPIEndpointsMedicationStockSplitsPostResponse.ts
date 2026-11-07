@@ -4,5 +4,5 @@
 */
 
 export type SaBaiAPIEndpointsMedicationStockSplitsPostResponse = {
-    success: boolean;
+  success: boolean;
 };

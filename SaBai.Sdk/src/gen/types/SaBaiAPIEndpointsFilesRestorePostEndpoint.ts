@@ -6,12 +6,12 @@
 import type { SaBaiAPIEndpointsFilesRestorePostResponse } from './SaBaiAPIEndpointsFilesRestorePostResponse'
 
 export type SaBaiAPIEndpointsFilesRestorePostEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
 };
 
 export type SaBaiAPIEndpointsFilesRestorePostEndpointStatus200 = SaBaiAPIEndpointsFilesRestorePostResponse;
@@ -21,19 +21,19 @@ export type SaBaiAPIEndpointsFilesRestorePostEndpointStatus401 = unknown;
 export type SaBaiAPIEndpointsFilesRestorePostEndpointStatus403 = unknown;
 
 export type SaBaiAPIEndpointsFilesRestorePostEndpointOptions = {
-    body?: never;
-    path: SaBaiAPIEndpointsFilesRestorePostEndpointPath;
-    query?: never;
-    headers?: never;
+  body?: never;
+  path: SaBaiAPIEndpointsFilesRestorePostEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsFilesRestorePostEndpointResponses = {
-    "200": SaBaiAPIEndpointsFilesRestorePostEndpointStatus200;
-    "401": SaBaiAPIEndpointsFilesRestorePostEndpointStatus401;
-    "403": SaBaiAPIEndpointsFilesRestorePostEndpointStatus403;
+  '200': SaBaiAPIEndpointsFilesRestorePostEndpointStatus200;
+  '401': SaBaiAPIEndpointsFilesRestorePostEndpointStatus401;
+  '403': SaBaiAPIEndpointsFilesRestorePostEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsFilesRestorePostEndpointResponse = SaBaiAPIEndpointsFilesRestorePostEndpointStatus200;

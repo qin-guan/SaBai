@@ -7,21 +7,19 @@ import type { SaBaiAPIEndpointsPatientsVisitsGetItem } from '../types/SaBaiAPIEn
 import { createSaBaiAPIEndpointsPatientsVisitJourney } from './createSaBaiAPIEndpointsPatientsVisitJourney'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsPatientsVisitsGetItem<TData extends Partial<SaBaiAPIEndpointsPatientsVisitsGetItem> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsPatientsVisitsGetItem<TData extends Partial<SaBaiAPIEndpointsPatientsVisitsGetItem> = object>(data?: TData) {
   const defaultFakeData = {
-  id: faker.number.int(),
-  date: faker.date.anytime().toISOString(),
-  patientId: faker.number.int(),
-  patientName: faker.string.alpha(),
-  villageCodeId: faker.number.int(),
-  villageCode: faker.string.alpha(),
-  villageName: faker.string.alpha(),
-  villageColorHex: faker.string.alpha(),
-  status: faker.string.alpha(),
-  journey: createSaBaiAPIEndpointsPatientsVisitJourney(),
-}
+    id: faker.number.int(),
+    date: faker.date.anytime().toISOString(),
+    patientId: faker.number.int(),
+    patientName: faker.string.alpha(),
+    villageCodeId: faker.number.int(),
+    villageCode: faker.string.alpha(),
+    villageName: faker.string.alpha(),
+    villageColorHex: faker.string.alpha(),
+    status: faker.string.alpha(),
+    journey: createSaBaiAPIEndpointsPatientsVisitJourney(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

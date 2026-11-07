@@ -4,11 +4,12 @@
 */
 
 import type { SaBaiAPIEndpointsFilesCreatePostEndpointResponse, SaBaiAPIEndpointsFilesCreatePostEndpointStatus401, SaBaiAPIEndpointsFilesCreatePostEndpointStatus403, SaBaiAPIEndpointsFilesCreatePostEndpointBody } from '../types/SaBaiAPIEndpointsFilesCreatePostEndpoint'
-import type { HttpResponseResolver } from 'msw'
-import { http } from 'msw'
+import type { HttpResponseResolver } from 'msw/http'
+import type { DefaultBodyType } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsFilesCreatePostEndpointHandlerResponse200(data: SaBaiAPIEndpointsFilesCreatePostEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -17,22 +18,22 @@ export function saBaiAPIEndpointsFilesCreatePostEndpointHandlerResponse200(data:
 }
 
 export function saBaiAPIEndpointsFilesCreatePostEndpointHandlerResponse401(data?: SaBaiAPIEndpointsFilesCreatePostEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsFilesCreatePostEndpointHandlerResponse403(data?: SaBaiAPIEndpointsFilesCreatePostEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsFilesCreatePostEndpointHandler(data?: SaBaiAPIEndpointsFilesCreatePostEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsFilesCreatePostEndpointBody>) {
-  return http.post<Record<string, string>, SaBaiAPIEndpointsFilesCreatePostEndpointBody>(`/files`, function handler(info) {
+export function saBaiAPIEndpointsFilesCreatePostEndpointHandler(data?: SaBaiAPIEndpointsFilesCreatePostEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsFilesCreatePostEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsFilesCreatePostEndpointBody : DefaultBodyType>, options?: { baseURL?: string }) {
+  return http.post<Record<string, string>, SaBaiAPIEndpointsFilesCreatePostEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsFilesCreatePostEndpointBody : DefaultBodyType>(`${options?.baseURL ?? ''}/files`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

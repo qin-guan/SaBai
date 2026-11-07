@@ -3,17 +3,15 @@
 * Do not edit manually.
 */
 
-import type { SaBaiAPIEndpointsPatientsPhotoPutEndpointBody, SaBaiAPIEndpointsPatientsPhotoPutEndpointPath, SaBaiAPIEndpointsPatientsPhotoPutEndpointResponse, SaBaiAPIEndpointsPatientsPhotoPutEndpointStatus200, SaBaiAPIEndpointsPatientsPhotoPutEndpointStatus401, SaBaiAPIEndpointsPatientsPhotoPutEndpointStatus403 } from '../types/SaBaiAPIEndpointsPatientsPhotoPutEndpoint'
+import type { SaBaiAPIEndpointsPatientsPhotoPutEndpointBody, SaBaiAPIEndpointsPatientsPhotoPutEndpointPath, SaBaiAPIEndpointsPatientsPhotoPutEndpointResponse, SaBaiAPIEndpointsPatientsPhotoPutEndpointStatus200 } from '../types/SaBaiAPIEndpointsPatientsPhotoPutEndpoint'
 import { createSaBaiAPIEndpointsPatientsPhotoPutRequest } from './createSaBaiAPIEndpointsPatientsPhotoPutRequest'
 import { createSaBaiAPIEndpointsPatientsPhotoPutResponse } from './createSaBaiAPIEndpointsPatientsPhotoPutResponse'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsPatientsPhotoPutEndpointPath<TData extends Partial<SaBaiAPIEndpointsPatientsPhotoPutEndpointPath> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsPatientsPhotoPutEndpointPath<TData extends Partial<SaBaiAPIEndpointsPatientsPhotoPutEndpointPath> = object>(data?: TData) {
   const defaultFakeData = {
-  id: faker.number.int(),
-}
+    id: faker.number.int(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

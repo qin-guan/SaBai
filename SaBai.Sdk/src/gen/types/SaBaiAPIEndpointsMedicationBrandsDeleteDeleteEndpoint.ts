@@ -4,12 +4,12 @@
 */
 
 export type SaBaiAPIEndpointsMedicationBrandsDeleteDeleteEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
 };
 
 export type SaBaiAPIEndpointsMedicationBrandsDeleteDeleteEndpointStatus204 = unknown;
@@ -19,19 +19,19 @@ export type SaBaiAPIEndpointsMedicationBrandsDeleteDeleteEndpointStatus401 = unk
 export type SaBaiAPIEndpointsMedicationBrandsDeleteDeleteEndpointStatus403 = unknown;
 
 export type SaBaiAPIEndpointsMedicationBrandsDeleteDeleteEndpointOptions = {
-    body?: never;
-    path: SaBaiAPIEndpointsMedicationBrandsDeleteDeleteEndpointPath;
-    query?: never;
-    headers?: never;
+  body?: never;
+  path: SaBaiAPIEndpointsMedicationBrandsDeleteDeleteEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsMedicationBrandsDeleteDeleteEndpointResponses = {
-    "204": SaBaiAPIEndpointsMedicationBrandsDeleteDeleteEndpointStatus204;
-    "401": SaBaiAPIEndpointsMedicationBrandsDeleteDeleteEndpointStatus401;
-    "403": SaBaiAPIEndpointsMedicationBrandsDeleteDeleteEndpointStatus403;
+  '204': SaBaiAPIEndpointsMedicationBrandsDeleteDeleteEndpointStatus204;
+  '401': SaBaiAPIEndpointsMedicationBrandsDeleteDeleteEndpointStatus401;
+  '403': SaBaiAPIEndpointsMedicationBrandsDeleteDeleteEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsMedicationBrandsDeleteDeleteEndpointResponse = SaBaiAPIEndpointsMedicationBrandsDeleteDeleteEndpointStatus204;

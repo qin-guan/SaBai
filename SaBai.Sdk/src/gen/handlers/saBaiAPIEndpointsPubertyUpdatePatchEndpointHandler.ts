@@ -4,11 +4,12 @@
 */
 
 import type { SaBaiAPIEndpointsPubertyUpdatePatchEndpointResponse, SaBaiAPIEndpointsPubertyUpdatePatchEndpointStatus400, SaBaiAPIEndpointsPubertyUpdatePatchEndpointStatus401, SaBaiAPIEndpointsPubertyUpdatePatchEndpointStatus403, SaBaiAPIEndpointsPubertyUpdatePatchEndpointBody } from '../types/SaBaiAPIEndpointsPubertyUpdatePatchEndpoint'
-import type { HttpResponseResolver } from 'msw'
-import { http } from 'msw'
+import type { HttpResponseResolver } from 'msw/http'
+import type { DefaultBodyType } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsPubertyUpdatePatchEndpointHandlerResponse200(data: SaBaiAPIEndpointsPubertyUpdatePatchEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -17,7 +18,7 @@ export function saBaiAPIEndpointsPubertyUpdatePatchEndpointHandlerResponse200(da
 }
 
 export function saBaiAPIEndpointsPubertyUpdatePatchEndpointHandlerResponse400(data: SaBaiAPIEndpointsPubertyUpdatePatchEndpointStatus400) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 400,
     headers: {
       'Content-Type': 'application/problem+json'
@@ -26,22 +27,22 @@ export function saBaiAPIEndpointsPubertyUpdatePatchEndpointHandlerResponse400(da
 }
 
 export function saBaiAPIEndpointsPubertyUpdatePatchEndpointHandlerResponse401(data?: SaBaiAPIEndpointsPubertyUpdatePatchEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsPubertyUpdatePatchEndpointHandlerResponse403(data?: SaBaiAPIEndpointsPubertyUpdatePatchEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsPubertyUpdatePatchEndpointHandler(data?: SaBaiAPIEndpointsPubertyUpdatePatchEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsPubertyUpdatePatchEndpointBody>) {
-  return http.patch<Record<string, string>, SaBaiAPIEndpointsPubertyUpdatePatchEndpointBody>(`/puberty/:id`, function handler(info) {
+export function saBaiAPIEndpointsPubertyUpdatePatchEndpointHandler(data?: SaBaiAPIEndpointsPubertyUpdatePatchEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsPubertyUpdatePatchEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsPubertyUpdatePatchEndpointBody : DefaultBodyType>, options?: { baseURL?: string }) {
+  return http.patch<Record<string, string>, SaBaiAPIEndpointsPubertyUpdatePatchEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsPubertyUpdatePatchEndpointBody : DefaultBodyType>(`${options?.baseURL ?? ''}/puberty/:id`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

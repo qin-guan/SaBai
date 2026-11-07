@@ -6,12 +6,12 @@
 import type { SaBaiAPIEndpointsAuthUserResponse } from './SaBaiAPIEndpointsAuthUserResponse'
 
 export type SaBaiAPIEndpointsAuthUsersLockPostEndpointPath = {
-    /**
-     * @description
-     * Format: `uuid`
-     * @type string
-    */
-    id: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string
+   */
+  id: string;
 };
 
 export type SaBaiAPIEndpointsAuthUsersLockPostEndpointStatus200 = SaBaiAPIEndpointsAuthUserResponse;
@@ -21,19 +21,19 @@ export type SaBaiAPIEndpointsAuthUsersLockPostEndpointStatus401 = unknown;
 export type SaBaiAPIEndpointsAuthUsersLockPostEndpointStatus403 = unknown;
 
 export type SaBaiAPIEndpointsAuthUsersLockPostEndpointOptions = {
-    body?: never;
-    path: SaBaiAPIEndpointsAuthUsersLockPostEndpointPath;
-    query?: never;
-    headers?: never;
+  body?: never;
+  path: SaBaiAPIEndpointsAuthUsersLockPostEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsAuthUsersLockPostEndpointResponses = {
-    "200": SaBaiAPIEndpointsAuthUsersLockPostEndpointStatus200;
-    "401": SaBaiAPIEndpointsAuthUsersLockPostEndpointStatus401;
-    "403": SaBaiAPIEndpointsAuthUsersLockPostEndpointStatus403;
+  '200': SaBaiAPIEndpointsAuthUsersLockPostEndpointStatus200;
+  '401': SaBaiAPIEndpointsAuthUsersLockPostEndpointStatus401;
+  '403': SaBaiAPIEndpointsAuthUsersLockPostEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsAuthUsersLockPostEndpointResponse = SaBaiAPIEndpointsAuthUsersLockPostEndpointStatus200;

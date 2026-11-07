@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsMedicationStockSplitsPostEndpointOptions } from '../types/SaBaiAPIEndpointsMedicationStockSplitsPostEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsMedicationStockSplitsPostEndpoint } from '../clients/saBaiAPIEndpointsMedicationStockSplitsPostEndpoint'
 
 /**
  * @summary Split a stock lot into child lots
  * {@link /medication-stock/:id/splits}
  */
-export async function saBaiAPIEndpointsMedicationStockSplitsPostEndpointHandler({ path, body }: SaBaiAPIEndpointsMedicationStockSplitsPostEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsMedicationStockSplitsPostEndpoint({ path, body, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsMedicationStockSplitsPostEndpointHandler({ path, body }: SaBaiAPIEndpointsMedicationStockSplitsPostEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsMedicationStockSplitsPostEndpoint({ path, body, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

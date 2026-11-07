@@ -7,16 +7,14 @@ import type { SaBaiAPIEndpointsFacesVerifyPostResponse } from '../types/SaBaiAPI
 import { createSaBaiAPIEndpointsFacesFaceDto } from './createSaBaiAPIEndpointsFacesFaceDto'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsFacesVerifyPostResponse<TData extends Partial<SaBaiAPIEndpointsFacesVerifyPostResponse> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsFacesVerifyPostResponse<TData extends Partial<SaBaiAPIEndpointsFacesVerifyPostResponse> = object>(data?: TData) {
   const defaultFakeData = {
-  similarity: faker.number.float(),
-  isMatch: faker.datatype.boolean(),
-  threshold: faker.number.float(),
-  first: createSaBaiAPIEndpointsFacesFaceDto(),
-  second: createSaBaiAPIEndpointsFacesFaceDto(),
-}
+    similarity: faker.number.float(),
+    isMatch: faker.datatype.boolean(),
+    threshold: faker.number.float(),
+    first: createSaBaiAPIEndpointsFacesFaceDto(),
+    second: createSaBaiAPIEndpointsFacesFaceDto(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

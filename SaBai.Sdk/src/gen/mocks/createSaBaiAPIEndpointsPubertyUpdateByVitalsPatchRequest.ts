@@ -6,22 +6,20 @@
 import type { SaBaiAPIEndpointsPubertyUpdateByVitalsPatchRequest } from '../types/SaBaiAPIEndpointsPubertyUpdateByVitalsPatchRequest'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsPubertyUpdateByVitalsPatchRequest<TData extends Partial<SaBaiAPIEndpointsPubertyUpdateByVitalsPatchRequest> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsPubertyUpdateByVitalsPatchRequest<TData extends Partial<SaBaiAPIEndpointsPubertyUpdateByVitalsPatchRequest> = object>(data?: TData) {
   const defaultFakeData = {
-  pubarche: faker.datatype.boolean(),
-  pubarcheAge: faker.number.int(),
-  thelarche: faker.datatype.boolean(),
-  thelarcheAge: faker.number.int(),
-  menarche: faker.datatype.boolean(),
-  menarcheAge: faker.number.int(),
-  voiceChange: faker.datatype.boolean(),
-  voiceChangeAge: faker.number.int(),
-  testicularGrowth: faker.datatype.boolean(),
-  testicularGrowthAge: faker.number.int(),
-  additionalNotes: faker.string.alpha(),
-}
+    pubarche: faker.datatype.boolean(),
+    pubarcheAge: faker.number.int(),
+    thelarche: faker.datatype.boolean(),
+    thelarcheAge: faker.number.int(),
+    menarche: faker.datatype.boolean(),
+    menarcheAge: faker.number.int(),
+    voiceChange: faker.datatype.boolean(),
+    voiceChangeAge: faker.number.int(),
+    testicularGrowth: faker.datatype.boolean(),
+    testicularGrowthAge: faker.number.int(),
+    additionalNotes: faker.string.alpha(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

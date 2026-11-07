@@ -17,3 +17,7 @@ export const saBaiAPIEndpointsBroadcastsPublishPostEndpointStatus403Schema = z.u
 export const saBaiAPIEndpointsBroadcastsPublishPostEndpointResponseSchema = saBaiAPIEndpointsBroadcastsPublishPostEndpointStatus200Schema
 
 export const saBaiAPIEndpointsBroadcastsPublishPostEndpointErrorSchema = z.union([saBaiAPIEndpointsBroadcastsPublishPostEndpointStatus401Schema, saBaiAPIEndpointsBroadcastsPublishPostEndpointStatus403Schema])
+
+export const saBaiAPIEndpointsBroadcastsPublishPostEndpointPathSchema = z.object({
+  id: z.int32(),
+})

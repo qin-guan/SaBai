@@ -1,11 +1,16 @@
 <script setup lang="ts">
-import { PhCaretRight, PhMapPin } from '@phosphor-icons/vue'
+import { PhCaretRight, PhMapPin, PhUserCircle, PhUserGear } from '@phosphor-icons/vue'
 
 useHead({ title: "Settings · Sa'Bai" })
 
-const settingsItems = [
+const { isAdmin } = useCurrentUser()
+const settingsItems = computed(() => [
   { name: 'Village Codes', href: paths.settingsVillageCodes(), icon: PhMapPin, description: 'Manage village codes.' },
-]
+  ...(isAdmin.value
+    ? [{ name: 'Staff Users', href: paths.settingsUsers(), icon: PhUserGear, description: 'Add staff, assign roles, reset passwords and two-factor, lock accounts.' }]
+    : []),
+  { name: 'My Account', href: paths.account(), icon: PhUserCircle, description: 'Change your password and set up two-factor authentication.' },
+])
 </script>
 
 <template>

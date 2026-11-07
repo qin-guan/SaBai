@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsPatientsPhotoDeleteEndpointOptions } from '../types/SaBaiAPIEndpointsPatientsPhotoDeleteEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsPatientsPhotoDeleteEndpoint } from '../clients/saBaiAPIEndpointsPatientsPhotoDeleteEndpoint'
 
 /**
  * @summary Remove a patient's profile photo
  * {@link /patients/:id/photo}
  */
-export async function saBaiAPIEndpointsPatientsPhotoDeleteEndpointHandler({ path }: SaBaiAPIEndpointsPatientsPhotoDeleteEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsPatientsPhotoDeleteEndpoint({ path, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsPatientsPhotoDeleteEndpointHandler({ path }: SaBaiAPIEndpointsPatientsPhotoDeleteEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsPatientsPhotoDeleteEndpoint({ path, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

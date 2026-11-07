@@ -6,26 +6,26 @@
 import type { SaBaiAPIDomainReferralStateKey } from './SaBaiAPIDomainReferralState'
 
 export type SaBaiAPIEndpointsReferralsListByConsultGetResponse = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
-    referredFor: string;
-    referralNotes: string | null;
-    referralState: SaBaiAPIDomainReferralStateKey;
-    referralOutcome: string | null;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    consultId: number;
-    /**
-     * @description
-     * Format: `date-time`
-     * @type string
-    */
-    createdAt: string;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
+  referredFor: string;
+  referralNotes: string | null;
+  referralState: SaBaiAPIDomainReferralStateKey;
+  referralOutcome: string | null;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  consultId: number;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string
+   */
+  createdAt: string;
 };

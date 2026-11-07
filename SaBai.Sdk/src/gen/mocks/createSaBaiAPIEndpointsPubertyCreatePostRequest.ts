@@ -6,23 +6,21 @@
 import type { SaBaiAPIEndpointsPubertyCreatePostRequest } from '../types/SaBaiAPIEndpointsPubertyCreatePostRequest'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsPubertyCreatePostRequest<TData extends Partial<SaBaiAPIEndpointsPubertyCreatePostRequest> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsPubertyCreatePostRequest<TData extends Partial<SaBaiAPIEndpointsPubertyCreatePostRequest> = object>(data?: TData) {
   const defaultFakeData = {
-  vitalsId: faker.number.int(),
-  pubarche: faker.datatype.boolean(),
-  pubarcheAge: faker.number.int(),
-  thelarche: faker.datatype.boolean(),
-  thelarcheAge: faker.number.int(),
-  menarche: faker.datatype.boolean(),
-  menarcheAge: faker.number.int(),
-  voiceChange: faker.datatype.boolean(),
-  voiceChangeAge: faker.number.int(),
-  testicularGrowth: faker.datatype.boolean(),
-  testicularGrowthAge: faker.number.int(),
-  additionalNotes: faker.string.alpha(),
-}
+    vitalsId: faker.number.int(),
+    pubarche: faker.datatype.boolean(),
+    pubarcheAge: faker.number.int(),
+    thelarche: faker.datatype.boolean(),
+    thelarcheAge: faker.number.int(),
+    menarche: faker.datatype.boolean(),
+    menarcheAge: faker.number.int(),
+    voiceChange: faker.datatype.boolean(),
+    voiceChangeAge: faker.number.int(),
+    testicularGrowth: faker.datatype.boolean(),
+    testicularGrowthAge: faker.number.int(),
+    additionalNotes: faker.string.alpha(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

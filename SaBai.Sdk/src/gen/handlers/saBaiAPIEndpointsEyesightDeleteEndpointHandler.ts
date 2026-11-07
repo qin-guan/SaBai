@@ -4,16 +4,16 @@
 */
 
 import type { SaBaiAPIEndpointsEyesightDeleteEndpointResponse, SaBaiAPIEndpointsEyesightDeleteEndpointStatus400, SaBaiAPIEndpointsEyesightDeleteEndpointStatus401, SaBaiAPIEndpointsEyesightDeleteEndpointStatus403 } from '../types/SaBaiAPIEndpointsEyesightDeleteEndpoint'
-import { http } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsEyesightDeleteEndpointHandlerResponse204(data?: SaBaiAPIEndpointsEyesightDeleteEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 204,
   })
 }
 
 export function saBaiAPIEndpointsEyesightDeleteEndpointHandlerResponse400(data: SaBaiAPIEndpointsEyesightDeleteEndpointStatus400) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 400,
     headers: {
       'Content-Type': 'application/problem+json'
@@ -22,22 +22,22 @@ export function saBaiAPIEndpointsEyesightDeleteEndpointHandlerResponse400(data: 
 }
 
 export function saBaiAPIEndpointsEyesightDeleteEndpointHandlerResponse401(data?: SaBaiAPIEndpointsEyesightDeleteEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsEyesightDeleteEndpointHandlerResponse403(data?: SaBaiAPIEndpointsEyesightDeleteEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsEyesightDeleteEndpointHandler(data?: string | number | boolean | null | object | ((info: Parameters<Parameters<typeof http.delete>[1]>[0]) => Response | Promise<Response>)) {
-  return http.delete(`/eyesight/:id`, function handler(info) {
+export function saBaiAPIEndpointsEyesightDeleteEndpointHandler(data?: string | number | boolean | null | object | ((info: Parameters<Parameters<typeof http.delete>[1]>[0]) => Response | Promise<Response>), options?: { baseURL?: string }) {
+  return http.delete(`${options?.baseURL ?? ''}/eyesight/:id`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 204,
       })
     })

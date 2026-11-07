@@ -3,16 +3,15 @@
 * Do not edit manually.
 */
 
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsPatientsWithLatestVisitGetEndpoint } from '../clients/saBaiAPIEndpointsPatientsWithLatestVisitGetEndpoint'
 
 /**
  * @summary List patients with their latest visit
  * {@link /patients/with-latest-visit}
  */
-export async function saBaiAPIEndpointsPatientsWithLatestVisitGetEndpointHandler(request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsPatientsWithLatestVisitGetEndpoint({ signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsPatientsWithLatestVisitGetEndpointHandler(ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsPatientsWithLatestVisitGetEndpoint({ signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

@@ -4,11 +4,12 @@
 */
 
 import type { SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Response, SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Status400, SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Status401, SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Status403, SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Body } from '../types/SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2'
-import type { HttpResponseResolver } from 'msw'
-import { http } from 'msw'
+import type { HttpResponseResolver } from 'msw/http'
+import type { DefaultBodyType } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2HandlerResponse200(data: SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Response) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -17,7 +18,7 @@ export function saBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2HandlerResp
 }
 
 export function saBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2HandlerResponse400(data: SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Status400) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 400,
     headers: {
       'Content-Type': 'application/problem+json'
@@ -26,22 +27,22 @@ export function saBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2HandlerResp
 }
 
 export function saBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2HandlerResponse401(data?: SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Status401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2HandlerResponse403(data?: SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Status403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Handler(data?: SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Response | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Body>) {
-  return http.patch<Record<string, string>, SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Body>(`/medication-brands`, function handler(info) {
+export function saBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Handler(data?: SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Response | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Body extends DefaultBodyType ? SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Body : DefaultBodyType>, options?: { baseURL?: string }) {
+  return http.patch<Record<string, string>, SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Body extends DefaultBodyType ? SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Body : DefaultBodyType>(`${options?.baseURL ?? ''}/medication-brands`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

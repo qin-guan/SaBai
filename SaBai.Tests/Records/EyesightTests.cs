@@ -11,7 +11,7 @@ public sealed class EyesightTests(AppFixture fixture)
     public async Task Create_NormalizesDegreeAndPinhole()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var (_, visitId) = await RegisterAsync(client);
 
@@ -40,7 +40,7 @@ public sealed class EyesightTests(AppFixture fixture)
     public async Task Create_InvalidDegree_ReturnsBadRequest()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var (_, visitId) = await RegisterAsync(client);
 
@@ -59,7 +59,7 @@ public sealed class EyesightTests(AppFixture fixture)
     public async Task Create_InvalidPinhole_ReturnsBadRequest()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var (_, visitId) = await RegisterAsync(client);
 
@@ -78,7 +78,7 @@ public sealed class EyesightTests(AppFixture fixture)
     public async Task Create_SecondTime_ReturnsConflict()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var (_, visitId) = await RegisterAsync(client);
         var created = await client.PostAsJsonAsync(
@@ -103,7 +103,7 @@ public sealed class EyesightTests(AppFixture fixture)
     public async Task Get_UnknownId_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
 
         // Act
@@ -117,7 +117,7 @@ public sealed class EyesightTests(AppFixture fixture)
     public async Task Delete_ThenGetByVisit_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var (_, visitId) = await RegisterAsync(client);
         var created = await client.PostAsJsonAsync(

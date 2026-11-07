@@ -3,17 +3,15 @@
 * Do not edit manually.
 */
 
-import type { SaBaiAPIEndpointsEyesightListByPatientGetEndpointPath, SaBaiAPIEndpointsEyesightListByPatientGetEndpointResponse, SaBaiAPIEndpointsEyesightListByPatientGetEndpointStatus200, SaBaiAPIEndpointsEyesightListByPatientGetEndpointStatus400, SaBaiAPIEndpointsEyesightListByPatientGetEndpointStatus401, SaBaiAPIEndpointsEyesightListByPatientGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsEyesightListByPatientGetEndpoint'
+import type { SaBaiAPIEndpointsEyesightListByPatientGetEndpointPath, SaBaiAPIEndpointsEyesightListByPatientGetEndpointResponse, SaBaiAPIEndpointsEyesightListByPatientGetEndpointStatus200, SaBaiAPIEndpointsEyesightListByPatientGetEndpointStatus400 } from '../types/SaBaiAPIEndpointsEyesightListByPatientGetEndpoint'
 import { createFastEndpointsProblemDetails } from './createFastEndpointsProblemDetails'
 import { createSystemCollectionsGenericListOfSaBaiAPIEndpointsEyesightListByPatientGetResponse } from './createSystemCollectionsGenericListOfSaBaiAPIEndpointsEyesightListByPatientGetResponse'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsEyesightListByPatientGetEndpointPath<TData extends Partial<SaBaiAPIEndpointsEyesightListByPatientGetEndpointPath> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsEyesightListByPatientGetEndpointPath<TData extends Partial<SaBaiAPIEndpointsEyesightListByPatientGetEndpointPath> = object>(data?: TData) {
   const defaultFakeData = {
-  patientId: faker.number.int(),
-}
+    patientId: faker.number.int(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

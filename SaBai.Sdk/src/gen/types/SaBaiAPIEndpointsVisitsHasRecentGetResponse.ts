@@ -4,11 +4,11 @@
 */
 
 export type SaBaiAPIEndpointsVisitsHasRecentGetResponse = {
-    hasRecentVisit: boolean;
-    /**
-     * @description
-     * Format: `date-time`
-     * @type string
-    */
-    existingVisitDate: string | null;
+  hasRecentVisit: boolean;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string
+   */
+  existingVisitDate: string | null;
 };

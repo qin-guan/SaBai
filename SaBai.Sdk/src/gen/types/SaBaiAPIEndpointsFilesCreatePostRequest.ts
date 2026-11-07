@@ -4,12 +4,12 @@
 */
 
 export type SaBaiAPIEndpointsFilesCreatePostRequest = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer | undefined
-    */
-    patientId?: number;
-    files?: Blob[] | null;
-    descriptions?: string[] | null;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer | undefined
+   */
+  patientId?: number;
+  files?: Blob[] | null;
+  descriptions?: string[] | null;
 };

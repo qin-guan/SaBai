@@ -11,7 +11,7 @@ public sealed class IngredientTests(AppFixture fixture)
     public async Task Create_ListAndUpdate_PersistsName()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
         var suffix = ClinicSetup.Suffix();
         var name = $"Ingredient {suffix}";
@@ -61,7 +61,7 @@ public sealed class IngredientTests(AppFixture fixture)
     public async Task Create_FallBelowZero_ReturnsBadRequest()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
         var name = $"Zero {ClinicSetup.Suffix()}";
 
@@ -85,7 +85,7 @@ public sealed class IngredientTests(AppFixture fixture)
     public async Task Update_UnknownId_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
         var name = $"Missing {ClinicSetup.Suffix()}";
 
@@ -109,7 +109,7 @@ public sealed class IngredientTests(AppFixture fixture)
     public async Task Delete_WhenBrandReferencesIngredient_ReturnsConflict()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
         var suffix = ClinicSetup.Suffix();
         var ingredientId = await CreateIngredientAsync(client, $"Linked {suffix}");
@@ -126,7 +126,7 @@ public sealed class IngredientTests(AppFixture fixture)
     public async Task Delete_WithoutBrands_ReturnsNoContent()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
         var name = $"Unused {ClinicSetup.Suffix()}";
         var ingredientId = await CreateIngredientAsync(client, name);
@@ -146,7 +146,7 @@ public sealed class IngredientTests(AppFixture fixture)
     public async Task List_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
 
         // Act
         var response = await client.GetAsync("/medication-ingredients");

@@ -10,9 +10,10 @@ import type { SaBaiAPIEndpointsBroadcastsCreatePostResponse } from './SaBaiAPIEn
 export type SaBaiAPIEndpointsBroadcastsCreatePostEndpointStatus200 = SaBaiAPIEndpointsBroadcastsCreatePostResponse;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsBroadcastsCreatePostEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsBroadcastsCreatePostEndpointStatus401 = unknown;
@@ -22,20 +23,20 @@ export type SaBaiAPIEndpointsBroadcastsCreatePostEndpointStatus403 = unknown;
 export type SaBaiAPIEndpointsBroadcastsCreatePostEndpointBody = SaBaiAPIEndpointsBroadcastsCreatePostRequest;
 
 export type SaBaiAPIEndpointsBroadcastsCreatePostEndpointOptions = {
-    body: SaBaiAPIEndpointsBroadcastsCreatePostEndpointBody;
-    path?: never;
-    query?: never;
-    headers?: never;
+  body: SaBaiAPIEndpointsBroadcastsCreatePostEndpointBody;
+  path?: never;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsBroadcastsCreatePostEndpointResponses = {
-    "200": SaBaiAPIEndpointsBroadcastsCreatePostEndpointStatus200;
-    "400": SaBaiAPIEndpointsBroadcastsCreatePostEndpointStatus400;
-    "401": SaBaiAPIEndpointsBroadcastsCreatePostEndpointStatus401;
-    "403": SaBaiAPIEndpointsBroadcastsCreatePostEndpointStatus403;
+  '200': SaBaiAPIEndpointsBroadcastsCreatePostEndpointStatus200;
+  '400': SaBaiAPIEndpointsBroadcastsCreatePostEndpointStatus400;
+  '401': SaBaiAPIEndpointsBroadcastsCreatePostEndpointStatus401;
+  '403': SaBaiAPIEndpointsBroadcastsCreatePostEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsBroadcastsCreatePostEndpointResponse = SaBaiAPIEndpointsBroadcastsCreatePostEndpointStatus200;

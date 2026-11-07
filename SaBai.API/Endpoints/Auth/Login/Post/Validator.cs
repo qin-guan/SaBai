@@ -7,7 +7,7 @@ public sealed class Validator : Validator<Request>
 {
     public Validator()
     {
-        RuleFor(x => x.Email).NotEmpty().EmailAddress();
+        RuleFor(x => x.UserName).NotEmpty();
         RuleFor(x => x.Password).NotEmpty();
     }
 }

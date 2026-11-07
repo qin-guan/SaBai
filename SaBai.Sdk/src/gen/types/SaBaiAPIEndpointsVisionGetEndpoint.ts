@@ -7,20 +7,21 @@ import type { FastEndpointsProblemDetails } from './FastEndpointsProblemDetails'
 import type { SaBaiAPIEndpointsVisionGetResponse } from './SaBaiAPIEndpointsVisionGetResponse'
 
 export type SaBaiAPIEndpointsVisionGetEndpointQuery = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    visitId: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  visitId: number;
 };
 
 export type SaBaiAPIEndpointsVisionGetEndpointStatus200 = SaBaiAPIEndpointsVisionGetResponse;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsVisionGetEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsVisionGetEndpointStatus401 = unknown;
@@ -28,20 +29,20 @@ export type SaBaiAPIEndpointsVisionGetEndpointStatus401 = unknown;
 export type SaBaiAPIEndpointsVisionGetEndpointStatus403 = unknown;
 
 export type SaBaiAPIEndpointsVisionGetEndpointOptions = {
-    body?: never;
-    path?: never;
-    query: SaBaiAPIEndpointsVisionGetEndpointQuery;
-    headers?: never;
+  body?: never;
+  path?: never;
+  query: SaBaiAPIEndpointsVisionGetEndpointQuery;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsVisionGetEndpointResponses = {
-    "200": SaBaiAPIEndpointsVisionGetEndpointStatus200;
-    "400": SaBaiAPIEndpointsVisionGetEndpointStatus400;
-    "401": SaBaiAPIEndpointsVisionGetEndpointStatus401;
-    "403": SaBaiAPIEndpointsVisionGetEndpointStatus403;
+  '200': SaBaiAPIEndpointsVisionGetEndpointStatus200;
+  '400': SaBaiAPIEndpointsVisionGetEndpointStatus400;
+  '401': SaBaiAPIEndpointsVisionGetEndpointStatus401;
+  '403': SaBaiAPIEndpointsVisionGetEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsVisionGetEndpointResponse = SaBaiAPIEndpointsVisionGetEndpointStatus200;

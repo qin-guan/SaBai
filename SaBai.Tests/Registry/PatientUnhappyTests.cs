@@ -11,7 +11,7 @@ public sealed class PatientUnhappyTests(AppFixture fixture)
     public async Task Get_ReturnsNameAndDisplayId()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var suffix = ClinicSetup.Suffix();
         var code = $"V{suffix}";
@@ -33,7 +33,7 @@ public sealed class PatientUnhappyTests(AppFixture fixture)
     public async Task Create_MissingVillage_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
 
         // Act
@@ -58,7 +58,7 @@ public sealed class PatientUnhappyTests(AppFixture fixture)
     public async Task Create_OmittingGender_ReturnsBadRequest()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var villageId = await ClinicSetup.CreateVillageAsync(client);
 
@@ -83,7 +83,7 @@ public sealed class PatientUnhappyTests(AppFixture fixture)
     public async Task Get_MissingPatient_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
 
         // Act
@@ -97,7 +97,7 @@ public sealed class PatientUnhappyTests(AppFixture fixture)
     public async Task Patch_MissingPatient_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
 
         // Act
@@ -115,7 +115,7 @@ public sealed class PatientUnhappyTests(AppFixture fixture)
     public async Task List_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
 
         // Act
         var response = await client.GetAsync("/patients");

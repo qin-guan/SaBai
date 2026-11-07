@@ -7,22 +7,20 @@ import type { SaBaiAPIEndpointsPatientsUpdatePatchRequest } from '../types/SaBai
 import { createSaBaiAPIDomainGender } from './createSaBaiAPIDomainGender'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsPatientsUpdatePatchRequest<TData extends Partial<SaBaiAPIEndpointsPatientsUpdatePatchRequest> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsPatientsUpdatePatchRequest<TData extends Partial<SaBaiAPIEndpointsPatientsUpdatePatchRequest> = object>(data?: TData) {
   const defaultFakeData = {
-  name: faker.string.alpha({ length: { min: 0, max: 255 } }),
-  identificationNumber: faker.string.alpha({ length: { min: 0, max: 255 } }),
-  contactNo: faker.string.alpha({ length: { min: 0, max: 255 } }),
-  gender: faker.helpers.arrayElement([null, createSaBaiAPIDomainGender()]),
-  dateOfBirth: faker.date.anytime().toISOString(),
-  drugAllergy: faker.string.alpha(),
-  hasPoorCard: faker.datatype.boolean(),
-  hasBS2Card: faker.datatype.boolean(),
-  hasSabaiCard: faker.datatype.boolean(),
-  toGetReport: faker.datatype.boolean(),
-  villageCodeId: faker.number.int(),
-}
+    name: faker.string.alpha({ length: { min: 0, max: 255 } }),
+    identificationNumber: faker.string.alpha({ length: { min: 0, max: 255 } }),
+    contactNo: faker.string.alpha({ length: { min: 0, max: 255 } }),
+    gender: faker.helpers.arrayElement([null, createSaBaiAPIDomainGender()]),
+    dateOfBirth: faker.date.anytime().toISOString(),
+    drugAllergy: faker.string.alpha(),
+    hasPoorCard: faker.datatype.boolean(),
+    hasBS2Card: faker.datatype.boolean(),
+    hasSabaiCard: faker.datatype.boolean(),
+    toGetReport: faker.datatype.boolean(),
+    villageCodeId: faker.number.int(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

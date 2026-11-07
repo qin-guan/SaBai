@@ -6,17 +6,15 @@
 import type { SaBaiAPIEndpointsMedicationHistoryGetResponse } from '../types/SaBaiAPIEndpointsMedicationHistoryGetResponse'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsMedicationHistoryGetResponse<TData extends Partial<SaBaiAPIEndpointsMedicationHistoryGetResponse> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsMedicationHistoryGetResponse<TData extends Partial<SaBaiAPIEndpointsMedicationHistoryGetResponse> = object>(data?: TData) {
   const defaultFakeData = {
-  kind: faker.string.alpha(),
-  actorName: faker.string.alpha(),
-  patientName: faker.string.alpha(),
-  quantityChanged: faker.number.int(),
-  quantityRemaining: faker.number.int(),
-  date: faker.date.anytime().toISOString(),
-}
+    kind: faker.string.alpha(),
+    actorName: faker.string.alpha(),
+    patientName: faker.string.alpha(),
+    quantityChanged: faker.number.int(),
+    quantityRemaining: faker.number.int(),
+    date: faker.date.anytime().toISOString(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

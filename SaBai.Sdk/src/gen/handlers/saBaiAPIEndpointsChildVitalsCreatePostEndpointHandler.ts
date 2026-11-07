@@ -4,11 +4,12 @@
 */
 
 import type { SaBaiAPIEndpointsChildVitalsCreatePostEndpointResponse, SaBaiAPIEndpointsChildVitalsCreatePostEndpointStatus400, SaBaiAPIEndpointsChildVitalsCreatePostEndpointStatus401, SaBaiAPIEndpointsChildVitalsCreatePostEndpointStatus403, SaBaiAPIEndpointsChildVitalsCreatePostEndpointBody } from '../types/SaBaiAPIEndpointsChildVitalsCreatePostEndpoint'
-import type { HttpResponseResolver } from 'msw'
-import { http } from 'msw'
+import type { HttpResponseResolver } from 'msw/http'
+import type { DefaultBodyType } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsChildVitalsCreatePostEndpointHandlerResponse200(data: SaBaiAPIEndpointsChildVitalsCreatePostEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -17,7 +18,7 @@ export function saBaiAPIEndpointsChildVitalsCreatePostEndpointHandlerResponse200
 }
 
 export function saBaiAPIEndpointsChildVitalsCreatePostEndpointHandlerResponse400(data: SaBaiAPIEndpointsChildVitalsCreatePostEndpointStatus400) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 400,
     headers: {
       'Content-Type': 'application/problem+json'
@@ -26,22 +27,22 @@ export function saBaiAPIEndpointsChildVitalsCreatePostEndpointHandlerResponse400
 }
 
 export function saBaiAPIEndpointsChildVitalsCreatePostEndpointHandlerResponse401(data?: SaBaiAPIEndpointsChildVitalsCreatePostEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsChildVitalsCreatePostEndpointHandlerResponse403(data?: SaBaiAPIEndpointsChildVitalsCreatePostEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsChildVitalsCreatePostEndpointHandler(data?: SaBaiAPIEndpointsChildVitalsCreatePostEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsChildVitalsCreatePostEndpointBody>) {
-  return http.post<Record<string, string>, SaBaiAPIEndpointsChildVitalsCreatePostEndpointBody>(`/child-vitals`, function handler(info) {
+export function saBaiAPIEndpointsChildVitalsCreatePostEndpointHandler(data?: SaBaiAPIEndpointsChildVitalsCreatePostEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsChildVitalsCreatePostEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsChildVitalsCreatePostEndpointBody : DefaultBodyType>, options?: { baseURL?: string }) {
+  return http.post<Record<string, string>, SaBaiAPIEndpointsChildVitalsCreatePostEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsChildVitalsCreatePostEndpointBody : DefaultBodyType>(`${options?.baseURL ?? ''}/child-vitals`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

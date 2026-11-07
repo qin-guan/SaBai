@@ -10,9 +10,10 @@ import type { SaBaiAPIEndpointsEyesightCreatePostResponse } from './SaBaiAPIEndp
 export type SaBaiAPIEndpointsEyesightCreatePostEndpointStatus200 = SaBaiAPIEndpointsEyesightCreatePostResponse;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsEyesightCreatePostEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsEyesightCreatePostEndpointStatus401 = unknown;
@@ -22,20 +23,20 @@ export type SaBaiAPIEndpointsEyesightCreatePostEndpointStatus403 = unknown;
 export type SaBaiAPIEndpointsEyesightCreatePostEndpointBody = SaBaiAPIEndpointsEyesightCreatePostRequest;
 
 export type SaBaiAPIEndpointsEyesightCreatePostEndpointOptions = {
-    body: SaBaiAPIEndpointsEyesightCreatePostEndpointBody;
-    path?: never;
-    query?: never;
-    headers?: never;
+  body: SaBaiAPIEndpointsEyesightCreatePostEndpointBody;
+  path?: never;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsEyesightCreatePostEndpointResponses = {
-    "200": SaBaiAPIEndpointsEyesightCreatePostEndpointStatus200;
-    "400": SaBaiAPIEndpointsEyesightCreatePostEndpointStatus400;
-    "401": SaBaiAPIEndpointsEyesightCreatePostEndpointStatus401;
-    "403": SaBaiAPIEndpointsEyesightCreatePostEndpointStatus403;
+  '200': SaBaiAPIEndpointsEyesightCreatePostEndpointStatus200;
+  '400': SaBaiAPIEndpointsEyesightCreatePostEndpointStatus400;
+  '401': SaBaiAPIEndpointsEyesightCreatePostEndpointStatus401;
+  '403': SaBaiAPIEndpointsEyesightCreatePostEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsEyesightCreatePostEndpointResponse = SaBaiAPIEndpointsEyesightCreatePostEndpointStatus200;

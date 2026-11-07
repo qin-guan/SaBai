@@ -4,31 +4,31 @@
 */
 
 import type { SaBaiAPIEndpointsFilesContentGetEndpointResponse, SaBaiAPIEndpointsFilesContentGetEndpointStatus401, SaBaiAPIEndpointsFilesContentGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsFilesContentGetEndpoint'
-import { http } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsFilesContentGetEndpointHandlerResponse204(data?: SaBaiAPIEndpointsFilesContentGetEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 204,
   })
 }
 
 export function saBaiAPIEndpointsFilesContentGetEndpointHandlerResponse401(data?: SaBaiAPIEndpointsFilesContentGetEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsFilesContentGetEndpointHandlerResponse403(data?: SaBaiAPIEndpointsFilesContentGetEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsFilesContentGetEndpointHandler(data?: string | number | boolean | null | object | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>)) {
-  return http.get(`/files/:id/content`, function handler(info) {
+export function saBaiAPIEndpointsFilesContentGetEndpointHandler(data?: string | number | boolean | null | object | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>), options?: { baseURL?: string }) {
+  return http.get(`${options?.baseURL ?? ''}/files/:id/content`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 204,
       })
     })

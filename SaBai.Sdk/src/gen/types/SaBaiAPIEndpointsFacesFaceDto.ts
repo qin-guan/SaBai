@@ -7,12 +7,12 @@ import type { SaBaiAPIEndpointsFacesBoxDto } from './SaBaiAPIEndpointsFacesBoxDt
 import type { SaBaiAPIEndpointsFacesPointDtoArray } from './SaBaiAPIEndpointsFacesPointDtoArray'
 
 export type SaBaiAPIEndpointsFacesFaceDto = {
-    box: SaBaiAPIEndpointsFacesBoxDto;
-    /**
-     * @description
-     * Format: `float`
-     * @type number
-    */
-    score: number;
-    landmarks: SaBaiAPIEndpointsFacesPointDtoArray;
+  box: SaBaiAPIEndpointsFacesBoxDto;
+  /**
+   * @description
+   * Format: `float`
+   * @type number
+   */
+  score: number;
+  landmarks: SaBaiAPIEndpointsFacesPointDtoArray;
 };

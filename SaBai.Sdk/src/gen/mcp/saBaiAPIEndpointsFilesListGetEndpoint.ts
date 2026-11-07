@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsFilesListGetEndpointOptions } from '../types/SaBaiAPIEndpointsFilesListGetEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsFilesListGetEndpoint } from '../clients/saBaiAPIEndpointsFilesListGetEndpoint'
 
 /**
  * @summary List clinical files
  * {@link /files}
  */
-export async function saBaiAPIEndpointsFilesListGetEndpointHandler({ query }: SaBaiAPIEndpointsFilesListGetEndpointOptions = {}, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsFilesListGetEndpoint({ query, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsFilesListGetEndpointHandler({ query }: SaBaiAPIEndpointsFilesListGetEndpointOptions = {}, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsFilesListGetEndpoint({ query, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

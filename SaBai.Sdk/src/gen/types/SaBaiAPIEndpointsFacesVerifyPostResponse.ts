@@ -6,19 +6,19 @@
 import type { SaBaiAPIEndpointsFacesFaceDto } from './SaBaiAPIEndpointsFacesFaceDto'
 
 export type SaBaiAPIEndpointsFacesVerifyPostResponse = {
-    /**
-     * @description
-     * Format: `float`
-     * @type number
-    */
-    similarity: number;
-    isMatch: boolean;
-    /**
-     * @description
-     * Format: `float`
-     * @type number
-    */
-    threshold: number;
-    first: SaBaiAPIEndpointsFacesFaceDto;
-    second: SaBaiAPIEndpointsFacesFaceDto;
+  /**
+   * @description
+   * Format: `float`
+   * @type number
+   */
+  similarity: number;
+  isMatch: boolean;
+  /**
+   * @description
+   * Format: `float`
+   * @type number
+   */
+  threshold: number;
+  first: SaBaiAPIEndpointsFacesFaceDto;
+  second: SaBaiAPIEndpointsFacesFaceDto;
 };

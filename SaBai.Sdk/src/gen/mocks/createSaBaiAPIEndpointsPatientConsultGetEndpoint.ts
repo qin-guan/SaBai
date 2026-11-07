@@ -3,16 +3,14 @@
 * Do not edit manually.
 */
 
-import type { SaBaiAPIEndpointsPatientConsultGetEndpointQuery, SaBaiAPIEndpointsPatientConsultGetEndpointResponse, SaBaiAPIEndpointsPatientConsultGetEndpointStatus200, SaBaiAPIEndpointsPatientConsultGetEndpointStatus401, SaBaiAPIEndpointsPatientConsultGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsPatientConsultGetEndpoint'
+import type { SaBaiAPIEndpointsPatientConsultGetEndpointQuery, SaBaiAPIEndpointsPatientConsultGetEndpointResponse, SaBaiAPIEndpointsPatientConsultGetEndpointStatus200 } from '../types/SaBaiAPIEndpointsPatientConsultGetEndpoint'
 import { createSaBaiAPIEndpointsPatientConsultGetResponse } from './createSaBaiAPIEndpointsPatientConsultGetResponse'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsPatientConsultGetEndpointQuery<TData extends Partial<SaBaiAPIEndpointsPatientConsultGetEndpointQuery> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsPatientConsultGetEndpointQuery<TData extends Partial<SaBaiAPIEndpointsPatientConsultGetEndpointQuery> = object>(data?: TData) {
   const defaultFakeData = {
-  visitId: faker.number.int(),
-}
+    visitId: faker.number.int(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

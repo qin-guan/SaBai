@@ -3,18 +3,16 @@
 * Do not edit manually.
 */
 
-import type { SaBaiAPIEndpointsFacesIdentifyPostEndpointBody, SaBaiAPIEndpointsFacesIdentifyPostEndpointQuery, SaBaiAPIEndpointsFacesIdentifyPostEndpointResponse, SaBaiAPIEndpointsFacesIdentifyPostEndpointStatus200, SaBaiAPIEndpointsFacesIdentifyPostEndpointStatus401, SaBaiAPIEndpointsFacesIdentifyPostEndpointStatus403 } from '../types/SaBaiAPIEndpointsFacesIdentifyPostEndpoint'
+import type { SaBaiAPIEndpointsFacesIdentifyPostEndpointBody, SaBaiAPIEndpointsFacesIdentifyPostEndpointQuery, SaBaiAPIEndpointsFacesIdentifyPostEndpointResponse, SaBaiAPIEndpointsFacesIdentifyPostEndpointStatus200 } from '../types/SaBaiAPIEndpointsFacesIdentifyPostEndpoint'
 import { createSaBaiAPIEndpointsFacesIdentifyPostRequest } from './createSaBaiAPIEndpointsFacesIdentifyPostRequest'
 import { createSaBaiAPIEndpointsFacesIdentifyPostResponse } from './createSaBaiAPIEndpointsFacesIdentifyPostResponse'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsFacesIdentifyPostEndpointQuery<TData extends Partial<SaBaiAPIEndpointsFacesIdentifyPostEndpointQuery> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsFacesIdentifyPostEndpointQuery<TData extends Partial<SaBaiAPIEndpointsFacesIdentifyPostEndpointQuery> = object>(data?: TData) {
   const defaultFakeData = {
-  threshold: faker.number.float(),
-  maxMatches: faker.number.int(),
-}
+    threshold: faker.number.float(),
+    maxMatches: faker.number.int(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

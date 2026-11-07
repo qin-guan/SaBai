@@ -19,3 +19,7 @@ export const saBaiAPIEndpointsPubertyDeleteEndpointStatus403Schema = z.unknown()
 export const saBaiAPIEndpointsPubertyDeleteEndpointResponseSchema = saBaiAPIEndpointsPubertyDeleteEndpointStatus204Schema
 
 export const saBaiAPIEndpointsPubertyDeleteEndpointErrorSchema = z.union([saBaiAPIEndpointsPubertyDeleteEndpointStatus400Schema, saBaiAPIEndpointsPubertyDeleteEndpointStatus401Schema, saBaiAPIEndpointsPubertyDeleteEndpointStatus403Schema])
+
+export const saBaiAPIEndpointsPubertyDeleteEndpointPathSchema = z.object({
+  id: z.int32(),
+})

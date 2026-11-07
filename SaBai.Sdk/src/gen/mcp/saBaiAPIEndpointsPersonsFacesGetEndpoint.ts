@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsPersonsFacesGetEndpointOptions } from '../types/SaBaiAPIEndpointsPersonsFacesGetEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsPersonsFacesGetEndpoint } from '../clients/saBaiAPIEndpointsPersonsFacesGetEndpoint'
 
 /**
  * @summary List the faces enrolled for a person.
  * {@link /persons/:personId/faces}
  */
-export async function saBaiAPIEndpointsPersonsFacesGetEndpointHandler({ path }: SaBaiAPIEndpointsPersonsFacesGetEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsPersonsFacesGetEndpoint({ path, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsPersonsFacesGetEndpointHandler({ path }: SaBaiAPIEndpointsPersonsFacesGetEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsPersonsFacesGetEndpoint({ path, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

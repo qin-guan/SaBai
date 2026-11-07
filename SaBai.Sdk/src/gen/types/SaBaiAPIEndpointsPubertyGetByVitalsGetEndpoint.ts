@@ -7,20 +7,21 @@ import type { FastEndpointsProblemDetails } from './FastEndpointsProblemDetails'
 import type { SaBaiAPIEndpointsPubertyGetByVitalsGetResponse } from './SaBaiAPIEndpointsPubertyGetByVitalsGetResponse'
 
 export type SaBaiAPIEndpointsPubertyGetByVitalsGetEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    vitalsId: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  vitalsId: number;
 };
 
 export type SaBaiAPIEndpointsPubertyGetByVitalsGetEndpointStatus200 = SaBaiAPIEndpointsPubertyGetByVitalsGetResponse;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsPubertyGetByVitalsGetEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsPubertyGetByVitalsGetEndpointStatus401 = unknown;
@@ -28,20 +29,20 @@ export type SaBaiAPIEndpointsPubertyGetByVitalsGetEndpointStatus401 = unknown;
 export type SaBaiAPIEndpointsPubertyGetByVitalsGetEndpointStatus403 = unknown;
 
 export type SaBaiAPIEndpointsPubertyGetByVitalsGetEndpointOptions = {
-    body?: never;
-    path: SaBaiAPIEndpointsPubertyGetByVitalsGetEndpointPath;
-    query?: never;
-    headers?: never;
+  body?: never;
+  path: SaBaiAPIEndpointsPubertyGetByVitalsGetEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsPubertyGetByVitalsGetEndpointResponses = {
-    "200": SaBaiAPIEndpointsPubertyGetByVitalsGetEndpointStatus200;
-    "400": SaBaiAPIEndpointsPubertyGetByVitalsGetEndpointStatus400;
-    "401": SaBaiAPIEndpointsPubertyGetByVitalsGetEndpointStatus401;
-    "403": SaBaiAPIEndpointsPubertyGetByVitalsGetEndpointStatus403;
+  '200': SaBaiAPIEndpointsPubertyGetByVitalsGetEndpointStatus200;
+  '400': SaBaiAPIEndpointsPubertyGetByVitalsGetEndpointStatus400;
+  '401': SaBaiAPIEndpointsPubertyGetByVitalsGetEndpointStatus401;
+  '403': SaBaiAPIEndpointsPubertyGetByVitalsGetEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsPubertyGetByVitalsGetEndpointResponse = SaBaiAPIEndpointsPubertyGetByVitalsGetEndpointStatus200;

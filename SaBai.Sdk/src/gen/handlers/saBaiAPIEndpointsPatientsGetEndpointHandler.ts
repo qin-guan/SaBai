@@ -4,10 +4,10 @@
 */
 
 import type { SaBaiAPIEndpointsPatientsGetEndpointResponse, SaBaiAPIEndpointsPatientsGetEndpointStatus401, SaBaiAPIEndpointsPatientsGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsPatientsGetEndpoint'
-import { http } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsPatientsGetEndpointHandlerResponse200(data: SaBaiAPIEndpointsPatientsGetEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -16,22 +16,22 @@ export function saBaiAPIEndpointsPatientsGetEndpointHandlerResponse200(data: SaB
 }
 
 export function saBaiAPIEndpointsPatientsGetEndpointHandlerResponse401(data?: SaBaiAPIEndpointsPatientsGetEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsPatientsGetEndpointHandlerResponse403(data?: SaBaiAPIEndpointsPatientsGetEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsPatientsGetEndpointHandler(data?: SaBaiAPIEndpointsPatientsGetEndpointResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>)) {
-  return http.get(`/patients/:id`, function handler(info) {
+export function saBaiAPIEndpointsPatientsGetEndpointHandler(data?: SaBaiAPIEndpointsPatientsGetEndpointResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>), options?: { baseURL?: string }) {
+  return http.get(`${options?.baseURL ?? ''}/patients/:id`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

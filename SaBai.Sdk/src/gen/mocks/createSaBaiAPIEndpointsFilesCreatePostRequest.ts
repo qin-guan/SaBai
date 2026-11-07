@@ -6,14 +6,12 @@
 import type { SaBaiAPIEndpointsFilesCreatePostRequest } from '../types/SaBaiAPIEndpointsFilesCreatePostRequest'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsFilesCreatePostRequest<TData extends Partial<SaBaiAPIEndpointsFilesCreatePostRequest> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsFilesCreatePostRequest<TData extends Partial<SaBaiAPIEndpointsFilesCreatePostRequest> = object>(data?: TData) {
   const defaultFakeData = {
-  patientId: faker.number.int(),
-  files: faker.helpers.multiple(() => (faker.image.url() as unknown as Blob)),
-  descriptions: faker.helpers.multiple(() => (faker.string.alpha())),
-}
+    patientId: faker.number.int(),
+    files: faker.helpers.multiple(() => (faker.image.url() as unknown as Blob)),
+    descriptions: faker.helpers.multiple(() => (faker.string.alpha())),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

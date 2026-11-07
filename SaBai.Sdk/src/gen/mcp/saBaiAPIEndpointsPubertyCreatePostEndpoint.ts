@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsPubertyCreatePostEndpointOptions } from '../types/SaBaiAPIEndpointsPubertyCreatePostEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsPubertyCreatePostEndpoint } from '../clients/saBaiAPIEndpointsPubertyCreatePostEndpoint'
 
 /**
  * @summary Record a puberty assessment
  * {@link /puberty}
  */
-export async function saBaiAPIEndpointsPubertyCreatePostEndpointHandler({ body }: SaBaiAPIEndpointsPubertyCreatePostEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsPubertyCreatePostEndpoint({ body, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsPubertyCreatePostEndpointHandler({ body }: SaBaiAPIEndpointsPubertyCreatePostEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsPubertyCreatePostEndpoint({ body, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

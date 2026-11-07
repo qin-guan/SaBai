@@ -4,12 +4,12 @@
 */
 
 export type SaBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
 };
 
 export type SaBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpointStatus204 = unknown;
@@ -19,19 +19,19 @@ export type SaBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpointStatus401 
 export type SaBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpointStatus403 = unknown;
 
 export type SaBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpointOptions = {
-    body?: never;
-    path: SaBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpointPath;
-    query?: never;
-    headers?: never;
+  body?: never;
+  path: SaBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpointResponses = {
-    "204": SaBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpointStatus204;
-    "401": SaBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpointStatus401;
-    "403": SaBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpointStatus403;
+  '204': SaBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpointStatus204;
+  '401': SaBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpointStatus401;
+  '403': SaBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpointResponse = SaBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpointStatus204;

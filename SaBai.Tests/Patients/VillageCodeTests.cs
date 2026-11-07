@@ -12,7 +12,7 @@ public sealed class VillageCodeTests(AppFixture fixture)
     public async Task Create_PersistsVillageAndRejectsDuplicateCode()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var code = ClinicSamples.Code();
 
@@ -59,7 +59,7 @@ public sealed class VillageCodeTests(AppFixture fixture)
     public async Task List_HidesInvisibleCodesUnlessRequested()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var visibleCode = ClinicSamples.Code();
         var hiddenCode = ClinicSamples.Code();
@@ -95,7 +95,7 @@ public sealed class VillageCodeTests(AppFixture fixture)
     public async Task Delete_WhenVisitExists_ReturnsConflict()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var code = ClinicSamples.Code();
         var village = await ClinicSamples.CreateVillageAsync(

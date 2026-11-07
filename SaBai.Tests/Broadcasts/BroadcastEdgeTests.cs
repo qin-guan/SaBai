@@ -11,7 +11,7 @@ public sealed class BroadcastEdgeTests(AppFixture fixture)
     public async Task Create_ListContainsTitleAndAdminCreator()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var title = $"Alert {ClinicSetup.Suffix()}";
 
@@ -41,7 +41,7 @@ public sealed class BroadcastEdgeTests(AppFixture fixture)
     public async Task Create_EmptyTitle_ReturnsBadRequest()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
 
         // Act
@@ -64,7 +64,7 @@ public sealed class BroadcastEdgeTests(AppFixture fixture)
     public async Task Publish_UnknownId_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
 
         // Act
@@ -78,7 +78,7 @@ public sealed class BroadcastEdgeTests(AppFixture fixture)
     public async Task Delete_RemovesTitleFromList()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var title = $"Remove {ClinicSetup.Suffix()}";
         var created = await client.PostAsJsonAsync(
@@ -112,7 +112,7 @@ public sealed class BroadcastEdgeTests(AppFixture fixture)
     public async Task Create_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
 
         // Act
         var response = await client.PostAsJsonAsync(

@@ -4,10 +4,10 @@
 */
 
 import type { SaBaiAPIEndpointsAuthWhoAmIGetEndpointResponse, SaBaiAPIEndpointsAuthWhoAmIGetEndpointStatus401, SaBaiAPIEndpointsAuthWhoAmIGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsAuthWhoAmIGetEndpoint'
-import { http } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsAuthWhoAmIGetEndpointHandlerResponse200(data: SaBaiAPIEndpointsAuthWhoAmIGetEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -16,22 +16,22 @@ export function saBaiAPIEndpointsAuthWhoAmIGetEndpointHandlerResponse200(data: S
 }
 
 export function saBaiAPIEndpointsAuthWhoAmIGetEndpointHandlerResponse401(data?: SaBaiAPIEndpointsAuthWhoAmIGetEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsAuthWhoAmIGetEndpointHandlerResponse403(data?: SaBaiAPIEndpointsAuthWhoAmIGetEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsAuthWhoAmIGetEndpointHandler(data?: SaBaiAPIEndpointsAuthWhoAmIGetEndpointResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>)) {
-  return http.get(`/auth/whoami`, function handler(info) {
+export function saBaiAPIEndpointsAuthWhoAmIGetEndpointHandler(data?: SaBaiAPIEndpointsAuthWhoAmIGetEndpointResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>), options?: { baseURL?: string }) {
+  return http.get(`${options?.baseURL ?? ''}/auth/whoami`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

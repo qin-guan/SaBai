@@ -6,20 +6,21 @@
 import type { FastEndpointsProblemDetails } from './FastEndpointsProblemDetails'
 
 export type SaBaiAPIEndpointsPubertyDeleteEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
 };
 
 export type SaBaiAPIEndpointsPubertyDeleteEndpointStatus204 = unknown;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsPubertyDeleteEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsPubertyDeleteEndpointStatus401 = unknown;
@@ -27,20 +28,20 @@ export type SaBaiAPIEndpointsPubertyDeleteEndpointStatus401 = unknown;
 export type SaBaiAPIEndpointsPubertyDeleteEndpointStatus403 = unknown;
 
 export type SaBaiAPIEndpointsPubertyDeleteEndpointOptions = {
-    body?: never;
-    path: SaBaiAPIEndpointsPubertyDeleteEndpointPath;
-    query?: never;
-    headers?: never;
+  body?: never;
+  path: SaBaiAPIEndpointsPubertyDeleteEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsPubertyDeleteEndpointResponses = {
-    "204": SaBaiAPIEndpointsPubertyDeleteEndpointStatus204;
-    "400": SaBaiAPIEndpointsPubertyDeleteEndpointStatus400;
-    "401": SaBaiAPIEndpointsPubertyDeleteEndpointStatus401;
-    "403": SaBaiAPIEndpointsPubertyDeleteEndpointStatus403;
+  '204': SaBaiAPIEndpointsPubertyDeleteEndpointStatus204;
+  '400': SaBaiAPIEndpointsPubertyDeleteEndpointStatus400;
+  '401': SaBaiAPIEndpointsPubertyDeleteEndpointStatus401;
+  '403': SaBaiAPIEndpointsPubertyDeleteEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsPubertyDeleteEndpointResponse = SaBaiAPIEndpointsPubertyDeleteEndpointStatus204;

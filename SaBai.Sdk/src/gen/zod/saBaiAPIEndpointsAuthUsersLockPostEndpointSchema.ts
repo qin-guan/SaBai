@@ -17,3 +17,7 @@ export const saBaiAPIEndpointsAuthUsersLockPostEndpointStatus403Schema = z.unkno
 export const saBaiAPIEndpointsAuthUsersLockPostEndpointResponseSchema = saBaiAPIEndpointsAuthUsersLockPostEndpointStatus200Schema
 
 export const saBaiAPIEndpointsAuthUsersLockPostEndpointErrorSchema = z.union([saBaiAPIEndpointsAuthUsersLockPostEndpointStatus401Schema, saBaiAPIEndpointsAuthUsersLockPostEndpointStatus403Schema])
+
+export const saBaiAPIEndpointsAuthUsersLockPostEndpointPathSchema = z.object({
+  id: z.uuid(),
+})

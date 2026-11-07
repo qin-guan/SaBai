@@ -4,12 +4,12 @@
 */
 
 export type SaBaiAPIEndpointsPatientsPhotoDeleteEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
 };
 
 export type SaBaiAPIEndpointsPatientsPhotoDeleteEndpointStatus204 = unknown;
@@ -19,19 +19,19 @@ export type SaBaiAPIEndpointsPatientsPhotoDeleteEndpointStatus401 = unknown;
 export type SaBaiAPIEndpointsPatientsPhotoDeleteEndpointStatus403 = unknown;
 
 export type SaBaiAPIEndpointsPatientsPhotoDeleteEndpointOptions = {
-    body?: never;
-    path: SaBaiAPIEndpointsPatientsPhotoDeleteEndpointPath;
-    query?: never;
-    headers?: never;
+  body?: never;
+  path: SaBaiAPIEndpointsPatientsPhotoDeleteEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsPatientsPhotoDeleteEndpointResponses = {
-    "204": SaBaiAPIEndpointsPatientsPhotoDeleteEndpointStatus204;
-    "401": SaBaiAPIEndpointsPatientsPhotoDeleteEndpointStatus401;
-    "403": SaBaiAPIEndpointsPatientsPhotoDeleteEndpointStatus403;
+  '204': SaBaiAPIEndpointsPatientsPhotoDeleteEndpointStatus204;
+  '401': SaBaiAPIEndpointsPatientsPhotoDeleteEndpointStatus401;
+  '403': SaBaiAPIEndpointsPatientsPhotoDeleteEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsPatientsPhotoDeleteEndpointResponse = SaBaiAPIEndpointsPatientsPhotoDeleteEndpointStatus204;

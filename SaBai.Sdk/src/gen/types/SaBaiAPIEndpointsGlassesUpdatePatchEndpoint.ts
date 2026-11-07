@@ -8,20 +8,21 @@ import type { SaBaiAPIEndpointsGlassesUpdatePatchRequest } from './SaBaiAPIEndpo
 import type { SaBaiAPIEndpointsGlassesUpdatePatchResponse } from './SaBaiAPIEndpointsGlassesUpdatePatchResponse'
 
 export type SaBaiAPIEndpointsGlassesUpdatePatchEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
 };
 
 export type SaBaiAPIEndpointsGlassesUpdatePatchEndpointStatus200 = SaBaiAPIEndpointsGlassesUpdatePatchResponse;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsGlassesUpdatePatchEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsGlassesUpdatePatchEndpointStatus401 = unknown;
@@ -31,20 +32,20 @@ export type SaBaiAPIEndpointsGlassesUpdatePatchEndpointStatus403 = unknown;
 export type SaBaiAPIEndpointsGlassesUpdatePatchEndpointBody = SaBaiAPIEndpointsGlassesUpdatePatchRequest;
 
 export type SaBaiAPIEndpointsGlassesUpdatePatchEndpointOptions = {
-    body: SaBaiAPIEndpointsGlassesUpdatePatchEndpointBody;
-    path: SaBaiAPIEndpointsGlassesUpdatePatchEndpointPath;
-    query?: never;
-    headers?: never;
+  body: SaBaiAPIEndpointsGlassesUpdatePatchEndpointBody;
+  path: SaBaiAPIEndpointsGlassesUpdatePatchEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsGlassesUpdatePatchEndpointResponses = {
-    "200": SaBaiAPIEndpointsGlassesUpdatePatchEndpointStatus200;
-    "400": SaBaiAPIEndpointsGlassesUpdatePatchEndpointStatus400;
-    "401": SaBaiAPIEndpointsGlassesUpdatePatchEndpointStatus401;
-    "403": SaBaiAPIEndpointsGlassesUpdatePatchEndpointStatus403;
+  '200': SaBaiAPIEndpointsGlassesUpdatePatchEndpointStatus200;
+  '400': SaBaiAPIEndpointsGlassesUpdatePatchEndpointStatus400;
+  '401': SaBaiAPIEndpointsGlassesUpdatePatchEndpointStatus401;
+  '403': SaBaiAPIEndpointsGlassesUpdatePatchEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsGlassesUpdatePatchEndpointResponse = SaBaiAPIEndpointsGlassesUpdatePatchEndpointStatus200;

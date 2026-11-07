@@ -6,12 +6,10 @@
 import type { SaBaiAPIEndpointsPatientsSearchByFacePostResponse } from '../types/SaBaiAPIEndpointsPatientsSearchByFacePostResponse'
 import { createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPatientsSearchByFacePostPatientFaceMatch } from './createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPatientsSearchByFacePostPatientFaceMatch'
 
-export function createSaBaiAPIEndpointsPatientsSearchByFacePostResponse<TData extends Partial<SaBaiAPIEndpointsPatientsSearchByFacePostResponse> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsPatientsSearchByFacePostResponse<TData extends Partial<SaBaiAPIEndpointsPatientsSearchByFacePostResponse> = object>(data?: TData) {
   const defaultFakeData = {
-  matches: createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPatientsSearchByFacePostPatientFaceMatch(),
-}
+    matches: createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPatientsSearchByFacePostPatientFaceMatch(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

@@ -4,11 +4,12 @@
 */
 
 import type { SaBaiAPIEndpointsEyesightCreatePostEndpointResponse, SaBaiAPIEndpointsEyesightCreatePostEndpointStatus400, SaBaiAPIEndpointsEyesightCreatePostEndpointStatus401, SaBaiAPIEndpointsEyesightCreatePostEndpointStatus403, SaBaiAPIEndpointsEyesightCreatePostEndpointBody } from '../types/SaBaiAPIEndpointsEyesightCreatePostEndpoint'
-import type { HttpResponseResolver } from 'msw'
-import { http } from 'msw'
+import type { HttpResponseResolver } from 'msw/http'
+import type { DefaultBodyType } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsEyesightCreatePostEndpointHandlerResponse200(data: SaBaiAPIEndpointsEyesightCreatePostEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -17,7 +18,7 @@ export function saBaiAPIEndpointsEyesightCreatePostEndpointHandlerResponse200(da
 }
 
 export function saBaiAPIEndpointsEyesightCreatePostEndpointHandlerResponse400(data: SaBaiAPIEndpointsEyesightCreatePostEndpointStatus400) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 400,
     headers: {
       'Content-Type': 'application/problem+json'
@@ -26,22 +27,22 @@ export function saBaiAPIEndpointsEyesightCreatePostEndpointHandlerResponse400(da
 }
 
 export function saBaiAPIEndpointsEyesightCreatePostEndpointHandlerResponse401(data?: SaBaiAPIEndpointsEyesightCreatePostEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsEyesightCreatePostEndpointHandlerResponse403(data?: SaBaiAPIEndpointsEyesightCreatePostEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsEyesightCreatePostEndpointHandler(data?: SaBaiAPIEndpointsEyesightCreatePostEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsEyesightCreatePostEndpointBody>) {
-  return http.post<Record<string, string>, SaBaiAPIEndpointsEyesightCreatePostEndpointBody>(`/eyesight`, function handler(info) {
+export function saBaiAPIEndpointsEyesightCreatePostEndpointHandler(data?: SaBaiAPIEndpointsEyesightCreatePostEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsEyesightCreatePostEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsEyesightCreatePostEndpointBody : DefaultBodyType>, options?: { baseURL?: string }) {
+  return http.post<Record<string, string>, SaBaiAPIEndpointsEyesightCreatePostEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsEyesightCreatePostEndpointBody : DefaultBodyType>(`${options?.baseURL ?? ''}/eyesight`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

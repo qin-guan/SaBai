@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsChildVitalsDeleteEndpointOptions } from '../types/SaBaiAPIEndpointsChildVitalsDeleteEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsChildVitalsDeleteEndpoint } from '../clients/saBaiAPIEndpointsChildVitalsDeleteEndpoint'
 
 /**
  * @summary Delete child vitals
  * {@link /child-vitals/:id}
  */
-export async function saBaiAPIEndpointsChildVitalsDeleteEndpointHandler({ path }: SaBaiAPIEndpointsChildVitalsDeleteEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsChildVitalsDeleteEndpoint({ path, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsChildVitalsDeleteEndpointHandler({ path }: SaBaiAPIEndpointsChildVitalsDeleteEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsChildVitalsDeleteEndpoint({ path, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

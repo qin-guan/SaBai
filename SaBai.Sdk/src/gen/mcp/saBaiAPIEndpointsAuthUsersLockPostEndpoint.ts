@@ -4,16 +4,16 @@
 */
 
 import type { SaBaiAPIEndpointsAuthUsersLockPostEndpointOptions } from '../types/SaBaiAPIEndpointsAuthUsersLockPostEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsAuthUsersLockPostEndpoint } from '../clients/saBaiAPIEndpointsAuthUsersLockPostEndpoint'
 
 /**
+ * @description Blocks sign-in until unlocked and ends the user's open sessions within a minute.
  * @summary Lock a staff account
  * {@link /auth/users/:id/lock}
  */
-export async function saBaiAPIEndpointsAuthUsersLockPostEndpointHandler({ path }: SaBaiAPIEndpointsAuthUsersLockPostEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsAuthUsersLockPostEndpoint({ path, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsAuthUsersLockPostEndpointHandler({ path }: SaBaiAPIEndpointsAuthUsersLockPostEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsAuthUsersLockPostEndpoint({ path, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

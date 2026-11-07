@@ -7,13 +7,11 @@ import type { SaBaiAPIEndpointsDiagnosesUpdatePatchRequest } from '../types/SaBa
 import { createSaBaiAPIDomainDiagnosisCategory } from './createSaBaiAPIDomainDiagnosisCategory'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsDiagnosesUpdatePatchRequest<TData extends Partial<SaBaiAPIEndpointsDiagnosesUpdatePatchRequest> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsDiagnosesUpdatePatchRequest<TData extends Partial<SaBaiAPIEndpointsDiagnosesUpdatePatchRequest> = object>(data?: TData) {
   const defaultFakeData = {
-  details: faker.string.alpha(),
-  category: faker.helpers.arrayElement([null, createSaBaiAPIDomainDiagnosisCategory()]),
-}
+    details: faker.string.alpha(),
+    category: faker.helpers.arrayElement([null, createSaBaiAPIDomainDiagnosisCategory()]),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

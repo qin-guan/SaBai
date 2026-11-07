@@ -16,27 +16,37 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var query = db.StaffUsers.AsNoTracking().AsQueryable();
-        if (req.Role is { } role)
+        var query = db.Users.AsQueryable();
+        if (!string.IsNullOrWhiteSpace(req.Role))
         {
-            query = query.Where(x => x.Role == role);
+            var role = req.Role.Trim().ToUpperInvariant();
+            query = query.Where(user =>
+                db.UserRoles.Any(userRole =>
+                    userRole.UserId == user.Id
+                    && db.Roles.Any(x => x.Id == userRole.RoleId && x.NormalizedName == role)
+                )
+            );
         }
 
         if (!string.IsNullOrWhiteSpace(req.Email))
         {
-            query = query.Where(x => x.Email == req.Email);
+            var email = req.Email.Trim().ToUpperInvariant();
+            query = query.Where(x => x.NormalizedEmail == email);
         }
 
         if (req.IsLocked is { } locked)
         {
-            query = query.Where(x => x.IsLocked == locked);
+            var now = DateTimeOffset.UtcNow;
+            query = locked
+                ? query.Where(x => x.LockoutEnabled && x.LockoutEnd != null && x.LockoutEnd > now)
+                : query.Where(x => !x.LockoutEnabled || x.LockoutEnd == null || x.LockoutEnd <= now);
         }
 
-        var users = await query
-            .OrderBy(x => x.Nickname)
-            .Select(x => UserResponse.From(x))
-            .ToListAsync(ct);
-
+        var users = await UserResponse.ListAsync(
+            db,
+            query.OrderBy(x => x.Nickname).ThenBy(x => x.UserName),
+            ct
+        );
         await Send.OkAsync(new Response(users), ct);
     }
 }

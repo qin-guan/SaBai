@@ -7,14 +7,12 @@ import type { SaBaiAPIEndpointsOrdersUpdatePatchRequest } from '../types/SaBaiAP
 import { createSaBaiAPIDomainOrderStatus } from './createSaBaiAPIDomainOrderStatus'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsOrdersUpdatePatchRequest<TData extends Partial<SaBaiAPIEndpointsOrdersUpdatePatchRequest> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsOrdersUpdatePatchRequest<TData extends Partial<SaBaiAPIEndpointsOrdersUpdatePatchRequest> = object>(data?: TData) {
   const defaultFakeData = {
-  status: faker.helpers.arrayElement([null, createSaBaiAPIDomainOrderStatus()]),
-  dosageInstructions: faker.string.alpha(),
-  remarks: faker.string.alpha(),
-}
+    status: faker.helpers.arrayElement([null, createSaBaiAPIDomainOrderStatus()]),
+    dosageInstructions: faker.string.alpha(),
+    remarks: faker.string.alpha(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

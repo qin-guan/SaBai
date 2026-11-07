@@ -4,10 +4,10 @@
 */
 
 import type { SaBaiAPIEndpointsReferralsGetEndpointResponse, SaBaiAPIEndpointsReferralsGetEndpointStatus401, SaBaiAPIEndpointsReferralsGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsReferralsGetEndpoint'
-import { http } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsReferralsGetEndpointHandlerResponse200(data: SaBaiAPIEndpointsReferralsGetEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -16,22 +16,22 @@ export function saBaiAPIEndpointsReferralsGetEndpointHandlerResponse200(data: Sa
 }
 
 export function saBaiAPIEndpointsReferralsGetEndpointHandlerResponse401(data?: SaBaiAPIEndpointsReferralsGetEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsReferralsGetEndpointHandlerResponse403(data?: SaBaiAPIEndpointsReferralsGetEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsReferralsGetEndpointHandler(data?: SaBaiAPIEndpointsReferralsGetEndpointResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>)) {
-  return http.get(`/referrals/:id`, function handler(info) {
+export function saBaiAPIEndpointsReferralsGetEndpointHandler(data?: SaBaiAPIEndpointsReferralsGetEndpointResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>), options?: { baseURL?: string }) {
+  return http.get(`${options?.baseURL ?? ''}/referrals/:id`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsPubertyGetEndpointOptions } from '../types/SaBaiAPIEndpointsPubertyGetEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsPubertyGetEndpoint } from '../clients/saBaiAPIEndpointsPubertyGetEndpoint'
 
 /**
  * @summary Get a puberty assessment by id
  * {@link /puberty/:id}
  */
-export async function saBaiAPIEndpointsPubertyGetEndpointHandler({ path }: SaBaiAPIEndpointsPubertyGetEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsPubertyGetEndpoint({ path, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsPubertyGetEndpointHandler({ path }: SaBaiAPIEndpointsPubertyGetEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsPubertyGetEndpoint({ path, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

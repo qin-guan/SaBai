@@ -7,23 +7,21 @@ import type { SaBaiAPIEndpointsConsultsListByVisitGetResponse } from '../types/S
 import { createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsListByVisitGetDiagnosisItem } from './createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsListByVisitGetDiagnosisItem'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsConsultsListByVisitGetResponse<TData extends Partial<SaBaiAPIEndpointsConsultsListByVisitGetResponse> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsConsultsListByVisitGetResponse<TData extends Partial<SaBaiAPIEndpointsConsultsListByVisitGetResponse> = object>(data?: TData) {
   const defaultFakeData = {
-  id: faker.number.int(),
-  visitId: faker.number.int(),
-  date: faker.date.anytime().toISOString(),
-  pastMedicalHistory: faker.string.alpha(),
-  consultation: faker.string.alpha(),
-  treatmentPlan: faker.string.alpha(),
-  referredFor: faker.string.alpha(),
-  referralNotes: faker.string.alpha(),
-  remarks: faker.string.alpha(),
-  doctorId: faker.string.uuid(),
-  doctorNickname: faker.string.alpha(),
-  diagnoses: createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsListByVisitGetDiagnosisItem(),
-}
+    id: faker.number.int(),
+    visitId: faker.number.int(),
+    date: faker.date.anytime().toISOString(),
+    pastMedicalHistory: faker.string.alpha(),
+    consultation: faker.string.alpha(),
+    treatmentPlan: faker.string.alpha(),
+    referredFor: faker.string.alpha(),
+    referralNotes: faker.string.alpha(),
+    remarks: faker.string.alpha(),
+    doctorId: faker.string.uuid(),
+    doctorNickname: faker.string.alpha(),
+    diagnoses: createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsListByVisitGetDiagnosisItem(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

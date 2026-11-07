@@ -10,9 +10,10 @@ import type { SaBaiAPIEndpointsMedicationBrandsCreatePostResponse } from './SaBa
 export type SaBaiAPIEndpointsMedicationBrandsCreatePostEndpointStatus200 = SaBaiAPIEndpointsMedicationBrandsCreatePostResponse;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsMedicationBrandsCreatePostEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsMedicationBrandsCreatePostEndpointStatus401 = unknown;
@@ -22,20 +23,20 @@ export type SaBaiAPIEndpointsMedicationBrandsCreatePostEndpointStatus403 = unkno
 export type SaBaiAPIEndpointsMedicationBrandsCreatePostEndpointBody = SaBaiAPIEndpointsMedicationBrandsCreatePostRequest;
 
 export type SaBaiAPIEndpointsMedicationBrandsCreatePostEndpointOptions = {
-    body: SaBaiAPIEndpointsMedicationBrandsCreatePostEndpointBody;
-    path?: never;
-    query?: never;
-    headers?: never;
+  body: SaBaiAPIEndpointsMedicationBrandsCreatePostEndpointBody;
+  path?: never;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsMedicationBrandsCreatePostEndpointResponses = {
-    "200": SaBaiAPIEndpointsMedicationBrandsCreatePostEndpointStatus200;
-    "400": SaBaiAPIEndpointsMedicationBrandsCreatePostEndpointStatus400;
-    "401": SaBaiAPIEndpointsMedicationBrandsCreatePostEndpointStatus401;
-    "403": SaBaiAPIEndpointsMedicationBrandsCreatePostEndpointStatus403;
+  '200': SaBaiAPIEndpointsMedicationBrandsCreatePostEndpointStatus200;
+  '400': SaBaiAPIEndpointsMedicationBrandsCreatePostEndpointStatus400;
+  '401': SaBaiAPIEndpointsMedicationBrandsCreatePostEndpointStatus401;
+  '403': SaBaiAPIEndpointsMedicationBrandsCreatePostEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsMedicationBrandsCreatePostEndpointResponse = SaBaiAPIEndpointsMedicationBrandsCreatePostEndpointStatus200;

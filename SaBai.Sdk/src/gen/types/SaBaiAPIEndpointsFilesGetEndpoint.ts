@@ -6,12 +6,12 @@
 import type { SaBaiAPIEndpointsFilesGetResponse } from './SaBaiAPIEndpointsFilesGetResponse'
 
 export type SaBaiAPIEndpointsFilesGetEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
 };
 
 export type SaBaiAPIEndpointsFilesGetEndpointStatus200 = SaBaiAPIEndpointsFilesGetResponse;
@@ -21,19 +21,19 @@ export type SaBaiAPIEndpointsFilesGetEndpointStatus401 = unknown;
 export type SaBaiAPIEndpointsFilesGetEndpointStatus403 = unknown;
 
 export type SaBaiAPIEndpointsFilesGetEndpointOptions = {
-    body?: never;
-    path: SaBaiAPIEndpointsFilesGetEndpointPath;
-    query?: never;
-    headers?: never;
+  body?: never;
+  path: SaBaiAPIEndpointsFilesGetEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsFilesGetEndpointResponses = {
-    "200": SaBaiAPIEndpointsFilesGetEndpointStatus200;
-    "401": SaBaiAPIEndpointsFilesGetEndpointStatus401;
-    "403": SaBaiAPIEndpointsFilesGetEndpointStatus403;
+  '200': SaBaiAPIEndpointsFilesGetEndpointStatus200;
+  '401': SaBaiAPIEndpointsFilesGetEndpointStatus401;
+  '403': SaBaiAPIEndpointsFilesGetEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsFilesGetEndpointResponse = SaBaiAPIEndpointsFilesGetEndpointStatus200;

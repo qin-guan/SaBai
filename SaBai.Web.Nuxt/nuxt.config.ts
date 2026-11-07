@@ -5,7 +5,8 @@ export default defineNuxtConfig({
   modules: ['@nuxt/a11y', '@nuxt/fonts', '@nuxt/hints', '@nuxt/icon/module', '@nuxt/image', '@nuxt/scripts', 'shadcn-nuxt'],
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
-  // The app is a pure client of SaBai.API: auth is a bearer token in a cookie,
+  // The app is a pure client of SaBai.API: auth is an HttpOnly session cookie
+  // set by the API through the /api proxy,
   // patient photos are fetched as authenticated blobs and the webcam is
   // browser-only, so it renders on the client like SaBai.Web does.
   ssr: false,

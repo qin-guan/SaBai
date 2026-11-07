@@ -60,17 +60,31 @@ var api = builder
     .WaitFor(rustFs)
     .WithHttpHealthCheck("/health");
 
-var useFakeWorkOs =
-    !builder.ExecutionContext.IsPublishMode
-    && builder.Configuration["WorkOS:UseFake"] is "true" or "1";
-api.WithEnvironment("WorkOS__UseFake", useFakeWorkOs ? "true" : "false");
-if (!useFakeWorkOs)
+if (builder.ExecutionContext.IsPublishMode)
 {
+    // Deployments start with one admin account; everyone else is added from the
+    // admin pages. The password is only used if the account has none yet.
     api.WithEnvironment(
-            "WorkOS__ClientId",
-            builder.AddParameter("workOsClientId", "client_01M4K5B4J6E84RQ9DX81J49013")
+            "Auth__BootstrapAdmin__UserName",
+            builder.AddParameter("adminUserName", "admin")
         )
-        .WithEnvironment("WorkOS__ApiKey", builder.AddParameter("workOsApiKey", secret: true));
+        .WithEnvironment(
+            "Auth__BootstrapAdmin__Password",
+            builder.AddParameter("adminPassword", secret: true)
+        );
+}
+else
+{
+    // Local runs and tests get the demo staff (admin, doctor, pharmacist,
+    // registration; password "Password1!"). Opt out with --Auth:SeedDemoUsers=false.
+    api.WithEnvironment(
+        "Auth__SeedDemoUsers",
+        builder.Configuration["Auth:SeedDemoUsers"] is "false" or "0" ? "false" : "true"
+    );
+    if (builder.Configuration["Auth:SecurityStampValidationMinutes"] is { } interval)
+    {
+        api.WithEnvironment("Auth__SecurityStampValidationMinutes", interval);
+    }
 }
 
 if (!builder.ExecutionContext.IsPublishMode)
@@ -78,7 +92,7 @@ if (!builder.ExecutionContext.IsPublishMode)
     builder
         .AddNextJsApp("frontend", "../SaBai.Web")
         .WithPnpm(false)
-        .WithEnvironment("NEXT_PUBLIC_API_URL", api.GetEndpoint("http"))
+        .WithEnvironment("API_URL", api.GetEndpoint("http"))
         .WithHttpEndpoint(port: 3000, env: "PORT")
         .WaitFor(api);
 

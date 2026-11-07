@@ -3,7 +3,7 @@
 * Do not edit manually.
 */
 
-import type { SaBaiAPIEndpointsAuthWhoAmIGetEndpointResponse, SaBaiAPIEndpointsAuthWhoAmIGetEndpointStatus200, SaBaiAPIEndpointsAuthWhoAmIGetEndpointStatus401, SaBaiAPIEndpointsAuthWhoAmIGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsAuthWhoAmIGetEndpoint'
+import type { SaBaiAPIEndpointsAuthWhoAmIGetEndpointResponse, SaBaiAPIEndpointsAuthWhoAmIGetEndpointStatus200 } from '../types/SaBaiAPIEndpointsAuthWhoAmIGetEndpoint'
 import { createSaBaiAPIEndpointsAuthWhoAmIGetResponse } from './createSaBaiAPIEndpointsAuthWhoAmIGetResponse'
 import { fakerEN as faker } from '@faker-js/faker'
 

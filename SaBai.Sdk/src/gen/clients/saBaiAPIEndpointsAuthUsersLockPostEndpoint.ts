@@ -8,11 +8,12 @@ import type { SaBaiAPIEndpointsAuthUsersLockPostEndpointOptions, SaBaiAPIEndpoin
 import { client, withUnwrap } from '../.kubb/client'
 
 /**
+ * @description Blocks sign-in until unlocked and ends the user's open sessions within a minute.
  * @summary Lock a staff account
  * {@link /auth/users/:id/lock}
  */
 export function saBaiAPIEndpointsAuthUsersLockPostEndpoint<ThrowOnError extends boolean = true>(options: Options<SaBaiAPIEndpointsAuthUsersLockPostEndpointOptions, ThrowOnError>): Unwrappable<RequestResult<SaBaiAPIEndpointsAuthUsersLockPostEndpointResponses, ThrowOnError>> {
   const { client: request = client, ...config } = options
 
-  return withUnwrap(request({ method: 'POST', url: '/auth/users/{id}/lock', security: [{ type: 'http', scheme: 'bearer' }], ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<SaBaiAPIEndpointsAuthUsersLockPostEndpointResponses, ThrowOnError>>)
+  return withUnwrap(request({ method: 'POST', url: '/auth/users/{id}/lock', security: [{ type: 'apiKey', name: 'sabai.auth', in: 'cookie', scopes: ['admin'] }], ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<SaBaiAPIEndpointsAuthUsersLockPostEndpointResponses, ThrowOnError>>)
 }

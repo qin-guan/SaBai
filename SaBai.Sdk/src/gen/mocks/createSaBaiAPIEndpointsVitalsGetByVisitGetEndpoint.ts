@@ -3,17 +3,15 @@
 * Do not edit manually.
 */
 
-import type { SaBaiAPIEndpointsVitalsGetByVisitGetEndpointPath, SaBaiAPIEndpointsVitalsGetByVisitGetEndpointResponse, SaBaiAPIEndpointsVitalsGetByVisitGetEndpointStatus200, SaBaiAPIEndpointsVitalsGetByVisitGetEndpointStatus400, SaBaiAPIEndpointsVitalsGetByVisitGetEndpointStatus401, SaBaiAPIEndpointsVitalsGetByVisitGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsVitalsGetByVisitGetEndpoint'
+import type { SaBaiAPIEndpointsVitalsGetByVisitGetEndpointPath, SaBaiAPIEndpointsVitalsGetByVisitGetEndpointResponse, SaBaiAPIEndpointsVitalsGetByVisitGetEndpointStatus200, SaBaiAPIEndpointsVitalsGetByVisitGetEndpointStatus400 } from '../types/SaBaiAPIEndpointsVitalsGetByVisitGetEndpoint'
 import { createFastEndpointsProblemDetails } from './createFastEndpointsProblemDetails'
 import { createSaBaiAPIEndpointsVitalsGetByVisitGetResponse } from './createSaBaiAPIEndpointsVitalsGetByVisitGetResponse'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsVitalsGetByVisitGetEndpointPath<TData extends Partial<SaBaiAPIEndpointsVitalsGetByVisitGetEndpointPath> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsVitalsGetByVisitGetEndpointPath<TData extends Partial<SaBaiAPIEndpointsVitalsGetByVisitGetEndpointPath> = object>(data?: TData) {
   const defaultFakeData = {
-  visitId: faker.number.int(),
-}
+    visitId: faker.number.int(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

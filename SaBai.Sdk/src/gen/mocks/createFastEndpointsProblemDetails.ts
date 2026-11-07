@@ -7,25 +7,24 @@ import type { FastEndpointsProblemDetails } from '../types/FastEndpointsProblemD
 import { fakerEN as faker } from '@faker-js/faker'
 
 /**
-   * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
-   */
-  export function createFastEndpointsProblemDetails<TData extends Partial<FastEndpointsProblemDetails> = object>(data?: TData)
-
-{
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ */
+export function createFastEndpointsProblemDetails<TData extends Partial<FastEndpointsProblemDetails> = object>(data?: TData) {
   const defaultFakeData = {
-  type: faker.string.alpha(),
-  title: faker.string.alpha(),
-  status: faker.number.int(),
-  instance: faker.string.alpha(),
-  traceId: faker.string.alpha(),
-  detail: faker.string.alpha(),
-  errors: faker.helpers.multiple(() => ({
-    name: faker.string.alpha(),
-    reason: faker.string.alpha(),
-    code: faker.string.alpha(),
-    severity: faker.string.alpha(),
-  })),
-}
+    type: faker.string.alpha(),
+    title: faker.string.alpha(),
+    status: faker.number.int(),
+    instance: faker.string.alpha(),
+    traceId: faker.string.alpha(),
+    detail: faker.string.alpha(),
+    errors: faker.helpers.multiple(() => ({
+      name: faker.string.alpha(),
+      reason: faker.string.alpha(),
+      code: faker.string.alpha(),
+      severity: faker.string.alpha(),
+    })),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

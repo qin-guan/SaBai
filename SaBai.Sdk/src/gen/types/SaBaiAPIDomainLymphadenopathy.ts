@@ -4,9 +4,9 @@
 */
 
 export const saBaiAPIDomainLymphadenopathy = {
-    Absent: "Absent",
-    Present: "Present",
-    NotAssessed: "NotAssessed"
+  Absent: 'Absent',
+  Present: 'Present',
+  NotAssessed: 'NotAssessed',
 } as const;
 
 export type SaBaiAPIDomainLymphadenopathyKey = (typeof saBaiAPIDomainLymphadenopathy)[keyof typeof saBaiAPIDomainLymphadenopathy];

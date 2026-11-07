@@ -4,21 +4,21 @@
 */
 
 export const saBaiAPIDomainDiagnosisCategory = {
-    Cardiovascular: "Cardiovascular",
-    Dermatology: "Dermatology",
-    "Ear Nose Throat": "Ear Nose Throat",
-    Endocrine: "Endocrine",
-    Eye: "Eye",
-    Gastrointestinal: "Gastrointestinal",
-    Haematology: "Haematology",
-    "Infectious Diseases": "Infectious Diseases",
-    "Renal & Genitourinary": "Renal & Genitourinary",
-    Respiratory: "Respiratory",
-    Musculoskeletal: "Musculoskeletal",
-    Neurology: "Neurology",
-    "Obstetrics & Gynaecology": "Obstetrics & Gynaecology",
-    "Oral Health": "Oral Health",
-    Others: "Others"
+  Cardiovascular: 'Cardiovascular',
+  Dermatology: 'Dermatology',
+  'Ear Nose Throat': 'Ear Nose Throat',
+  Endocrine: 'Endocrine',
+  Eye: 'Eye',
+  Gastrointestinal: 'Gastrointestinal',
+  Haematology: 'Haematology',
+  'Infectious Diseases': 'Infectious Diseases',
+  'Renal & Genitourinary': 'Renal & Genitourinary',
+  Respiratory: 'Respiratory',
+  Musculoskeletal: 'Musculoskeletal',
+  Neurology: 'Neurology',
+  'Obstetrics & Gynaecology': 'Obstetrics & Gynaecology',
+  'Oral Health': 'Oral Health',
+  Others: 'Others',
 } as const;
 
 export type SaBaiAPIDomainDiagnosisCategoryKey = (typeof saBaiAPIDomainDiagnosisCategory)[keyof typeof saBaiAPIDomainDiagnosisCategory];

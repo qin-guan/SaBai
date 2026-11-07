@@ -10,7 +10,7 @@ public sealed class VisionTests(AppFixture fixture)
     public async Task Get_AfterGlasses_ContainsPrescribedDegree()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var (_, visitId) = await RegisterAsync(client);
         const string degree = "6/12";
@@ -39,7 +39,7 @@ public sealed class VisionTests(AppFixture fixture)
     public async Task Get_WithoutVisitId_ReturnsBadRequest()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
 
         // Act
@@ -53,7 +53,7 @@ public sealed class VisionTests(AppFixture fixture)
     public async Task Get_VisitIdZero_ReturnsBadRequest()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
 
         // Act
@@ -67,7 +67,7 @@ public sealed class VisionTests(AppFixture fixture)
     public async Task Get_UnknownVisit_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
 
         // Act
@@ -81,7 +81,7 @@ public sealed class VisionTests(AppFixture fixture)
     public async Task Get_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
 
         // Act
         var response = await client.GetAsync("/vision?visitId=1");

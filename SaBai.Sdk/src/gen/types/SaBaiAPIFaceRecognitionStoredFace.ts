@@ -4,17 +4,17 @@
 */
 
 export type SaBaiAPIFaceRecognitionStoredFace = {
-    /**
-     * @description
-     * Format: `uuid`
-     * @type string
-    */
-    faceId: string;
-    personId: string;
-    /**
-     * @description
-     * Format: `date-time`
-     * @type string
-    */
-    createdAt: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string
+   */
+  faceId: string;
+  personId: string;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string
+   */
+  createdAt: string;
 };

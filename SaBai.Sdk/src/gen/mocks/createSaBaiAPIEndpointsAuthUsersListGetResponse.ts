@@ -6,12 +6,10 @@
 import type { SaBaiAPIEndpointsAuthUsersListGetResponse } from '../types/SaBaiAPIEndpointsAuthUsersListGetResponse'
 import { createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsAuthUserResponse } from './createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsAuthUserResponse'
 
-export function createSaBaiAPIEndpointsAuthUsersListGetResponse<TData extends Partial<SaBaiAPIEndpointsAuthUsersListGetResponse> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsAuthUsersListGetResponse<TData extends Partial<SaBaiAPIEndpointsAuthUsersListGetResponse> = object>(data?: TData) {
   const defaultFakeData = {
-  users: createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsAuthUserResponse(),
-}
+    users: createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsAuthUserResponse(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

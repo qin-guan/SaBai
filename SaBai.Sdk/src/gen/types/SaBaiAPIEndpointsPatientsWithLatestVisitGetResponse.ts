@@ -6,5 +6,5 @@
 import type { SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPatientsWithLatestVisitGetItem } from './SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPatientsWithLatestVisitGetItem'
 
 export type SaBaiAPIEndpointsPatientsWithLatestVisitGetResponse = {
-    patients: SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPatientsWithLatestVisitGetItem;
+  patients: SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPatientsWithLatestVisitGetItem;
 };

@@ -16,3 +16,7 @@ export const saBaiAPIEndpointsFacesDeleteEndpointStatus403Schema = z.unknown()
 export const saBaiAPIEndpointsFacesDeleteEndpointResponseSchema = saBaiAPIEndpointsFacesDeleteEndpointStatus204Schema
 
 export const saBaiAPIEndpointsFacesDeleteEndpointErrorSchema = z.union([saBaiAPIEndpointsFacesDeleteEndpointStatus401Schema, saBaiAPIEndpointsFacesDeleteEndpointStatus403Schema])
+
+export const saBaiAPIEndpointsFacesDeleteEndpointPathSchema = z.object({
+  faceId: z.uuid(),
+})

@@ -4,21 +4,21 @@
 */
 
 export type SaBaiAPIEndpointsPatientsSearchByFacePostPatientFaceMatch = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
-    name: string;
-    displayId: string;
-    villageCode: string | null;
-    villageColorHex: string | null;
-    hasPhoto: boolean;
-    /**
-     * @description
-     * Format: `float`
-     * @type number
-    */
-    similarity: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
+  name: string;
+  displayId: string;
+  villageCode: string | null;
+  villageColorHex: string | null;
+  hasPhoto: boolean;
+  /**
+   * @description
+   * Format: `float`
+   * @type number
+   */
+  similarity: number;
 };

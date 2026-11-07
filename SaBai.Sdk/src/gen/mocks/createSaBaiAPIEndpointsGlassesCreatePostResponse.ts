@@ -6,16 +6,14 @@
 import type { SaBaiAPIEndpointsGlassesCreatePostResponse } from '../types/SaBaiAPIEndpointsGlassesCreatePostResponse'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsGlassesCreatePostResponse<TData extends Partial<SaBaiAPIEndpointsGlassesCreatePostResponse> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsGlassesCreatePostResponse<TData extends Partial<SaBaiAPIEndpointsGlassesCreatePostResponse> = object>(data?: TData) {
   const defaultFakeData = {
-  id: faker.number.int(),
-  visitId: faker.number.int(),
-  leftGlassesDegree: faker.string.alpha(),
-  rightGlassesDegree: faker.string.alpha(),
-  notes: faker.string.alpha(),
-}
+    id: faker.number.int(),
+    visitId: faker.number.int(),
+    leftGlassesDegree: faker.string.alpha(),
+    rightGlassesDegree: faker.string.alpha(),
+    notes: faker.string.alpha(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

@@ -3,15 +3,13 @@
 * Do not edit manually.
 */
 
-import type { SaBaiAPIEndpointsConsultsPdfGetEndpointPath, SaBaiAPIEndpointsConsultsPdfGetEndpointResponse, SaBaiAPIEndpointsConsultsPdfGetEndpointStatus204, SaBaiAPIEndpointsConsultsPdfGetEndpointStatus401, SaBaiAPIEndpointsConsultsPdfGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsConsultsPdfGetEndpoint'
+import type { SaBaiAPIEndpointsConsultsPdfGetEndpointPath, SaBaiAPIEndpointsConsultsPdfGetEndpointResponse } from '../types/SaBaiAPIEndpointsConsultsPdfGetEndpoint'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsConsultsPdfGetEndpointPath<TData extends Partial<SaBaiAPIEndpointsConsultsPdfGetEndpointPath> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsConsultsPdfGetEndpointPath<TData extends Partial<SaBaiAPIEndpointsConsultsPdfGetEndpointPath> = object>(data?: TData) {
   const defaultFakeData = {
-  id: faker.number.int(),
-}
+    id: faker.number.int(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

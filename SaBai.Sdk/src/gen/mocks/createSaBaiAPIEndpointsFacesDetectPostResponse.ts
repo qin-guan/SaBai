@@ -7,14 +7,12 @@ import type { SaBaiAPIEndpointsFacesDetectPostResponse } from '../types/SaBaiAPI
 import { createSaBaiAPIEndpointsFacesFaceDtoArray } from './createSaBaiAPIEndpointsFacesFaceDtoArray'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsFacesDetectPostResponse<TData extends Partial<SaBaiAPIEndpointsFacesDetectPostResponse> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsFacesDetectPostResponse<TData extends Partial<SaBaiAPIEndpointsFacesDetectPostResponse> = object>(data?: TData) {
   const defaultFakeData = {
-  width: faker.number.int(),
-  height: faker.number.int(),
-  faces: createSaBaiAPIEndpointsFacesFaceDtoArray(),
-}
+    width: faker.number.int(),
+    height: faker.number.int(),
+    faces: createSaBaiAPIEndpointsFacesFaceDtoArray(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

@@ -6,5 +6,5 @@
 import type { SystemCollectionsGenericListOfSaBaiAPIEndpointsMedicationStockSplitsPostSplitItem } from './SystemCollectionsGenericListOfSaBaiAPIEndpointsMedicationStockSplitsPostSplitItem'
 
 export type SaBaiAPIEndpointsMedicationStockSplitsPostRequest = {
-    splits: SystemCollectionsGenericListOfSaBaiAPIEndpointsMedicationStockSplitsPostSplitItem;
+  splits: SystemCollectionsGenericListOfSaBaiAPIEndpointsMedicationStockSplitsPostSplitItem;
 };

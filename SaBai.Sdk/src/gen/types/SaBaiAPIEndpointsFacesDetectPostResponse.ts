@@ -6,17 +6,17 @@
 import type { SaBaiAPIEndpointsFacesFaceDtoArray } from './SaBaiAPIEndpointsFacesFaceDtoArray'
 
 export type SaBaiAPIEndpointsFacesDetectPostResponse = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    width: number;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    height: number;
-    faces: SaBaiAPIEndpointsFacesFaceDtoArray;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  width: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  height: number;
+  faces: SaBaiAPIEndpointsFacesFaceDtoArray;
 };

@@ -7,20 +7,21 @@ import type { FastEndpointsProblemDetails } from './FastEndpointsProblemDetails'
 import type { SystemCollectionsGenericListOfSaBaiAPIEndpointsVitalsListByPatientGetResponse } from './SystemCollectionsGenericListOfSaBaiAPIEndpointsVitalsListByPatientGetResponse'
 
 export type SaBaiAPIEndpointsVitalsListByPatientGetEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    patientId: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  patientId: number;
 };
 
 export type SaBaiAPIEndpointsVitalsListByPatientGetEndpointStatus200 = SystemCollectionsGenericListOfSaBaiAPIEndpointsVitalsListByPatientGetResponse;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsVitalsListByPatientGetEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsVitalsListByPatientGetEndpointStatus401 = unknown;
@@ -28,20 +29,20 @@ export type SaBaiAPIEndpointsVitalsListByPatientGetEndpointStatus401 = unknown;
 export type SaBaiAPIEndpointsVitalsListByPatientGetEndpointStatus403 = unknown;
 
 export type SaBaiAPIEndpointsVitalsListByPatientGetEndpointOptions = {
-    body?: never;
-    path: SaBaiAPIEndpointsVitalsListByPatientGetEndpointPath;
-    query?: never;
-    headers?: never;
+  body?: never;
+  path: SaBaiAPIEndpointsVitalsListByPatientGetEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsVitalsListByPatientGetEndpointResponses = {
-    "200": SaBaiAPIEndpointsVitalsListByPatientGetEndpointStatus200;
-    "400": SaBaiAPIEndpointsVitalsListByPatientGetEndpointStatus400;
-    "401": SaBaiAPIEndpointsVitalsListByPatientGetEndpointStatus401;
-    "403": SaBaiAPIEndpointsVitalsListByPatientGetEndpointStatus403;
+  '200': SaBaiAPIEndpointsVitalsListByPatientGetEndpointStatus200;
+  '400': SaBaiAPIEndpointsVitalsListByPatientGetEndpointStatus400;
+  '401': SaBaiAPIEndpointsVitalsListByPatientGetEndpointStatus401;
+  '403': SaBaiAPIEndpointsVitalsListByPatientGetEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsVitalsListByPatientGetEndpointResponse = SaBaiAPIEndpointsVitalsListByPatientGetEndpointStatus200;

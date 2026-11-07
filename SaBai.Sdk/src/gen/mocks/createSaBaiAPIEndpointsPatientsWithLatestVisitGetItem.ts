@@ -8,32 +8,30 @@ import { createSaBaiAPIDomainGender } from './createSaBaiAPIDomainGender'
 import { createSaBaiAPIEndpointsPatientsVisitJourney } from './createSaBaiAPIEndpointsPatientsVisitJourney'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsPatientsWithLatestVisitGetItem<TData extends Partial<SaBaiAPIEndpointsPatientsWithLatestVisitGetItem> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsPatientsWithLatestVisitGetItem<TData extends Partial<SaBaiAPIEndpointsPatientsWithLatestVisitGetItem> = object>(data?: TData) {
   const defaultFakeData = {
-  id: faker.number.int(),
-  name: faker.string.alpha(),
-  identificationNumber: faker.string.alpha(),
-  contactNo: faker.string.alpha(),
-  gender: createSaBaiAPIDomainGender(),
-  dateOfBirth: faker.date.anytime().toISOString(),
-  drugAllergy: faker.string.alpha(),
-  hasPoorCard: faker.datatype.boolean(),
-  hasBS2Card: faker.datatype.boolean(),
-  hasSabaiCard: faker.datatype.boolean(),
-  toGetReport: faker.datatype.boolean(),
-  villageCodeId: faker.number.int(),
-  villageCode: faker.string.alpha(),
-  villageColorHex: faker.string.alpha(),
-  displayId: faker.string.alpha(),
-  filterString: faker.string.alpha(),
-  lastVisitDate: faker.date.anytime().toISOString(),
-  lastVisitId: faker.number.int(),
-  hasPhoto: faker.datatype.boolean(),
-  hasFace: faker.datatype.boolean(),
-  lastVisitJourney: createSaBaiAPIEndpointsPatientsVisitJourney(),
-}
+    id: faker.number.int(),
+    name: faker.string.alpha(),
+    identificationNumber: faker.string.alpha(),
+    contactNo: faker.string.alpha(),
+    gender: createSaBaiAPIDomainGender(),
+    dateOfBirth: faker.date.anytime().toISOString(),
+    drugAllergy: faker.string.alpha(),
+    hasPoorCard: faker.datatype.boolean(),
+    hasBS2Card: faker.datatype.boolean(),
+    hasSabaiCard: faker.datatype.boolean(),
+    toGetReport: faker.datatype.boolean(),
+    villageCodeId: faker.number.int(),
+    villageCode: faker.string.alpha(),
+    villageColorHex: faker.string.alpha(),
+    displayId: faker.string.alpha(),
+    filterString: faker.string.alpha(),
+    lastVisitDate: faker.date.anytime().toISOString(),
+    lastVisitId: faker.number.int(),
+    hasPhoto: faker.datatype.boolean(),
+    hasFace: faker.datatype.boolean(),
+    lastVisitJourney: faker.helpers.arrayElement([null, createSaBaiAPIEndpointsPatientsVisitJourney()]),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

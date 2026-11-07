@@ -4,10 +4,10 @@
 */
 
 import type { SaBaiAPIEndpointsAuthUsersListGetEndpointResponse, SaBaiAPIEndpointsAuthUsersListGetEndpointStatus401, SaBaiAPIEndpointsAuthUsersListGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsAuthUsersListGetEndpoint'
-import { http } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsAuthUsersListGetEndpointHandlerResponse200(data: SaBaiAPIEndpointsAuthUsersListGetEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -16,22 +16,22 @@ export function saBaiAPIEndpointsAuthUsersListGetEndpointHandlerResponse200(data
 }
 
 export function saBaiAPIEndpointsAuthUsersListGetEndpointHandlerResponse401(data?: SaBaiAPIEndpointsAuthUsersListGetEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsAuthUsersListGetEndpointHandlerResponse403(data?: SaBaiAPIEndpointsAuthUsersListGetEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsAuthUsersListGetEndpointHandler(data?: SaBaiAPIEndpointsAuthUsersListGetEndpointResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>)) {
-  return http.get(`/auth/users`, function handler(info) {
+export function saBaiAPIEndpointsAuthUsersListGetEndpointHandler(data?: SaBaiAPIEndpointsAuthUsersListGetEndpointResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>), options?: { baseURL?: string }) {
+  return http.get(`${options?.baseURL ?? ''}/auth/users`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

@@ -6,5 +6,5 @@
 import type { SaBaiAPIEndpointsAuthUserResponse } from './SaBaiAPIEndpointsAuthUserResponse'
 
 export type SaBaiAPIEndpointsAuthWhoAmIGetResponse = {
-    user: SaBaiAPIEndpointsAuthUserResponse;
+  user: SaBaiAPIEndpointsAuthUserResponse;
 };

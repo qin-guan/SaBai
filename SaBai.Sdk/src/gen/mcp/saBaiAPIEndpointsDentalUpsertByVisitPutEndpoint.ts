@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointOptions } from '../types/SaBaiAPIEndpointsDentalUpsertByVisitPutEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsDentalUpsertByVisitPutEndpoint } from '../clients/saBaiAPIEndpointsDentalUpsertByVisitPutEndpoint'
 
 /**
  * @summary Save the dental consultation for a visit, creating it if needed
  * {@link /visits/:visitId/dental}
  */
-export async function saBaiAPIEndpointsDentalUpsertByVisitPutEndpointHandler({ path, body }: SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsDentalUpsertByVisitPutEndpoint({ path, body, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsDentalUpsertByVisitPutEndpointHandler({ path, body }: SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsDentalUpsertByVisitPutEndpoint({ path, body, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

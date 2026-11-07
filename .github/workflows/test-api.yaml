@@ -33,7 +33,6 @@ jobs:
       DOTNET_NOLOGO: true
       NUGET_XMLDOC_MODE: skip
       ASPIRE_ALLOW_UNSECURED_TRANSPORT: true
-      WorkOS__UseFake: true
 
     steps:
       - name: Checkout code

@@ -4,10 +4,10 @@
 */
 
 export type SaBaiAPIEndpointsPersonsFacesPostRequest = {
-    /**
-     * @description
-     * Format: `binary`
-     * @type string | undefined
-    */
-    image?: Blob;
+  /**
+   * @description
+   * Format: `binary`
+   * @type string | undefined
+   */
+  image?: Blob;
 };

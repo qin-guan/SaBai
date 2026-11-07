@@ -10,7 +10,7 @@ public sealed class BroadcastTests(AppFixture fixture)
     public async Task Create_ThenPublish_SetsPublishedAt()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.AdminEmail);
         var suffix = Guid.NewGuid().ToString("N")[..8];
         var title = $"Broadcast {suffix}";

@@ -7,15 +7,13 @@ import type { SaBaiAPIEndpointsMedicationStockSplitsPostSplitItem } from '../typ
 import { createSaBaiAPIDomainStockStatus } from './createSaBaiAPIDomainStockStatus'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsMedicationStockSplitsPostSplitItem<TData extends Partial<SaBaiAPIEndpointsMedicationStockSplitsPostSplitItem> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsMedicationStockSplitsPostSplitItem<TData extends Partial<SaBaiAPIEndpointsMedicationStockSplitsPostSplitItem> = object>(data?: TData) {
   const defaultFakeData = {
-  quantity: faker.number.int(),
-  location: faker.string.alpha(),
-  stockStatus: createSaBaiAPIDomainStockStatus(),
-  remarks: faker.string.alpha(),
-}
+    quantity: faker.number.int(),
+    location: faker.string.alpha(),
+    stockStatus: createSaBaiAPIDomainStockStatus(),
+    remarks: faker.string.alpha(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

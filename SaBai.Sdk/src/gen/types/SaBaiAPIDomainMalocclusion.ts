@@ -4,8 +4,8 @@
 */
 
 export const saBaiAPIDomainMalocclusion = {
-    NotSuspected: "NotSuspected",
-    Suspected: "Suspected"
+  NotSuspected: 'NotSuspected',
+  Suspected: 'Suspected',
 } as const;
 
 export type SaBaiAPIDomainMalocclusionKey = (typeof saBaiAPIDomainMalocclusion)[keyof typeof saBaiAPIDomainMalocclusion];

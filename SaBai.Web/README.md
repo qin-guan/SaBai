@@ -2,8 +2,8 @@
 
 Next.js (Pages Router) client for **SaBai.API**. It reads and writes all data
 through the generated [`@sabai/sdk`](../SaBai.Sdk) client and authenticates with
-the JWT issued by the API (WorkOS-backed). It no longer talks to a database or
-Supabase directly.
+the API's session cookie (ASP.NET Core Identity). It no longer talks to a
+database or Supabase directly.
 
 ---
 
@@ -44,8 +44,8 @@ dotnet run --project SaBai.API
 The API listens on `http://localhost:5250` and serves OpenAPI at
 `http://localhost:5250/openapi/v1.json`.
 
-> **Local auth:** run the API with `WorkOS__UseFake=true` to use the seeded staff
-> accounts instead of real WorkOS credentials.
+> **Local auth:** run the API with `Auth__SeedDemoUsers=true` to seed the demo
+> staff accounts below. `dotnet run --project SaBai.AppHost` does this for you.
 
 ### 3. Configure environment variables
 
@@ -53,12 +53,13 @@ The API listens on `http://localhost:5250` and serves OpenAPI at
 cp .env.example .env
 ```
 
-| Variable              | Description                        |
-| --------------------- | ---------------------------------- |
-| `NEXT_PUBLIC_API_URL` | Base URL of SaBai.API (e.g. `http://localhost:5250`). |
+| Variable  | Description                                                        |
+| --------- | ------------------------------------------------------------------ |
+| `API_URL` | Server-side URL of SaBai.API (default `http://localhost:5250`).    |
 
-The API allows the web origin through its CORS policy (`Cors:AllowedOrigins`,
-defaults to `http://localhost:3000`).
+The browser calls this app under `/api`; `next.config.ts` rewrites those
+requests to `API_URL`, so the API's session cookie is first-party. The rewrite
+is read when `next dev` starts, and baked in by `next build`.
 
 ### 4. Run the dev server
 
@@ -70,25 +71,29 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Local Development Accounts
 
-When the API runs with `WorkOS:UseFake=true` it seeds these accounts
-(password `Password1!`):
+When the API runs with `Auth:SeedDemoUsers=true` it seeds these accounts
+(password `Password1!`). Sign in with the username or the email.
 
-| Role     | Email                       |
-| -------- | --------------------------- |
-| Admin    | `admin@sabai.test`          |
-| Doctor   | `doctor@sabai.test`         |
-| Pharmacist | `pharmacist@sabai.test`   |
-| Registration | `registration@sabai.test` |
+| Role   | Username       | Email                     |
+| ------ | -------------- | ------------------------- |
+| admin  | `admin`        | `admin@sabai.test`        |
+| member | `doctor`       | `doctor@sabai.test`       |
+| member | `pharmacist`   | `pharmacist@sabai.test`   |
+| member | `registration` | `registration@sabai.test` |
 
 ---
 
 ## Authentication
 
-- `POST /auth/login` (email + password) returns `{ accessToken, expiresAt, user }`.
-- The web app stores the token in the `sabai_token` cookie and sends it as
-  `Authorization: Bearer …` on every SDK request.
-- `src/proxy.ts` protects routes; a `401` clears the token and redirects to
-  `/login`.
+- `POST /api/auth/login` (username or email + password) sets the HttpOnly
+  `sabai.auth` cookie and returns `{ requiresTwoFactor, user }`. Accounts with
+  two-factor on finish with `POST /api/auth/login/two-factor` (or
+  `/auth/login/recovery-code`).
+- The browser sends the cookie on every SDK request; no token is handled in JS.
+- `src/proxy.ts` protects routes; a `401` signs out (`POST /auth/logout`) and
+  redirects to `/login`.
+- Staff accounts, roles and two-factor are managed in the Nuxt app
+  (`SaBai.Web.Nuxt`: Settings → Staff Users, and My Account).
 
 See [API SDK & Authentication](docs/_docs/03-api-and-auth.md) for details.
 
@@ -96,10 +101,10 @@ See [API SDK & Authentication](docs/_docs/03-api-and-auth.md) for details.
 
 1. `POST http://localhost:5250/auth/login` with JSON body:
    ```json
-   { "email": "admin@sabai.test", "password": "Password1!" }
+   { "userName": "admin", "password": "Password1!" }
    ```
-2. Copy `accessToken` from the response.
-3. Add header `Authorization: Bearer <accessToken>` to subsequent requests.
+2. Postman keeps the `sabai.auth` cookie from the response and sends it on
+   later requests to the same host.
 
 ## Regenerating the API client
 

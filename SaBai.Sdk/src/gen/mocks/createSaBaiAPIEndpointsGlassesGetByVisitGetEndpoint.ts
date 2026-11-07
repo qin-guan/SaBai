@@ -3,17 +3,15 @@
 * Do not edit manually.
 */
 
-import type { SaBaiAPIEndpointsGlassesGetByVisitGetEndpointQuery, SaBaiAPIEndpointsGlassesGetByVisitGetEndpointResponse, SaBaiAPIEndpointsGlassesGetByVisitGetEndpointStatus200, SaBaiAPIEndpointsGlassesGetByVisitGetEndpointStatus400, SaBaiAPIEndpointsGlassesGetByVisitGetEndpointStatus401, SaBaiAPIEndpointsGlassesGetByVisitGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsGlassesGetByVisitGetEndpoint'
+import type { SaBaiAPIEndpointsGlassesGetByVisitGetEndpointQuery, SaBaiAPIEndpointsGlassesGetByVisitGetEndpointResponse, SaBaiAPIEndpointsGlassesGetByVisitGetEndpointStatus200, SaBaiAPIEndpointsGlassesGetByVisitGetEndpointStatus400 } from '../types/SaBaiAPIEndpointsGlassesGetByVisitGetEndpoint'
 import { createFastEndpointsProblemDetails } from './createFastEndpointsProblemDetails'
 import { createSaBaiAPIEndpointsGlassesGetByVisitGetResponse } from './createSaBaiAPIEndpointsGlassesGetByVisitGetResponse'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsGlassesGetByVisitGetEndpointQuery<TData extends Partial<SaBaiAPIEndpointsGlassesGetByVisitGetEndpointQuery> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsGlassesGetByVisitGetEndpointQuery<TData extends Partial<SaBaiAPIEndpointsGlassesGetByVisitGetEndpointQuery> = object>(data?: TData) {
   const defaultFakeData = {
-  visitId: faker.number.int(),
-}
+    visitId: faker.number.int(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

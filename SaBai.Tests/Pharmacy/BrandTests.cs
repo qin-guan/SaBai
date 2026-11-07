@@ -11,7 +11,7 @@ public sealed class BrandTests(AppFixture fixture)
     public async Task Create_WithIngredientListContainsIngredientName()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
         var suffix = ClinicSetup.Suffix();
         var ingredientName = $"Ingredient {suffix}";
@@ -43,7 +43,7 @@ public sealed class BrandTests(AppFixture fixture)
     public async Task Create_UnknownIngredient_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
         var name = $"Missing brand {ClinicSetup.Suffix()}";
 
@@ -67,7 +67,7 @@ public sealed class BrandTests(AppFixture fixture)
     public async Task Delete_WhenStockReferencesBrand_ReturnsConflict()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
         var suffix = ClinicSetup.Suffix();
         var ingredientId = await CreateIngredientAsync(client, $"Stock ingredient {suffix}");
@@ -85,7 +85,7 @@ public sealed class BrandTests(AppFixture fixture)
     public async Task Delete_UnknownId_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
 
         // Act

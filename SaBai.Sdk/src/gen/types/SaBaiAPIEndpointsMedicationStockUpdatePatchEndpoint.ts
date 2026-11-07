@@ -8,20 +8,21 @@ import type { SaBaiAPIEndpointsMedicationStockUpdatePatchRequest } from './SaBai
 import type { SaBaiAPIEndpointsMedicationStockUpdatePatchResponse } from './SaBaiAPIEndpointsMedicationStockUpdatePatchResponse'
 
 export type SaBaiAPIEndpointsMedicationStockUpdatePatchEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
 };
 
 export type SaBaiAPIEndpointsMedicationStockUpdatePatchEndpointStatus200 = SaBaiAPIEndpointsMedicationStockUpdatePatchResponse;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsMedicationStockUpdatePatchEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsMedicationStockUpdatePatchEndpointStatus401 = unknown;
@@ -31,20 +32,20 @@ export type SaBaiAPIEndpointsMedicationStockUpdatePatchEndpointStatus403 = unkno
 export type SaBaiAPIEndpointsMedicationStockUpdatePatchEndpointBody = SaBaiAPIEndpointsMedicationStockUpdatePatchRequest;
 
 export type SaBaiAPIEndpointsMedicationStockUpdatePatchEndpointOptions = {
-    body: SaBaiAPIEndpointsMedicationStockUpdatePatchEndpointBody;
-    path: SaBaiAPIEndpointsMedicationStockUpdatePatchEndpointPath;
-    query?: never;
-    headers?: never;
+  body: SaBaiAPIEndpointsMedicationStockUpdatePatchEndpointBody;
+  path: SaBaiAPIEndpointsMedicationStockUpdatePatchEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsMedicationStockUpdatePatchEndpointResponses = {
-    "200": SaBaiAPIEndpointsMedicationStockUpdatePatchEndpointStatus200;
-    "400": SaBaiAPIEndpointsMedicationStockUpdatePatchEndpointStatus400;
-    "401": SaBaiAPIEndpointsMedicationStockUpdatePatchEndpointStatus401;
-    "403": SaBaiAPIEndpointsMedicationStockUpdatePatchEndpointStatus403;
+  '200': SaBaiAPIEndpointsMedicationStockUpdatePatchEndpointStatus200;
+  '400': SaBaiAPIEndpointsMedicationStockUpdatePatchEndpointStatus400;
+  '401': SaBaiAPIEndpointsMedicationStockUpdatePatchEndpointStatus401;
+  '403': SaBaiAPIEndpointsMedicationStockUpdatePatchEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsMedicationStockUpdatePatchEndpointResponse = SaBaiAPIEndpointsMedicationStockUpdatePatchEndpointStatus200;

@@ -4,11 +4,11 @@
 */
 
 export type SaBaiAPIEndpointsMedicationStockAdjustmentsPostRequest = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer | undefined
-    */
-    quantityChange?: number;
-    remarks?: string | null;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer | undefined
+   */
+  quantityChange?: number;
+  remarks?: string | null;
 };

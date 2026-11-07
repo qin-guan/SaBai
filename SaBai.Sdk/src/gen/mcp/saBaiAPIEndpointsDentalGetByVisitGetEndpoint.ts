@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsDentalGetByVisitGetEndpointOptions } from '../types/SaBaiAPIEndpointsDentalGetByVisitGetEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsDentalGetByVisitGetEndpoint } from '../clients/saBaiAPIEndpointsDentalGetByVisitGetEndpoint'
 
 /**
  * @summary Get the dental consultation for a visit
  * {@link /visits/:visitId/dental}
  */
-export async function saBaiAPIEndpointsDentalGetByVisitGetEndpointHandler({ path }: SaBaiAPIEndpointsDentalGetByVisitGetEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsDentalGetByVisitGetEndpoint({ path, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsDentalGetByVisitGetEndpointHandler({ path }: SaBaiAPIEndpointsDentalGetByVisitGetEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsDentalGetByVisitGetEndpoint({ path, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

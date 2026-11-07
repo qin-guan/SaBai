@@ -8,20 +8,21 @@ import type { SaBaiAPIEndpointsMedicationStockAdjustmentsPostRequest } from './S
 import type { SaBaiAPIEndpointsMedicationStockAdjustmentsPostResponse } from './SaBaiAPIEndpointsMedicationStockAdjustmentsPostResponse'
 
 export type SaBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
 };
 
 export type SaBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointStatus200 = SaBaiAPIEndpointsMedicationStockAdjustmentsPostResponse;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointStatus401 = unknown;
@@ -31,20 +32,20 @@ export type SaBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointStatus403 = u
 export type SaBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointBody = SaBaiAPIEndpointsMedicationStockAdjustmentsPostRequest;
 
 export type SaBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointOptions = {
-    body: SaBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointBody;
-    path: SaBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointPath;
-    query?: never;
-    headers?: never;
+  body: SaBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointBody;
+  path: SaBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointResponses = {
-    "200": SaBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointStatus200;
-    "400": SaBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointStatus400;
-    "401": SaBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointStatus401;
-    "403": SaBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointStatus403;
+  '200': SaBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointStatus200;
+  '400': SaBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointStatus400;
+  '401': SaBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointStatus401;
+  '403': SaBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointResponse = SaBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointStatus200;

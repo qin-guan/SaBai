@@ -6,6 +6,6 @@
 import type { SaBaiAPIDomainDiagnosisCategoryKey } from './SaBaiAPIDomainDiagnosisCategory'
 
 export type SaBaiAPIEndpointsPharmacyOrdersGetDiagnosisItem = {
-    category: (null | SaBaiAPIDomainDiagnosisCategoryKey);
-    details: string;
+  category: null | SaBaiAPIDomainDiagnosisCategoryKey;
+  details: string;
 };

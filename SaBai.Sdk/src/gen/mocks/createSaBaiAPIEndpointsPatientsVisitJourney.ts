@@ -6,23 +6,21 @@
 import type { SaBaiAPIEndpointsPatientsVisitJourney } from '../types/SaBaiAPIEndpointsPatientsVisitJourney'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsPatientsVisitJourney<TData extends Partial<SaBaiAPIEndpointsPatientsVisitJourney> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsPatientsVisitJourney<TData extends Partial<SaBaiAPIEndpointsPatientsVisitJourney> = object>(data?: TData) {
   const defaultFakeData = {
-  vitals: faker.datatype.boolean(),
-  vision: faker.datatype.boolean(),
-  consult: faker.datatype.boolean(),
-  dental: faker.datatype.boolean(),
-  dentalReferred: faker.datatype.boolean(),
-  pharmacyOrders: faker.number.int(),
-  pharmacyPending: faker.number.int(),
-  vitalsAt: faker.date.anytime().toISOString(),
-  visionAt: faker.date.anytime().toISOString(),
-  consultAt: faker.date.anytime().toISOString(),
-  dentalAt: faker.date.anytime().toISOString(),
-  pharmacyAt: faker.date.anytime().toISOString(),
-}
+    vitals: faker.datatype.boolean(),
+    vision: faker.datatype.boolean(),
+    consult: faker.datatype.boolean(),
+    dental: faker.datatype.boolean(),
+    dentalReferred: faker.datatype.boolean(),
+    pharmacyOrders: faker.number.int(),
+    pharmacyPending: faker.number.int(),
+    vitalsAt: faker.date.anytime().toISOString(),
+    visionAt: faker.date.anytime().toISOString(),
+    consultAt: faker.date.anytime().toISOString(),
+    dentalAt: faker.date.anytime().toISOString(),
+    pharmacyAt: faker.date.anytime().toISOString(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsDiagnosesCreatePostEndpointOptions } from '../types/SaBaiAPIEndpointsDiagnosesCreatePostEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsDiagnosesCreatePostEndpoint } from '../clients/saBaiAPIEndpointsDiagnosesCreatePostEndpoint'
 
 /**
  * @summary Add a diagnosis to a consult
  * {@link /diagnoses}
  */
-export async function saBaiAPIEndpointsDiagnosesCreatePostEndpointHandler({ body }: SaBaiAPIEndpointsDiagnosesCreatePostEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsDiagnosesCreatePostEndpoint({ body, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsDiagnosesCreatePostEndpointHandler({ body }: SaBaiAPIEndpointsDiagnosesCreatePostEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsDiagnosesCreatePostEndpoint({ body, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

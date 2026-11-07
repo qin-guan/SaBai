@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsEyesightDeleteEndpointOptions } from '../types/SaBaiAPIEndpointsEyesightDeleteEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsEyesightDeleteEndpoint } from '../clients/saBaiAPIEndpointsEyesightDeleteEndpoint'
 
 /**
  * @summary Delete eyesight
  * {@link /eyesight/:id}
  */
-export async function saBaiAPIEndpointsEyesightDeleteEndpointHandler({ path }: SaBaiAPIEndpointsEyesightDeleteEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsEyesightDeleteEndpoint({ path, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsEyesightDeleteEndpointHandler({ path }: SaBaiAPIEndpointsEyesightDeleteEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsEyesightDeleteEndpoint({ path, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

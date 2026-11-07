@@ -7,6 +7,6 @@ import type { SaBaiAPIEndpointsFacesFaceDto } from './SaBaiAPIEndpointsFacesFace
 import type { SaBaiAPIEndpointsFacesMatchDtoArray } from './SaBaiAPIEndpointsFacesMatchDtoArray'
 
 export type SaBaiAPIEndpointsFacesIdentifyPostIdentifiedFace = {
-    face: SaBaiAPIEndpointsFacesFaceDto;
-    matches: SaBaiAPIEndpointsFacesMatchDtoArray;
+  face: SaBaiAPIEndpointsFacesFaceDto;
+  matches: SaBaiAPIEndpointsFacesMatchDtoArray;
 };

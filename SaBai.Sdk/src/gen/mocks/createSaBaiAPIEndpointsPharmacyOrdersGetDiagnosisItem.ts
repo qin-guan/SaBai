@@ -7,13 +7,11 @@ import type { SaBaiAPIEndpointsPharmacyOrdersGetDiagnosisItem } from '../types/S
 import { createSaBaiAPIDomainDiagnosisCategory } from './createSaBaiAPIDomainDiagnosisCategory'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsPharmacyOrdersGetDiagnosisItem<TData extends Partial<SaBaiAPIEndpointsPharmacyOrdersGetDiagnosisItem> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsPharmacyOrdersGetDiagnosisItem<TData extends Partial<SaBaiAPIEndpointsPharmacyOrdersGetDiagnosisItem> = object>(data?: TData) {
   const defaultFakeData = {
-  category: faker.helpers.arrayElement([null, createSaBaiAPIDomainDiagnosisCategory()]),
-  details: faker.string.alpha(),
-}
+    category: faker.helpers.arrayElement([null, createSaBaiAPIDomainDiagnosisCategory()]),
+    details: faker.string.alpha(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

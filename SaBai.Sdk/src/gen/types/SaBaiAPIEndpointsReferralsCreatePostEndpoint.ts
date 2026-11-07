@@ -10,9 +10,10 @@ import type { SaBaiAPIEndpointsReferralsCreatePostResponse } from './SaBaiAPIEnd
 export type SaBaiAPIEndpointsReferralsCreatePostEndpointStatus200 = SaBaiAPIEndpointsReferralsCreatePostResponse;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsReferralsCreatePostEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsReferralsCreatePostEndpointStatus401 = unknown;
@@ -22,20 +23,20 @@ export type SaBaiAPIEndpointsReferralsCreatePostEndpointStatus403 = unknown;
 export type SaBaiAPIEndpointsReferralsCreatePostEndpointBody = SaBaiAPIEndpointsReferralsCreatePostRequest;
 
 export type SaBaiAPIEndpointsReferralsCreatePostEndpointOptions = {
-    body: SaBaiAPIEndpointsReferralsCreatePostEndpointBody;
-    path?: never;
-    query?: never;
-    headers?: never;
+  body: SaBaiAPIEndpointsReferralsCreatePostEndpointBody;
+  path?: never;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsReferralsCreatePostEndpointResponses = {
-    "200": SaBaiAPIEndpointsReferralsCreatePostEndpointStatus200;
-    "400": SaBaiAPIEndpointsReferralsCreatePostEndpointStatus400;
-    "401": SaBaiAPIEndpointsReferralsCreatePostEndpointStatus401;
-    "403": SaBaiAPIEndpointsReferralsCreatePostEndpointStatus403;
+  '200': SaBaiAPIEndpointsReferralsCreatePostEndpointStatus200;
+  '400': SaBaiAPIEndpointsReferralsCreatePostEndpointStatus400;
+  '401': SaBaiAPIEndpointsReferralsCreatePostEndpointStatus401;
+  '403': SaBaiAPIEndpointsReferralsCreatePostEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsReferralsCreatePostEndpointResponse = SaBaiAPIEndpointsReferralsCreatePostEndpointStatus200;

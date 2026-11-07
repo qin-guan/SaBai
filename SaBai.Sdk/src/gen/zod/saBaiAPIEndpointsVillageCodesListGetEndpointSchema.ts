@@ -17,3 +17,7 @@ export const saBaiAPIEndpointsVillageCodesListGetEndpointStatus403Schema = z.unk
 export const saBaiAPIEndpointsVillageCodesListGetEndpointResponseSchema = saBaiAPIEndpointsVillageCodesListGetEndpointStatus200Schema
 
 export const saBaiAPIEndpointsVillageCodesListGetEndpointErrorSchema = z.union([saBaiAPIEndpointsVillageCodesListGetEndpointStatus401Schema, saBaiAPIEndpointsVillageCodesListGetEndpointStatus403Schema])
+
+export const saBaiAPIEndpointsVillageCodesListGetEndpointQuerySchema = z.object({
+  includeHidden: z.boolean(),
+})

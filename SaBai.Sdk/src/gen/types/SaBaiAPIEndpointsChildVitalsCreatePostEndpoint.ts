@@ -10,9 +10,10 @@ import type { SaBaiAPIEndpointsChildVitalsCreatePostResponse } from './SaBaiAPIE
 export type SaBaiAPIEndpointsChildVitalsCreatePostEndpointStatus200 = SaBaiAPIEndpointsChildVitalsCreatePostResponse;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsChildVitalsCreatePostEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsChildVitalsCreatePostEndpointStatus401 = unknown;
@@ -22,20 +23,20 @@ export type SaBaiAPIEndpointsChildVitalsCreatePostEndpointStatus403 = unknown;
 export type SaBaiAPIEndpointsChildVitalsCreatePostEndpointBody = SaBaiAPIEndpointsChildVitalsCreatePostRequest;
 
 export type SaBaiAPIEndpointsChildVitalsCreatePostEndpointOptions = {
-    body: SaBaiAPIEndpointsChildVitalsCreatePostEndpointBody;
-    path?: never;
-    query?: never;
-    headers?: never;
+  body: SaBaiAPIEndpointsChildVitalsCreatePostEndpointBody;
+  path?: never;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsChildVitalsCreatePostEndpointResponses = {
-    "200": SaBaiAPIEndpointsChildVitalsCreatePostEndpointStatus200;
-    "400": SaBaiAPIEndpointsChildVitalsCreatePostEndpointStatus400;
-    "401": SaBaiAPIEndpointsChildVitalsCreatePostEndpointStatus401;
-    "403": SaBaiAPIEndpointsChildVitalsCreatePostEndpointStatus403;
+  '200': SaBaiAPIEndpointsChildVitalsCreatePostEndpointStatus200;
+  '400': SaBaiAPIEndpointsChildVitalsCreatePostEndpointStatus400;
+  '401': SaBaiAPIEndpointsChildVitalsCreatePostEndpointStatus401;
+  '403': SaBaiAPIEndpointsChildVitalsCreatePostEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsChildVitalsCreatePostEndpointResponse = SaBaiAPIEndpointsChildVitalsCreatePostEndpointStatus200;

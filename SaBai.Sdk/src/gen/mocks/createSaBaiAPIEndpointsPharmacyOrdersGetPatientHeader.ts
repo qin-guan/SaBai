@@ -6,14 +6,12 @@
 import type { SaBaiAPIEndpointsPharmacyOrdersGetPatientHeader } from '../types/SaBaiAPIEndpointsPharmacyOrdersGetPatientHeader'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsPharmacyOrdersGetPatientHeader<TData extends Partial<SaBaiAPIEndpointsPharmacyOrdersGetPatientHeader> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsPharmacyOrdersGetPatientHeader<TData extends Partial<SaBaiAPIEndpointsPharmacyOrdersGetPatientHeader> = object>(data?: TData) {
   const defaultFakeData = {
-  displayId: faker.string.alpha(),
-  name: faker.string.alpha(),
-  villageCode: faker.string.alpha(),
-}
+    displayId: faker.string.alpha(),
+    name: faker.string.alpha(),
+    villageCode: faker.string.alpha(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

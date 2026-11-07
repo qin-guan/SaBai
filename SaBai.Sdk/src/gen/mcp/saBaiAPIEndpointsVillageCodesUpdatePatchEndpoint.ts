@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointOptions } from '../types/SaBaiAPIEndpointsVillageCodesUpdatePatchEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsVillageCodesUpdatePatchEndpoint } from '../clients/saBaiAPIEndpointsVillageCodesUpdatePatchEndpoint'
 
 /**
  * @summary Update a village code
  * {@link /village-codes/:id}
  */
-export async function saBaiAPIEndpointsVillageCodesUpdatePatchEndpointHandler({ path, body }: SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsVillageCodesUpdatePatchEndpoint({ path, body, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsVillageCodesUpdatePatchEndpointHandler({ path, body }: SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsVillageCodesUpdatePatchEndpoint({ path, body, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

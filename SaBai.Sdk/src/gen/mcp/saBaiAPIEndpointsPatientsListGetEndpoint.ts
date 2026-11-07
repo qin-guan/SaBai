@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsPatientsListGetEndpointOptions } from '../types/SaBaiAPIEndpointsPatientsListGetEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsPatientsListGetEndpoint } from '../clients/saBaiAPIEndpointsPatientsListGetEndpoint'
 
 /**
  * @summary List patients
  * {@link /patients}
  */
-export async function saBaiAPIEndpointsPatientsListGetEndpointHandler({ query }: SaBaiAPIEndpointsPatientsListGetEndpointOptions = {}, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsPatientsListGetEndpoint({ query, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsPatientsListGetEndpointHandler({ query }: SaBaiAPIEndpointsPatientsListGetEndpointOptions = {}, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsPatientsListGetEndpoint({ query, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

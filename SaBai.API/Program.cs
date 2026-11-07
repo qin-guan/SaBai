@@ -1,11 +1,13 @@
 using System.Text.Json.Serialization;
 using FastEndpoints;
 using FastEndpoints.OpenApi;
-using FastEndpoints.Security;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Infrastructure;
 using SaBai.API.Auth;
 using SaBai.API.Data;
+using SaBai.API.Domain;
 using SaBai.API.FaceRecognition;
 using SaBai.API.Middleware;
 using SaBai.API.OpenApi;
@@ -25,6 +27,18 @@ builder
         // request schemas. Runs after FastEndpoints' own document transformer.
         // See BareConstOpenApiCleanup for the full explanation.
         o.ConfigureOpenApi = BareConstOpenApiCleanup.Register;
+        // Sessions are an HttpOnly cookie set by POST /auth/login, not a bearer token.
+        o.EnableJWTBearerAuth = false;
+        o.AddAuth(
+            IdentityConstants.ApplicationScheme,
+            new Microsoft.OpenApi.OpenApiSecurityScheme
+            {
+                Type = Microsoft.OpenApi.SecuritySchemeType.ApiKey,
+                In = Microsoft.OpenApi.ParameterLocation.Cookie,
+                Name = SessionCookieName,
+                Description = "Session cookie set by `POST /auth/login`.",
+            }
+        );
     });
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<ApiExceptionHandler>();
@@ -32,9 +46,6 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter())
 );
 
-builder.Services.Configure<WorkOsSettings>(
-    builder.Configuration.GetSection(WorkOsSettings.SectionName)
-);
 builder.Services.Configure<AuthSettings>(
     builder.Configuration.GetSection(AuthSettings.SectionName)
 );
@@ -47,40 +58,66 @@ builder.Services.AddSingleton<Amazon.S3.IAmazonS3>(sp =>
 var auth =
     builder.Configuration.GetSection(AuthSettings.SectionName).Get<AuthSettings>()
     ?? new AuthSettings();
-var workOs =
-    builder.Configuration.GetSection(WorkOsSettings.SectionName).Get<WorkOsSettings>()
-    ?? new WorkOsSettings();
-if (auth.JwtSigningKey.Length < 32)
-{
-    throw new InvalidOperationException("Auth:JwtSigningKey must be at least 32 characters.");
-}
 
-if (workOs.UseFake)
-{
-    builder.Services.AddSingleton<FakeWorkOsDirectory>();
-    builder.Services.AddSingleton<IWorkOsDirectory>(sp =>
-        sp.GetRequiredService<FakeWorkOsDirectory>()
-    );
-}
-else
-{
-    if (string.IsNullOrWhiteSpace(workOs.ApiKey) || string.IsNullOrWhiteSpace(workOs.ClientId))
-    {
-        throw new InvalidOperationException(
-            "WorkOS:ApiKey and WorkOS:ClientId are required when WorkOS:UseFake is false."
-        );
-    }
-
-    builder.Services.AddSingleton<IWorkOsDirectory, WorkOsDirectory>();
-}
-
+// Staff accounts are ASP.NET Core Identity users stored in Postgres. Identity owns
+// password hashing, lockout after failed sign-ins, authenticator (TOTP) two-factor,
+// recovery codes and roles. Defaults below can be overridden under "Identity" in
+// configuration (for example Identity:Password:RequiredLength).
 builder
-    .Services.AddAuthenticationJwtBearer(options => options.SigningKey = auth.JwtSigningKey)
-    .AddAuthorization();
+    .Services.AddIdentityCore<StaffUser>(options =>
+    {
+        options.User.RequireUniqueEmail = false; // optional; uniqueness enforced by an index
+        options.Password.RequiredLength = 8;
+        options.Password.RequireDigit = false;
+        options.Password.RequireLowercase = false;
+        options.Password.RequireUppercase = false;
+        options.Password.RequireNonAlphanumeric = false;
+        options.Lockout.AllowedForNewUsers = true;
+        options.Lockout.MaxFailedAccessAttempts = 5;
+        options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+        builder.Configuration.GetSection("Identity").Bind(options);
+    })
+    .AddRoles<IdentityRole<Guid>>()
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddSignInManager()
+    .AddDefaultTokenProviders();
 
-// The web client is a separate origin (Next.js) and authenticates with a bearer
-// token, so it needs an explicit CORS policy. Origins are configurable per
-// environment; the local Next.js dev server is allowed by default.
+// Cookie sessions. The web apps reach the API through a same-origin proxy, so an
+// HttpOnly, SameSite=Lax cookie is all the browser needs: no token handling in JS.
+builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme).AddIdentityCookies();
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.Name = SessionCookieName;
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    options.ExpireTimeSpan = TimeSpan.FromMinutes(auth.SessionLifetimeMinutes);
+    options.SlidingExpiration = true;
+    // An API answers with status codes instead of redirecting to a login page.
+    options.Events.OnRedirectToLogin = context =>
+    {
+        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+        return Task.CompletedTask;
+    };
+    options.Events.OnRedirectToAccessDenied = context =>
+    {
+        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+        return Task.CompletedTask;
+    };
+});
+// Re-check cookies against the database this often, so role changes, locks and
+// password resets reach sessions that are already signed in.
+builder.Services.Configure<SecurityStampValidatorOptions>(options =>
+    options.ValidationInterval = TimeSpan.FromMinutes(auth.SecurityStampValidationMinutes)
+);
+builder.Services.AddAuthorization();
+// Keep the cookie-signing keys in Postgres so sessions survive restarts and are
+// shared by every API instance.
+builder.Services.AddDataProtection().SetApplicationName("SaBai").PersistKeysToDbContext<AppDbContext>();
+
+// The web apps proxy /api to this service, so browsers normally never make
+// cross-origin calls. The policy remains for tools that call the API directly
+// from another origin; credentials are allowed so the session cookie is sent.
 const string webCorsPolicy = "web";
 var allowedOrigins =
     builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
@@ -88,7 +125,8 @@ var allowedOrigins =
 builder.Services.AddCors(options =>
     options.AddPolicy(
         webCorsPolicy,
-        policy => policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod()
+        policy =>
+            policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod().AllowCredentials()
     )
 );
 
@@ -107,13 +145,6 @@ if (!string.IsNullOrWhiteSpace(storage.Endpoint))
     );
 }
 
-app.Logger.LogInformation(
-    "WorkOS UseFake={UseFake}; ClientId is {ClientIdState}; ApiKey is {ApiKeyState}",
-    workOs.UseFake,
-    string.IsNullOrWhiteSpace(workOs.ClientId) ? "missing" : "set",
-    string.IsNullOrWhiteSpace(workOs.ApiKey) ? "missing" : "set"
-);
-
 app.UseExceptionHandler();
 
 await using var scope = app.Services.CreateAsyncScope();
@@ -124,14 +155,7 @@ if (pendingMigrations.Any())
     await db.Database.MigrateAsync();
 }
 
-if (workOs.UseFake)
-{
-    await AuthSeeder.EnsureAsync(
-        db,
-        scope.ServiceProvider.GetRequiredService<FakeWorkOsDirectory>(),
-        CancellationToken.None
-    );
-}
+await AuthSeeder.EnsureAsync(scope.ServiceProvider, auth, app.Logger);
 
 app.MapOpenApi();
 
@@ -157,3 +181,9 @@ app.UseFastEndpoints(config =>
 });
 
 app.Run();
+
+public partial class Program
+{
+    /// <summary>Name of the HttpOnly session cookie issued by ASP.NET Core Identity.</summary>
+    public const string SessionCookieName = "sabai.auth";
+}

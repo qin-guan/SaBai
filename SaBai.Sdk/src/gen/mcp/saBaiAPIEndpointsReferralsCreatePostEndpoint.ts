@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsReferralsCreatePostEndpointOptions } from '../types/SaBaiAPIEndpointsReferralsCreatePostEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsReferralsCreatePostEndpoint } from '../clients/saBaiAPIEndpointsReferralsCreatePostEndpoint'
 
 /**
  * @summary Open a referral for a consult
  * {@link /referrals}
  */
-export async function saBaiAPIEndpointsReferralsCreatePostEndpointHandler({ body }: SaBaiAPIEndpointsReferralsCreatePostEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsReferralsCreatePostEndpoint({ body, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsReferralsCreatePostEndpointHandler({ body }: SaBaiAPIEndpointsReferralsCreatePostEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsReferralsCreatePostEndpoint({ body, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

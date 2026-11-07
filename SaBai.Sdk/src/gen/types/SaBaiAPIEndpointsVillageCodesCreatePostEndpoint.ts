@@ -10,9 +10,10 @@ import type { SaBaiAPIEndpointsVillageCodesCreatePostResponse } from './SaBaiAPI
 export type SaBaiAPIEndpointsVillageCodesCreatePostEndpointStatus200 = SaBaiAPIEndpointsVillageCodesCreatePostResponse;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsVillageCodesCreatePostEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsVillageCodesCreatePostEndpointStatus401 = unknown;
@@ -22,20 +23,20 @@ export type SaBaiAPIEndpointsVillageCodesCreatePostEndpointStatus403 = unknown;
 export type SaBaiAPIEndpointsVillageCodesCreatePostEndpointBody = SaBaiAPIEndpointsVillageCodesCreatePostRequest;
 
 export type SaBaiAPIEndpointsVillageCodesCreatePostEndpointOptions = {
-    body: SaBaiAPIEndpointsVillageCodesCreatePostEndpointBody;
-    path?: never;
-    query?: never;
-    headers?: never;
+  body: SaBaiAPIEndpointsVillageCodesCreatePostEndpointBody;
+  path?: never;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsVillageCodesCreatePostEndpointResponses = {
-    "200": SaBaiAPIEndpointsVillageCodesCreatePostEndpointStatus200;
-    "400": SaBaiAPIEndpointsVillageCodesCreatePostEndpointStatus400;
-    "401": SaBaiAPIEndpointsVillageCodesCreatePostEndpointStatus401;
-    "403": SaBaiAPIEndpointsVillageCodesCreatePostEndpointStatus403;
+  '200': SaBaiAPIEndpointsVillageCodesCreatePostEndpointStatus200;
+  '400': SaBaiAPIEndpointsVillageCodesCreatePostEndpointStatus400;
+  '401': SaBaiAPIEndpointsVillageCodesCreatePostEndpointStatus401;
+  '403': SaBaiAPIEndpointsVillageCodesCreatePostEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsVillageCodesCreatePostEndpointResponse = SaBaiAPIEndpointsVillageCodesCreatePostEndpointStatus200;

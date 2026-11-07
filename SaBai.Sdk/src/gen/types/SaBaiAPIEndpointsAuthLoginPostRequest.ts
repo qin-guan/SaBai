@@ -4,16 +4,15 @@
 */
 
 export type SaBaiAPIEndpointsAuthLoginPostRequest = {
-    /**
-     * @description
-     * Format: `email`
-     * @minLength 1
-     * @type string
-    */
-    email: string;
-    /**
-     * @minLength 1
-     * @type string
-    */
-    password: string;
+  /**
+   * @minLength 1
+   * @type string
+   */
+  userName: string;
+  /**
+   * @minLength 1
+   * @type string
+   */
+  password: string;
+  rememberMe?: boolean;
 };

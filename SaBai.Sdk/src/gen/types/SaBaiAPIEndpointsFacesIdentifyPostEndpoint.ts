@@ -7,18 +7,18 @@ import type { SaBaiAPIEndpointsFacesIdentifyPostRequest } from './SaBaiAPIEndpoi
 import type { SaBaiAPIEndpointsFacesIdentifyPostResponse } from './SaBaiAPIEndpointsFacesIdentifyPostResponse'
 
 export type SaBaiAPIEndpointsFacesIdentifyPostEndpointQuery = {
-    /**
-     * @description
-     * Format: `float`
-     * @type number | undefined
-    */
-    threshold?: number | null;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    maxMatches: number;
+  /**
+   * @description
+   * Format: `float`
+   * @type number | undefined
+   */
+  threshold?: number | null;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  maxMatches: number;
 };
 
 export type SaBaiAPIEndpointsFacesIdentifyPostEndpointStatus200 = SaBaiAPIEndpointsFacesIdentifyPostResponse;
@@ -30,19 +30,19 @@ export type SaBaiAPIEndpointsFacesIdentifyPostEndpointStatus403 = unknown;
 export type SaBaiAPIEndpointsFacesIdentifyPostEndpointBody = SaBaiAPIEndpointsFacesIdentifyPostRequest;
 
 export type SaBaiAPIEndpointsFacesIdentifyPostEndpointOptions = {
-    body: SaBaiAPIEndpointsFacesIdentifyPostEndpointBody;
-    path?: never;
-    query: SaBaiAPIEndpointsFacesIdentifyPostEndpointQuery;
-    headers?: never;
+  body: SaBaiAPIEndpointsFacesIdentifyPostEndpointBody;
+  path?: never;
+  query: SaBaiAPIEndpointsFacesIdentifyPostEndpointQuery;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsFacesIdentifyPostEndpointResponses = {
-    "200": SaBaiAPIEndpointsFacesIdentifyPostEndpointStatus200;
-    "401": SaBaiAPIEndpointsFacesIdentifyPostEndpointStatus401;
-    "403": SaBaiAPIEndpointsFacesIdentifyPostEndpointStatus403;
+  '200': SaBaiAPIEndpointsFacesIdentifyPostEndpointStatus200;
+  '401': SaBaiAPIEndpointsFacesIdentifyPostEndpointStatus401;
+  '403': SaBaiAPIEndpointsFacesIdentifyPostEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsFacesIdentifyPostEndpointResponse = SaBaiAPIEndpointsFacesIdentifyPostEndpointStatus200;

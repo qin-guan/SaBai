@@ -9,7 +9,7 @@ public sealed class Endpoint : Endpoint<Request>
     public override void Configure()
     {
         Delete("/auth/users/{Id}");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.Admin);
         Summary(s => s.Summary = "User deletion is disabled");
     }
 

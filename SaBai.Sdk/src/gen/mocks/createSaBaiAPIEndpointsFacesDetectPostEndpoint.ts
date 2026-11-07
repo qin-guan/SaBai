@@ -3,7 +3,7 @@
 * Do not edit manually.
 */
 
-import type { SaBaiAPIEndpointsFacesDetectPostEndpointBody, SaBaiAPIEndpointsFacesDetectPostEndpointResponse, SaBaiAPIEndpointsFacesDetectPostEndpointStatus200, SaBaiAPIEndpointsFacesDetectPostEndpointStatus401, SaBaiAPIEndpointsFacesDetectPostEndpointStatus403 } from '../types/SaBaiAPIEndpointsFacesDetectPostEndpoint'
+import type { SaBaiAPIEndpointsFacesDetectPostEndpointBody, SaBaiAPIEndpointsFacesDetectPostEndpointResponse, SaBaiAPIEndpointsFacesDetectPostEndpointStatus200 } from '../types/SaBaiAPIEndpointsFacesDetectPostEndpoint'
 import { createSaBaiAPIEndpointsFacesDetectPostRequest } from './createSaBaiAPIEndpointsFacesDetectPostRequest'
 import { createSaBaiAPIEndpointsFacesDetectPostResponse } from './createSaBaiAPIEndpointsFacesDetectPostResponse'
 import { fakerEN as faker } from '@faker-js/faker'

@@ -5,31 +5,32 @@
 
 import type { FastEndpointsProblemDetails } from './FastEndpointsProblemDetails'
 import type { SaBaiAPIEndpointsAuthLoginPostRequest } from './SaBaiAPIEndpointsAuthLoginPostRequest'
-import type { SaBaiAPIEndpointsAuthLoginPostResponse } from './SaBaiAPIEndpointsAuthLoginPostResponse'
+import type { SaBaiAPIEndpointsAuthSignInResponse } from './SaBaiAPIEndpointsAuthSignInResponse'
 
-export type SaBaiAPIEndpointsAuthLoginPostEndpointStatus200 = SaBaiAPIEndpointsAuthLoginPostResponse;
+export type SaBaiAPIEndpointsAuthLoginPostEndpointStatus200 = SaBaiAPIEndpointsAuthSignInResponse;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsAuthLoginPostEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsAuthLoginPostEndpointBody = SaBaiAPIEndpointsAuthLoginPostRequest;
 
 export type SaBaiAPIEndpointsAuthLoginPostEndpointOptions = {
-    body: SaBaiAPIEndpointsAuthLoginPostEndpointBody;
-    path?: never;
-    query?: never;
-    headers?: never;
+  body: SaBaiAPIEndpointsAuthLoginPostEndpointBody;
+  path?: never;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsAuthLoginPostEndpointResponses = {
-    "200": SaBaiAPIEndpointsAuthLoginPostEndpointStatus200;
-    "400": SaBaiAPIEndpointsAuthLoginPostEndpointStatus400;
+  '200': SaBaiAPIEndpointsAuthLoginPostEndpointStatus200;
+  '400': SaBaiAPIEndpointsAuthLoginPostEndpointStatus400;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsAuthLoginPostEndpointResponse = SaBaiAPIEndpointsAuthLoginPostEndpointStatus200;

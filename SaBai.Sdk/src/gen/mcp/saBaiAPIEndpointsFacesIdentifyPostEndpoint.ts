@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsFacesIdentifyPostEndpointOptions } from '../types/SaBaiAPIEndpointsFacesIdentifyPostEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsFacesIdentifyPostEndpoint } from '../clients/saBaiAPIEndpointsFacesIdentifyPostEndpoint'
 
 /**
  * @summary Identify every face in an image against the enrolled people.
  * {@link /faces/identify}
  */
-export async function saBaiAPIEndpointsFacesIdentifyPostEndpointHandler({ query, body }: SaBaiAPIEndpointsFacesIdentifyPostEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsFacesIdentifyPostEndpoint({ query, body, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsFacesIdentifyPostEndpointHandler({ query, body }: SaBaiAPIEndpointsFacesIdentifyPostEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsFacesIdentifyPostEndpoint({ query, body, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

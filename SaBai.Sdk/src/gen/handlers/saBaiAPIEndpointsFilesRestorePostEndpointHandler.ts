@@ -4,10 +4,10 @@
 */
 
 import type { SaBaiAPIEndpointsFilesRestorePostEndpointResponse, SaBaiAPIEndpointsFilesRestorePostEndpointStatus401, SaBaiAPIEndpointsFilesRestorePostEndpointStatus403 } from '../types/SaBaiAPIEndpointsFilesRestorePostEndpoint'
-import { http } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsFilesRestorePostEndpointHandlerResponse200(data: SaBaiAPIEndpointsFilesRestorePostEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -16,22 +16,22 @@ export function saBaiAPIEndpointsFilesRestorePostEndpointHandlerResponse200(data
 }
 
 export function saBaiAPIEndpointsFilesRestorePostEndpointHandlerResponse401(data?: SaBaiAPIEndpointsFilesRestorePostEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsFilesRestorePostEndpointHandlerResponse403(data?: SaBaiAPIEndpointsFilesRestorePostEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsFilesRestorePostEndpointHandler(data?: SaBaiAPIEndpointsFilesRestorePostEndpointResponse | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Response | Promise<Response>)) {
-  return http.post(`/files/:id/restore`, function handler(info) {
+export function saBaiAPIEndpointsFilesRestorePostEndpointHandler(data?: SaBaiAPIEndpointsFilesRestorePostEndpointResponse | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Response | Promise<Response>), options?: { baseURL?: string }) {
+  return http.post(`${options?.baseURL ?? ''}/files/:id/restore`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

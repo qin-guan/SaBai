@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsMedicationIngredientsCreatePostEndpointOptions } from '../types/SaBaiAPIEndpointsMedicationIngredientsCreatePostEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsMedicationIngredientsCreatePostEndpoint } from '../clients/saBaiAPIEndpointsMedicationIngredientsCreatePostEndpoint'
 
 /**
  * @summary Create a medication active ingredient
  * {@link /medication-ingredients}
  */
-export async function saBaiAPIEndpointsMedicationIngredientsCreatePostEndpointHandler({ body }: SaBaiAPIEndpointsMedicationIngredientsCreatePostEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsMedicationIngredientsCreatePostEndpoint({ body, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsMedicationIngredientsCreatePostEndpointHandler({ body }: SaBaiAPIEndpointsMedicationIngredientsCreatePostEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsMedicationIngredientsCreatePostEndpoint({ body, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

@@ -4,12 +4,12 @@
 */
 
 export type SaBaiAPIEndpointsAuthUsersDeleteDeleteEndpointPath = {
-    /**
-     * @description
-     * Format: `uuid`
-     * @type string
-    */
-    id: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string
+   */
+  id: string;
 };
 
 export type SaBaiAPIEndpointsAuthUsersDeleteDeleteEndpointStatus204 = unknown;
@@ -19,19 +19,19 @@ export type SaBaiAPIEndpointsAuthUsersDeleteDeleteEndpointStatus401 = unknown;
 export type SaBaiAPIEndpointsAuthUsersDeleteDeleteEndpointStatus403 = unknown;
 
 export type SaBaiAPIEndpointsAuthUsersDeleteDeleteEndpointOptions = {
-    body?: never;
-    path: SaBaiAPIEndpointsAuthUsersDeleteDeleteEndpointPath;
-    query?: never;
-    headers?: never;
+  body?: never;
+  path: SaBaiAPIEndpointsAuthUsersDeleteDeleteEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsAuthUsersDeleteDeleteEndpointResponses = {
-    "204": SaBaiAPIEndpointsAuthUsersDeleteDeleteEndpointStatus204;
-    "401": SaBaiAPIEndpointsAuthUsersDeleteDeleteEndpointStatus401;
-    "403": SaBaiAPIEndpointsAuthUsersDeleteDeleteEndpointStatus403;
+  '204': SaBaiAPIEndpointsAuthUsersDeleteDeleteEndpointStatus204;
+  '401': SaBaiAPIEndpointsAuthUsersDeleteDeleteEndpointStatus401;
+  '403': SaBaiAPIEndpointsAuthUsersDeleteDeleteEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsAuthUsersDeleteDeleteEndpointResponse = SaBaiAPIEndpointsAuthUsersDeleteDeleteEndpointStatus204;

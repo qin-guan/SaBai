@@ -4,7 +4,7 @@
 */
 
 export type SaBaiAPIEndpointsPharmacyOrdersGetPatientHeader = {
-    displayId: string;
-    name: string;
-    villageCode: string | null;
+  displayId: string;
+  name: string;
+  villageCode: string | null;
 };

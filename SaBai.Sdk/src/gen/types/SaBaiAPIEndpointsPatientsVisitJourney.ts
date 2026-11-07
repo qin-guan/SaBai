@@ -4,51 +4,51 @@
 */
 
 export type SaBaiAPIEndpointsPatientsVisitJourney = {
-    vitals: boolean;
-    vision: boolean;
-    consult: boolean;
-    dental: boolean;
-    dentalReferred: boolean;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    pharmacyOrders: number;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    pharmacyPending: number;
-    /**
-     * @description
-     * Format: `date-time`
-     * @type string
-    */
-    vitalsAt: string | null;
-    /**
-     * @description
-     * Format: `date-time`
-     * @type string
-    */
-    visionAt: string | null;
-    /**
-     * @description
-     * Format: `date-time`
-     * @type string
-    */
-    consultAt: string | null;
-    /**
-     * @description
-     * Format: `date-time`
-     * @type string
-    */
-    dentalAt: string | null;
-    /**
-     * @description
-     * Format: `date-time`
-     * @type string
-    */
-    pharmacyAt: string | null;
+  vitals: boolean;
+  vision: boolean;
+  consult: boolean;
+  dental: boolean;
+  dentalReferred: boolean;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  pharmacyOrders: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  pharmacyPending: number;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string
+   */
+  vitalsAt: string | null;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string
+   */
+  visionAt: string | null;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string
+   */
+  consultAt: string | null;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string
+   */
+  dentalAt: string | null;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string
+   */
+  pharmacyAt: string | null;
 };

@@ -17,3 +17,7 @@ export const saBaiAPIEndpointsFilesDeleteDeleteEndpointStatus403Schema = z.unkno
 export const saBaiAPIEndpointsFilesDeleteDeleteEndpointResponseSchema = saBaiAPIEndpointsFilesDeleteDeleteEndpointStatus200Schema
 
 export const saBaiAPIEndpointsFilesDeleteDeleteEndpointErrorSchema = z.union([saBaiAPIEndpointsFilesDeleteDeleteEndpointStatus401Schema, saBaiAPIEndpointsFilesDeleteDeleteEndpointStatus403Schema])
+
+export const saBaiAPIEndpointsFilesDeleteDeleteEndpointPathSchema = z.object({
+  id: z.int32(),
+})

@@ -7,18 +7,16 @@ import type { SaBaiAPIEndpointsMedicationStockAdjustmentsPostResponse } from '..
 import { createSaBaiAPIDomainStockStatus } from './createSaBaiAPIDomainStockStatus'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsMedicationStockAdjustmentsPostResponse<TData extends Partial<SaBaiAPIEndpointsMedicationStockAdjustmentsPostResponse> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsMedicationStockAdjustmentsPostResponse<TData extends Partial<SaBaiAPIEndpointsMedicationStockAdjustmentsPostResponse> = object>(data?: TData) {
   const defaultFakeData = {
-  id: faker.number.int(),
-  medicationBrandId: faker.number.int(),
-  quantity: faker.number.int(),
-  expiry: faker.date.anytime().toISOString(),
-  location: faker.string.alpha(),
-  stockStatus: createSaBaiAPIDomainStockStatus(),
-  remarks: faker.string.alpha(),
-}
+    id: faker.number.int(),
+    medicationBrandId: faker.number.int(),
+    quantity: faker.number.int(),
+    expiry: faker.date.anytime().toISOString(),
+    location: faker.string.alpha(),
+    stockStatus: createSaBaiAPIDomainStockStatus(),
+    remarks: faker.string.alpha(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

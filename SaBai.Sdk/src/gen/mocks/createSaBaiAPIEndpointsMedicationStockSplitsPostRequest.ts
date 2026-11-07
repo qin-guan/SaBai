@@ -6,12 +6,10 @@
 import type { SaBaiAPIEndpointsMedicationStockSplitsPostRequest } from '../types/SaBaiAPIEndpointsMedicationStockSplitsPostRequest'
 import { createSystemCollectionsGenericListOfSaBaiAPIEndpointsMedicationStockSplitsPostSplitItem } from './createSystemCollectionsGenericListOfSaBaiAPIEndpointsMedicationStockSplitsPostSplitItem'
 
-export function createSaBaiAPIEndpointsMedicationStockSplitsPostRequest<TData extends Partial<SaBaiAPIEndpointsMedicationStockSplitsPostRequest> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsMedicationStockSplitsPostRequest<TData extends Partial<SaBaiAPIEndpointsMedicationStockSplitsPostRequest> = object>(data?: TData) {
   const defaultFakeData = {
-  splits: createSystemCollectionsGenericListOfSaBaiAPIEndpointsMedicationStockSplitsPostSplitItem(),
-}
+    splits: createSystemCollectionsGenericListOfSaBaiAPIEndpointsMedicationStockSplitsPostSplitItem(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

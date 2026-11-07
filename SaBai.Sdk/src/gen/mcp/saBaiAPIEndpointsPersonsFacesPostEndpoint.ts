@@ -4,8 +4,7 @@
 */
 
 import type { SaBaiAPIEndpointsPersonsFacesPostEndpointOptions } from '../types/SaBaiAPIEndpointsPersonsFacesPostEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsPersonsFacesPostEndpoint } from '../clients/saBaiAPIEndpointsPersonsFacesPostEndpoint'
 
 /**
@@ -13,8 +12,8 @@ import { saBaiAPIEndpointsPersonsFacesPostEndpoint } from '../clients/saBaiAPIEn
  * @summary Enroll a face for a person.
  * {@link /persons/:personId/faces}
  */
-export async function saBaiAPIEndpointsPersonsFacesPostEndpointHandler({ path, body }: SaBaiAPIEndpointsPersonsFacesPostEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsPersonsFacesPostEndpoint({ path, body, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsPersonsFacesPostEndpointHandler({ path, body }: SaBaiAPIEndpointsPersonsFacesPostEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsPersonsFacesPostEndpoint({ path, body, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

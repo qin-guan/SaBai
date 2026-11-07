@@ -4,10 +4,10 @@
 */
 
 import type { SaBaiAPIEndpointsPatientsListGetEndpointResponse, SaBaiAPIEndpointsPatientsListGetEndpointStatus401, SaBaiAPIEndpointsPatientsListGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsPatientsListGetEndpoint'
-import { http } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsPatientsListGetEndpointHandlerResponse200(data: SaBaiAPIEndpointsPatientsListGetEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -16,22 +16,22 @@ export function saBaiAPIEndpointsPatientsListGetEndpointHandlerResponse200(data:
 }
 
 export function saBaiAPIEndpointsPatientsListGetEndpointHandlerResponse401(data?: SaBaiAPIEndpointsPatientsListGetEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsPatientsListGetEndpointHandlerResponse403(data?: SaBaiAPIEndpointsPatientsListGetEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsPatientsListGetEndpointHandler(data?: SaBaiAPIEndpointsPatientsListGetEndpointResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>)) {
-  return http.get(`/patients`, function handler(info) {
+export function saBaiAPIEndpointsPatientsListGetEndpointHandler(data?: SaBaiAPIEndpointsPatientsListGetEndpointResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>), options?: { baseURL?: string }) {
+  return http.get(`${options?.baseURL ?? ''}/patients`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

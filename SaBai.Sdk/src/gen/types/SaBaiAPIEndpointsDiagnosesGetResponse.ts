@@ -6,18 +6,18 @@
 import type { SaBaiAPIDomainDiagnosisCategoryKey } from './SaBaiAPIDomainDiagnosisCategory'
 
 export type SaBaiAPIEndpointsDiagnosesGetResponse = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    consultId: number;
-    details: string;
-    category: (null | SaBaiAPIDomainDiagnosisCategoryKey);
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  consultId: number;
+  details: string;
+  category: null | SaBaiAPIDomainDiagnosisCategoryKey;
 };

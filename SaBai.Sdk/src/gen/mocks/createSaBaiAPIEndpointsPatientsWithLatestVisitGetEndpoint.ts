@@ -3,7 +3,7 @@
 * Do not edit manually.
 */
 
-import type { SaBaiAPIEndpointsPatientsWithLatestVisitGetEndpointResponse, SaBaiAPIEndpointsPatientsWithLatestVisitGetEndpointStatus200, SaBaiAPIEndpointsPatientsWithLatestVisitGetEndpointStatus401, SaBaiAPIEndpointsPatientsWithLatestVisitGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsPatientsWithLatestVisitGetEndpoint'
+import type { SaBaiAPIEndpointsPatientsWithLatestVisitGetEndpointResponse, SaBaiAPIEndpointsPatientsWithLatestVisitGetEndpointStatus200 } from '../types/SaBaiAPIEndpointsPatientsWithLatestVisitGetEndpoint'
 import { createSaBaiAPIEndpointsPatientsWithLatestVisitGetResponse } from './createSaBaiAPIEndpointsPatientsWithLatestVisitGetResponse'
 import { fakerEN as faker } from '@faker-js/faker'
 

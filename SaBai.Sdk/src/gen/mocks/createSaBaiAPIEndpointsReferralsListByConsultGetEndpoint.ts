@@ -3,16 +3,14 @@
 * Do not edit manually.
 */
 
-import type { SaBaiAPIEndpointsReferralsListByConsultGetEndpointPath, SaBaiAPIEndpointsReferralsListByConsultGetEndpointResponse, SaBaiAPIEndpointsReferralsListByConsultGetEndpointStatus200, SaBaiAPIEndpointsReferralsListByConsultGetEndpointStatus401, SaBaiAPIEndpointsReferralsListByConsultGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsReferralsListByConsultGetEndpoint'
+import type { SaBaiAPIEndpointsReferralsListByConsultGetEndpointPath, SaBaiAPIEndpointsReferralsListByConsultGetEndpointResponse, SaBaiAPIEndpointsReferralsListByConsultGetEndpointStatus200 } from '../types/SaBaiAPIEndpointsReferralsListByConsultGetEndpoint'
 import { createSystemCollectionsGenericListOfSaBaiAPIEndpointsReferralsListByConsultGetResponse } from './createSystemCollectionsGenericListOfSaBaiAPIEndpointsReferralsListByConsultGetResponse'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsReferralsListByConsultGetEndpointPath<TData extends Partial<SaBaiAPIEndpointsReferralsListByConsultGetEndpointPath> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsReferralsListByConsultGetEndpointPath<TData extends Partial<SaBaiAPIEndpointsReferralsListByConsultGetEndpointPath> = object>(data?: TData) {
   const defaultFakeData = {
-  consultId: faker.number.int(),
-}
+    consultId: faker.number.int(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

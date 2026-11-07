@@ -8,11 +8,11 @@ import type { SaBaiAPIEndpointsAuthUsersCreatePostEndpointOptions, SaBaiAPIEndpo
 import { client, withUnwrap } from '../.kubb/client'
 
 /**
- * @summary Create a staff user in WorkOS
+ * @summary Create a staff user
  * {@link /auth/users}
  */
 export function saBaiAPIEndpointsAuthUsersCreatePostEndpoint<ThrowOnError extends boolean = true>(options: Options<SaBaiAPIEndpointsAuthUsersCreatePostEndpointOptions, ThrowOnError>): Unwrappable<RequestResult<SaBaiAPIEndpointsAuthUsersCreatePostEndpointResponses, ThrowOnError>> {
   const { client: request = client, ...config } = options
 
-  return withUnwrap(request({ method: 'POST', url: '/auth/users', security: [{ type: 'http', scheme: 'bearer' }], ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<SaBaiAPIEndpointsAuthUsersCreatePostEndpointResponses, ThrowOnError>>)
+  return withUnwrap(request({ method: 'POST', url: '/auth/users', security: [{ type: 'apiKey', name: 'sabai.auth', in: 'cookie', scopes: ['admin'] }], contentType: { request: 'application/json' }, ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<SaBaiAPIEndpointsAuthUsersCreatePostEndpointResponses, ThrowOnError>>)
 }

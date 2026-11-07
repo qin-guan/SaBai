@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsFacesVerifyPostEndpointOptions } from '../types/SaBaiAPIEndpointsFacesVerifyPostEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsFacesVerifyPostEndpoint } from '../clients/saBaiAPIEndpointsFacesVerifyPostEndpoint'
 
 /**
  * @summary Compare the most prominent face in two images (1:1 verification).
  * {@link /faces/verify}
  */
-export async function saBaiAPIEndpointsFacesVerifyPostEndpointHandler({ body }: SaBaiAPIEndpointsFacesVerifyPostEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsFacesVerifyPostEndpoint({ body, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsFacesVerifyPostEndpointHandler({ body }: SaBaiAPIEndpointsFacesVerifyPostEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsFacesVerifyPostEndpoint({ body, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

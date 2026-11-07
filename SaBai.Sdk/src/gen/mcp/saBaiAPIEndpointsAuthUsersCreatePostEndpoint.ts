@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsAuthUsersCreatePostEndpointOptions } from '../types/SaBaiAPIEndpointsAuthUsersCreatePostEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsAuthUsersCreatePostEndpoint } from '../clients/saBaiAPIEndpointsAuthUsersCreatePostEndpoint'
 
 /**
- * @summary Create a staff user in WorkOS
+ * @summary Create a staff user
  * {@link /auth/users}
  */
-export async function saBaiAPIEndpointsAuthUsersCreatePostEndpointHandler({ body }: SaBaiAPIEndpointsAuthUsersCreatePostEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsAuthUsersCreatePostEndpoint({ body, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsAuthUsersCreatePostEndpointHandler({ body }: SaBaiAPIEndpointsAuthUsersCreatePostEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsAuthUsersCreatePostEndpoint({ body, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

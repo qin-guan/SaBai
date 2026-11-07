@@ -6,19 +6,19 @@
 import type { SaBaiAPIDomainGenderKey } from './SaBaiAPIDomainGender'
 
 export type SaBaiAPIEndpointsVisionGetPatientResponse = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
-    name: string;
-    displayId: string;
-    gender: SaBaiAPIDomainGenderKey;
-    /**
-     * @description
-     * Format: `date-time`
-     * @type string
-    */
-    dateOfBirth: string;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
+  name: string;
+  displayId: string;
+  gender: SaBaiAPIDomainGenderKey;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string
+   */
+  dateOfBirth: string;
 };

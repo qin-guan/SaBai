@@ -6,17 +6,17 @@
 export type SaBaiAPIEndpointsHealthcheckGetEndpointStatus200 = string;
 
 export type SaBaiAPIEndpointsHealthcheckGetEndpointOptions = {
-    body?: never;
-    path?: never;
-    query?: never;
-    headers?: never;
+  body?: never;
+  path?: never;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsHealthcheckGetEndpointResponses = {
-    "200": SaBaiAPIEndpointsHealthcheckGetEndpointStatus200;
+  '200': SaBaiAPIEndpointsHealthcheckGetEndpointStatus200;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsHealthcheckGetEndpointResponse = SaBaiAPIEndpointsHealthcheckGetEndpointStatus200;

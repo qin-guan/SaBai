@@ -4,17 +4,16 @@
 */
 
 import type { SaBaiAPIEndpointsAuthLoginPostEndpointOptions } from '../types/SaBaiAPIEndpointsAuthLoginPostEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsAuthLoginPostEndpoint } from '../clients/saBaiAPIEndpointsAuthLoginPostEndpoint'
 
 /**
- * @description Authenticates with WorkOS and returns a bearer token for this API.
- * @summary Sign in with email and password
+ * @description Checks the password with ASP.NET Core Identity and sets the session cookie. Repeated failures lock the account for a few minutes. When the account has two-factor on, no session is created yet: `requiresTwoFactor` is true and the client continues with `POST /auth/login/two-factor`.
+ * @summary Sign in with username and password
  * {@link /auth/login}
  */
-export async function saBaiAPIEndpointsAuthLoginPostEndpointHandler({ body }: SaBaiAPIEndpointsAuthLoginPostEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsAuthLoginPostEndpoint({ body, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsAuthLoginPostEndpointHandler({ body }: SaBaiAPIEndpointsAuthLoginPostEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsAuthLoginPostEndpoint({ body, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

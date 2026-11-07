@@ -4,15 +4,17 @@
 */
 
 import * as z from 'zod'
-import { saBaiAPIDomainStaffRoleSchema } from './saBaiAPIDomainStaffRoleSchema'
+import { systemCollectionsGenericIReadOnlyListOfSystemStringSchema } from './systemCollectionsGenericIReadOnlyListOfSystemStringSchema'
 
 export const saBaiAPIEndpointsAuthUserResponseSchema = z.object({
   id: z.uuid(),
-  workOsUserId: z.string(),
-  username: z.string(),
-  email: z.string(),
+  userName: z.string(),
+  email: z.string().nullable(),
   nickname: z.string(),
-  role: saBaiAPIDomainStaffRoleSchema,
+  roles: systemCollectionsGenericIReadOnlyListOfSystemStringSchema,
   isLocked: z.boolean(),
+  lockoutEnd: z.iso.datetime().nullable(),
+  twoFactorEnabled: z.boolean(),
+  hasPassword: z.boolean(),
   createdAt: z.iso.datetime(),
 })

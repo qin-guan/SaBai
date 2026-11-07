@@ -3,17 +3,15 @@
 * Do not edit manually.
 */
 
-import type { SaBaiAPIEndpointsPubertyGetEndpointPath, SaBaiAPIEndpointsPubertyGetEndpointResponse, SaBaiAPIEndpointsPubertyGetEndpointStatus200, SaBaiAPIEndpointsPubertyGetEndpointStatus400, SaBaiAPIEndpointsPubertyGetEndpointStatus401, SaBaiAPIEndpointsPubertyGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsPubertyGetEndpoint'
+import type { SaBaiAPIEndpointsPubertyGetEndpointPath, SaBaiAPIEndpointsPubertyGetEndpointResponse, SaBaiAPIEndpointsPubertyGetEndpointStatus200, SaBaiAPIEndpointsPubertyGetEndpointStatus400 } from '../types/SaBaiAPIEndpointsPubertyGetEndpoint'
 import { createFastEndpointsProblemDetails } from './createFastEndpointsProblemDetails'
 import { createSaBaiAPIEndpointsPubertyGetResponse } from './createSaBaiAPIEndpointsPubertyGetResponse'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsPubertyGetEndpointPath<TData extends Partial<SaBaiAPIEndpointsPubertyGetEndpointPath> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsPubertyGetEndpointPath<TData extends Partial<SaBaiAPIEndpointsPubertyGetEndpointPath> = object>(data?: TData) {
   const defaultFakeData = {
-  id: faker.number.int(),
-}
+    id: faker.number.int(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

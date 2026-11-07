@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsAuthUsersGetEndpointOptions } from '../types/SaBaiAPIEndpointsAuthUsersGetEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsAuthUsersGetEndpoint } from '../clients/saBaiAPIEndpointsAuthUsersGetEndpoint'
 
 /**
  * @summary Get a staff user
  * {@link /auth/users/:id}
  */
-export async function saBaiAPIEndpointsAuthUsersGetEndpointHandler({ path }: SaBaiAPIEndpointsAuthUsersGetEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsAuthUsersGetEndpoint({ path, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsAuthUsersGetEndpointHandler({ path }: SaBaiAPIEndpointsAuthUsersGetEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsAuthUsersGetEndpoint({ path, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

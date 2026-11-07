@@ -6,19 +6,17 @@
 import type { SaBaiAPIEndpointsFilesDeleteDeleteResponse } from '../types/SaBaiAPIEndpointsFilesDeleteDeleteResponse'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsFilesDeleteDeleteResponse<TData extends Partial<SaBaiAPIEndpointsFilesDeleteDeleteResponse> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsFilesDeleteDeleteResponse<TData extends Partial<SaBaiAPIEndpointsFilesDeleteDeleteResponse> = object>(data?: TData) {
   const defaultFakeData = {
-  id: faker.number.int(),
-  patientId: faker.number.int(),
-  fileName: faker.string.alpha(),
-  storedFileName: faker.string.alpha(),
-  description: faker.string.alpha(),
-  sizeBytes: faker.number.bigInt(),
-  isDeleted: faker.datatype.boolean(),
-  createdAt: faker.date.anytime().toISOString(),
-}
+    id: faker.number.int(),
+    patientId: faker.number.int(),
+    fileName: faker.string.alpha(),
+    storedFileName: faker.string.alpha(),
+    description: faker.string.alpha(),
+    sizeBytes: faker.number.bigInt(),
+    isDeleted: faker.datatype.boolean(),
+    createdAt: faker.date.anytime().toISOString(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

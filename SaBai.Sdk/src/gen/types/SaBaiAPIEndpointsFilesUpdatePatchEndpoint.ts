@@ -8,20 +8,21 @@ import type { SaBaiAPIEndpointsFilesUpdatePatchRequest } from './SaBaiAPIEndpoin
 import type { SaBaiAPIEndpointsFilesUpdatePatchResponse } from './SaBaiAPIEndpointsFilesUpdatePatchResponse'
 
 export type SaBaiAPIEndpointsFilesUpdatePatchEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
 };
 
 export type SaBaiAPIEndpointsFilesUpdatePatchEndpointStatus200 = SaBaiAPIEndpointsFilesUpdatePatchResponse;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsFilesUpdatePatchEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsFilesUpdatePatchEndpointStatus401 = unknown;
@@ -31,20 +32,20 @@ export type SaBaiAPIEndpointsFilesUpdatePatchEndpointStatus403 = unknown;
 export type SaBaiAPIEndpointsFilesUpdatePatchEndpointBody = SaBaiAPIEndpointsFilesUpdatePatchRequest;
 
 export type SaBaiAPIEndpointsFilesUpdatePatchEndpointOptions = {
-    body: SaBaiAPIEndpointsFilesUpdatePatchEndpointBody;
-    path: SaBaiAPIEndpointsFilesUpdatePatchEndpointPath;
-    query?: never;
-    headers?: never;
+  body: SaBaiAPIEndpointsFilesUpdatePatchEndpointBody;
+  path: SaBaiAPIEndpointsFilesUpdatePatchEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsFilesUpdatePatchEndpointResponses = {
-    "200": SaBaiAPIEndpointsFilesUpdatePatchEndpointStatus200;
-    "400": SaBaiAPIEndpointsFilesUpdatePatchEndpointStatus400;
-    "401": SaBaiAPIEndpointsFilesUpdatePatchEndpointStatus401;
-    "403": SaBaiAPIEndpointsFilesUpdatePatchEndpointStatus403;
+  '200': SaBaiAPIEndpointsFilesUpdatePatchEndpointStatus200;
+  '400': SaBaiAPIEndpointsFilesUpdatePatchEndpointStatus400;
+  '401': SaBaiAPIEndpointsFilesUpdatePatchEndpointStatus401;
+  '403': SaBaiAPIEndpointsFilesUpdatePatchEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsFilesUpdatePatchEndpointResponse = SaBaiAPIEndpointsFilesUpdatePatchEndpointStatus200;

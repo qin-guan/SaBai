@@ -11,7 +11,7 @@ public sealed class UserAdminTests(AppFixture fixture)
     public async Task List_IncludesSeededAdmin()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
 
         // Act
@@ -27,7 +27,7 @@ public sealed class UserAdminTests(AppFixture fixture)
     public async Task Get_SignedInAdmin_ReturnsEmail()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var me = await client.WhoAmIAsync();
 
@@ -44,7 +44,7 @@ public sealed class UserAdminTests(AppFixture fixture)
     public async Task Patch_Nickname_IsReturnedOnGet()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var suffix = ClinicSetup.Suffix();
         var nickname = $"Nick {suffix}";
@@ -52,7 +52,7 @@ public sealed class UserAdminTests(AppFixture fixture)
             "/auth/users",
             new
             {
-                username = $"user{suffix}",
+                userName = $"user{suffix}",
                 email = $"user-{suffix}@sabai.test",
                 password = ClinicApi.Password,
                 nickname = "Before",
@@ -82,12 +82,12 @@ public sealed class UserAdminTests(AppFixture fixture)
     public async Task Login_EmptyPassword_ReturnsBadRequest()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
 
         // Act
         var response = await client.PostAsJsonAsync(
             "/auth/login",
-            new { email = ClinicApi.AdminEmail, password = "" },
+            new { userName = "admin", password = "" },
             ApiJson.Options
         );
 
@@ -96,19 +96,15 @@ public sealed class UserAdminTests(AppFixture fixture)
     }
 
     [Test]
-    public async Task Login_UnknownEmail_ReturnsUnauthorized()
+    public async Task Login_UnknownUser_ReturnsUnauthorized()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
 
         // Act
         var response = await client.PostAsJsonAsync(
             "/auth/login",
-            new
-            {
-                email = $"missing-{ClinicSetup.Suffix()}@sabai.test",
-                password = ClinicApi.Password,
-            },
+            new { userName = $"missing-{ClinicSetup.Suffix()}", password = ClinicApi.Password },
             ApiJson.Options
         );
 
@@ -120,7 +116,7 @@ public sealed class UserAdminTests(AppFixture fixture)
     public async Task Lock_AsMember_ReturnsForbidden()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.DoctorEmail);
 
         // Act
@@ -134,7 +130,7 @@ public sealed class UserAdminTests(AppFixture fixture)
     public async Task Create_DuplicateAdminEmail_ReturnsConflict()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
 
         // Act
@@ -142,7 +138,7 @@ public sealed class UserAdminTests(AppFixture fixture)
             "/auth/users",
             new
             {
-                username = $"dup{ClinicSetup.Suffix()}",
+                userName = $"dup{ClinicSetup.Suffix()}",
                 email = ClinicApi.AdminEmail,
                 password = ClinicApi.Password,
             },
@@ -157,7 +153,7 @@ public sealed class UserAdminTests(AppFixture fixture)
     public async Task Get_MissingUser_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
 
         // Act
@@ -171,7 +167,7 @@ public sealed class UserAdminTests(AppFixture fixture)
     public async Task WhoAmI_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
 
         // Act
         var response = await client.GetAsync("/auth/whoami");

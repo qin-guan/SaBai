@@ -4,9 +4,9 @@
 */
 
 export const saBaiAPIDomainSugarConsumption = {
-    Low: "Low",
-    Moderate: "Moderate",
-    High: "High"
+  Low: 'Low',
+  Moderate: 'Moderate',
+  High: 'High',
 } as const;
 
 export type SaBaiAPIDomainSugarConsumptionKey = (typeof saBaiAPIDomainSugarConsumption)[keyof typeof saBaiAPIDomainSugarConsumption];

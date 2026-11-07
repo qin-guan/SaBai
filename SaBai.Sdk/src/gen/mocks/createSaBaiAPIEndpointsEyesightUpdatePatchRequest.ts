@@ -6,20 +6,18 @@
 import type { SaBaiAPIEndpointsEyesightUpdatePatchRequest } from '../types/SaBaiAPIEndpointsEyesightUpdatePatchRequest'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsEyesightUpdatePatchRequest<TData extends Partial<SaBaiAPIEndpointsEyesightUpdatePatchRequest> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsEyesightUpdatePatchRequest<TData extends Partial<SaBaiAPIEndpointsEyesightUpdatePatchRequest> = object>(data?: TData) {
   const defaultFakeData = {
-  leftEyeDegree: faker.string.alpha(),
-  rightEyeDegree: faker.string.alpha(),
-  leftEyePinhole: faker.string.alpha(),
-  rightEyePinhole: faker.string.alpha(),
-  leftAstigmatism: faker.string.alpha(),
-  rightAstigmatism: faker.string.alpha(),
-  comments: faker.string.alpha(),
-  leftPrescribedGlassesDegree: faker.string.alpha(),
-  rightPrescribedGlassesDegree: faker.string.alpha(),
-}
+    leftEyeDegree: faker.string.alpha(),
+    rightEyeDegree: faker.string.alpha(),
+    leftEyePinhole: faker.string.alpha(),
+    rightEyePinhole: faker.string.alpha(),
+    leftAstigmatism: faker.string.alpha(),
+    rightAstigmatism: faker.string.alpha(),
+    comments: faker.string.alpha(),
+    leftPrescribedGlassesDegree: faker.string.alpha(),
+    rightPrescribedGlassesDegree: faker.string.alpha(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

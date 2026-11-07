@@ -1,19 +1,24 @@
 import { MutationCache, QueryCache, QueryClient } from "@tanstack/react-query";
 import { isUnauthorizedError } from "./errors";
-import { clearToken } from "./token";
+import { endSession } from "./session";
+
+let redirecting = false;
 
 /**
- * Clears the stored token and sends the user to the login page, preserving the
- * current location so they can be returned after signing back in.
+ * Clears the (expired or revoked) session cookie and sends the user to the
+ * login page, preserving the current location so they can be returned after
+ * signing back in. The cookie must be cleared first, or the route middleware
+ * would see it and bounce straight back.
  */
 function redirectToLogin(): void {
   if (typeof window === "undefined") return;
-  if (window.location.pathname === "/login") return;
-
-  clearToken();
+  if (window.location.pathname === "/login" || redirecting) return;
+  redirecting = true;
 
   const redirectTo = window.location.pathname + window.location.search;
-  window.location.href = `/login?redirectTo=${encodeURIComponent(redirectTo)}`;
+  void endSession().finally(() => {
+    window.location.href = `/login?redirectTo=${encodeURIComponent(redirectTo)}`;
+  });
 }
 
 /**
@@ -23,8 +28,8 @@ function redirectToLogin(): void {
  * `queryOptions` / `mutationOptions` factories that are consumed with `useQuery`
  * and `useMutation` directly.
  *
- * A 401 from the API means the bearer token is missing or expired, so we drop it
- * and bounce to the login page from a single place rather than in every hook.
+ * A 401 from the API means the session is missing, expired or was revoked, so
+ * we bounce to the login page from a single place rather than in every hook.
  */
 export function makeQueryClient(): QueryClient {
   return new QueryClient({

@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsPatientsSearchByFacePostEndpointOptions } from '../types/SaBaiAPIEndpointsPatientsSearchByFacePostEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsPatientsSearchByFacePostEndpoint } from '../clients/saBaiAPIEndpointsPatientsSearchByFacePostEndpoint'
 
 /**
  * @summary Search for patients by face photo
  * {@link /patients/search-by-face}
  */
-export async function saBaiAPIEndpointsPatientsSearchByFacePostEndpointHandler({ query, body }: SaBaiAPIEndpointsPatientsSearchByFacePostEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsPatientsSearchByFacePostEndpoint({ query, body, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsPatientsSearchByFacePostEndpointHandler({ query, body }: SaBaiAPIEndpointsPatientsSearchByFacePostEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsPatientsSearchByFacePostEndpoint({ query, body, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

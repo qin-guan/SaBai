@@ -4,10 +4,9 @@
 */
 
 import * as z from 'zod'
-import { saBaiAPIDomainStaffRoleSchema } from './saBaiAPIDomainStaffRoleSchema'
 import { saBaiAPIEndpointsAuthUsersListGetResponseSchema } from './saBaiAPIEndpointsAuthUsersListGetResponseSchema'
 
-export const saBaiAPIEndpointsAuthUsersListGetEndpointQueryRoleSchema = saBaiAPIDomainStaffRoleSchema.optional()
+export const saBaiAPIEndpointsAuthUsersListGetEndpointQueryRoleSchema = z.string().nullish()
 
 export const saBaiAPIEndpointsAuthUsersListGetEndpointQueryEmailSchema = z.string().nullish()
 
@@ -22,3 +21,9 @@ export const saBaiAPIEndpointsAuthUsersListGetEndpointStatus403Schema = z.unknow
 export const saBaiAPIEndpointsAuthUsersListGetEndpointResponseSchema = saBaiAPIEndpointsAuthUsersListGetEndpointStatus200Schema
 
 export const saBaiAPIEndpointsAuthUsersListGetEndpointErrorSchema = z.union([saBaiAPIEndpointsAuthUsersListGetEndpointStatus401Schema, saBaiAPIEndpointsAuthUsersListGetEndpointStatus403Schema])
+
+export const saBaiAPIEndpointsAuthUsersListGetEndpointQuerySchema = z.object({
+  role: z.string().nullish(),
+  email: z.string().nullish(),
+  isLocked: z.boolean().nullish(),
+})

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PhSignOut } from '@phosphor-icons/vue'
+import { PhSignOut, PhUserCircle } from '@phosphor-icons/vue'
 import {
   Sidebar,
   SidebarContent,
@@ -30,13 +30,8 @@ watch(() => route.fullPath, () => {
     setOpenMobile(false)
 })
 
-async function signOut() {
-  clearToken()
-  // Drafts and recent patients hold patient data; don't leave them on a shared device.
-  clearAllFormDrafts()
-  clearRecentPatients()
-  await navigateTo(paths.login())
-}
+const signOut = useSignOut()
+const { user } = useCurrentUser()
 </script>
 
 <template>
@@ -79,6 +74,21 @@ async function signOut() {
     </SidebarContent>
     <SidebarFooter class="border-t border-sidebar-border">
       <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton
+            as-child
+            :is-active="route.path === paths.account()"
+            :tooltip="user ? `My account (${user.nickname})` : 'My account'"
+          >
+            <NuxtLink :to="paths.account()">
+              <PhUserCircle aria-hidden="true" />
+              <span class="flex min-w-0 flex-1 flex-col leading-tight">
+                <span class="truncate">{{ user?.nickname ?? 'My account' }}</span>
+                <span v-if="user" class="truncate text-[0.6875rem] text-muted-foreground">{{ user.userName }}</span>
+              </span>
+            </NuxtLink>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
         <SidebarMenuItem>
           <SidebarMenuButton tooltip="Sign out" @click="signOut">
             <PhSignOut aria-hidden="true" />

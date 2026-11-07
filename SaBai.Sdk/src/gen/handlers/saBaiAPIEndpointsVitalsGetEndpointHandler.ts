@@ -4,10 +4,10 @@
 */
 
 import type { SaBaiAPIEndpointsVitalsGetEndpointResponse, SaBaiAPIEndpointsVitalsGetEndpointStatus400, SaBaiAPIEndpointsVitalsGetEndpointStatus401, SaBaiAPIEndpointsVitalsGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsVitalsGetEndpoint'
-import { http } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsVitalsGetEndpointHandlerResponse200(data: SaBaiAPIEndpointsVitalsGetEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -16,7 +16,7 @@ export function saBaiAPIEndpointsVitalsGetEndpointHandlerResponse200(data: SaBai
 }
 
 export function saBaiAPIEndpointsVitalsGetEndpointHandlerResponse400(data: SaBaiAPIEndpointsVitalsGetEndpointStatus400) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 400,
     headers: {
       'Content-Type': 'application/problem+json'
@@ -25,22 +25,22 @@ export function saBaiAPIEndpointsVitalsGetEndpointHandlerResponse400(data: SaBai
 }
 
 export function saBaiAPIEndpointsVitalsGetEndpointHandlerResponse401(data?: SaBaiAPIEndpointsVitalsGetEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsVitalsGetEndpointHandlerResponse403(data?: SaBaiAPIEndpointsVitalsGetEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsVitalsGetEndpointHandler(data?: SaBaiAPIEndpointsVitalsGetEndpointResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>)) {
-  return http.get(`/vitals/:id`, function handler(info) {
+export function saBaiAPIEndpointsVitalsGetEndpointHandler(data?: SaBaiAPIEndpointsVitalsGetEndpointResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>), options?: { baseURL?: string }) {
+  return http.get(`${options?.baseURL ?? ''}/vitals/:id`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

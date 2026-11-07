@@ -23,3 +23,7 @@ export const saBaiAPIEndpointsFilesUpdatePatchEndpointResponseSchema = saBaiAPIE
 export const saBaiAPIEndpointsFilesUpdatePatchEndpointErrorSchema = z.union([saBaiAPIEndpointsFilesUpdatePatchEndpointStatus400Schema, saBaiAPIEndpointsFilesUpdatePatchEndpointStatus401Schema, saBaiAPIEndpointsFilesUpdatePatchEndpointStatus403Schema])
 
 export const saBaiAPIEndpointsFilesUpdatePatchEndpointBodySchema = saBaiAPIEndpointsFilesUpdatePatchRequestSchema
+
+export const saBaiAPIEndpointsFilesUpdatePatchEndpointPathSchema = z.object({
+  id: z.int32(),
+})

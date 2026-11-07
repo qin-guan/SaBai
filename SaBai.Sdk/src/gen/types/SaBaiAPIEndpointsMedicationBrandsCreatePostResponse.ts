@@ -4,18 +4,18 @@
 */
 
 export type SaBaiAPIEndpointsMedicationBrandsCreatePostResponse = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
-    name: string;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    activeIngredientId: number;
-    remarks: string | null;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
+  name: string;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  activeIngredientId: number;
+  remarks: string | null;
 };

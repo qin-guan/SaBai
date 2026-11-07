@@ -56,12 +56,8 @@ const matches = computed(() => search.data.value ?? [])
           </div>
           <StartVisitButton :patient-id="match.id" :name="match.name" />
         </div>
-        <div class="flex flex-col gap-2 pl-[3.75rem]">
+        <div class="pl-[3.75rem]">
           <MatchVisits :patient-id="match.id" />
-          <div class="flex flex-wrap items-center gap-2">
-            <span class="text-xs text-muted-foreground touch:text-sm">Go to</span>
-            <StationLinks :patient-id="match.id" />
-          </div>
         </div>
       </li>
     </ol>

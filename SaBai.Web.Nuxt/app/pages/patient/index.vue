@@ -275,20 +275,27 @@ const gridCols = 'md:grid-cols-[2rem_minmax(0,1fr)_minmax(15rem,22rem)_1rem] lg:
         </div>
         <ul class="divide-y divide-border">
           <li v-for="patient in rows" :key="patient.id">
-            <!-- The whole row is the link: one target per patient, no repeated buttons. -->
-            <NuxtLink
-              :to="rowLink(patient)"
-              class="group grid grid-cols-[2.5rem_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1.5 px-3 py-2 hover:bg-accent/60 focus-visible:bg-accent focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring md:py-1.5 lg:py-1"
+            <!--
+              The whole row opens the patient (the name's link stretches over
+              it); the journey tiles sit above that and open their own station.
+            -->
+            <div
+              class="group relative grid grid-cols-[2.5rem_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1.5 px-3 py-2 hover:bg-accent/60 has-[a.row-link:focus-visible]:bg-accent md:py-1.5 lg:py-1"
               :class="gridCols"
             >
-              <span class="sr-only">{{ station ? `Open ${stationLabel(station)}:` : 'Open record:' }}</span>
               <span class="flex size-10 overflow-hidden md:size-8 [&>*]:size-full!">
                 <PatientPhoto :patient-id="patient.id" :has-photo="patient.hasPhoto" :size="40" alt="" />
               </span>
 
               <div class="min-w-0">
                 <p class="flex min-w-0 items-center gap-1.5">
-                  <span class="min-w-[6ch] shrink truncate text-sm font-semibold group-hover:text-primary touch:text-base">{{ patient.name }}</span>
+                  <NuxtLink
+                    :to="rowLink(patient)"
+                    class="row-link min-w-[6ch] shrink truncate text-sm font-semibold group-hover:text-primary after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-ring touch:text-base"
+                  >
+                    <span class="sr-only">{{ station ? `Open ${stationLabel(station)}:` : 'Open record:' }}</span>
+                    {{ patient.name }}
+                  </NuxtLink>
                   <!-- Below laptop width the allergy rides next to the name (its own column on laptops). -->
                   <AllergyFlag :allergy="patient.drugAllergy" class="max-w-[50%] shrink-0 lg:hidden" />
                 </p>
@@ -329,14 +336,13 @@ const gridCols = 'md:grid-cols-[2rem_minmax(0,1fr)_minmax(15rem,22rem)_1rem] lg:
                 aria-hidden="true"
               />
 
-              <div class="col-span-3 min-w-0 md:col-span-1 md:col-start-3 md:row-start-1 lg:col-start-7">
+              <div class="relative z-[1] col-span-3 min-w-0 md:col-span-1 md:col-start-3 md:row-start-1 lg:col-start-7">
                 <JourneyTracker
                   v-if="patient.lastVisitJourney && patient.lastVisitId"
                   :journey="patient.lastVisitJourney"
                   :patient-id="patient.id"
                   :visit-id="patient.lastVisitId"
                   :active="station"
-                  :links="false"
                   size="compact"
                 />
                 <span v-else class="text-xs text-muted-foreground touch:text-sm">No visit yet</span>
@@ -346,7 +352,7 @@ const gridCols = 'md:grid-cols-[2rem_minmax(0,1fr)_minmax(15rem,22rem)_1rem] lg:
                 class="hidden size-4 text-muted-foreground group-hover:text-primary md:col-start-4 md:block lg:col-start-8"
                 aria-hidden="true"
               />
-            </NuxtLink>
+            </div>
           </li>
         </ul>
       </template>

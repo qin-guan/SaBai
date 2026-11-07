@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using SaBai.API.Data;
 using SaBai.API.Domain;
 
 namespace SaBai.API.Endpoints.Auth;
@@ -13,11 +14,15 @@ public sealed record SignInResponse(bool RequiresTwoFactor, UserResponse? User)
     public static async Task<SignInResponse> FromAsync(
         SignInResult result,
         StaffUser user,
-        UserManager<StaffUser> users
+        UserManager<StaffUser> users,
+        AuditTrail audit,
+        string method,
+        CancellationToken ct
     )
     {
         if (result.Succeeded)
         {
+            await audit.RecordAsync(AuditAction.SignedIn, user, details: method, ct: ct);
             return new SignInResponse(false, await UserResponse.FromAsync(user, users));
         }
 
@@ -28,11 +33,23 @@ public sealed record SignInResponse(bool RequiresTwoFactor, UserResponse? User)
 
         if (result.IsLockedOut)
         {
+            await audit.RecordAsync(
+                AuditAction.SignInFailed,
+                user,
+                details: $"{method}: account locked",
+                ct: ct
+            );
             throw new ForbiddenException(
                 "This account is locked. Try again later or ask an admin to unlock it."
             );
         }
 
+        await audit.RecordAsync(
+            AuditAction.SignInFailed,
+            user,
+            details: result.IsNotAllowed ? $"{method}: not allowed" : $"{method}: rejected",
+            ct: ct
+        );
         throw new AuthRejectedException();
     }
 }

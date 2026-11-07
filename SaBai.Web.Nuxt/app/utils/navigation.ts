@@ -1,6 +1,7 @@
 import type { Component } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import {
+  PhClockCounterClockwise,
   PhEyeglasses,
   PhFlask,
   PhGear,
@@ -61,6 +62,7 @@ export const SUB_PAGES: NavItem[] = [
   { name: 'Medication Active Ingredients', href: paths.medicationActiveIngredients(), icon: PhFlask, keywords: 'ingredient fall below threshold low stock' },
   { name: 'Village Codes', href: paths.settingsVillageCodes(), icon: PhMapPin, keywords: 'village code colour color location' },
   { name: 'Staff Users', href: paths.settingsUsers(), icon: PhUserGear, keywords: 'users staff accounts roles admin password lock two-factor 2fa', adminOnly: true },
+  { name: 'Audit Log', href: paths.settingsAuditLog(), icon: PhClockCounterClockwise, keywords: 'audit log history changes activity sign-in login trail', adminOnly: true },
   { name: 'My Account', href: paths.account(), icon: PhUserCircle, keywords: 'profile password two-factor 2fa authenticator totp security' },
 ]
 

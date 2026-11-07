@@ -1,10 +1,15 @@
 using FastEndpoints;
 using Microsoft.AspNetCore.Identity;
+using SaBai.API.Data;
 using SaBai.API.Domain;
 
 namespace SaBai.API.Endpoints.Auth.Login.Post;
 
-public sealed class Endpoint(UserManager<StaffUser> users, SignInManager<StaffUser> signIn)
+public sealed class Endpoint(
+    UserManager<StaffUser> users,
+    SignInManager<StaffUser> signIn,
+    AuditTrail audit
+)
     : Endpoint<Request, SignInResponse>
 {
     public override void Configure()
@@ -33,6 +38,12 @@ public sealed class Endpoint(UserManager<StaffUser> users, SignInManager<StaffUs
 
         if (user is null)
         {
+            await audit.RecordAsync(
+                AuditAction.SignInFailed,
+                userName: name,
+                details: "Password: unknown user",
+                ct: ct
+            );
             throw new AuthRejectedException();
         }
 
@@ -42,6 +53,6 @@ public sealed class Endpoint(UserManager<StaffUser> users, SignInManager<StaffUs
             req.RememberMe,
             lockoutOnFailure: true
         );
-        await Send.OkAsync(await SignInResponse.FromAsync(result, user, users), ct);
+        await Send.OkAsync(await SignInResponse.FromAsync(result, user, users, audit, "Password", ct), ct);
     }
 }

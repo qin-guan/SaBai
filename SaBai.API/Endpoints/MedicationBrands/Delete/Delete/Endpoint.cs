@@ -17,10 +17,9 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        if (!await db.MedicationBrands.AnyAsync(x => x.Id == req.Id, ct))
-        {
-            throw new NotFoundException("Medication brand was not found.");
-        }
+        var brand =
+            await db.MedicationBrands.FirstOrDefaultAsync(x => x.Id == req.Id, ct)
+            ?? throw new NotFoundException("Medication brand was not found.");
 
         if (await db.MedicationStocks.AnyAsync(x => x.MedicationBrandId == req.Id, ct))
         {
@@ -32,11 +31,9 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request>
             throw new ConflictException("The brand is referenced by an order.");
         }
 
-        var deleted = await db.MedicationBrands.Where(x => x.Id == req.Id).ExecuteDeleteAsync(ct);
-        if (deleted == 0)
-        {
-            throw new NotFoundException("Medication brand was not found.");
-        }
+        // Removed through the change tracker (not ExecuteDelete) so the audit log records it.
+        db.MedicationBrands.Remove(brand);
+        await db.SaveChangesAsync(ct);
 
         await Send.NoContentAsync(ct);
     }

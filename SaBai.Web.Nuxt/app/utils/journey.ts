@@ -94,18 +94,6 @@ export function nextStep(journey: Journey): JourneyStep | null {
   return journeySteps(journey).find(s => s.state === 'todo') ?? null
 }
 
-/**
- * Where opening a visit as a whole should land: its next station, or the
- * patient record once every needed station is done.
- */
-export function visitLink(journey: Journey, patientId: number, visitId: number) {
-  const next = nextStep(journey)
-  return {
-    to: patientLinkFor(next?.key ?? 'patient', patientId, visitId),
-    label: next ? `Open ${next.label}` : 'Open record',
-  }
-}
-
 /** How many required steps (vitals, vision, consult) are done. */
 export function requiredProgress(journey: Journey) {
   const required = journeySteps(journey).filter(s => !s.optional)

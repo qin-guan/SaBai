@@ -24,7 +24,12 @@ useSaveShortcut(submit)
       <AppPanel title="Patient details">
         <PatientFields v-model="form" :errors="errors" />
       </AppPanel>
-      <AppPanel title="Profile photo & face">
+      <AppPanel
+        title="Profile photo & face"
+        :description="props.patient.hasPhoto ? 'Photo on file' : 'No photo yet'"
+        collapsible
+        :default-open="showCamera || !!newPhoto"
+      >
         <template #actions>
           <Button v-if="!showCamera && !newPhoto" size="sm" variant="outline" @click="showCamera = true">
             {{ props.patient.hasPhoto ? 'Retake photo' : 'Take photo' }}

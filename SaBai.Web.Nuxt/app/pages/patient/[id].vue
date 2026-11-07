@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { PhArrowRight } from '@phosphor-icons/vue'
-import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 
 /**
@@ -16,6 +14,12 @@ const visits = computed(() => visitsData.value?.visits ?? [])
 const current = computed(() => visits.value[0])
 const next = computed(() => (current.value ? nextStep(current.value.journey) : null))
 const progress = computed(() => (current.value ? requiredProgress(current.value.journey) : null))
+const currentSummary = computed(() => {
+  if (!current.value || !progress.value)
+    return undefined
+  const status = next.value ? `Next: ${next.value.label} · ${progress.value.done} of ${progress.value.total} done` : 'Complete'
+  return `${formatVisitDate(current.value.date)} · ${status}`
+})
 useRememberPatient(patientId)
 
 useHead({ title: () => `${patient.value?.name ?? 'Patient'} · Sa'Bai` })
@@ -36,40 +40,40 @@ useHead({ title: () => `${patient.value?.name ?? 'Patient'} · Sa'Bai` })
         :breadcrumbs="[{ label: 'Home', to: '/' }, { label: 'Patients', to: paths.patient() }, { label: patient.name }]"
         hide-title
       />
-      <PatientBanner :patient="patient" />
+      <PatientBanner :patient="patient">
+        <template #actions>
+          <StartVisitButton :patient-id="patient.id" :name="patient.name" />
+        </template>
+      </PatientBanner>
 
       <div class="grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] xl:items-start">
         <div class="flex min-w-0 flex-col gap-3">
           <AppPanel
             title="Current visit"
-            :description="current ? `${formatVisitDate(current.date)} · ${current.villageName}` : undefined"
+            :description="currentSummary"
+            collapsible
+            collapse-key="current-visit"
+            :default-open="!visitsLoading && !current"
           >
-            <template #actions>
-              <StartVisitButton :patient-id="patient.id" :name="patient.name" size="sm" />
-            </template>
             <StateMessage v-if="visitsLoading" kind="loading" message="Loading visits..." />
             <p v-else-if="!current" class="text-xs text-muted-foreground touch:text-sm">
-              No visits yet. Use New Visit to start one.
+              No visits yet. Use New Visit above to start one.
             </p>
-            <div v-else class="flex flex-col gap-3">
+            <template v-else>
               <JourneyTracker :journey="current.journey" :patient-id="patient.id" :visit-id="current.id" />
-              <div class="flex flex-wrap items-center gap-2">
-                <Button v-if="next" as-child variant="success">
-                  <NuxtLink :to="patientLinkFor(next.key, patient.id, current.id)">
-                    Next: {{ next.label }} <PhArrowRight aria-hidden="true" />
-                  </NuxtLink>
-                </Button>
-                <p v-else class="text-xs font-semibold text-success touch:text-sm">
-                  Visit complete — all needed stations done.
-                </p>
-                <p v-if="progress" class="text-xs text-muted-foreground touch:text-sm">
-                  {{ progress.done }} of {{ progress.total }} required stations done
-                </p>
-              </div>
-            </div>
+              <p class="mt-2 text-xs text-muted-foreground touch:text-sm">
+                Select a station to open it for this visit.
+              </p>
+            </template>
           </AppPanel>
 
-          <AppPanel title="Visit history" :description="visitsLoading ? undefined : `${visits.length} visits`" flush>
+          <AppPanel
+            title="Visit history"
+            :description="visitsLoading ? undefined : `${visits.length} ${visits.length === 1 ? 'visit' : 'visits'}`"
+            collapsible
+            collapse-key="visit-history"
+            flush
+          >
             <StateMessage v-if="visitsLoading" kind="loading" message="Loading visits..." />
             <StateMessage v-else-if="visits.length === 0" message="No visits recorded for this patient." />
             <ol v-else class="divide-y divide-border">

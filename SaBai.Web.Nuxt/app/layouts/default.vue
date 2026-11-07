@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PhKeyboard, PhUserFocus } from '@phosphor-icons/vue'
+import { PhKeyboard, PhMagnifyingGlass, PhUserFocus } from '@phosphor-icons/vue'
 import { useResizeObserver } from '@vueuse/core'
 import { Button } from '@/components/ui/button'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
@@ -19,6 +19,11 @@ const showShortcuts = ref(false)
 const showSearch = ref(false)
 const showFaceSearch = ref(false)
 const route = useRoute()
+
+/** The section you are in, named in the app bar on phones (where the search box shrinks to an icon). */
+const sectionName = computed(() =>
+  [...ALL_NAV_ITEMS, ...SUB_PAGES].find(item => isNavItemActive(item, route))?.name ?? "Sa'Bai",
+)
 
 function onKeydown(event: KeyboardEvent) {
   const mod = event.ctrlKey || event.metaKey
@@ -77,13 +82,29 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
           aria-keyshortcuts="Control+B"
         />
         <div class="min-w-0 flex-1">
-          <SearchTrigger @open="showSearch = true" />
+          <SearchTrigger class="max-sm:hidden" @open="showSearch = true" />
+          <p class="truncate text-base font-semibold text-white sm:hidden" aria-hidden="true">
+            {{ sectionName }}
+          </p>
         </div>
+        <div class="md:hidden">
+          <VillageSelector tone="chrome" compact />
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          class="text-chrome-foreground hover:bg-chrome-hover hover:text-white touch:size-11 sm:hidden"
+          aria-label="Search patients and sections"
+          aria-haspopup="dialog"
+          @click="showSearch = true"
+        >
+          <PhMagnifyingGlass aria-hidden="true" />
+        </Button>
         <Button
           v-if="route.path !== paths.scanFace()"
           variant="ghost"
           size="icon"
-          class="text-chrome-foreground hover:bg-chrome-hover hover:text-white"
+          class="text-chrome-foreground hover:bg-chrome-hover hover:text-white touch:size-11"
           aria-label="Find patient by face"
           aria-keyshortcuts="F"
           title="Find patient by face (F)"

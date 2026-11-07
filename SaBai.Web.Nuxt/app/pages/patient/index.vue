@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PhCaretRight, PhMagnifyingGlass, PhScan, PhWarning } from '@phosphor-icons/vue'
+import { PhCaretRight, PhMagnifyingGlass, PhScan } from '@phosphor-icons/vue'
 import { useIntervalFn } from '@vueuse/core'
 import type { StationKey } from '~/utils/journey'
 import type { StationThroughput } from '~/utils/waitTime'
@@ -167,9 +167,9 @@ const arrivedLabel = computed(() => (scope.value === 'today' ? 'Arrived' : 'Last
  * One grid for the heading and every row, so columns line up:
  *   phone   photo | patient (meta below)     | ›     journey on its own line
  *   tablet  photo | patient (meta below)     | journey | ›
- *   laptop  photo | patient | ID | age | arrived | journey | ›
+ *   laptop  photo | patient | allergies | ID | age | arrived | journey | ›
  */
-const gridCols = 'md:grid-cols-[2rem_minmax(0,1fr)_minmax(15rem,22rem)_1rem] lg:grid-cols-[2rem_minmax(9rem,1fr)_5.5rem_4rem_8.5rem_minmax(17rem,24rem)_1rem]'
+const gridCols = 'md:grid-cols-[2rem_minmax(0,1fr)_minmax(15rem,22rem)_1rem] lg:grid-cols-[2rem_minmax(8rem,1fr)_minmax(6rem,11rem)_minmax(5.5rem,8rem)_3.75rem_8.5rem_minmax(16rem,22rem)_1rem]'
 </script>
 
 <template>
@@ -266,6 +266,7 @@ const gridCols = 'md:grid-cols-[2rem_minmax(0,1fr)_minmax(15rem,22rem)_1rem] lg:
         >
           <span />
           <span>Patient</span>
+          <span class="hidden lg:block">Allergies</span>
           <span class="hidden lg:block">ID</span>
           <span class="hidden lg:block">Age / sex</span>
           <span class="hidden lg:block">{{ arrivedLabel }}</span>
@@ -287,15 +288,9 @@ const gridCols = 'md:grid-cols-[2rem_minmax(0,1fr)_minmax(15rem,22rem)_1rem] lg:
 
               <div class="min-w-0">
                 <p class="flex min-w-0 items-center gap-1.5">
-                  <span class="min-w-[4ch] shrink truncate text-sm font-semibold group-hover:text-primary touch:text-base">{{ patient.name }}</span>
-                  <span
-                    v-if="hasDrugAllergy(patient.drugAllergy)"
-                    class="inline-flex max-w-[55%] shrink-0 items-center gap-1 border border-destructive bg-destructive-subtle px-1 text-[0.6875rem] font-semibold text-destructive touch:text-xs"
-                    :title="`Drug allergy: ${patient.drugAllergy}`"
-                  >
-                    <PhWarning class="size-3 shrink-0" aria-hidden="true" />
-                    <span class="truncate"><span class="sr-only">Drug allergy: </span>{{ patient.drugAllergy }}</span>
-                  </span>
+                  <span class="min-w-[6ch] shrink truncate text-sm font-semibold group-hover:text-primary touch:text-base">{{ patient.name }}</span>
+                  <!-- Below laptop width the allergy rides next to the name (its own column on laptops). -->
+                  <AllergyFlag :allergy="patient.drugAllergy" class="max-w-[50%] shrink-0 lg:hidden" />
                 </p>
                 <!-- Below laptop width the columns fold into one meta line. -->
                 <p class="flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground lg:hidden touch:text-[0.8125rem]">
@@ -309,10 +304,16 @@ const gridCols = 'md:grid-cols-[2rem_minmax(0,1fr)_minmax(15rem,22rem)_1rem] lg:
                 </p>
               </div>
 
-              <span class="hidden text-xs text-muted-foreground lg:block">
+              <span class="hidden min-w-0 lg:block">
+                <AllergyFlag :allergy="patient.drugAllergy" />
+              </span>
+              <span
+                class="hidden min-w-0 truncate text-xs text-muted-foreground lg:block"
+                :title="formatPatientCode(patient.villageCode, patient.id)"
+              >
                 <PatientCode :village-code="patient.villageCode" :village-color-hex="patient.villageColorHex" :id="patient.id" />
               </span>
-              <span class="hidden text-xs lg:block">
+              <span class="hidden truncate text-xs whitespace-nowrap lg:block">
                 {{ calculateAge(patient.dateOfBirth) }} y <span class="text-muted-foreground">{{ patient.gender === 'female' ? 'F' : 'M' }}</span>
               </span>
               <span class="hidden text-xs whitespace-nowrap tabular-nums lg:block">
@@ -328,7 +329,7 @@ const gridCols = 'md:grid-cols-[2rem_minmax(0,1fr)_minmax(15rem,22rem)_1rem] lg:
                 aria-hidden="true"
               />
 
-              <div class="col-span-3 min-w-0 md:col-span-1 md:col-start-3 md:row-start-1 lg:col-start-6">
+              <div class="col-span-3 min-w-0 md:col-span-1 md:col-start-3 md:row-start-1 lg:col-start-7">
                 <JourneyTracker
                   v-if="patient.lastVisitJourney && patient.lastVisitId"
                   :journey="patient.lastVisitJourney"
@@ -342,7 +343,7 @@ const gridCols = 'md:grid-cols-[2rem_minmax(0,1fr)_minmax(15rem,22rem)_1rem] lg:
               </div>
 
               <PhCaretRight
-                class="hidden size-4 text-muted-foreground group-hover:text-primary md:col-start-4 md:block lg:col-start-7"
+                class="hidden size-4 text-muted-foreground group-hover:text-primary md:col-start-4 md:block lg:col-start-8"
                 aria-hidden="true"
               />
             </NuxtLink>

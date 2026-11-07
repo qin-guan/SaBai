@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { PhWarning } from '@phosphor-icons/vue'
 import type { SaBaiAPIEndpointsPatientsGetResponse } from '@sabai/sdk/types'
 
 /**
@@ -9,8 +8,6 @@ import type { SaBaiAPIEndpointsPatientsGetResponse } from '@sabai/sdk/types'
  */
 const props = defineProps<{ patient: SaBaiAPIEndpointsPatientsGetResponse }>()
 
-const allergy = computed(() => props.patient.drugAllergy?.trim())
-const hasAllergy = computed(() => hasDrugAllergy(allergy.value))
 const cards = computed(() =>
   [
     props.patient.hasPoorCard && 'POOR',
@@ -69,13 +66,7 @@ const cards = computed(() =>
       </dl>
     </div>
     </div>
-    <div
-      class="flex items-center gap-1.5 self-start border sm:self-auto px-2 py-1 text-xs font-semibold touch:text-sm"
-      :class="hasAllergy ? 'border-destructive bg-destructive-subtle text-destructive' : 'border-border bg-card text-muted-foreground'"
-    >
-      <PhWarning v-if="hasAllergy" class="size-4" aria-hidden="true" />
-      <span>Allergies: {{ allergy || 'Not recorded' }}</span>
-    </div>
+    <AllergyFlag :allergy="props.patient.drugAllergy" variant="full" class="sm:max-w-sm" />
     <div v-if="$slots.actions" class="flex flex-wrap gap-2 max-sm:[&>*]:flex-1">
       <slot name="actions" />
     </div>

@@ -12,7 +12,11 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 /** Picks the village that new patients and visits are recorded against. */
-const props = defineProps<{ tone?: 'chrome' | 'default' }>()
+const props = defineProps<{
+  tone?: 'chrome' | 'default'
+  /** Narrow screens: just the colour swatch and village code. */
+  compact?: boolean
+}>()
 const { selectedVillageCodeId, selectedVillage, setSelectedVillageCodeId, villageCodes, isLoading }
   = useVillageCode()
 
@@ -36,16 +40,19 @@ const selected = computed({
     <DropdownMenuTrigger as-child>
       <Button
         variant="outline"
-        class="w-full justify-start gap-2 md:w-48 xl:w-56"
-        :class="props.tone === 'chrome' && 'border-chrome-hover bg-chrome-hover text-chrome-foreground hover:bg-chrome-hover/80 hover:text-white'"
+        class="justify-start gap-2"
+        :class="[
+          props.compact ? 'w-auto px-2' : 'w-full md:w-48 xl:w-56',
+          props.tone === 'chrome' && 'border-chrome-hover bg-chrome-hover text-chrome-foreground hover:bg-chrome-hover/80 hover:text-white',
+        ]"
         aria-label="Village for new patients and visits"
       >
-        <PhMapPin aria-hidden="true" />
+        <PhMapPin v-if="!props.compact || !selectedVillage" aria-hidden="true" />
         <template v-if="selectedVillage">
           <span class="size-2.5 shrink-0" :style="{ backgroundColor: selectedVillage.colorHex }" aria-hidden="true" />
-          <span class="truncate">{{ selectedVillage.name }}</span>
+          <span class="max-w-24 truncate" :class="props.compact && 'font-mono font-semibold'">{{ props.compact ? selectedVillage.code : selectedVillage.name }}</span>
         </template>
-        <span v-else class="font-bold" :class="props.tone === 'chrome' ? 'text-amber-200' : 'text-warning'">Select village</span>
+        <span v-else class="font-bold" :class="props.tone === 'chrome' ? 'text-amber-200' : 'text-warning'">{{ props.compact ? 'Village' : 'Select village' }}</span>
         <PhCaretDown class="ml-auto" aria-hidden="true" />
       </Button>
     </DropdownMenuTrigger>

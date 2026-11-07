@@ -8,7 +8,7 @@ const props = defineProps<{
 </script>
 
 <template>
-  <span class="inline-flex items-center gap-1.5 font-mono tabular-nums">
+  <span class="inline-flex max-w-full min-w-0 items-center gap-1.5 font-mono tabular-nums">
     <span
       v-if="props.villageColorHex"
       class="size-2.5 shrink-0"
@@ -16,6 +16,6 @@ const props = defineProps<{
       :title="props.villageCode ?? undefined"
       aria-hidden="true"
     />
-    {{ formatPatientCode(props.villageCode, props.id) }}
+    <span class="truncate">{{ formatPatientCode(props.villageCode, props.id) }}</span>
   </span>
 </template>

@@ -259,7 +259,7 @@ const resultSummary = computed(() => {
                       :key="link.target"
                       type="button"
                       tabindex="-1"
-                      class="cursor-pointer border border-border bg-card px-1.5 py-0.5 text-[0.6875rem] hover:border-primary hover:text-primary"
+                      class="cursor-pointer border border-border bg-card px-1.5 py-0.5 text-xs hover:border-primary hover:text-primary"
                       :class="(stationTarget ?? 'patient') === link.target && 'border-primary text-primary'"
                       @click="openPatient(item.patient, link.target)"
                     >
@@ -270,14 +270,14 @@ const resultSummary = computed(() => {
                 <template v-else>
                   <component :is="item.icon" class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
                   <span class="flex-1 text-sm touch:text-base">{{ item.label }}</span>
-                  <span v-if="item.kind === 'page'" class="text-[0.6875rem] text-muted-foreground">Section</span>
+                  <span v-if="item.kind === 'page'" class="text-xs text-muted-foreground">Section</span>
                 </template>
               </li>
             </template>
           </ul>
         </div>
 
-        <footer class="hidden flex-wrap items-center gap-x-3 gap-y-1 border-t border-border bg-stripe px-3 py-1.5 text-[0.6875rem] text-muted-foreground kb:flex">
+        <footer class="hidden flex-wrap items-center gap-x-3 gap-y-1 border-t border-border bg-stripe px-3 py-1.5 text-xs text-muted-foreground kb:flex">
           <span><ShortcutHint keys="↑" /> <ShortcutHint keys="↓" /> move</span>
           <span><ShortcutHint keys="Enter" /> open<template v-if="stationTarget && stationTarget !== 'patient'"> in {{ stationName }}</template></span>
           <span><ShortcutHint keys="Shift+Enter" /> patient record</span>

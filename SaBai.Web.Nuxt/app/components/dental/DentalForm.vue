@@ -203,7 +203,7 @@ const extraIds = { brushingFrequency: useId(), sugarConsumption: useId(), referr
       </AppPanel>
 
       <AppPanel :id="SECTIONS[4].id" :step="5" :title="SECTIONS[4].title" flush>
-        <div class="hidden grid-cols-[6rem_11rem_1fr_1fr_1fr] gap-2 border-b border-border bg-stripe px-3 py-1 text-[0.6875rem] touch:text-xs font-semibold text-muted-foreground md:grid" aria-hidden="true">
+        <div class="hidden grid-cols-[6rem_11rem_1fr_1fr_1fr] gap-2 border-b border-border bg-stripe px-3 py-1 text-xs touch:text-xs font-semibold text-muted-foreground md:grid" aria-hidden="true">
           <span>Treatment</span><span>Status</span><span>Date</span><span>Operator</span><span>Tooth no.</span>
         </div>
         <div

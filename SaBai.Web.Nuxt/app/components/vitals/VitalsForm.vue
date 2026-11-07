@@ -195,7 +195,9 @@ const diabetesLabelId = useId()
     >
       <AppPanel
         title="Growth Charts"
-        description="Height (blue) and weight (red) on the NCHS growth chart for this patient's age and gender."
+        description="Height (blue) and weight (red) on the NCHS chart for age and gender."
+        collapsible
+        collapse-key="growth-chart"
       >
         <HeightWeightChart :age="patientAge" :height="chartHeight" :weight="chartWeight" :gender="props.patient.gender" />
       </AppPanel>
@@ -253,13 +255,13 @@ const diabetesLabelId = useId()
       </div>
     </AppPanel>
 
-    <AppPanel title="Urinalysis" description="Urine test findings.">
+    <AppPanel title="Urinalysis" description="Urine test findings." collapsible :default-open="!!form.urineTest">
       <FormField v-slot="{ id }" label="Urinalysis Diagnostics (Leukocytes, Nitrites, Protein notes)">
         <Textarea :id="id" v-model="form.urineTest" :rows="3" />
       </FormField>
     </AppPanel>
 
-    <AppPanel title="Additional Remarks" description="Any additional clinical notes.">
+    <AppPanel title="Additional Remarks" description="Any additional clinical notes." collapsible :default-open="!!form.others">
       <FormField v-slot="{ id }" label="Additional Clinical Remarks">
         <Textarea :id="id" v-model="form.others" :rows="3" />
       </FormField>

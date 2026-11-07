@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PhIdentificationCard, PhPencilSimple } from '@phosphor-icons/vue'
+import { PhCaretRight, PhIdentificationCard, PhPencilSimple } from '@phosphor-icons/vue'
 import type { SaBaiAPIEndpointsPatientsGetResponse, SaBaiAPIEndpointsPatientsVisitsGetItem } from '@sabai/sdk/types'
 import type { Crumb } from '~/components/app/PageHeader.vue'
 import type { StationKey } from '~/utils/journey'
@@ -34,6 +34,17 @@ const crumbs = computed<Crumb[]>(() => [
   { label: props.patient?.name ?? props.title },
 ])
 
+const journeyId = useId()
+const { open: journeyOpen, toggle: toggleJourney } = usePersistedToggle('station-journey', false)
+const journeySummary = computed(() => {
+  const journey = props.selectedVisit?.journey
+  if (!journey)
+    return ''
+  const next = nextStep(journey)
+  const { done, total } = requiredProgress(journey)
+  return next ? `Next: ${next.label} · ${done} of ${total} required done` : 'All needed stations done'
+})
+
 useHead({ title: () => `${props.title}${props.patient ? ` — ${props.patient.name}` : ''} · Sa'Bai` })
 </script>
 
@@ -66,24 +77,28 @@ useHead({ title: () => `${props.title}${props.patient ? ` — ${props.patient.na
         :summary-prefix="props.summaryPrefix"
         :empty-message="props.emptyMessage"
       >
-        <template v-if="props.selectedVisit">
-          <!-- Phones: one row of equal steps instead of three wrapped lines. -->
+        <div v-if="props.selectedVisit" class="flex min-w-0 flex-col gap-2">
+          <!-- Collapsed by default: one summary line; open for the clickable steps. -->
+          <button
+            type="button"
+            class="flex min-w-0 cursor-pointer items-center gap-2 text-left text-xs hover:underline touch:min-h-11 touch:text-sm"
+            :aria-expanded="journeyOpen"
+            :aria-controls="journeyId"
+            @click="toggleJourney"
+          >
+            <PhCaretRight weight="bold" class="size-3.5 shrink-0 transition-transform motion-reduce:transition-none" :class="journeyOpen && 'rotate-90'" aria-hidden="true" />
+            <span class="font-semibold">Journey</span>
+            <span class="truncate text-muted-foreground">{{ journeySummary }}</span>
+          </button>
           <JourneyTracker
-            class="sm:hidden"
+            v-show="journeyOpen"
+            :id="journeyId"
             :journey="props.selectedVisit.journey"
             :patient-id="props.patient.id"
             :visit-id="props.selectedVisit.id"
             :active="props.station"
-            size="compact"
           />
-          <JourneyTracker
-            class="max-sm:hidden"
-            :journey="props.selectedVisit.journey"
-            :patient-id="props.patient.id"
-            :visit-id="props.selectedVisit.id"
-            :active="props.station"
-          />
-        </template>
+        </div>
       </VisitSelector>
       <slot v-if="props.selectedVisit" :visit="props.selectedVisit" :patient="props.patient" />
       <div

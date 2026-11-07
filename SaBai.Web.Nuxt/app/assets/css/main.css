@@ -19,6 +19,15 @@
    */
   --font-sans: "Atkinson Hyperlegible Next", ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
   --font-mono: "Atkinson Hyperlegible Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  /*
+   * Lyra sizes most controls and table text with text-xs. 12px is too small to
+   * read comfortably at arm's length, so the two smallest steps go up a notch
+   * on every screen (phones step up further below).
+   */
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: 1.125rem;
+  --text-sm: 0.90625rem;
+  --text-sm--line-height: 1.375rem;
   --color-chrome: var(--chrome);
   --color-chrome-foreground: var(--chrome-foreground);
   --color-chrome-hover: var(--chrome-hover);

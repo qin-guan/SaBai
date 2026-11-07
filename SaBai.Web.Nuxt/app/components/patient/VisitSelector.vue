@@ -33,7 +33,7 @@ const selected = computed(() => props.visits?.find(v => v.id.toString() === mode
         </div>
       </div>
       <!-- The visit's journey sits beside the picker (one strip instead of two). -->
-      <div v-if="$slots.default" class="min-w-0 border-border lg:border-l lg:pl-4">
+      <div v-if="$slots.default" class="min-w-0 border-border lg:flex-1 lg:border-l lg:pl-4">
         <slot />
       </div>
       <p v-if="props.summaryPrefix" class="sr-only" aria-live="polite">

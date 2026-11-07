@@ -74,12 +74,38 @@ station's form for the same visit, so a patient can be sent on from any screen.
 - **Starting a visit** works without the camera too: Scan Face has a *Find
   patient* search (name, any form of the ID, ID number, phone or village — the
   same index as the universal search), and the patient record has a *New Visit*
-  button. Both use `<StartVisitButton>`, which asks before opening a second
+  button in its banner. Both use `<StartVisitButton>`, which asks before opening a second
   visit for someone who already had one opened recently.
 - **The patient record** (`/patient/:id`) shows the current visit's journey
-  with a *Next* button, the journey of every past visit, and the patient's
-  details, edited in place with a save bar like the station forms.
-- **Station screens** show the journey bar under the patient banner.
+  (each step opens that station), the journey of every past visit, and the
+  patient's details, edited in place with a save bar like the station forms.
+- **Station screens** show the journey beside the visit picker, under the
+  patient banner.
+
+The journey is five equal cells (done in green, the next step filled, optional
+steps dashed), each a link to that station for the visit. On station screens
+and the patient record it starts collapsed to a one-line summary ("Next:
+Vision · 1 of 3 done").
+
+## Collapsed sections
+
+Reference and good-to-have sections start collapsed so screens show the work
+first: the station journey, the record's current visit and visit history,
+profile photo, previous consults, growth charts, and the optional vitals notes
+(urinalysis, remarks — open when they already hold text). The header keeps a
+one-line summary; opening or closing one is remembered on the device
+(`AppPanel collapsible collapse-key="…"`, `usePersistedToggle`). Collapsed
+content stays mounted, so typed input is kept.
+
+## Drug allergies
+
+The free-text answer is split into separate allergies
+(`parseDrugAllergies`: commas, semicolons, slashes, new lines, "and"). Lists
+show a small solid red tag with the first allergy and a "+N" count (an
+*Allergies* column on laptops). The patient banner ends in a full-width red
+band, like an allergy wristband, listing every allergy as plain text — never
+hidden behind a click. "None"-style answers show a quiet "No known drug
+allergies" line; an empty answer shows an amber prompt to ask the patient.
 
 Dental waits for patients who were referred or have finished their consult.
 Pharmacy waits for undispensed orders.
@@ -128,7 +154,8 @@ patient data.
 - **Laptops (13–15")**: the patient list is a column grid (patient, ID,
   age/sex, arrival time and time in clinic, journey) with ~40px rows, and data
   tables use ~36px rows. Station screens put the visit picker and journey in
-  one strip under the patient banner so the form starts higher.
+  one strip under the patient banner so the form starts higher. Text uses 13px
+for compact UI text and 14.5px for body text.
 - **Tablets**: below 1100px the sidebar starts as an icon rail (Ctrl/⌘+B or the
   toggle expands it; the choice is remembered). The patient list folds ID, age
   and arrival into one line under the name, with the journey beside it.
@@ -138,7 +165,8 @@ patient data.
 Below 640px (or on any touch screen) the dense desktop sizing steps up: body
 text 15px, labels/hints 14px, inputs 16px (no iOS zoom-on-focus) and every
 control 44px tall. Form grids collapse to one column (short numeric vitals stay two
-per row), the station journey becomes one row of equal steps, the sidebar becomes a
+per row), the app bar shows the section name, a village chip (colour and code) and a
+search icon instead of the search box, the sidebar becomes a
 drawer, worklists become tappable rows, wide tables (stock, ingredients,
 brands, village codes) stack into labelled cards, dialogs go full-screen and
 the save bar sticks to the bottom with full-width buttons. Keyboard hints are

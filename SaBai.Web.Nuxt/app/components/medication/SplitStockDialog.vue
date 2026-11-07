@@ -84,7 +84,7 @@ const parent = computed(() => [
     <AppPanel title="Parent stock details" flush class="mb-3">
       <dl class="grid grid-cols-1 sm:grid-cols-3">
         <div v-for="[label, value] in parent" :key="label" class="border-r border-b border-border px-2 py-1.5">
-          <dt class="text-[0.6875rem] touch:text-xs font-semibold text-muted-foreground">
+          <dt class="text-xs touch:text-xs font-semibold text-muted-foreground">
             {{ label }}
           </dt>
           <dd class="font-semibold">

@@ -21,6 +21,9 @@ const trailing = [
   <AppPanel
     v-else-if="consults && consults.length > 0"
     :title="`Previous consults from this visit (${consults.length})`"
+    description="Earlier notes for this visit"
+    collapsible
+    collapse-key="previous-consults"
     flush
   >
     <article v-for="consult in consults" :key="consult.id" class="flex flex-col gap-2 border-b border-border px-3 py-2 last:border-b-0">
@@ -29,7 +32,7 @@ const trailing = [
       </p>
       <template v-for="f in fields" :key="f.key">
         <div v-if="consult[f.key]">
-          <p class="text-[0.6875rem] touch:text-xs font-semibold text-muted-foreground">
+          <p class="text-xs touch:text-xs font-semibold text-muted-foreground">
             {{ f.label }}
           </p>
           <p class="whitespace-pre-wrap break-words">
@@ -38,7 +41,7 @@ const trailing = [
         </div>
       </template>
       <div v-if="consult.diagnoses.length > 0">
-        <p class="text-[0.6875rem] touch:text-xs font-semibold text-muted-foreground">
+        <p class="text-xs touch:text-xs font-semibold text-muted-foreground">
           Diagnoses
         </p>
         <ul class="mt-0.5 flex flex-col gap-0.5">
@@ -49,7 +52,7 @@ const trailing = [
       </div>
       <template v-for="f in trailing" :key="f.key">
         <div v-if="consult[f.key]">
-          <p class="text-[0.6875rem] touch:text-xs font-semibold text-muted-foreground">
+          <p class="text-xs touch:text-xs font-semibold text-muted-foreground">
             {{ f.label }}
           </p>
           <p class="whitespace-pre-wrap break-words">

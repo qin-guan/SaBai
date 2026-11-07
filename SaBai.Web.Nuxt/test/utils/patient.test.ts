@@ -1,5 +1,6 @@
 import {
   hasDrugAllergy,
+  parseDrugAllergies,
   isSameDay,
   formatPatientCode,
   formatPatientId,
@@ -99,6 +100,20 @@ describe("hasDrugAllergy", () => {
   it("ignores empty and 'none' answers", () => {
     for (const value of [null, "", " ", "nil", "NKDA", "None", "-", "n/a"])
       expect(hasDrugAllergy(value)).toBe(false);
+  });
+});
+
+describe("parseDrugAllergies", () => {
+  it("splits on commas, semicolons, slashes, new lines and 'and'", () => {
+    expect(parseDrugAllergies("Penicillin, sulfa drugs; aspirin\nNSAIDs / codeine and latex")).toEqual([
+      "Penicillin", "sulfa drugs", "aspirin", "NSAIDs", "codeine", "latex",
+    ]);
+  });
+
+  it("drops duplicates and empty or 'none' answers", () => {
+    expect(parseDrugAllergies("Penicillin, penicillin, , nil")).toEqual(["Penicillin"]);
+    expect(parseDrugAllergies("None")).toEqual([]);
+    expect(parseDrugAllergies(null)).toEqual([]);
   });
 });
 

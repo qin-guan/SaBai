@@ -62,3 +62,25 @@ export function isSameDay(date: Date | string, now = new Date()) {
   const d = new Date(date);
   return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
 }
+
+/**
+ * Splits a free-text drug allergy answer into separate allergies
+ * ("Penicillin, sulfa drugs; aspirin" → three items), so long lists can be
+ * shown as a count in lists and in full on the patient banner. Duplicates and
+ * "none"-style answers are dropped.
+ */
+export function parseDrugAllergies(drugAllergy: string | null | undefined): string[] {
+  if (!hasDrugAllergy(drugAllergy))
+    return [];
+  const seen = new Set<string>();
+  return drugAllergy!
+    .split(/[,;\n/]+|\s+(?:and|&)\s+/i)
+    .map(item => item.trim().replace(/\.$/, ""))
+    .filter((item) => {
+      const key = item.toLowerCase();
+      if (!hasDrugAllergy(item) || seen.has(key))
+        return false;
+      seen.add(key);
+      return true;
+    });
+}

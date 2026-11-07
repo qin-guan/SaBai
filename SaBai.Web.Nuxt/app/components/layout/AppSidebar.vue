@@ -44,9 +44,6 @@ const { user } = useCurrentUser()
         <img src="/favicon.ico" alt="" class="size-7 shrink-0 bg-chrome p-1">
         <span class="truncate text-sm group-data-[collapsible=icon]:hidden">Project Sa'bai</span>
       </NuxtLink>
-      <div class="md:hidden">
-        <VillageSelector />
-      </div>
     </SidebarHeader>
     <SidebarContent>
       <SidebarGroup v-for="group in GROUPS" :key="group.label">
@@ -84,7 +81,7 @@ const { user } = useCurrentUser()
               <PhUserCircle aria-hidden="true" />
               <span class="flex min-w-0 flex-1 flex-col leading-tight">
                 <span class="truncate">{{ user?.nickname ?? 'My account' }}</span>
-                <span v-if="user" class="truncate text-[0.6875rem] text-muted-foreground">{{ user.userName }}</span>
+                <span v-if="user" class="truncate text-xs text-muted-foreground">{{ user.userName }}</span>
               </span>
             </NuxtLink>
           </SidebarMenuButton>

@@ -47,9 +47,14 @@ async function open(patientId: number, target: PatientLinkTarget | undefined = s
           <div class="flex items-center gap-3">
             <PatientPhoto :patient-id="match.id" :has-photo="match.hasPhoto" :size="48" alt="" :name="match.name" />
             <div class="min-w-0 flex-1">
-              <p class="truncate text-sm font-semibold">
+              <NuxtLink
+                :to="paths.patientDetail(match.id)"
+                class="block truncate text-sm font-semibold hover:text-primary hover:underline"
+                :title="`Open ${match.name}'s record`"
+                @click="emit('close')"
+              >
                 {{ match.name }}
-              </p>
+              </NuxtLink>
               <p class="text-xs text-muted-foreground touch:text-sm">
                 {{ match.displayId }}
                 • <span class="font-semibold text-foreground">{{ Math.round(match.similarity * 100) }}% match</span>

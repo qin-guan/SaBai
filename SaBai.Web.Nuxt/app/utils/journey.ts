@@ -7,6 +7,8 @@
  * patient record, station pages) shows the same at-a-glance status.
  */
 
+import { patientLinkFor } from './paths'
+
 export type StationKey = 'vitals' | 'vision' | 'consults' | 'dental' | 'pharmacy'
 
 /**
@@ -90,6 +92,18 @@ export function stepState(journey: Journey, key: StationKey): { state: StepState
 /** The first step still to do, or null when the journey is complete. */
 export function nextStep(journey: Journey): JourneyStep | null {
   return journeySteps(journey).find(s => s.state === 'todo') ?? null
+}
+
+/**
+ * Where opening a visit as a whole should land: its next station, or the
+ * patient record once every needed station is done.
+ */
+export function visitLink(journey: Journey, patientId: number, visitId: number) {
+  const next = nextStep(journey)
+  return {
+    to: patientLinkFor(next?.key ?? 'patient', patientId, visitId),
+    label: next ? `Open ${next.label}` : 'Open record',
+  }
 }
 
 /** How many required steps (vitals, vision, consult) are done. */

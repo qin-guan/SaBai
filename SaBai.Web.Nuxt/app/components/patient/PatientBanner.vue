@@ -6,7 +6,11 @@ import type { SaBaiAPIEndpointsPatientsGetResponse } from '@sabai/sdk/types'
  * a patient's screens — photo, name, ID, age/sex, DOB and the drug allergy
  * flagged in red.
  */
-const props = defineProps<{ patient: SaBaiAPIEndpointsPatientsGetResponse }>()
+const props = defineProps<{
+  patient: SaBaiAPIEndpointsPatientsGetResponse
+  /** Link the name here (the patient record, from station screens). */
+  to?: string
+}>()
 
 const cards = computed(() =>
   [
@@ -24,7 +28,12 @@ const cards = computed(() =>
     <PatientPhoto :patient-id="props.patient.id" :has-photo="props.patient.hasPhoto" :size="48" alt="" zoomable :name="props.patient.name" />
     <div class="min-w-0 flex-1">
       <p class="text-base font-bold leading-tight break-words sm:text-lg">
-        {{ props.patient.name }}
+        <NuxtLink v-if="props.to" :to="props.to" class="hover:text-primary hover:underline" :title="`Open ${props.patient.name}'s record`">
+          {{ props.patient.name }}
+        </NuxtLink>
+        <template v-else>
+          {{ props.patient.name }}
+        </template>
       </p>
       <dl class="mt-0.5 flex flex-wrap gap-x-4 gap-y-0.5 text-xs touch:text-sm">
         <div class="flex gap-1">

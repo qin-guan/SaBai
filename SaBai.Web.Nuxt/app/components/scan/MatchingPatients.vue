@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button'
 
 /**
  * Searches the face index for patients matching the captured photo; each match
- * can start a visit (see StartVisitButton).
+ * links to their record, can start a visit (see StartVisitButton), and lists
+ * their visits with each station a click away.
  */
 const props = defineProps<{ image: string }>()
 const emit = defineEmits<{ register: [] }>()
@@ -39,9 +40,13 @@ const matches = computed(() => search.data.value ?? [])
         <div class="flex items-center gap-3">
           <PatientPhoto :patient-id="match.id" :has-photo="match.hasPhoto" :size="48" alt="" zoomable :name="match.name" />
           <div class="min-w-0 flex-1">
-            <p class="truncate text-sm font-semibold">
+            <NuxtLink
+              :to="paths.patientDetail(match.id)"
+              class="block truncate text-sm font-semibold hover:text-primary hover:underline"
+              :title="`Open ${match.name}'s record`"
+            >
               {{ match.name }}
-            </p>
+            </NuxtLink>
             <p class="text-xs text-muted-foreground touch:text-sm">
               {{ match.displayId }}<template v-if="match.villageCode">
                 • {{ match.villageCode }}

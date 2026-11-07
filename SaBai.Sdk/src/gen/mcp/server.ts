@@ -3,6 +3,7 @@
 * Do not edit manually.
 */
 
+import { saBaiAPIEndpointsAuditLogsListGetEndpointHandler } from './saBaiAPIEndpointsAuditLogsListGetEndpoint'
 import { saBaiAPIEndpointsAuthAccountAuthenticatorPostEndpointHandler } from './saBaiAPIEndpointsAuthAccountAuthenticatorPostEndpoint'
 import { saBaiAPIEndpointsAuthAccountPasswordPostEndpointHandler } from './saBaiAPIEndpointsAuthAccountPasswordPostEndpoint'
 import { saBaiAPIEndpointsAuthAccountRecoveryCodesPostEndpointHandler } from './saBaiAPIEndpointsAuthAccountRecoveryCodesPostEndpoint'
@@ -142,6 +143,7 @@ import { saBaiAPIEndpointsVitalsGetEndpointHandler } from './saBaiAPIEndpointsVi
 import { saBaiAPIEndpointsVitalsListByPatientGetEndpointHandler } from './saBaiAPIEndpointsVitalsListByPatientGetEndpoint'
 import { saBaiAPIEndpointsVitalsUpdateByVisitPatchEndpointHandler } from './saBaiAPIEndpointsVitalsUpdateByVisitPatchEndpoint'
 import { saBaiAPIEndpointsVitalsUpdatePatchEndpointHandler } from './saBaiAPIEndpointsVitalsUpdatePatchEndpoint'
+import { saBaiAPIEndpointsAuditLogsListGetEndpointQueryActionSchema, saBaiAPIEndpointsAuditLogsListGetEndpointQueryBeforeSchema, saBaiAPIEndpointsAuditLogsListGetEndpointQueryEntityIdSchema, saBaiAPIEndpointsAuditLogsListGetEndpointQueryEntityTypeSchema, saBaiAPIEndpointsAuditLogsListGetEndpointQueryFromSchema, saBaiAPIEndpointsAuditLogsListGetEndpointQueryTakeSchema, saBaiAPIEndpointsAuditLogsListGetEndpointQueryToSchema, saBaiAPIEndpointsAuditLogsListGetEndpointQueryUserIdSchema, saBaiAPIEndpointsAuditLogsListGetEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsAuditLogsListGetEndpointSchema'
 import { saBaiAPIEndpointsAuthAccountAuthenticatorPostEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsAuthAccountAuthenticatorPostEndpointSchema'
 import { saBaiAPIEndpointsAuthAccountPasswordPostEndpointBodySchema, saBaiAPIEndpointsAuthAccountPasswordPostEndpointStatus204Schema } from '../zod/saBaiAPIEndpointsAuthAccountPasswordPostEndpointSchema'
 import { saBaiAPIEndpointsAuthAccountRecoveryCodesPostEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsAuthAccountRecoveryCodesPostEndpointSchema'
@@ -290,6 +292,16 @@ export function getServer() {
     name: 'SaBai.API | v1',
     version: '1.0.0',
   })
+
+  server.registerTool("SaBaiAPIEndpointsAuditLogsListGetEndpoint", {
+    title: "List audit log entries",
+    description: "Who created, changed or deleted which record, and staff sign-ins, newest first. Admin only, because entries include the old and new values of patient records. Page with `before` set to the previous page's `nextBefore`.",
+    outputSchema: z.object({ data: saBaiAPIEndpointsAuditLogsListGetEndpointStatus200Schema }),
+    inputSchema: z.object({ query: z.object({ "entityType": saBaiAPIEndpointsAuditLogsListGetEndpointQueryEntityTypeSchema, "entityId": saBaiAPIEndpointsAuditLogsListGetEndpointQueryEntityIdSchema, "userId": saBaiAPIEndpointsAuditLogsListGetEndpointQueryUserIdSchema, "action": saBaiAPIEndpointsAuditLogsListGetEndpointQueryActionSchema, "from": saBaiAPIEndpointsAuditLogsListGetEndpointQueryFromSchema, "to": saBaiAPIEndpointsAuditLogsListGetEndpointQueryToSchema, "before": saBaiAPIEndpointsAuditLogsListGetEndpointQueryBeforeSchema, "take": saBaiAPIEndpointsAuditLogsListGetEndpointQueryTakeSchema }) }),
+  }, async ({ query }, ctx) => {
+    return saBaiAPIEndpointsAuditLogsListGetEndpointHandler({ query }, ctx)
+  })
+
 
   server.registerTool("SaBaiAPIEndpointsAuthAccountAuthenticatorPostEndpoint", {
     title: "Start authenticator (TOTP) setup",

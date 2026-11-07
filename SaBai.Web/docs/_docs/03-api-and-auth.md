@@ -199,3 +199,27 @@ On the web side:
   edit form can replace them, and the scan-face page searches by face
   (`POST /patients/search-by-face`) and opens a visit for the chosen match.
 
+
+## 7. Audit log
+
+The API records an audit entry for every row created, updated or deleted through
+`AppDbContext` (an EF Core `SaveChangesInterceptor`, `SaBai.API/Data/AuditInterceptor.cs`),
+plus sign-ins, failed sign-ins and sign-outs. Each entry keeps the staff user, time,
+request (`PATCH /village-codes/3`), client IP and the old/new value of each changed
+column. Password hashes, security stamps and two-factor tokens are stored as
+`[redacted]`.
+
+| Endpoint | Purpose |
+| --- | --- |
+| `GET /audit-logs` | Admin only. Newest first; filter by `entityType`, `entityId`, `userId`, `action`, `from`, `to`; page with `before` = previous page's `nextBefore` (`take` up to 200). |
+
+Notes for API changes:
+
+- Bulk `ExecuteUpdate`/`ExecuteDelete` bypass the change tracker and are **not**
+  audited; load the rows and change/remove them instead.
+- Entries copy patient data (old/new values), which is why the endpoint is admin-only.
+- The client IP is the direct peer. Behind the web apps' `/api` proxy that is the
+  proxy itself unless forwarded headers are configured.
+
+In the Nuxt app, admins open it from **Settings › Audit Log**
+(`/settings/audit-log?entityType=Patient&entityId=12` links to one record's history).

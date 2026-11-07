@@ -4,6 +4,7 @@ using FastEndpoints.OpenApi;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using QuestPDF.Infrastructure;
 using SaBai.API.Auth;
 using SaBai.API.Data;
@@ -130,7 +131,17 @@ builder.Services.AddCors(options =>
     )
 );
 
-builder.AddNpgsqlDbContext<AppDbContext>(connectionName: "sabai");
+// Every row created, updated or deleted through AppDbContext is written to the audit
+// log with the signed-in user. The context is pooled, so the interceptor is a single
+// shared instance; HttpContextAccessor reads the current request from an AsyncLocal.
+builder.Services.AddHttpContextAccessor();
+builder.Services.TryAddSingleton(TimeProvider.System);
+builder.Services.AddScoped<AuditTrail>();
+var auditInterceptor = new AuditInterceptor(new HttpContextAccessor(), TimeProvider.System);
+builder.AddNpgsqlDbContext<AppDbContext>(
+    connectionName: "sabai",
+    configureDbContextOptions: options => options.AddInterceptors(auditInterceptor)
+);
 builder.AddQdrantClient("qdrant");
 builder.AddFaceRecognition();
 

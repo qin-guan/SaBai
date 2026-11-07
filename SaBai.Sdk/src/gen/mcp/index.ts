@@ -1,3 +1,4 @@
+export { saBaiAPIEndpointsAuditLogsListGetEndpointHandler } from './saBaiAPIEndpointsAuditLogsListGetEndpoint'
 export { saBaiAPIEndpointsAuthAccountAuthenticatorPostEndpointHandler } from './saBaiAPIEndpointsAuthAccountAuthenticatorPostEndpoint'
 export { saBaiAPIEndpointsAuthAccountPasswordPostEndpointHandler } from './saBaiAPIEndpointsAuthAccountPasswordPostEndpoint'
 export { saBaiAPIEndpointsAuthAccountRecoveryCodesPostEndpointHandler } from './saBaiAPIEndpointsAuthAccountRecoveryCodesPostEndpoint'

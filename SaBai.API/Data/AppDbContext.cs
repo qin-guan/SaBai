@@ -55,6 +55,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<Broadcast> Broadcasts => Set<Broadcast>();
 
+    public DbSet<AuditLogEntry> AuditLogs => Set<AuditLogEntry>();
+
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
         StampRecordedAt();
@@ -355,6 +357,23 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             entity.Property(x => x.Title).HasMaxLength(255);
             entity.Property(x => x.CreatedBy).HasMaxLength(255);
             entity.Property(x => x.Severity).HasConversion<string>().HasMaxLength(16);
+        });
+
+        modelBuilder.Entity<AuditLogEntry>(entity =>
+        {
+            entity.ToTable("AuditLogs");
+            entity.Property(x => x.Action).HasConversion<string>().HasMaxLength(32);
+            entity.Property(x => x.UserName).HasMaxLength(150);
+            entity.Property(x => x.EntityType).HasMaxLength(100);
+            entity.Property(x => x.EntityId).HasMaxLength(200);
+            entity.Property(x => x.IpAddress).HasMaxLength(64);
+            entity.Property(x => x.Request).HasMaxLength(500);
+            entity.Property(x => x.Details).HasMaxLength(500);
+            // Stored as a jsonb array on the row; never queried on its own.
+            entity.OwnsMany(x => x.Changes, changes => changes.ToJson());
+            entity.HasIndex(x => x.OccurredAt);
+            entity.HasIndex(x => new { x.EntityType, x.EntityId });
+            entity.HasIndex(x => x.UserId);
         });
     }
 }

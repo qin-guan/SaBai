@@ -21,6 +21,7 @@ export const queryKeys = {
   twoFactor: () => ["auth", "two-factor"] as const,
   staffUsers: () => ["staff-users"] as const,
   staffRoles: () => ["staff-roles"] as const,
+  auditLog: () => ["audit-log"] as const,
   patients: () => ["patients"] as const,
   patientsList: () => ["patients", "list"] as const,
   patientsWithLatestVisit: () => ["patients", "with-latest-visit"] as const,

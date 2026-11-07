@@ -26,6 +26,7 @@ export const paths = {
   settings: () => "/settings",
   settingsVillageCodes: () => "/settings/village-codes",
   settingsUsers: () => "/settings/users",
+  settingsAuditLog: () => "/settings/audit-log",
   account: () => "/account",
 };
 

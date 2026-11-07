@@ -4,32 +4,32 @@
 */
 
 export type SaBaiAPIEndpointsFilesRestorePostResponse = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    patientId: number;
-    fileName: string;
-    storedFileName: string;
-    description: string;
-    /**
-     * @description
-     * Format: `int64`
-     * @type integer
-    */
-    sizeBytes: bigint;
-    isDeleted: boolean;
-    /**
-     * @description
-     * Format: `date-time`
-     * @type string
-    */
-    createdAt: string;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  patientId: number;
+  fileName: string;
+  storedFileName: string;
+  description: string;
+  /**
+   * @description
+   * Format: `int64`
+   * @type integer
+   */
+  sizeBytes: bigint;
+  isDeleted: boolean;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string
+   */
+  createdAt: string;
 };

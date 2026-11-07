@@ -20,3 +20,7 @@ export const saBaiAPIEndpointsGlassesGetEndpointStatus403Schema = z.unknown()
 export const saBaiAPIEndpointsGlassesGetEndpointResponseSchema = saBaiAPIEndpointsGlassesGetEndpointStatus200Schema
 
 export const saBaiAPIEndpointsGlassesGetEndpointErrorSchema = z.union([saBaiAPIEndpointsGlassesGetEndpointStatus400Schema, saBaiAPIEndpointsGlassesGetEndpointStatus401Schema, saBaiAPIEndpointsGlassesGetEndpointStatus403Schema])
+
+export const saBaiAPIEndpointsGlassesGetEndpointPathSchema = z.object({
+  id: z.int32(),
+})

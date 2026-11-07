@@ -23,3 +23,7 @@ export const saBaiAPIEndpointsMedicationStockSplitsPostEndpointResponseSchema = 
 export const saBaiAPIEndpointsMedicationStockSplitsPostEndpointErrorSchema = z.union([saBaiAPIEndpointsMedicationStockSplitsPostEndpointStatus400Schema, saBaiAPIEndpointsMedicationStockSplitsPostEndpointStatus401Schema, saBaiAPIEndpointsMedicationStockSplitsPostEndpointStatus403Schema])
 
 export const saBaiAPIEndpointsMedicationStockSplitsPostEndpointBodySchema = saBaiAPIEndpointsMedicationStockSplitsPostRequestSchema
+
+export const saBaiAPIEndpointsMedicationStockSplitsPostEndpointPathSchema = z.object({
+  id: z.int32(),
+})

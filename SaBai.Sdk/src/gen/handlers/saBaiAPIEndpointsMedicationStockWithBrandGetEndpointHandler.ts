@@ -4,10 +4,10 @@
 */
 
 import type { SaBaiAPIEndpointsMedicationStockWithBrandGetEndpointResponse, SaBaiAPIEndpointsMedicationStockWithBrandGetEndpointStatus401, SaBaiAPIEndpointsMedicationStockWithBrandGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsMedicationStockWithBrandGetEndpoint'
-import { http } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsMedicationStockWithBrandGetEndpointHandlerResponse200(data: SaBaiAPIEndpointsMedicationStockWithBrandGetEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -16,22 +16,22 @@ export function saBaiAPIEndpointsMedicationStockWithBrandGetEndpointHandlerRespo
 }
 
 export function saBaiAPIEndpointsMedicationStockWithBrandGetEndpointHandlerResponse401(data?: SaBaiAPIEndpointsMedicationStockWithBrandGetEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsMedicationStockWithBrandGetEndpointHandlerResponse403(data?: SaBaiAPIEndpointsMedicationStockWithBrandGetEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsMedicationStockWithBrandGetEndpointHandler(data?: SaBaiAPIEndpointsMedicationStockWithBrandGetEndpointResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>)) {
-  return http.get(`/medication-stock/with-brand`, function handler(info) {
+export function saBaiAPIEndpointsMedicationStockWithBrandGetEndpointHandler(data?: SaBaiAPIEndpointsMedicationStockWithBrandGetEndpointResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>), options?: { baseURL?: string }) {
+  return http.get(`${options?.baseURL ?? ''}/medication-stock/with-brand`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

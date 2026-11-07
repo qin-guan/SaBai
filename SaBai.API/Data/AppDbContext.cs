@@ -1,11 +1,20 @@
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using SaBai.API.Domain;
 
 namespace SaBai.API.Data;
 
-public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
+/// <summary>
+/// Clinic data plus the ASP.NET Core Identity store (staff users, roles, two-factor
+/// tokens) and the Data Protection key ring that signs the session cookies.
+/// </summary>
+public class AppDbContext(DbContextOptions<AppDbContext> options)
+    : IdentityDbContext<StaffUser, IdentityRole<Guid>, Guid>(options),
+        IDataProtectionKeyContext
 {
-    public DbSet<StaffUser> StaffUsers => Set<StaffUser>();
+    public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
     public DbSet<VillageCode> VillageCodes => Set<VillageCode>();
 
@@ -87,16 +96,19 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
         modelBuilder.Entity<StaffUser>(entity =>
         {
-            entity.HasIndex(x => x.WorkOsUserId).IsUnique();
-            entity.HasIndex(x => x.Email).IsUnique();
-            entity.HasIndex(x => x.Username).IsUnique();
-            entity.Property(x => x.WorkOsUserId).HasMaxLength(255);
-            entity.Property(x => x.Username).HasMaxLength(150);
+            // Keep the original table so consult/order foreign keys stay as they are.
+            entity.ToTable("StaffUsers");
+            entity.Property(x => x.UserName).HasMaxLength(150);
+            entity.Property(x => x.NormalizedUserName).HasMaxLength(150);
             entity.Property(x => x.Email).HasMaxLength(255);
+            entity.Property(x => x.NormalizedEmail).HasMaxLength(255);
+            // Email is optional, but two accounts may not share one.
+            entity.HasIndex(x => x.NormalizedEmail).HasDatabaseName("EmailIndex").IsUnique();
             entity.Property(x => x.Nickname).HasMaxLength(255);
-            entity.Property(x => x.Role).HasConversion<string>().HasMaxLength(16);
         });
 
         modelBuilder.Entity<VillageCode>(entity =>

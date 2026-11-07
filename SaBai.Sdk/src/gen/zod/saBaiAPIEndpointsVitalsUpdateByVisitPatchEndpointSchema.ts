@@ -23,3 +23,7 @@ export const saBaiAPIEndpointsVitalsUpdateByVisitPatchEndpointResponseSchema = s
 export const saBaiAPIEndpointsVitalsUpdateByVisitPatchEndpointErrorSchema = z.union([saBaiAPIEndpointsVitalsUpdateByVisitPatchEndpointStatus400Schema, saBaiAPIEndpointsVitalsUpdateByVisitPatchEndpointStatus401Schema, saBaiAPIEndpointsVitalsUpdateByVisitPatchEndpointStatus403Schema])
 
 export const saBaiAPIEndpointsVitalsUpdateByVisitPatchEndpointBodySchema = saBaiAPIEndpointsVitalsUpdateByVisitPatchRequestSchema
+
+export const saBaiAPIEndpointsVitalsUpdateByVisitPatchEndpointPathSchema = z.object({
+  visitId: z.int32(),
+})

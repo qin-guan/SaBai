@@ -14,7 +14,7 @@ public sealed class ConsultTests(AppFixture fixture)
     public async Task CreateConsult_WithoutDiagnosis_ReturnsBadRequest()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var visitId = await CreateVisitAsync(client);
 
@@ -33,7 +33,7 @@ public sealed class ConsultTests(AppFixture fixture)
     public async Task CreateConsult_IsReturnedOnGetByVisit()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var visitId = await CreateVisitAsync(client);
 
@@ -71,7 +71,7 @@ public sealed class ConsultTests(AppFixture fixture)
     public async Task PatchConsult_WhenNew_UpdatesText()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var visitId = await CreateVisitAsync(client);
         var consultId = await CreateConsultAsync(client, visitId);
@@ -94,7 +94,7 @@ public sealed class ConsultTests(AppFixture fixture)
     public async Task DeleteConsult_ReturnsNoContent()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var visitId = await CreateVisitAsync(client);
         var consultId = await CreateConsultAsync(client, visitId);
@@ -110,7 +110,7 @@ public sealed class ConsultTests(AppFixture fixture)
     public async Task CreateReferral_DefaultsStateToNew()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var visitId = await CreateVisitAsync(client);
         var consultId = await CreateConsultAsync(client, visitId);
@@ -141,7 +141,7 @@ public sealed class ConsultTests(AppFixture fixture)
     public async Task UpdateReferralState_SetsStateAndKeepsOmittedOutcome()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var visitId = await CreateVisitAsync(client);
         var consultId = await CreateConsultAsync(client, visitId);
@@ -182,7 +182,7 @@ public sealed class ConsultTests(AppFixture fixture)
     public async Task PatientRecords_WithoutVisitId_ReturnsBadRequest()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
 
         // Act
@@ -196,7 +196,7 @@ public sealed class ConsultTests(AppFixture fixture)
     public async Task PatientConsult_WithoutVisitId_ReturnsBadRequest()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
 
         // Act
@@ -210,7 +210,7 @@ public sealed class ConsultTests(AppFixture fixture)
     public async Task ConsultPdf_StartsWithPdfHeader()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var visitId = await CreateVisitAsync(client);
         var consultId = await CreateConsultAsync(client, visitId);

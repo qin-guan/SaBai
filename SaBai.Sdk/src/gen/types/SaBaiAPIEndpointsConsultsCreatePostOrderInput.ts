@@ -4,18 +4,18 @@
 */
 
 export type SaBaiAPIEndpointsConsultsCreatePostOrderInput = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer | undefined
-    */
-    medicationBrandId?: number;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer | undefined
-    */
-    quantity?: number;
-    dosageInstructions?: string | null;
-    remarks?: string | null;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer | undefined
+   */
+  medicationBrandId?: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer | undefined
+   */
+  quantity?: number;
+  dosageInstructions?: string | null;
+  remarks?: string | null;
 };

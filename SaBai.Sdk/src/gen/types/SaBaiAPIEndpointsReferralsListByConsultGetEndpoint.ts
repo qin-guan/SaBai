@@ -6,12 +6,12 @@
 import type { SystemCollectionsGenericListOfSaBaiAPIEndpointsReferralsListByConsultGetResponse } from './SystemCollectionsGenericListOfSaBaiAPIEndpointsReferralsListByConsultGetResponse'
 
 export type SaBaiAPIEndpointsReferralsListByConsultGetEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    consultId: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  consultId: number;
 };
 
 export type SaBaiAPIEndpointsReferralsListByConsultGetEndpointStatus200 = SystemCollectionsGenericListOfSaBaiAPIEndpointsReferralsListByConsultGetResponse;
@@ -21,19 +21,19 @@ export type SaBaiAPIEndpointsReferralsListByConsultGetEndpointStatus401 = unknow
 export type SaBaiAPIEndpointsReferralsListByConsultGetEndpointStatus403 = unknown;
 
 export type SaBaiAPIEndpointsReferralsListByConsultGetEndpointOptions = {
-    body?: never;
-    path: SaBaiAPIEndpointsReferralsListByConsultGetEndpointPath;
-    query?: never;
-    headers?: never;
+  body?: never;
+  path: SaBaiAPIEndpointsReferralsListByConsultGetEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsReferralsListByConsultGetEndpointResponses = {
-    "200": SaBaiAPIEndpointsReferralsListByConsultGetEndpointStatus200;
-    "401": SaBaiAPIEndpointsReferralsListByConsultGetEndpointStatus401;
-    "403": SaBaiAPIEndpointsReferralsListByConsultGetEndpointStatus403;
+  '200': SaBaiAPIEndpointsReferralsListByConsultGetEndpointStatus200;
+  '401': SaBaiAPIEndpointsReferralsListByConsultGetEndpointStatus401;
+  '403': SaBaiAPIEndpointsReferralsListByConsultGetEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsReferralsListByConsultGetEndpointResponse = SaBaiAPIEndpointsReferralsListByConsultGetEndpointStatus200;

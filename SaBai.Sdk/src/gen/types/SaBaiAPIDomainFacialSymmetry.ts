@@ -4,8 +4,8 @@
 */
 
 export const saBaiAPIDomainFacialSymmetry = {
-    Normal: "Normal",
-    Asymmetrical: "Asymmetrical"
+  Normal: 'Normal',
+  Asymmetrical: 'Asymmetrical',
 } as const;
 
 export type SaBaiAPIDomainFacialSymmetryKey = (typeof saBaiAPIDomainFacialSymmetry)[keyof typeof saBaiAPIDomainFacialSymmetry];

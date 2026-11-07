@@ -6,6 +6,6 @@
 import type { SaBaiAPIFaceRecognitionStoredFaceArray } from './SaBaiAPIFaceRecognitionStoredFaceArray'
 
 export type SaBaiAPIEndpointsPersonsFacesGetResponse = {
-    personId: string;
-    faces: SaBaiAPIFaceRecognitionStoredFaceArray;
+  personId: string;
+  faces: SaBaiAPIFaceRecognitionStoredFaceArray;
 };

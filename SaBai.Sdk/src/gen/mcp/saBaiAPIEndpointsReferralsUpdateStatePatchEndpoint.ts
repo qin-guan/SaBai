@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointOptions } from '../types/SaBaiAPIEndpointsReferralsUpdateStatePatchEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsReferralsUpdateStatePatchEndpoint } from '../clients/saBaiAPIEndpointsReferralsUpdateStatePatchEndpoint'
 
 /**
  * @summary Set a referral state from any prior state
  * {@link /referrals/:id/state}
  */
-export async function saBaiAPIEndpointsReferralsUpdateStatePatchEndpointHandler({ path, body }: SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsReferralsUpdateStatePatchEndpoint({ path, body, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsReferralsUpdateStatePatchEndpointHandler({ path, body }: SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsReferralsUpdateStatePatchEndpoint({ path, body, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

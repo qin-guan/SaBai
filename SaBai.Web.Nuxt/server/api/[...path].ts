@@ -3,7 +3,7 @@
  *
  * The API sits on an internal network the browser cannot reach, so the app
  * calls this server on the same origin under `/api` and every request is
- * forwarded as-is (method, headers incl. the bearer token, streamed body) to
+ * forwarded as-is (method, headers incl. the session cookie, streamed body) to
  * `runtimeConfig.apiUrl` with the `/api` prefix stripped:
  *
  *   GET /api/patients/1?x=y  →  GET {NUXT_API_URL}/patients/1?x=y

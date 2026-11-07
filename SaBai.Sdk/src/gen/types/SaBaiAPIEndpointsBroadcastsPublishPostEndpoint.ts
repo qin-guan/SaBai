@@ -6,12 +6,12 @@
 import type { SaBaiAPIEndpointsBroadcastsPublishPostResponse } from './SaBaiAPIEndpointsBroadcastsPublishPostResponse'
 
 export type SaBaiAPIEndpointsBroadcastsPublishPostEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
 };
 
 export type SaBaiAPIEndpointsBroadcastsPublishPostEndpointStatus200 = SaBaiAPIEndpointsBroadcastsPublishPostResponse;
@@ -21,19 +21,19 @@ export type SaBaiAPIEndpointsBroadcastsPublishPostEndpointStatus401 = unknown;
 export type SaBaiAPIEndpointsBroadcastsPublishPostEndpointStatus403 = unknown;
 
 export type SaBaiAPIEndpointsBroadcastsPublishPostEndpointOptions = {
-    body?: never;
-    path: SaBaiAPIEndpointsBroadcastsPublishPostEndpointPath;
-    query?: never;
-    headers?: never;
+  body?: never;
+  path: SaBaiAPIEndpointsBroadcastsPublishPostEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsBroadcastsPublishPostEndpointResponses = {
-    "200": SaBaiAPIEndpointsBroadcastsPublishPostEndpointStatus200;
-    "401": SaBaiAPIEndpointsBroadcastsPublishPostEndpointStatus401;
-    "403": SaBaiAPIEndpointsBroadcastsPublishPostEndpointStatus403;
+  '200': SaBaiAPIEndpointsBroadcastsPublishPostEndpointStatus200;
+  '401': SaBaiAPIEndpointsBroadcastsPublishPostEndpointStatus401;
+  '403': SaBaiAPIEndpointsBroadcastsPublishPostEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsBroadcastsPublishPostEndpointResponse = SaBaiAPIEndpointsBroadcastsPublishPostEndpointStatus200;

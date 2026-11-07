@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsVisitsHasRecentGetEndpointOptions } from '../types/SaBaiAPIEndpointsVisitsHasRecentGetEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsVisitsHasRecentGetEndpoint } from '../clients/saBaiAPIEndpointsVisitsHasRecentGetEndpoint'
 
 /**
  * @summary Check whether a patient had a visit opened in the last minute
  * {@link /visits/recent}
  */
-export async function saBaiAPIEndpointsVisitsHasRecentGetEndpointHandler({ query }: SaBaiAPIEndpointsVisitsHasRecentGetEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsVisitsHasRecentGetEndpoint({ query, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsVisitsHasRecentGetEndpointHandler({ query }: SaBaiAPIEndpointsVisitsHasRecentGetEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsVisitsHasRecentGetEndpoint({ query, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

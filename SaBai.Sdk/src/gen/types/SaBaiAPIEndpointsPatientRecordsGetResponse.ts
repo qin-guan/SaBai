@@ -9,14 +9,14 @@ import type { SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPatientRec
 import type { SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPatientRecordsGetPrescriptionItem } from './SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPatientRecordsGetPrescriptionItem'
 
 export type SaBaiAPIEndpointsPatientRecordsGetResponse = {
-    patient: SaBaiAPIEndpointsPatientRecordsGetPatientItem;
-    vitals: (null | SaBaiAPIEndpointsPatientRecordsGetVitalsItem);
-    /**
-     * @description
-     * Format: `date-time`
-     * @type string
-    */
-    visitDate: string;
-    consults: SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPatientRecordsGetConsultItem;
-    prescriptions: SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPatientRecordsGetPrescriptionItem;
+  patient: SaBaiAPIEndpointsPatientRecordsGetPatientItem;
+  vitals: null | SaBaiAPIEndpointsPatientRecordsGetVitalsItem;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string
+   */
+  visitDate: string;
+  consults: SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPatientRecordsGetConsultItem;
+  prescriptions: SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPatientRecordsGetPrescriptionItem;
 };

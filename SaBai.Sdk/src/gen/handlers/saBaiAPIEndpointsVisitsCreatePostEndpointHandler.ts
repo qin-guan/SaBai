@@ -4,11 +4,12 @@
 */
 
 import type { SaBaiAPIEndpointsVisitsCreatePostEndpointResponse, SaBaiAPIEndpointsVisitsCreatePostEndpointStatus400, SaBaiAPIEndpointsVisitsCreatePostEndpointStatus401, SaBaiAPIEndpointsVisitsCreatePostEndpointStatus403, SaBaiAPIEndpointsVisitsCreatePostEndpointBody } from '../types/SaBaiAPIEndpointsVisitsCreatePostEndpoint'
-import type { HttpResponseResolver } from 'msw'
-import { http } from 'msw'
+import type { HttpResponseResolver } from 'msw/http'
+import type { DefaultBodyType } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsVisitsCreatePostEndpointHandlerResponse200(data: SaBaiAPIEndpointsVisitsCreatePostEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -17,7 +18,7 @@ export function saBaiAPIEndpointsVisitsCreatePostEndpointHandlerResponse200(data
 }
 
 export function saBaiAPIEndpointsVisitsCreatePostEndpointHandlerResponse400(data: SaBaiAPIEndpointsVisitsCreatePostEndpointStatus400) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 400,
     headers: {
       'Content-Type': 'application/problem+json'
@@ -26,22 +27,22 @@ export function saBaiAPIEndpointsVisitsCreatePostEndpointHandlerResponse400(data
 }
 
 export function saBaiAPIEndpointsVisitsCreatePostEndpointHandlerResponse401(data?: SaBaiAPIEndpointsVisitsCreatePostEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsVisitsCreatePostEndpointHandlerResponse403(data?: SaBaiAPIEndpointsVisitsCreatePostEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsVisitsCreatePostEndpointHandler(data?: SaBaiAPIEndpointsVisitsCreatePostEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsVisitsCreatePostEndpointBody>) {
-  return http.post<Record<string, string>, SaBaiAPIEndpointsVisitsCreatePostEndpointBody>(`/visits`, function handler(info) {
+export function saBaiAPIEndpointsVisitsCreatePostEndpointHandler(data?: SaBaiAPIEndpointsVisitsCreatePostEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsVisitsCreatePostEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsVisitsCreatePostEndpointBody : DefaultBodyType>, options?: { baseURL?: string }) {
+  return http.post<Record<string, string>, SaBaiAPIEndpointsVisitsCreatePostEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsVisitsCreatePostEndpointBody : DefaultBodyType>(`${options?.baseURL ?? ''}/visits`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

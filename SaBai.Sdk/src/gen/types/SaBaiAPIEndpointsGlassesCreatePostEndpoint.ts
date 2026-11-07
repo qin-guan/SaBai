@@ -10,9 +10,10 @@ import type { SaBaiAPIEndpointsGlassesCreatePostResponse } from './SaBaiAPIEndpo
 export type SaBaiAPIEndpointsGlassesCreatePostEndpointStatus200 = SaBaiAPIEndpointsGlassesCreatePostResponse;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsGlassesCreatePostEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsGlassesCreatePostEndpointStatus401 = unknown;
@@ -22,20 +23,20 @@ export type SaBaiAPIEndpointsGlassesCreatePostEndpointStatus403 = unknown;
 export type SaBaiAPIEndpointsGlassesCreatePostEndpointBody = SaBaiAPIEndpointsGlassesCreatePostRequest;
 
 export type SaBaiAPIEndpointsGlassesCreatePostEndpointOptions = {
-    body: SaBaiAPIEndpointsGlassesCreatePostEndpointBody;
-    path?: never;
-    query?: never;
-    headers?: never;
+  body: SaBaiAPIEndpointsGlassesCreatePostEndpointBody;
+  path?: never;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsGlassesCreatePostEndpointResponses = {
-    "200": SaBaiAPIEndpointsGlassesCreatePostEndpointStatus200;
-    "400": SaBaiAPIEndpointsGlassesCreatePostEndpointStatus400;
-    "401": SaBaiAPIEndpointsGlassesCreatePostEndpointStatus401;
-    "403": SaBaiAPIEndpointsGlassesCreatePostEndpointStatus403;
+  '200': SaBaiAPIEndpointsGlassesCreatePostEndpointStatus200;
+  '400': SaBaiAPIEndpointsGlassesCreatePostEndpointStatus400;
+  '401': SaBaiAPIEndpointsGlassesCreatePostEndpointStatus401;
+  '403': SaBaiAPIEndpointsGlassesCreatePostEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsGlassesCreatePostEndpointResponse = SaBaiAPIEndpointsGlassesCreatePostEndpointStatus200;

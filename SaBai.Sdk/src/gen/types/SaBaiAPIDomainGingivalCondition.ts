@@ -4,9 +4,9 @@
 */
 
 export const saBaiAPIDomainGingivalCondition = {
-    Healthy: "Healthy",
-    Inflamed: "Inflamed",
-    Bleeding: "Bleeding"
+  Healthy: 'Healthy',
+  Inflamed: 'Inflamed',
+  Bleeding: 'Bleeding',
 } as const;
 
 export type SaBaiAPIDomainGingivalConditionKey = (typeof saBaiAPIDomainGingivalCondition)[keyof typeof saBaiAPIDomainGingivalCondition];

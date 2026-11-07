@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointOptions } from '../types/SaBaiAPIEndpointsMedicationStockAdjustmentsPostEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsMedicationStockAdjustmentsPostEndpoint } from '../clients/saBaiAPIEndpointsMedicationStockAdjustmentsPostEndpoint'
 
 /**
  * @summary Adjust a stock lot quantity
  * {@link /medication-stock/:id/adjustments}
  */
-export async function saBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointHandler({ path, body }: SaBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsMedicationStockAdjustmentsPostEndpoint({ path, body, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointHandler({ path, body }: SaBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsMedicationStockAdjustmentsPostEndpoint({ path, body, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

@@ -4,31 +4,31 @@
 */
 
 import type { SaBaiAPIEndpointsConsultsPdfGetEndpointResponse, SaBaiAPIEndpointsConsultsPdfGetEndpointStatus401, SaBaiAPIEndpointsConsultsPdfGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsConsultsPdfGetEndpoint'
-import { http } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsConsultsPdfGetEndpointHandlerResponse204(data?: SaBaiAPIEndpointsConsultsPdfGetEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 204,
   })
 }
 
 export function saBaiAPIEndpointsConsultsPdfGetEndpointHandlerResponse401(data?: SaBaiAPIEndpointsConsultsPdfGetEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsConsultsPdfGetEndpointHandlerResponse403(data?: SaBaiAPIEndpointsConsultsPdfGetEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsConsultsPdfGetEndpointHandler(data?: string | number | boolean | null | object | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>)) {
-  return http.get(`/consults/:id/pdf`, function handler(info) {
+export function saBaiAPIEndpointsConsultsPdfGetEndpointHandler(data?: string | number | boolean | null | object | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>), options?: { baseURL?: string }) {
+  return http.get(`${options?.baseURL ?? ''}/consults/:id/pdf`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 204,
       })
     })

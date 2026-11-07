@@ -1,29 +1,30 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { TOKEN_COOKIE_NAME } from "@/lib/api/token";
+import { SESSION_COOKIE_NAME } from "@/lib/api/session";
 
 /**
  * Route protection for the web app.
  *
- * The app authenticates against SaBai.API with a JWT bearer token stored in the
- * `sabai_token` cookie. This middleware only checks that the cookie is present:
- * token validity is enforced by the API, and an expired/invalid token produces a
- * 401 that the React Query client turns into a redirect back here.
+ * SaBai.API keeps the session in the HttpOnly `sabai.auth` cookie, which is
+ * first-party because the API is reached through the /api rewrite. This
+ * middleware only checks that the cookie is present: the session itself is
+ * enforced by the API, and an expired/revoked one produces a 401 that the
+ * React Query client turns into a sign-out and a redirect back here.
  *
  * 1. Unauthenticated users are redirected to /login (with the return path).
  * 2. Authenticated users are bounced away from /login to the main app.
+ * 3. /api is passed through: the API answers 401/403 itself (login included).
  */
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isLoginRoute = pathname === "/login";
-  const token = request.cookies.get(TOKEN_COOKIE_NAME)?.value;
+  const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
 
-  // Allow unauthenticated access to API routes in development so the API can
-  // return 401/403 as appropriate (e.g. Postman / integration testing).
-  const isApiRoute = pathname.startsWith("/api");
-  const allowAPILogin = process.env.NODE_ENV === "development" && isApiRoute;
+  if (pathname.startsWith("/api")) {
+    return NextResponse.next();
+  }
 
   // Unauthenticated: redirect to /login, preserving the intended destination
-  if (!token && !isLoginRoute && !allowAPILogin) {
+  if (!token && !isLoginRoute) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/login";
     loginUrl.search = ""; // clear current route's params before setting redirectTo

@@ -14,5 +14,5 @@ import { client, withUnwrap } from '../.kubb/client'
 export function saBaiAPIEndpointsChildVitalsGetByVitalsGetEndpoint<ThrowOnError extends boolean = true>(options: Options<SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointOptions, ThrowOnError>): Unwrappable<RequestResult<SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointResponses, ThrowOnError>> {
   const { client: request = client, ...config } = options
 
-  return withUnwrap(request({ method: 'GET', url: '/vitals/{vitalsId}/child-vitals', security: [{ type: 'http', scheme: 'bearer' }], ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointResponses, ThrowOnError>>)
+  return withUnwrap(request({ method: 'GET', url: '/vitals/{vitalsId}/child-vitals', security: [{ type: 'apiKey', name: 'sabai.auth', in: 'cookie', scopes: ['admin', 'member'] }], ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointResponses, ThrowOnError>>)
 }

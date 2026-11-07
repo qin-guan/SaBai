@@ -7,17 +7,15 @@ import type { SaBaiAPIEndpointsPatientConsultGetPrescriptionItem } from '../type
 import { createSaBaiAPIDomainOrderStatus } from './createSaBaiAPIDomainOrderStatus'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsPatientConsultGetPrescriptionItem<TData extends Partial<SaBaiAPIEndpointsPatientConsultGetPrescriptionItem> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsPatientConsultGetPrescriptionItem<TData extends Partial<SaBaiAPIEndpointsPatientConsultGetPrescriptionItem> = object>(data?: TData) {
   const defaultFakeData = {
-  consultId: faker.number.int(),
-  visitDate: faker.date.anytime().toISOString(),
-  medicationName: faker.string.alpha(),
-  quantity: faker.number.int(),
-  notes: faker.string.alpha(),
-  status: createSaBaiAPIDomainOrderStatus(),
-}
+    consultId: faker.number.int(),
+    visitDate: faker.date.anytime().toISOString(),
+    medicationName: faker.string.alpha(),
+    quantity: faker.number.int(),
+    notes: faker.string.alpha(),
+    status: createSaBaiAPIDomainOrderStatus(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

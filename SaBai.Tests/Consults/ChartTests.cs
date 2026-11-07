@@ -11,7 +11,7 @@ public sealed class ChartTests(AppFixture fixture)
     public async Task PatientRecords_AfterConsult_ContainsPatientAndConsult()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var suffix = ClinicSetup.Suffix();
         var patientName = $"Records {suffix}";
@@ -45,7 +45,7 @@ public sealed class ChartTests(AppFixture fixture)
     public async Task PatientConsult_ContainsDoctorNickname()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var suffix = ClinicSetup.Suffix();
         var villageId = await ClinicSetup.CreateVillageAsync(client, $"J{suffix}");
@@ -75,7 +75,7 @@ public sealed class ChartTests(AppFixture fixture)
     public async Task PatientRecords_VisitIdZero_ReturnsBadRequest()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
 
         // Act
@@ -89,7 +89,7 @@ public sealed class ChartTests(AppFixture fixture)
     public async Task PatientConsult_MissingVisit_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
 
         // Act
@@ -103,7 +103,7 @@ public sealed class ChartTests(AppFixture fixture)
     public async Task PatientRecords_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
 
         // Act
         var response = await client.GetAsync("/patient-records");

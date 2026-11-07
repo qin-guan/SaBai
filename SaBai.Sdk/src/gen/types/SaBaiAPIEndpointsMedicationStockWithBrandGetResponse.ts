@@ -6,46 +6,46 @@
 import type { SaBaiAPIDomainStockStatusKey } from './SaBaiAPIDomainStockStatus'
 
 export type SaBaiAPIEndpointsMedicationStockWithBrandGetResponse = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    medicationBrandId: number;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    quantity: number;
-    /**
-     * @description
-     * Format: `date-time`
-     * @type string
-    */
-    expiry: string;
-    location: string;
-    stockStatus: SaBaiAPIDomainStockStatusKey;
-    remarks: string | null;
-    brandName: string;
-    ingredientName: string;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    ingredientId: number;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    fallBelow: number;
-    isLowStock: boolean;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  medicationBrandId: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  quantity: number;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string
+   */
+  expiry: string;
+  location: string;
+  stockStatus: SaBaiAPIDomainStockStatusKey;
+  remarks: string | null;
+  brandName: string;
+  ingredientName: string;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  ingredientId: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  fallBelow: number;
+  isLowStock: boolean;
 };

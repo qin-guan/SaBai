@@ -1,23 +1,25 @@
 import { MutationCache, QueryCache, QueryClient, VueQueryPlugin } from "@tanstack/vue-query";
 
 /**
- * Clears the stored token and sends the user to the login page, preserving the
- * current location so they can be returned after signing back in.
+ * Sends the user to the login page, preserving the current location so they
+ * can be returned after signing back in. A full page load also drops every
+ * cached query from the expired session.
  */
 function redirectToLogin(): void {
   if (window.location.pathname === "/login") return;
-  clearToken();
   const redirectTo = window.location.pathname + window.location.search;
   window.location.href = `/login?redirectTo=${encodeURIComponent(redirectTo)}`;
 }
 
 export default defineNuxtPlugin((nuxtApp) => {
-  // A 401 means the bearer token is missing or expired: drop it and bounce to
-  // the login page from one place rather than in every query.
+  // A 401 means the session cookie is missing, expired or was revoked (locked
+  // account, password reset): bounce to the login page from one place rather
+  // than in every query. The session check itself opts out via `meta`, because
+  // the route middleware handles a signed-out user there.
   const queryClient = new QueryClient({
     queryCache: new QueryCache({
-      onError: (error) => {
-        if (isUnauthorizedError(error)) redirectToLogin();
+      onError: (error, query) => {
+        if (isUnauthorizedError(error) && !query.meta?.skipAuthRedirect) redirectToLogin();
       },
     }),
     mutationCache: new MutationCache({
@@ -34,4 +36,6 @@ export default defineNuxtPlugin((nuxtApp) => {
   });
 
   nuxtApp.vueApp.use(VueQueryPlugin, { queryClient });
+
+  return { provide: { queryClient } };
 });

@@ -4,9 +4,9 @@
 */
 
 export const saBaiAPIDomainDentalReferralPriority = {
-    Urgent: "Urgent",
-    Early: "Early",
-    Routine: "Routine"
+  Urgent: 'Urgent',
+  Early: 'Early',
+  Routine: 'Routine',
 } as const;
 
 export type SaBaiAPIDomainDentalReferralPriorityKey = (typeof saBaiAPIDomainDentalReferralPriority)[keyof typeof saBaiAPIDomainDentalReferralPriority];

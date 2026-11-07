@@ -4,10 +4,10 @@
 */
 
 import type { SaBaiAPIEndpointsGlassesGetEndpointResponse, SaBaiAPIEndpointsGlassesGetEndpointStatus400, SaBaiAPIEndpointsGlassesGetEndpointStatus401, SaBaiAPIEndpointsGlassesGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsGlassesGetEndpoint'
-import { http } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsGlassesGetEndpointHandlerResponse200(data: SaBaiAPIEndpointsGlassesGetEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -16,7 +16,7 @@ export function saBaiAPIEndpointsGlassesGetEndpointHandlerResponse200(data: SaBa
 }
 
 export function saBaiAPIEndpointsGlassesGetEndpointHandlerResponse400(data: SaBaiAPIEndpointsGlassesGetEndpointStatus400) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 400,
     headers: {
       'Content-Type': 'application/problem+json'
@@ -25,22 +25,22 @@ export function saBaiAPIEndpointsGlassesGetEndpointHandlerResponse400(data: SaBa
 }
 
 export function saBaiAPIEndpointsGlassesGetEndpointHandlerResponse401(data?: SaBaiAPIEndpointsGlassesGetEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsGlassesGetEndpointHandlerResponse403(data?: SaBaiAPIEndpointsGlassesGetEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsGlassesGetEndpointHandler(data?: SaBaiAPIEndpointsGlassesGetEndpointResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>)) {
-  return http.get(`/glasses/:id`, function handler(info) {
+export function saBaiAPIEndpointsGlassesGetEndpointHandler(data?: SaBaiAPIEndpointsGlassesGetEndpointResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>), options?: { baseURL?: string }) {
+  return http.get(`${options?.baseURL ?? ''}/glasses/:id`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

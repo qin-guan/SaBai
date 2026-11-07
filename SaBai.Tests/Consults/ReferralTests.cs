@@ -11,7 +11,7 @@ public sealed class ReferralTests(AppFixture fixture)
     public async Task Create_DefaultsToNew_AndGetIncludesPatient()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var suffix = ClinicSetup.Suffix();
         var patientName = $"Referral {suffix}";
@@ -47,7 +47,7 @@ public sealed class ReferralTests(AppFixture fixture)
     public async Task Create_MissingConsult_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
 
         // Act
@@ -65,7 +65,7 @@ public sealed class ReferralTests(AppFixture fixture)
     public async Task Create_EmptyReferredFor_ReturnsBadRequest()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var (consultId, _) = await CreateConsultAsync(
             client,
@@ -87,7 +87,7 @@ public sealed class ReferralTests(AppFixture fixture)
     public async Task Get_Missing_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
 
         // Act
@@ -101,7 +101,7 @@ public sealed class ReferralTests(AppFixture fixture)
     public async Task UpdateState_InvalidState_ReturnsBadRequest()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var suffix = ClinicSetup.Suffix();
         var (consultId, _) = await CreateConsultAsync(client, $"Bad state {suffix}");
@@ -131,7 +131,7 @@ public sealed class ReferralTests(AppFixture fixture)
     public async Task UpdateState_OmitsOutcome_KeepsBooked()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var suffix = ClinicSetup.Suffix();
         var (consultId, _) = await CreateConsultAsync(client, $"Outcome {suffix}");

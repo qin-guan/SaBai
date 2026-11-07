@@ -14,7 +14,7 @@ Last synced upstream commit: `1559e9b9e0c1ad60426ae0e461a1f5b9b80b0c9b`
 | Drizzle schema / Supabase migration | EF Core entity in `SaBai.API/Domain` + migration in `SaBai.API/Data/Migrations` |
 | Supabase storage                  | RustFS (S3)                                                          |
 | Face search (Supabase/pgvector)   | Qdrant                                                               |
-| Supabase auth / RLS policies      | WorkOS (or the fake directory) + `Roles(...)` on each endpoint       |
+| Supabase auth / RLS policies      | ASP.NET Core Identity (cookie sessions) + `Roles(...)` on each endpoint |
 | Root `src/`, `package.json`       | `SaBai.Web/`                                                         |
 
 ## Notes
@@ -26,7 +26,7 @@ Last synced upstream commit: `1559e9b9e0c1ad60426ae0e461a1f5b9b80b0c9b`
   config was ported because this repo has no husky hook.
 - Upstream #243 logs stock changes with a Postgres trigger. Here the same rows are written in
   code via `Domain/StockChangeLog.cs`, in the same `SaveChanges` as the stock edit, so the
-  current WorkOS user is recorded without session variables. Order approval keeps its own
+  current staff user is recorded without session variables. Order approval keeps its own
   quantity rows (upstream has no equivalent flow yet).
 - Upstream #286 (friendly duplicate village code error) was already covered: the API returns
   409 with a message and the modal shows it.

@@ -6,17 +6,15 @@
 import type { SaBaiAPIEndpointsConsultsUpdatePatchRequest } from '../types/SaBaiAPIEndpointsConsultsUpdatePatchRequest'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsConsultsUpdatePatchRequest<TData extends Partial<SaBaiAPIEndpointsConsultsUpdatePatchRequest> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsConsultsUpdatePatchRequest<TData extends Partial<SaBaiAPIEndpointsConsultsUpdatePatchRequest> = object>(data?: TData) {
   const defaultFakeData = {
-  pastMedicalHistory: faker.string.alpha(),
-  consultation: faker.string.alpha(),
-  treatmentPlan: faker.string.alpha(),
-  referredFor: faker.string.alpha(),
-  referralNotes: faker.string.alpha(),
-  remarks: faker.string.alpha(),
-}
+    pastMedicalHistory: faker.string.alpha(),
+    consultation: faker.string.alpha(),
+    treatmentPlan: faker.string.alpha(),
+    referredFor: faker.string.alpha(),
+    referralNotes: faker.string.alpha(),
+    remarks: faker.string.alpha(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

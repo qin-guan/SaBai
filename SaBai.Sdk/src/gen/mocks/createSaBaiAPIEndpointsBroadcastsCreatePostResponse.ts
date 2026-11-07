@@ -7,19 +7,17 @@ import type { SaBaiAPIEndpointsBroadcastsCreatePostResponse } from '../types/SaB
 import { createSaBaiAPIDomainBroadcastSeverity } from './createSaBaiAPIDomainBroadcastSeverity'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsBroadcastsCreatePostResponse<TData extends Partial<SaBaiAPIEndpointsBroadcastsCreatePostResponse> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsBroadcastsCreatePostResponse<TData extends Partial<SaBaiAPIEndpointsBroadcastsCreatePostResponse> = object>(data?: TData) {
   const defaultFakeData = {
-  id: faker.number.int(),
-  title: faker.string.alpha(),
-  body: faker.string.alpha(),
-  severity: createSaBaiAPIDomainBroadcastSeverity(),
-  createdBy: faker.string.alpha(),
-  createdAt: faker.date.anytime().toISOString(),
-  publishedAt: faker.date.anytime().toISOString(),
-  attempts: faker.number.int(),
-}
+    id: faker.number.int(),
+    title: faker.string.alpha(),
+    body: faker.string.alpha(),
+    severity: createSaBaiAPIDomainBroadcastSeverity(),
+    createdBy: faker.string.alpha(),
+    createdAt: faker.date.anytime().toISOString(),
+    publishedAt: faker.date.anytime().toISOString(),
+    attempts: faker.number.int(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

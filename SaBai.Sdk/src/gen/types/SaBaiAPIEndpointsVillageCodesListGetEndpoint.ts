@@ -6,7 +6,7 @@
 import type { SaBaiAPIEndpointsVillageCodesListGetResponse } from './SaBaiAPIEndpointsVillageCodesListGetResponse'
 
 export type SaBaiAPIEndpointsVillageCodesListGetEndpointQuery = {
-    includeHidden: boolean;
+  includeHidden: boolean;
 };
 
 export type SaBaiAPIEndpointsVillageCodesListGetEndpointStatus200 = SaBaiAPIEndpointsVillageCodesListGetResponse;
@@ -16,19 +16,19 @@ export type SaBaiAPIEndpointsVillageCodesListGetEndpointStatus401 = unknown;
 export type SaBaiAPIEndpointsVillageCodesListGetEndpointStatus403 = unknown;
 
 export type SaBaiAPIEndpointsVillageCodesListGetEndpointOptions = {
-    body?: never;
-    path?: never;
-    query: SaBaiAPIEndpointsVillageCodesListGetEndpointQuery;
-    headers?: never;
+  body?: never;
+  path?: never;
+  query: SaBaiAPIEndpointsVillageCodesListGetEndpointQuery;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsVillageCodesListGetEndpointResponses = {
-    "200": SaBaiAPIEndpointsVillageCodesListGetEndpointStatus200;
-    "401": SaBaiAPIEndpointsVillageCodesListGetEndpointStatus401;
-    "403": SaBaiAPIEndpointsVillageCodesListGetEndpointStatus403;
+  '200': SaBaiAPIEndpointsVillageCodesListGetEndpointStatus200;
+  '401': SaBaiAPIEndpointsVillageCodesListGetEndpointStatus401;
+  '403': SaBaiAPIEndpointsVillageCodesListGetEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsVillageCodesListGetEndpointResponse = SaBaiAPIEndpointsVillageCodesListGetEndpointStatus200;

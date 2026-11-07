@@ -7,23 +7,21 @@ import type { SaBaiAPIEndpointsReferralsUpdateStatePatchResponse } from '../type
 import { createSaBaiAPIDomainReferralState } from './createSaBaiAPIDomainReferralState'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsReferralsUpdateStatePatchResponse<TData extends Partial<SaBaiAPIEndpointsReferralsUpdateStatePatchResponse> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsReferralsUpdateStatePatchResponse<TData extends Partial<SaBaiAPIEndpointsReferralsUpdateStatePatchResponse> = object>(data?: TData) {
   const defaultFakeData = {
-  id: faker.number.int(),
-  referredFor: faker.string.alpha(),
-  referralNotes: faker.string.alpha(),
-  referralState: createSaBaiAPIDomainReferralState(),
-  referralOutcome: faker.string.alpha(),
-  consultId: faker.number.int(),
-  createdAt: faker.date.anytime().toISOString(),
-  consultDate: faker.date.anytime().toISOString(),
-  doctorId: faker.string.uuid(),
-  patientId: faker.number.int(),
-  patientName: faker.string.alpha(),
-  doctorNickname: faker.string.alpha(),
-}
+    id: faker.number.int(),
+    referredFor: faker.string.alpha(),
+    referralNotes: faker.string.alpha(),
+    referralState: createSaBaiAPIDomainReferralState(),
+    referralOutcome: faker.string.alpha(),
+    consultId: faker.number.int(),
+    createdAt: faker.date.anytime().toISOString(),
+    consultDate: faker.date.anytime().toISOString(),
+    doctorId: faker.string.uuid(),
+    patientId: faker.number.int(),
+    patientName: faker.string.alpha(),
+    doctorNickname: faker.string.alpha(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

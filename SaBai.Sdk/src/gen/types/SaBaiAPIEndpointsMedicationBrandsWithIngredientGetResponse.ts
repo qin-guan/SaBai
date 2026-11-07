@@ -4,12 +4,12 @@
 */
 
 export type SaBaiAPIEndpointsMedicationBrandsWithIngredientGetResponse = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
-    name: string;
-    activeIngredientName: string;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
+  name: string;
+  activeIngredientName: string;
 };

@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsPubertyUpdatePatchEndpointOptions } from '../types/SaBaiAPIEndpointsPubertyUpdatePatchEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsPubertyUpdatePatchEndpoint } from '../clients/saBaiAPIEndpointsPubertyUpdatePatchEndpoint'
 
 /**
  * @summary Update a puberty assessment
  * {@link /puberty/:id}
  */
-export async function saBaiAPIEndpointsPubertyUpdatePatchEndpointHandler({ path, body }: SaBaiAPIEndpointsPubertyUpdatePatchEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsPubertyUpdatePatchEndpoint({ path, body, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsPubertyUpdatePatchEndpointHandler({ path, body }: SaBaiAPIEndpointsPubertyUpdatePatchEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsPubertyUpdatePatchEndpoint({ path, body, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

@@ -8,12 +8,12 @@ import type { SaBaiAPIEndpointsAuthLoginPostEndpointOptions, SaBaiAPIEndpointsAu
 import { client, withUnwrap } from '../.kubb/client'
 
 /**
- * @description Authenticates with WorkOS and returns a bearer token for this API.
- * @summary Sign in with email and password
+ * @description Checks the password with ASP.NET Core Identity and sets the session cookie. Repeated failures lock the account for a few minutes. When the account has two-factor on, no session is created yet: `requiresTwoFactor` is true and the client continues with `POST /auth/login/two-factor`.
+ * @summary Sign in with username and password
  * {@link /auth/login}
  */
 export function saBaiAPIEndpointsAuthLoginPostEndpoint<ThrowOnError extends boolean = true>(options: Options<SaBaiAPIEndpointsAuthLoginPostEndpointOptions, ThrowOnError>): Unwrappable<RequestResult<SaBaiAPIEndpointsAuthLoginPostEndpointResponses, ThrowOnError>> {
   const { client: request = client, ...config } = options
 
-  return withUnwrap(request({ method: 'POST', url: '/auth/login', ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<SaBaiAPIEndpointsAuthLoginPostEndpointResponses, ThrowOnError>>)
+  return withUnwrap(request({ method: 'POST', url: '/auth/login', contentType: { request: 'application/json' }, ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<SaBaiAPIEndpointsAuthLoginPostEndpointResponses, ThrowOnError>>)
 }

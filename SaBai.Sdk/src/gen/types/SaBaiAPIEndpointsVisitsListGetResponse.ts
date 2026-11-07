@@ -6,5 +6,5 @@
 import type { SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsVisitsListGetItem } from './SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsVisitsListGetItem'
 
 export type SaBaiAPIEndpointsVisitsListGetResponse = {
-    visits: SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsVisitsListGetItem;
+  visits: SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsVisitsListGetItem;
 };

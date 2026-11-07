@@ -15,19 +15,19 @@ export type SaBaiAPIEndpointsFacesVerifyPostEndpointStatus403 = unknown;
 export type SaBaiAPIEndpointsFacesVerifyPostEndpointBody = SaBaiAPIEndpointsFacesVerifyPostRequest;
 
 export type SaBaiAPIEndpointsFacesVerifyPostEndpointOptions = {
-    body: SaBaiAPIEndpointsFacesVerifyPostEndpointBody;
-    path?: never;
-    query?: never;
-    headers?: never;
+  body: SaBaiAPIEndpointsFacesVerifyPostEndpointBody;
+  path?: never;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsFacesVerifyPostEndpointResponses = {
-    "200": SaBaiAPIEndpointsFacesVerifyPostEndpointStatus200;
-    "401": SaBaiAPIEndpointsFacesVerifyPostEndpointStatus401;
-    "403": SaBaiAPIEndpointsFacesVerifyPostEndpointStatus403;
+  '200': SaBaiAPIEndpointsFacesVerifyPostEndpointStatus200;
+  '401': SaBaiAPIEndpointsFacesVerifyPostEndpointStatus401;
+  '403': SaBaiAPIEndpointsFacesVerifyPostEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsFacesVerifyPostEndpointResponse = SaBaiAPIEndpointsFacesVerifyPostEndpointStatus200;

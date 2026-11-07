@@ -16,7 +16,7 @@ public sealed class VisitTests(AppFixture fixture)
     public async Task List_IncludesVillage()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var code = ClinicSamples.Code();
         var village = await ClinicSamples.CreateVillageAsync(
@@ -54,7 +54,7 @@ public sealed class VisitTests(AppFixture fixture)
     public async Task Visits_IncludeJourney()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var code = ClinicSamples.Code();
         var village = await ClinicSamples.CreateVillageAsync(client, code);
@@ -91,7 +91,7 @@ public sealed class VisitTests(AppFixture fixture)
     public async Task Delete_WithoutConsult_ReturnsNoContent()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var code = ClinicSamples.Code();
         var village = await ClinicSamples.CreateVillageAsync(client, code);
@@ -115,7 +115,7 @@ public sealed class VisitTests(AppFixture fixture)
     public async Task HasRecent_AfterRegistration_ReturnsVisitDate()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var code = ClinicSamples.Code();
         var village = await ClinicSamples.CreateVillageAsync(client, code);
@@ -136,7 +136,7 @@ public sealed class VisitTests(AppFixture fixture)
     public async Task HasRecent_WithoutVisit_ReturnsFalse()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var code = ClinicSamples.Code();
         var village = await ClinicSamples.CreateVillageAsync(client, code);

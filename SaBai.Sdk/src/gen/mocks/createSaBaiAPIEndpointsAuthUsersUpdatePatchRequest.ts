@@ -4,19 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsAuthUsersUpdatePatchRequest } from '../types/SaBaiAPIEndpointsAuthUsersUpdatePatchRequest'
-import { createSaBaiAPIDomainStaffRole } from './createSaBaiAPIDomainStaffRole'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsAuthUsersUpdatePatchRequest<TData extends Partial<SaBaiAPIEndpointsAuthUsersUpdatePatchRequest> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsAuthUsersUpdatePatchRequest<TData extends Partial<SaBaiAPIEndpointsAuthUsersUpdatePatchRequest> = object>(data?: TData) {
   const defaultFakeData = {
-  username: faker.string.alpha({ length: { min: 0, max: 150 } }),
-  email: faker.internet.email(),
-  nickname: faker.string.alpha({ length: { min: 0, max: 255 } }),
-  password: faker.string.alpha({ length: 8 }),
-  role: faker.helpers.arrayElement([null, createSaBaiAPIDomainStaffRole()]),
-}
+    userName: faker.string.alpha({ length: { min: 0, max: 150 } }),
+    email: faker.internet.email(),
+    nickname: faker.string.alpha({ length: { min: 0, max: 255 } }),
+    roles: faker.helpers.multiple(() => (faker.string.alpha())),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

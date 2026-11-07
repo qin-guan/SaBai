@@ -6,32 +6,32 @@
 import type { SaBaiAPIDomainBroadcastSeverityKey } from './SaBaiAPIDomainBroadcastSeverity'
 
 export type SaBaiAPIEndpointsBroadcastsCreatePostResponse = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
-    title: string;
-    body: string;
-    severity: SaBaiAPIDomainBroadcastSeverityKey;
-    createdBy: string | null;
-    /**
-     * @description
-     * Format: `date-time`
-     * @type string
-    */
-    createdAt: string;
-    /**
-     * @description
-     * Format: `date-time`
-     * @type string
-    */
-    publishedAt: string | null;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    attempts: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
+  title: string;
+  body: string;
+  severity: SaBaiAPIDomainBroadcastSeverityKey;
+  createdBy: string | null;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string
+   */
+  createdAt: string;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string
+   */
+  publishedAt: string | null;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  attempts: number;
 };

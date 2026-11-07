@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsFilesCreatePostEndpointOptions } from '../types/SaBaiAPIEndpointsFilesCreatePostEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsFilesCreatePostEndpoint } from '../clients/saBaiAPIEndpointsFilesCreatePostEndpoint'
 
 /**
  * @summary Upload clinical files to RustFS
  * {@link /files}
  */
-export async function saBaiAPIEndpointsFilesCreatePostEndpointHandler({ body }: SaBaiAPIEndpointsFilesCreatePostEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsFilesCreatePostEndpoint({ body, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsFilesCreatePostEndpointHandler({ body }: SaBaiAPIEndpointsFilesCreatePostEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsFilesCreatePostEndpoint({ body, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

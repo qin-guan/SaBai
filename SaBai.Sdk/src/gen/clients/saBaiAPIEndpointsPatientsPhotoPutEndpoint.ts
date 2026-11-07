@@ -14,5 +14,5 @@ import { client, withUnwrap } from '../.kubb/client'
 export function saBaiAPIEndpointsPatientsPhotoPutEndpoint<ThrowOnError extends boolean = true>(options: Options<SaBaiAPIEndpointsPatientsPhotoPutEndpointOptions, ThrowOnError>): Unwrappable<RequestResult<SaBaiAPIEndpointsPatientsPhotoPutEndpointResponses, ThrowOnError>> {
   const { client: request = client, ...config } = options
 
-  return withUnwrap(request({ method: 'PUT', url: '/patients/{id}/photo', security: [{ type: 'http', scheme: 'bearer' }], contentType: { request: 'multipart/form-data' }, ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<SaBaiAPIEndpointsPatientsPhotoPutEndpointResponses, ThrowOnError>>)
+  return withUnwrap(request({ method: 'PUT', url: '/patients/{id}/photo', security: [{ type: 'apiKey', name: 'sabai.auth', in: 'cookie', scopes: ['admin', 'member'] }], contentType: { request: 'multipart/form-data' }, ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<SaBaiAPIEndpointsPatientsPhotoPutEndpointResponses, ThrowOnError>>)
 }

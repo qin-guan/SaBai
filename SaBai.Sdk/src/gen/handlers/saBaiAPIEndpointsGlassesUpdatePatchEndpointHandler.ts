@@ -4,11 +4,12 @@
 */
 
 import type { SaBaiAPIEndpointsGlassesUpdatePatchEndpointResponse, SaBaiAPIEndpointsGlassesUpdatePatchEndpointStatus400, SaBaiAPIEndpointsGlassesUpdatePatchEndpointStatus401, SaBaiAPIEndpointsGlassesUpdatePatchEndpointStatus403, SaBaiAPIEndpointsGlassesUpdatePatchEndpointBody } from '../types/SaBaiAPIEndpointsGlassesUpdatePatchEndpoint'
-import type { HttpResponseResolver } from 'msw'
-import { http } from 'msw'
+import type { HttpResponseResolver } from 'msw/http'
+import type { DefaultBodyType } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsGlassesUpdatePatchEndpointHandlerResponse200(data: SaBaiAPIEndpointsGlassesUpdatePatchEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -17,7 +18,7 @@ export function saBaiAPIEndpointsGlassesUpdatePatchEndpointHandlerResponse200(da
 }
 
 export function saBaiAPIEndpointsGlassesUpdatePatchEndpointHandlerResponse400(data: SaBaiAPIEndpointsGlassesUpdatePatchEndpointStatus400) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 400,
     headers: {
       'Content-Type': 'application/problem+json'
@@ -26,22 +27,22 @@ export function saBaiAPIEndpointsGlassesUpdatePatchEndpointHandlerResponse400(da
 }
 
 export function saBaiAPIEndpointsGlassesUpdatePatchEndpointHandlerResponse401(data?: SaBaiAPIEndpointsGlassesUpdatePatchEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsGlassesUpdatePatchEndpointHandlerResponse403(data?: SaBaiAPIEndpointsGlassesUpdatePatchEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsGlassesUpdatePatchEndpointHandler(data?: SaBaiAPIEndpointsGlassesUpdatePatchEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsGlassesUpdatePatchEndpointBody>) {
-  return http.patch<Record<string, string>, SaBaiAPIEndpointsGlassesUpdatePatchEndpointBody>(`/glasses/:id`, function handler(info) {
+export function saBaiAPIEndpointsGlassesUpdatePatchEndpointHandler(data?: SaBaiAPIEndpointsGlassesUpdatePatchEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsGlassesUpdatePatchEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsGlassesUpdatePatchEndpointBody : DefaultBodyType>, options?: { baseURL?: string }) {
+  return http.patch<Record<string, string>, SaBaiAPIEndpointsGlassesUpdatePatchEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsGlassesUpdatePatchEndpointBody : DefaultBodyType>(`${options?.baseURL ?? ''}/glasses/:id`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

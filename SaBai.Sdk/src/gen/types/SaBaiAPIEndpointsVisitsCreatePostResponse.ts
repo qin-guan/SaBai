@@ -4,33 +4,33 @@
 */
 
 export type SaBaiAPIEndpointsVisitsCreatePostResponse = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
-    /**
-     * @description
-     * Format: `date-time`
-     * @type string
-    */
-    date: string;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    patientId: number;
-    patientName: string;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    villageCodeId: number;
-    villageCode: string;
-    villageName: string;
-    villageColorHex: string;
-    status: string;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string
+   */
+  date: string;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  patientId: number;
+  patientName: string;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  villageCodeId: number;
+  villageCode: string;
+  villageName: string;
+  villageColorHex: string;
+  status: string;
 };

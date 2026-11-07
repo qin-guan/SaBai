@@ -6,20 +6,18 @@
 import type { SaBaiAPIEndpointsVisitsUpdatePatchResponse } from '../types/SaBaiAPIEndpointsVisitsUpdatePatchResponse'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsVisitsUpdatePatchResponse<TData extends Partial<SaBaiAPIEndpointsVisitsUpdatePatchResponse> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsVisitsUpdatePatchResponse<TData extends Partial<SaBaiAPIEndpointsVisitsUpdatePatchResponse> = object>(data?: TData) {
   const defaultFakeData = {
-  id: faker.number.int(),
-  date: faker.date.anytime().toISOString(),
-  patientId: faker.number.int(),
-  patientName: faker.string.alpha(),
-  villageCodeId: faker.number.int(),
-  villageCode: faker.string.alpha(),
-  villageName: faker.string.alpha(),
-  villageColorHex: faker.string.alpha(),
-  status: faker.string.alpha(),
-}
+    id: faker.number.int(),
+    date: faker.date.anytime().toISOString(),
+    patientId: faker.number.int(),
+    patientName: faker.string.alpha(),
+    villageCodeId: faker.number.int(),
+    villageCode: faker.string.alpha(),
+    villageName: faker.string.alpha(),
+    villageColorHex: faker.string.alpha(),
+    status: faker.string.alpha(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

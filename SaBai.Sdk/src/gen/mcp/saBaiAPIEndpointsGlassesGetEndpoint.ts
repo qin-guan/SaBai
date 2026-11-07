@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsGlassesGetEndpointOptions } from '../types/SaBaiAPIEndpointsGlassesGetEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsGlassesGetEndpoint } from '../clients/saBaiAPIEndpointsGlassesGetEndpoint'
 
 /**
  * @summary Get prescribed glasses by id
  * {@link /glasses/:id}
  */
-export async function saBaiAPIEndpointsGlassesGetEndpointHandler({ path }: SaBaiAPIEndpointsGlassesGetEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsGlassesGetEndpoint({ path, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsGlassesGetEndpointHandler({ path }: SaBaiAPIEndpointsGlassesGetEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsGlassesGetEndpoint({ path, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

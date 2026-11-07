@@ -4,11 +4,12 @@
 */
 
 import type { SaBaiAPIEndpointsReferralsCreatePostEndpointResponse, SaBaiAPIEndpointsReferralsCreatePostEndpointStatus400, SaBaiAPIEndpointsReferralsCreatePostEndpointStatus401, SaBaiAPIEndpointsReferralsCreatePostEndpointStatus403, SaBaiAPIEndpointsReferralsCreatePostEndpointBody } from '../types/SaBaiAPIEndpointsReferralsCreatePostEndpoint'
-import type { HttpResponseResolver } from 'msw'
-import { http } from 'msw'
+import type { HttpResponseResolver } from 'msw/http'
+import type { DefaultBodyType } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsReferralsCreatePostEndpointHandlerResponse200(data: SaBaiAPIEndpointsReferralsCreatePostEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -17,7 +18,7 @@ export function saBaiAPIEndpointsReferralsCreatePostEndpointHandlerResponse200(d
 }
 
 export function saBaiAPIEndpointsReferralsCreatePostEndpointHandlerResponse400(data: SaBaiAPIEndpointsReferralsCreatePostEndpointStatus400) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 400,
     headers: {
       'Content-Type': 'application/problem+json'
@@ -26,22 +27,22 @@ export function saBaiAPIEndpointsReferralsCreatePostEndpointHandlerResponse400(d
 }
 
 export function saBaiAPIEndpointsReferralsCreatePostEndpointHandlerResponse401(data?: SaBaiAPIEndpointsReferralsCreatePostEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsReferralsCreatePostEndpointHandlerResponse403(data?: SaBaiAPIEndpointsReferralsCreatePostEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsReferralsCreatePostEndpointHandler(data?: SaBaiAPIEndpointsReferralsCreatePostEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsReferralsCreatePostEndpointBody>) {
-  return http.post<Record<string, string>, SaBaiAPIEndpointsReferralsCreatePostEndpointBody>(`/referrals`, function handler(info) {
+export function saBaiAPIEndpointsReferralsCreatePostEndpointHandler(data?: SaBaiAPIEndpointsReferralsCreatePostEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsReferralsCreatePostEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsReferralsCreatePostEndpointBody : DefaultBodyType>, options?: { baseURL?: string }) {
+  return http.post<Record<string, string>, SaBaiAPIEndpointsReferralsCreatePostEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsReferralsCreatePostEndpointBody : DefaultBodyType>(`${options?.baseURL ?? ''}/referrals`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

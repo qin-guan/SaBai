@@ -4,10 +4,10 @@
 */
 
 import type { SaBaiAPIEndpointsAuthUsersUnlockPostEndpointResponse, SaBaiAPIEndpointsAuthUsersUnlockPostEndpointStatus401, SaBaiAPIEndpointsAuthUsersUnlockPostEndpointStatus403 } from '../types/SaBaiAPIEndpointsAuthUsersUnlockPostEndpoint'
-import { http } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsAuthUsersUnlockPostEndpointHandlerResponse200(data: SaBaiAPIEndpointsAuthUsersUnlockPostEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -16,22 +16,22 @@ export function saBaiAPIEndpointsAuthUsersUnlockPostEndpointHandlerResponse200(d
 }
 
 export function saBaiAPIEndpointsAuthUsersUnlockPostEndpointHandlerResponse401(data?: SaBaiAPIEndpointsAuthUsersUnlockPostEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsAuthUsersUnlockPostEndpointHandlerResponse403(data?: SaBaiAPIEndpointsAuthUsersUnlockPostEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsAuthUsersUnlockPostEndpointHandler(data?: SaBaiAPIEndpointsAuthUsersUnlockPostEndpointResponse | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Response | Promise<Response>)) {
-  return http.post(`/auth/users/:id/unlock`, function handler(info) {
+export function saBaiAPIEndpointsAuthUsersUnlockPostEndpointHandler(data?: SaBaiAPIEndpointsAuthUsersUnlockPostEndpointResponse | ((info: Parameters<Parameters<typeof http.post>[1]>[0]) => Response | Promise<Response>), options?: { baseURL?: string }) {
+  return http.post(`${options?.baseURL ?? ''}/auth/users/:id/unlock`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

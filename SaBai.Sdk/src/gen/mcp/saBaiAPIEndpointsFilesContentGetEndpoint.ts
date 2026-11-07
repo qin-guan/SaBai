@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsFilesContentGetEndpointOptions } from '../types/SaBaiAPIEndpointsFilesContentGetEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsFilesContentGetEndpoint } from '../clients/saBaiAPIEndpointsFilesContentGetEndpoint'
 
 /**
  * @summary Download a clinical file from RustFS
  * {@link /files/:id/content}
  */
-export async function saBaiAPIEndpointsFilesContentGetEndpointHandler({ path }: SaBaiAPIEndpointsFilesContentGetEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsFilesContentGetEndpoint({ path, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsFilesContentGetEndpointHandler({ path }: SaBaiAPIEndpointsFilesContentGetEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsFilesContentGetEndpoint({ path, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

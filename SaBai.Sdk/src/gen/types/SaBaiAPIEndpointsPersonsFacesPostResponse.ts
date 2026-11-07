@@ -6,18 +6,18 @@
 import type { SaBaiAPIEndpointsFacesFaceDto } from './SaBaiAPIEndpointsFacesFaceDto'
 
 export type SaBaiAPIEndpointsPersonsFacesPostResponse = {
-    /**
-     * @description
-     * Format: `uuid`
-     * @type string
-    */
-    faceId: string;
-    personId: string;
-    face: SaBaiAPIEndpointsFacesFaceDto;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    facesDetected: number;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string
+   */
+  faceId: string;
+  personId: string;
+  face: SaBaiAPIEndpointsFacesFaceDto;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  facesDetected: number;
 };

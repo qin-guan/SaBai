@@ -3,18 +3,16 @@
 * Do not edit manually.
 */
 
-import type { SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointBody, SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointPath, SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointResponse, SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointStatus200, SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointStatus400, SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointStatus401, SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointStatus403 } from '../types/SaBaiAPIEndpointsReferralsUpdateStatePatchEndpoint'
+import type { SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointBody, SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointPath, SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointResponse, SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointStatus200, SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointStatus400 } from '../types/SaBaiAPIEndpointsReferralsUpdateStatePatchEndpoint'
 import { createFastEndpointsProblemDetails } from './createFastEndpointsProblemDetails'
 import { createSaBaiAPIEndpointsReferralsUpdateStatePatchRequest } from './createSaBaiAPIEndpointsReferralsUpdateStatePatchRequest'
 import { createSaBaiAPIEndpointsReferralsUpdateStatePatchResponse } from './createSaBaiAPIEndpointsReferralsUpdateStatePatchResponse'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsReferralsUpdateStatePatchEndpointPath<TData extends Partial<SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointPath> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsReferralsUpdateStatePatchEndpointPath<TData extends Partial<SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointPath> = object>(data?: TData) {
   const defaultFakeData = {
-  id: faker.number.int(),
-}
+    id: faker.number.int(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

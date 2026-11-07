@@ -20,3 +20,7 @@ export const saBaiAPIEndpointsVisitsHasRecentGetEndpointStatus403Schema = z.unkn
 export const saBaiAPIEndpointsVisitsHasRecentGetEndpointResponseSchema = saBaiAPIEndpointsVisitsHasRecentGetEndpointStatus200Schema
 
 export const saBaiAPIEndpointsVisitsHasRecentGetEndpointErrorSchema = z.union([saBaiAPIEndpointsVisitsHasRecentGetEndpointStatus400Schema, saBaiAPIEndpointsVisitsHasRecentGetEndpointStatus401Schema, saBaiAPIEndpointsVisitsHasRecentGetEndpointStatus403Schema])
+
+export const saBaiAPIEndpointsVisitsHasRecentGetEndpointQuerySchema = z.object({
+  patientId: z.int32(),
+})

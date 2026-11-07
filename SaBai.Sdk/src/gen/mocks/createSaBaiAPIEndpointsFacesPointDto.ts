@@ -6,13 +6,11 @@
 import type { SaBaiAPIEndpointsFacesPointDto } from '../types/SaBaiAPIEndpointsFacesPointDto'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsFacesPointDto<TData extends Partial<SaBaiAPIEndpointsFacesPointDto> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsFacesPointDto<TData extends Partial<SaBaiAPIEndpointsFacesPointDto> = object>(data?: TData) {
   const defaultFakeData = {
-  x: faker.number.float(),
-  y: faker.number.float(),
-}
+    x: faker.number.float(),
+    y: faker.number.float(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

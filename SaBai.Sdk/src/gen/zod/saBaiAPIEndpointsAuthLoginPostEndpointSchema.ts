@@ -5,9 +5,9 @@
 
 import { fastEndpointsProblemDetailsSchema } from './fastEndpointsProblemDetailsSchema'
 import { saBaiAPIEndpointsAuthLoginPostRequestSchema } from './saBaiAPIEndpointsAuthLoginPostRequestSchema'
-import { saBaiAPIEndpointsAuthLoginPostResponseSchema } from './saBaiAPIEndpointsAuthLoginPostResponseSchema'
+import { saBaiAPIEndpointsAuthSignInResponseSchema } from './saBaiAPIEndpointsAuthSignInResponseSchema'
 
-export const saBaiAPIEndpointsAuthLoginPostEndpointStatus200Schema = saBaiAPIEndpointsAuthLoginPostResponseSchema
+export const saBaiAPIEndpointsAuthLoginPostEndpointStatus200Schema = saBaiAPIEndpointsAuthSignInResponseSchema
 
 export const saBaiAPIEndpointsAuthLoginPostEndpointStatus400Schema = fastEndpointsProblemDetailsSchema.describe('RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```')
 

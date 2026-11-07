@@ -4,12 +4,12 @@
 */
 
 export type SaBaiAPIEndpointsFilesContentGetEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
 };
 
 export type SaBaiAPIEndpointsFilesContentGetEndpointStatus204 = unknown;
@@ -19,19 +19,19 @@ export type SaBaiAPIEndpointsFilesContentGetEndpointStatus401 = unknown;
 export type SaBaiAPIEndpointsFilesContentGetEndpointStatus403 = unknown;
 
 export type SaBaiAPIEndpointsFilesContentGetEndpointOptions = {
-    body?: never;
-    path: SaBaiAPIEndpointsFilesContentGetEndpointPath;
-    query?: never;
-    headers?: never;
+  body?: never;
+  path: SaBaiAPIEndpointsFilesContentGetEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsFilesContentGetEndpointResponses = {
-    "204": SaBaiAPIEndpointsFilesContentGetEndpointStatus204;
-    "401": SaBaiAPIEndpointsFilesContentGetEndpointStatus401;
-    "403": SaBaiAPIEndpointsFilesContentGetEndpointStatus403;
+  '204': SaBaiAPIEndpointsFilesContentGetEndpointStatus204;
+  '401': SaBaiAPIEndpointsFilesContentGetEndpointStatus401;
+  '403': SaBaiAPIEndpointsFilesContentGetEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsFilesContentGetEndpointResponse = SaBaiAPIEndpointsFilesContentGetEndpointStatus204;

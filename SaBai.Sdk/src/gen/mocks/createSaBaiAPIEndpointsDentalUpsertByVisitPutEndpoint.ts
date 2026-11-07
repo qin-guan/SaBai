@@ -3,18 +3,16 @@
 * Do not edit manually.
 */
 
-import type { SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointBody, SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointPath, SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointResponse, SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointStatus200, SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointStatus400, SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointStatus401, SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointStatus403 } from '../types/SaBaiAPIEndpointsDentalUpsertByVisitPutEndpoint'
+import type { SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointBody, SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointPath, SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointResponse, SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointStatus200, SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointStatus400 } from '../types/SaBaiAPIEndpointsDentalUpsertByVisitPutEndpoint'
 import { createFastEndpointsProblemDetails } from './createFastEndpointsProblemDetails'
 import { createSaBaiAPIEndpointsDentalDentalConsultResponse } from './createSaBaiAPIEndpointsDentalDentalConsultResponse'
 import { createSaBaiAPIEndpointsDentalUpsertByVisitPutRequest } from './createSaBaiAPIEndpointsDentalUpsertByVisitPutRequest'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsDentalUpsertByVisitPutEndpointPath<TData extends Partial<SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointPath> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsDentalUpsertByVisitPutEndpointPath<TData extends Partial<SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointPath> = object>(data?: TData) {
   const defaultFakeData = {
-  visitId: faker.number.int(),
-}
+    visitId: faker.number.int(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

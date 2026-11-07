@@ -12,19 +12,19 @@ export type SaBaiAPIEndpointsPharmacyOrdersGetEndpointStatus401 = unknown;
 export type SaBaiAPIEndpointsPharmacyOrdersGetEndpointStatus403 = unknown;
 
 export type SaBaiAPIEndpointsPharmacyOrdersGetEndpointOptions = {
-    body?: never;
-    path?: never;
-    query?: never;
-    headers?: never;
+  body?: never;
+  path?: never;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsPharmacyOrdersGetEndpointResponses = {
-    "200": SaBaiAPIEndpointsPharmacyOrdersGetEndpointStatus200;
-    "401": SaBaiAPIEndpointsPharmacyOrdersGetEndpointStatus401;
-    "403": SaBaiAPIEndpointsPharmacyOrdersGetEndpointStatus403;
+  '200': SaBaiAPIEndpointsPharmacyOrdersGetEndpointStatus200;
+  '401': SaBaiAPIEndpointsPharmacyOrdersGetEndpointStatus401;
+  '403': SaBaiAPIEndpointsPharmacyOrdersGetEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsPharmacyOrdersGetEndpointResponse = SaBaiAPIEndpointsPharmacyOrdersGetEndpointStatus200;

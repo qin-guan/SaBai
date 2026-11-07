@@ -8,20 +8,21 @@ import type { SaBaiAPIEndpointsReferralsUpdateStatePatchRequest } from './SaBaiA
 import type { SaBaiAPIEndpointsReferralsUpdateStatePatchResponse } from './SaBaiAPIEndpointsReferralsUpdateStatePatchResponse'
 
 export type SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
 };
 
 export type SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointStatus200 = SaBaiAPIEndpointsReferralsUpdateStatePatchResponse;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointStatus401 = unknown;
@@ -31,20 +32,20 @@ export type SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointStatus403 = unknow
 export type SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointBody = SaBaiAPIEndpointsReferralsUpdateStatePatchRequest;
 
 export type SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointOptions = {
-    body: SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointBody;
-    path: SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointPath;
-    query?: never;
-    headers?: never;
+  body: SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointBody;
+  path: SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointResponses = {
-    "200": SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointStatus200;
-    "400": SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointStatus400;
-    "401": SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointStatus401;
-    "403": SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointStatus403;
+  '200': SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointStatus200;
+  '400': SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointStatus400;
+  '401': SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointStatus401;
+  '403': SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointResponse = SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointStatus200;

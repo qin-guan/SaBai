@@ -8,7 +8,7 @@ import type { SaBaiAPIEndpointsVisionGetGlassesResponse } from './SaBaiAPIEndpoi
 import type { SaBaiAPIEndpointsVisionGetPatientResponse } from './SaBaiAPIEndpointsVisionGetPatientResponse'
 
 export type SaBaiAPIEndpointsVisionGetResponse = {
-    patient: SaBaiAPIEndpointsVisionGetPatientResponse;
-    vision: (null | SaBaiAPIEndpointsVisionGetGlassesResponse);
-    vitals: (null | SaBaiAPIEndpointsVisionGetAcuityResponse);
+  patient: SaBaiAPIEndpointsVisionGetPatientResponse;
+  vision: null | SaBaiAPIEndpointsVisionGetGlassesResponse;
+  vitals: null | SaBaiAPIEndpointsVisionGetAcuityResponse;
 };

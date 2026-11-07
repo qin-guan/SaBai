@@ -19,3 +19,7 @@ export const saBaiAPIEndpointsEyesightDeleteEndpointStatus403Schema = z.unknown(
 export const saBaiAPIEndpointsEyesightDeleteEndpointResponseSchema = saBaiAPIEndpointsEyesightDeleteEndpointStatus204Schema
 
 export const saBaiAPIEndpointsEyesightDeleteEndpointErrorSchema = z.union([saBaiAPIEndpointsEyesightDeleteEndpointStatus400Schema, saBaiAPIEndpointsEyesightDeleteEndpointStatus401Schema, saBaiAPIEndpointsEyesightDeleteEndpointStatus403Schema])
+
+export const saBaiAPIEndpointsEyesightDeleteEndpointPathSchema = z.object({
+  id: z.int32(),
+})

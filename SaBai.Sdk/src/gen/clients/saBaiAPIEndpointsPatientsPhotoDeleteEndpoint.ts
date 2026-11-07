@@ -14,5 +14,5 @@ import { client, withUnwrap } from '../.kubb/client'
 export function saBaiAPIEndpointsPatientsPhotoDeleteEndpoint<ThrowOnError extends boolean = true>(options: Options<SaBaiAPIEndpointsPatientsPhotoDeleteEndpointOptions, ThrowOnError>): Unwrappable<RequestResult<SaBaiAPIEndpointsPatientsPhotoDeleteEndpointResponses, ThrowOnError>> {
   const { client: request = client, ...config } = options
 
-  return withUnwrap(request({ method: 'DELETE', url: '/patients/{id}/photo', security: [{ type: 'http', scheme: 'bearer' }], ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<SaBaiAPIEndpointsPatientsPhotoDeleteEndpointResponses, ThrowOnError>>)
+  return withUnwrap(request({ method: 'DELETE', url: '/patients/{id}/photo', security: [{ type: 'apiKey', name: 'sabai.auth', in: 'cookie', scopes: ['admin', 'member'] }], ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<SaBaiAPIEndpointsPatientsPhotoDeleteEndpointResponses, ThrowOnError>>)
 }

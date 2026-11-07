@@ -8,20 +8,21 @@ import type { SaBaiAPIEndpointsVisitsUpdatePatchRequest } from './SaBaiAPIEndpoi
 import type { SaBaiAPIEndpointsVisitsUpdatePatchResponse } from './SaBaiAPIEndpointsVisitsUpdatePatchResponse'
 
 export type SaBaiAPIEndpointsVisitsUpdatePatchEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
 };
 
 export type SaBaiAPIEndpointsVisitsUpdatePatchEndpointStatus200 = SaBaiAPIEndpointsVisitsUpdatePatchResponse;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsVisitsUpdatePatchEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsVisitsUpdatePatchEndpointStatus401 = unknown;
@@ -31,20 +32,20 @@ export type SaBaiAPIEndpointsVisitsUpdatePatchEndpointStatus403 = unknown;
 export type SaBaiAPIEndpointsVisitsUpdatePatchEndpointBody = SaBaiAPIEndpointsVisitsUpdatePatchRequest;
 
 export type SaBaiAPIEndpointsVisitsUpdatePatchEndpointOptions = {
-    body: SaBaiAPIEndpointsVisitsUpdatePatchEndpointBody;
-    path: SaBaiAPIEndpointsVisitsUpdatePatchEndpointPath;
-    query?: never;
-    headers?: never;
+  body: SaBaiAPIEndpointsVisitsUpdatePatchEndpointBody;
+  path: SaBaiAPIEndpointsVisitsUpdatePatchEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsVisitsUpdatePatchEndpointResponses = {
-    "200": SaBaiAPIEndpointsVisitsUpdatePatchEndpointStatus200;
-    "400": SaBaiAPIEndpointsVisitsUpdatePatchEndpointStatus400;
-    "401": SaBaiAPIEndpointsVisitsUpdatePatchEndpointStatus401;
-    "403": SaBaiAPIEndpointsVisitsUpdatePatchEndpointStatus403;
+  '200': SaBaiAPIEndpointsVisitsUpdatePatchEndpointStatus200;
+  '400': SaBaiAPIEndpointsVisitsUpdatePatchEndpointStatus400;
+  '401': SaBaiAPIEndpointsVisitsUpdatePatchEndpointStatus401;
+  '403': SaBaiAPIEndpointsVisitsUpdatePatchEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsVisitsUpdatePatchEndpointResponse = SaBaiAPIEndpointsVisitsUpdatePatchEndpointStatus200;

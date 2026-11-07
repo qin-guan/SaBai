@@ -6,40 +6,40 @@
 import type { SaBaiAPIDomainGenderKey } from './SaBaiAPIDomainGender'
 
 export type SaBaiAPIEndpointsPatientsUpdatePatchRequest = {
-    /**
-     * @minLength 0
-     * @maxLength 255
-     * @type string | undefined
-    */
-    name?: string | null;
-    /**
-     * @minLength 0
-     * @maxLength 255
-     * @type string | undefined
-    */
-    identificationNumber?: string | null;
-    /**
-     * @minLength 0
-     * @maxLength 255
-     * @type string | undefined
-    */
-    contactNo?: string | null;
-    gender?: (null | SaBaiAPIDomainGenderKey);
-    /**
-     * @description
-     * Format: `date-time`
-     * @type string | undefined
-    */
-    dateOfBirth?: string | null;
-    drugAllergy?: string | null;
-    hasPoorCard?: boolean | null;
-    hasBS2Card?: boolean | null;
-    hasSabaiCard?: boolean | null;
-    toGetReport?: boolean | null;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer | undefined
-    */
-    villageCodeId?: number | null;
+  /**
+   * @minLength 0
+   * @maxLength 255
+   * @type string | undefined
+   */
+  name?: string | null;
+  /**
+   * @minLength 0
+   * @maxLength 255
+   * @type string | undefined
+   */
+  identificationNumber?: string | null;
+  /**
+   * @minLength 0
+   * @maxLength 255
+   * @type string | undefined
+   */
+  contactNo?: string | null;
+  gender?: null | SaBaiAPIDomainGenderKey;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string | undefined
+   */
+  dateOfBirth?: string | null;
+  drugAllergy?: string | null;
+  hasPoorCard?: boolean | null;
+  hasBS2Card?: boolean | null;
+  hasSabaiCard?: boolean | null;
+  toGetReport?: boolean | null;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer | undefined
+   */
+  villageCodeId?: number | null;
 };

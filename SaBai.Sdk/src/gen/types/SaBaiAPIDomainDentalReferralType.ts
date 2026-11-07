@@ -4,11 +4,11 @@
 */
 
 export const saBaiAPIDomainDentalReferralType = {
-    Restorative: "Restorative",
-    Extraction: "Extraction",
-    Perio: "Perio",
-    Other: "Other",
-    NotReferred: "NotReferred"
+  Restorative: 'Restorative',
+  Extraction: 'Extraction',
+  Perio: 'Perio',
+  Other: 'Other',
+  NotReferred: 'NotReferred',
 } as const;
 
 export type SaBaiAPIDomainDentalReferralTypeKey = (typeof saBaiAPIDomainDentalReferralType)[keyof typeof saBaiAPIDomainDentalReferralType];

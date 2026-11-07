@@ -16,3 +16,7 @@ export const saBaiAPIEndpointsAuthUsersDeleteDeleteEndpointStatus403Schema = z.u
 export const saBaiAPIEndpointsAuthUsersDeleteDeleteEndpointResponseSchema = saBaiAPIEndpointsAuthUsersDeleteDeleteEndpointStatus204Schema
 
 export const saBaiAPIEndpointsAuthUsersDeleteDeleteEndpointErrorSchema = z.union([saBaiAPIEndpointsAuthUsersDeleteDeleteEndpointStatus401Schema, saBaiAPIEndpointsAuthUsersDeleteDeleteEndpointStatus403Schema])
+
+export const saBaiAPIEndpointsAuthUsersDeleteDeleteEndpointPathSchema = z.object({
+  id: z.uuid(),
+})

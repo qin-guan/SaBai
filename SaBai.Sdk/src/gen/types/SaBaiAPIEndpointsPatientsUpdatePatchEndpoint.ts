@@ -8,20 +8,21 @@ import type { SaBaiAPIEndpointsPatientsUpdatePatchRequest } from './SaBaiAPIEndp
 import type { SaBaiAPIEndpointsPatientsUpdatePatchResponse } from './SaBaiAPIEndpointsPatientsUpdatePatchResponse'
 
 export type SaBaiAPIEndpointsPatientsUpdatePatchEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
 };
 
 export type SaBaiAPIEndpointsPatientsUpdatePatchEndpointStatus200 = SaBaiAPIEndpointsPatientsUpdatePatchResponse;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsPatientsUpdatePatchEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsPatientsUpdatePatchEndpointStatus401 = unknown;
@@ -31,20 +32,20 @@ export type SaBaiAPIEndpointsPatientsUpdatePatchEndpointStatus403 = unknown;
 export type SaBaiAPIEndpointsPatientsUpdatePatchEndpointBody = SaBaiAPIEndpointsPatientsUpdatePatchRequest;
 
 export type SaBaiAPIEndpointsPatientsUpdatePatchEndpointOptions = {
-    body: SaBaiAPIEndpointsPatientsUpdatePatchEndpointBody;
-    path: SaBaiAPIEndpointsPatientsUpdatePatchEndpointPath;
-    query?: never;
-    headers?: never;
+  body: SaBaiAPIEndpointsPatientsUpdatePatchEndpointBody;
+  path: SaBaiAPIEndpointsPatientsUpdatePatchEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsPatientsUpdatePatchEndpointResponses = {
-    "200": SaBaiAPIEndpointsPatientsUpdatePatchEndpointStatus200;
-    "400": SaBaiAPIEndpointsPatientsUpdatePatchEndpointStatus400;
-    "401": SaBaiAPIEndpointsPatientsUpdatePatchEndpointStatus401;
-    "403": SaBaiAPIEndpointsPatientsUpdatePatchEndpointStatus403;
+  '200': SaBaiAPIEndpointsPatientsUpdatePatchEndpointStatus200;
+  '400': SaBaiAPIEndpointsPatientsUpdatePatchEndpointStatus400;
+  '401': SaBaiAPIEndpointsPatientsUpdatePatchEndpointStatus401;
+  '403': SaBaiAPIEndpointsPatientsUpdatePatchEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsPatientsUpdatePatchEndpointResponse = SaBaiAPIEndpointsPatientsUpdatePatchEndpointStatus200;

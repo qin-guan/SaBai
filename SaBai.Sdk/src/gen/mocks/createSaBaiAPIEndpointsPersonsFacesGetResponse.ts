@@ -7,13 +7,11 @@ import type { SaBaiAPIEndpointsPersonsFacesGetResponse } from '../types/SaBaiAPI
 import { createSaBaiAPIFaceRecognitionStoredFaceArray } from './createSaBaiAPIFaceRecognitionStoredFaceArray'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsPersonsFacesGetResponse<TData extends Partial<SaBaiAPIEndpointsPersonsFacesGetResponse> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsPersonsFacesGetResponse<TData extends Partial<SaBaiAPIEndpointsPersonsFacesGetResponse> = object>(data?: TData) {
   const defaultFakeData = {
-  personId: faker.string.alpha(),
-  faces: createSaBaiAPIFaceRecognitionStoredFaceArray(),
-}
+    personId: faker.string.alpha(),
+    faces: createSaBaiAPIFaceRecognitionStoredFaceArray(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

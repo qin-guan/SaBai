@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsFacesDetectPostEndpointOptions } from '../types/SaBaiAPIEndpointsFacesDetectPostEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsFacesDetectPostEndpoint } from '../clients/saBaiAPIEndpointsFacesDetectPostEndpoint'
 
 /**
  * @summary Detect faces and their five-point landmarks in an image.
  * {@link /faces/detect}
  */
-export async function saBaiAPIEndpointsFacesDetectPostEndpointHandler({ body }: SaBaiAPIEndpointsFacesDetectPostEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsFacesDetectPostEndpoint({ body, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsFacesDetectPostEndpointHandler({ body }: SaBaiAPIEndpointsFacesDetectPostEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsFacesDetectPostEndpoint({ body, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

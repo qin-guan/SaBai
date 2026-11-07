@@ -4,18 +4,18 @@
 */
 
 export type SaBaiAPIEndpointsPatientConsultGetConsultItem = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
-    /**
-     * @description
-     * Format: `date-time`
-     * @type string
-    */
-    date: string;
-    doctorNickname: string;
-    referredFor: string | null;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string
+   */
+  date: string;
+  doctorNickname: string;
+  referredFor: string | null;
 };

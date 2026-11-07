@@ -12,7 +12,7 @@ public sealed class FileEdgeTests(AppFixture fixture)
     public async Task Upload_UnknownPatient_ReturnsBadRequest()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
         using var content = Form(99999999, $"orphan-{ClinicSetup.Suffix()}.pdf", "orphan note");
 
@@ -27,7 +27,7 @@ public sealed class FileEdgeTests(AppFixture fixture)
     public async Task Upload_DescriptionCountMismatch_ReturnsBadRequest()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
         var patientId = await CreatePatientAsync(client);
         var suffix = ClinicSetup.Suffix();
@@ -48,7 +48,7 @@ public sealed class FileEdgeTests(AppFixture fixture)
     public async Task List_InvalidDeleted_ReturnsBadRequest()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
 
         // Act
@@ -62,7 +62,7 @@ public sealed class FileEdgeTests(AppFixture fixture)
     public async Task Get_UnknownId_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
 
         // Act
@@ -76,7 +76,7 @@ public sealed class FileEdgeTests(AppFixture fixture)
     public async Task Download_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
         var patientId = await CreatePatientAsync(client);
         var fileId = await UploadAsync(
@@ -85,7 +85,7 @@ public sealed class FileEdgeTests(AppFixture fixture)
             $"secret-{ClinicSetup.Suffix()}.pdf",
             "private"
         );
-        var anonymous = fixture.CreateHttpClient("api");
+        var anonymous = fixture.CreateApiClient();
 
         // Act
         var response = await anonymous.GetAsync($"/files/{fileId}/content");
@@ -98,7 +98,7 @@ public sealed class FileEdgeTests(AppFixture fixture)
     public async Task Update_Description_GetContainsDescription()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
         var suffix = ClinicSetup.Suffix();
         var patientId = await CreatePatientAsync(client);
@@ -124,7 +124,7 @@ public sealed class FileEdgeTests(AppFixture fixture)
     public async Task List_DeletedAndAll_ContainSoftDeletedFile()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
         var patientId = await CreatePatientAsync(client);
         var fileName = $"deleted-{ClinicSetup.Suffix()}.pdf";
@@ -151,7 +151,7 @@ public sealed class FileEdgeTests(AppFixture fixture)
     public async Task Upload_DisallowedTypeOrEmpty_ReturnsBadRequest(string contentType, string body)
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
         var patientId = await CreatePatientAsync(client);
         using var content = new MultipartFormDataContent();

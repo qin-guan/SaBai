@@ -4,10 +4,10 @@
 */
 
 import type { SaBaiAPIEndpointsFilesGetEndpointResponse, SaBaiAPIEndpointsFilesGetEndpointStatus401, SaBaiAPIEndpointsFilesGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsFilesGetEndpoint'
-import { http } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsFilesGetEndpointHandlerResponse200(data: SaBaiAPIEndpointsFilesGetEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -16,22 +16,22 @@ export function saBaiAPIEndpointsFilesGetEndpointHandlerResponse200(data: SaBaiA
 }
 
 export function saBaiAPIEndpointsFilesGetEndpointHandlerResponse401(data?: SaBaiAPIEndpointsFilesGetEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsFilesGetEndpointHandlerResponse403(data?: SaBaiAPIEndpointsFilesGetEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsFilesGetEndpointHandler(data?: SaBaiAPIEndpointsFilesGetEndpointResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>)) {
-  return http.get(`/files/:id`, function handler(info) {
+export function saBaiAPIEndpointsFilesGetEndpointHandler(data?: SaBaiAPIEndpointsFilesGetEndpointResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>), options?: { baseURL?: string }) {
+  return http.get(`${options?.baseURL ?? ''}/files/:id`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

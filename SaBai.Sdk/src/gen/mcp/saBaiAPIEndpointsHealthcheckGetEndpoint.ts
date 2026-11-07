@@ -3,16 +3,15 @@
 * Do not edit manually.
 */
 
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsHealthcheckGetEndpoint } from '../clients/saBaiAPIEndpointsHealthcheckGetEndpoint'
 
 /**
  * @summary Public liveness string
  * {@link /healthcheck}
  */
-export async function saBaiAPIEndpointsHealthcheckGetEndpointHandler(request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsHealthcheckGetEndpoint({ signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsHealthcheckGetEndpointHandler(ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsHealthcheckGetEndpoint({ signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

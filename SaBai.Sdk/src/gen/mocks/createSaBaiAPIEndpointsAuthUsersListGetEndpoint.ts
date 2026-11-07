@@ -3,19 +3,16 @@
 * Do not edit manually.
 */
 
-import type { SaBaiAPIEndpointsAuthUsersListGetEndpointQuery, SaBaiAPIEndpointsAuthUsersListGetEndpointResponse, SaBaiAPIEndpointsAuthUsersListGetEndpointStatus200, SaBaiAPIEndpointsAuthUsersListGetEndpointStatus401, SaBaiAPIEndpointsAuthUsersListGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsAuthUsersListGetEndpoint'
-import { createSaBaiAPIDomainStaffRole } from './createSaBaiAPIDomainStaffRole'
+import type { SaBaiAPIEndpointsAuthUsersListGetEndpointQuery, SaBaiAPIEndpointsAuthUsersListGetEndpointResponse, SaBaiAPIEndpointsAuthUsersListGetEndpointStatus200 } from '../types/SaBaiAPIEndpointsAuthUsersListGetEndpoint'
 import { createSaBaiAPIEndpointsAuthUsersListGetResponse } from './createSaBaiAPIEndpointsAuthUsersListGetResponse'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsAuthUsersListGetEndpointQuery<TData extends Partial<SaBaiAPIEndpointsAuthUsersListGetEndpointQuery> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsAuthUsersListGetEndpointQuery<TData extends Partial<SaBaiAPIEndpointsAuthUsersListGetEndpointQuery> = object>(data?: TData) {
   const defaultFakeData = {
-  role: createSaBaiAPIDomainStaffRole(),
-  email: faker.string.alpha(),
-  isLocked: faker.datatype.boolean(),
-}
+    role: faker.string.alpha(),
+    email: faker.string.alpha(),
+    isLocked: faker.datatype.boolean(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

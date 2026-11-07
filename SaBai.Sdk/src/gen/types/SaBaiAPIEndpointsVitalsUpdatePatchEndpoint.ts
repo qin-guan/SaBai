@@ -8,20 +8,21 @@ import type { SaBaiAPIEndpointsVitalsUpdatePatchRequest } from './SaBaiAPIEndpoi
 import type { SaBaiAPIEndpointsVitalsUpdatePatchResponse } from './SaBaiAPIEndpointsVitalsUpdatePatchResponse'
 
 export type SaBaiAPIEndpointsVitalsUpdatePatchEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
 };
 
 export type SaBaiAPIEndpointsVitalsUpdatePatchEndpointStatus200 = SaBaiAPIEndpointsVitalsUpdatePatchResponse;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsVitalsUpdatePatchEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsVitalsUpdatePatchEndpointStatus401 = unknown;
@@ -31,20 +32,20 @@ export type SaBaiAPIEndpointsVitalsUpdatePatchEndpointStatus403 = unknown;
 export type SaBaiAPIEndpointsVitalsUpdatePatchEndpointBody = SaBaiAPIEndpointsVitalsUpdatePatchRequest;
 
 export type SaBaiAPIEndpointsVitalsUpdatePatchEndpointOptions = {
-    body: SaBaiAPIEndpointsVitalsUpdatePatchEndpointBody;
-    path: SaBaiAPIEndpointsVitalsUpdatePatchEndpointPath;
-    query?: never;
-    headers?: never;
+  body: SaBaiAPIEndpointsVitalsUpdatePatchEndpointBody;
+  path: SaBaiAPIEndpointsVitalsUpdatePatchEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsVitalsUpdatePatchEndpointResponses = {
-    "200": SaBaiAPIEndpointsVitalsUpdatePatchEndpointStatus200;
-    "400": SaBaiAPIEndpointsVitalsUpdatePatchEndpointStatus400;
-    "401": SaBaiAPIEndpointsVitalsUpdatePatchEndpointStatus401;
-    "403": SaBaiAPIEndpointsVitalsUpdatePatchEndpointStatus403;
+  '200': SaBaiAPIEndpointsVitalsUpdatePatchEndpointStatus200;
+  '400': SaBaiAPIEndpointsVitalsUpdatePatchEndpointStatus400;
+  '401': SaBaiAPIEndpointsVitalsUpdatePatchEndpointStatus401;
+  '403': SaBaiAPIEndpointsVitalsUpdatePatchEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsVitalsUpdatePatchEndpointResponse = SaBaiAPIEndpointsVitalsUpdatePatchEndpointStatus200;

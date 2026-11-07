@@ -12,19 +12,19 @@ export type SaBaiAPIEndpointsMedicationIngredientsListGetEndpointStatus401 = unk
 export type SaBaiAPIEndpointsMedicationIngredientsListGetEndpointStatus403 = unknown;
 
 export type SaBaiAPIEndpointsMedicationIngredientsListGetEndpointOptions = {
-    body?: never;
-    path?: never;
-    query?: never;
-    headers?: never;
+  body?: never;
+  path?: never;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsMedicationIngredientsListGetEndpointResponses = {
-    "200": SaBaiAPIEndpointsMedicationIngredientsListGetEndpointStatus200;
-    "401": SaBaiAPIEndpointsMedicationIngredientsListGetEndpointStatus401;
-    "403": SaBaiAPIEndpointsMedicationIngredientsListGetEndpointStatus403;
+  '200': SaBaiAPIEndpointsMedicationIngredientsListGetEndpointStatus200;
+  '401': SaBaiAPIEndpointsMedicationIngredientsListGetEndpointStatus401;
+  '403': SaBaiAPIEndpointsMedicationIngredientsListGetEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsMedicationIngredientsListGetEndpointResponse = SaBaiAPIEndpointsMedicationIngredientsListGetEndpointStatus200;

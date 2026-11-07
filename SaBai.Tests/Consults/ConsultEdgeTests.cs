@@ -11,7 +11,7 @@ public sealed class ConsultEdgeTests(AppFixture fixture)
     public async Task Create_MissingVisit_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var details = $"missing visit {ClinicSetup.Suffix()}";
 
@@ -34,7 +34,7 @@ public sealed class ConsultEdgeTests(AppFixture fixture)
     public async Task Create_EmptyDiagnoses_ReturnsBadRequest()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var (_, visitId) = await RegisterAsync(client);
 
@@ -53,7 +53,7 @@ public sealed class ConsultEdgeTests(AppFixture fixture)
     public async Task Get_Missing_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
 
         // Act
@@ -67,7 +67,7 @@ public sealed class ConsultEdgeTests(AppFixture fixture)
     public async Task Patch_Missing_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
 
         // Act
@@ -85,7 +85,7 @@ public sealed class ConsultEdgeTests(AppFixture fixture)
     public async Task Delete_Missing_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
 
         // Act
@@ -99,7 +99,7 @@ public sealed class ConsultEdgeTests(AppFixture fixture)
     public async Task Delete_WhenReferralExists_ReturnsConflict()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var suffix = ClinicSetup.Suffix();
         var (_, visitId) = await RegisterAsync(client);
@@ -122,7 +122,7 @@ public sealed class ConsultEdgeTests(AppFixture fixture)
     public async Task GetPdf_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var (_, visitId) = await RegisterAsync(client);
         var consultId = await ClinicSetup.CreateConsultAsync(
@@ -130,7 +130,7 @@ public sealed class ConsultEdgeTests(AppFixture fixture)
             visitId,
             $"pdf {ClinicSetup.Suffix()}"
         );
-        var anonymous = fixture.CreateHttpClient("api");
+        var anonymous = fixture.CreateApiClient();
 
         // Act
         var response = await anonymous.GetAsync($"/consults/{consultId}/pdf");
@@ -143,7 +143,7 @@ public sealed class ConsultEdgeTests(AppFixture fixture)
     public async Task Get_ReturnsDoctorNicknameAndDiagnosis()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var details = $"dry cough {ClinicSetup.Suffix()}";
         var (_, visitId) = await RegisterAsync(client);

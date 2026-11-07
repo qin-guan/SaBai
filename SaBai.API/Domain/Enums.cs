@@ -11,15 +11,6 @@ public enum Gender
     Female,
 }
 
-public enum StaffRole
-{
-    [JsonStringEnumMemberName("admin")]
-    Admin,
-
-    [JsonStringEnumMemberName("member")]
-    Member,
-}
-
 public enum OrderStatus
 {
     [JsonStringEnumMemberName("PENDING")]

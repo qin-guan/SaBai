@@ -6,7 +6,7 @@
 import type { SaBaiAPIEndpointsPersonsFacesGetResponse } from './SaBaiAPIEndpointsPersonsFacesGetResponse'
 
 export type SaBaiAPIEndpointsPersonsFacesGetEndpointPath = {
-    personId: string;
+  personId: string;
 };
 
 export type SaBaiAPIEndpointsPersonsFacesGetEndpointStatus200 = SaBaiAPIEndpointsPersonsFacesGetResponse;
@@ -16,19 +16,19 @@ export type SaBaiAPIEndpointsPersonsFacesGetEndpointStatus401 = unknown;
 export type SaBaiAPIEndpointsPersonsFacesGetEndpointStatus403 = unknown;
 
 export type SaBaiAPIEndpointsPersonsFacesGetEndpointOptions = {
-    body?: never;
-    path: SaBaiAPIEndpointsPersonsFacesGetEndpointPath;
-    query?: never;
-    headers?: never;
+  body?: never;
+  path: SaBaiAPIEndpointsPersonsFacesGetEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsPersonsFacesGetEndpointResponses = {
-    "200": SaBaiAPIEndpointsPersonsFacesGetEndpointStatus200;
-    "401": SaBaiAPIEndpointsPersonsFacesGetEndpointStatus401;
-    "403": SaBaiAPIEndpointsPersonsFacesGetEndpointStatus403;
+  '200': SaBaiAPIEndpointsPersonsFacesGetEndpointStatus200;
+  '401': SaBaiAPIEndpointsPersonsFacesGetEndpointStatus401;
+  '403': SaBaiAPIEndpointsPersonsFacesGetEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsPersonsFacesGetEndpointResponse = SaBaiAPIEndpointsPersonsFacesGetEndpointStatus200;

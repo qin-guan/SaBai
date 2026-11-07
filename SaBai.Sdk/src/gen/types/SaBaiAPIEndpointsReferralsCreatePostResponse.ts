@@ -6,46 +6,46 @@
 import type { SaBaiAPIDomainReferralStateKey } from './SaBaiAPIDomainReferralState'
 
 export type SaBaiAPIEndpointsReferralsCreatePostResponse = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
-    referredFor: string;
-    referralNotes: string | null;
-    referralState: SaBaiAPIDomainReferralStateKey;
-    referralOutcome: string | null;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    consultId: number;
-    /**
-     * @description
-     * Format: `date-time`
-     * @type string
-    */
-    createdAt: string;
-    /**
-     * @description
-     * Format: `date-time`
-     * @type string
-    */
-    consultDate: string;
-    /**
-     * @description
-     * Format: `uuid`
-     * @type string
-    */
-    doctorId: string;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    patientId: number;
-    patientName: string;
-    doctorNickname: string;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
+  referredFor: string;
+  referralNotes: string | null;
+  referralState: SaBaiAPIDomainReferralStateKey;
+  referralOutcome: string | null;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  consultId: number;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string
+   */
+  createdAt: string;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string
+   */
+  consultDate: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string
+   */
+  doctorId: string;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  patientId: number;
+  patientName: string;
+  doctorNickname: string;
 };

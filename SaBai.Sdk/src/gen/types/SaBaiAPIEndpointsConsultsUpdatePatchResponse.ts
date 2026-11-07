@@ -6,36 +6,36 @@
 import type { SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsUpdatePatchDiagnosisItem } from './SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsUpdatePatchDiagnosisItem'
 
 export type SaBaiAPIEndpointsConsultsUpdatePatchResponse = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    visitId: number;
-    /**
-     * @description
-     * Format: `date-time`
-     * @type string
-    */
-    date: string;
-    pastMedicalHistory: string | null;
-    consultation: string | null;
-    treatmentPlan: string | null;
-    referredFor: string | null;
-    referralNotes: string | null;
-    remarks: string | null;
-    /**
-     * @description
-     * Format: `uuid`
-     * @type string
-    */
-    doctorId: string;
-    doctorNickname: string;
-    diagnoses: SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsUpdatePatchDiagnosisItem;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  visitId: number;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string
+   */
+  date: string;
+  pastMedicalHistory: string | null;
+  consultation: string | null;
+  treatmentPlan: string | null;
+  referredFor: string | null;
+  referralNotes: string | null;
+  remarks: string | null;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string
+   */
+  doctorId: string;
+  doctorNickname: string;
+  diagnoses: SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsUpdatePatchDiagnosisItem;
 };

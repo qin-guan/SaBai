@@ -6,6 +6,6 @@
 import type { SaBaiAPIDomainDiagnosisCategoryKey } from './SaBaiAPIDomainDiagnosisCategory'
 
 export type SaBaiAPIEndpointsDiagnosesUpdatePatchRequest = {
-    details?: string | null;
-    category?: (null | SaBaiAPIDomainDiagnosisCategoryKey);
+  details?: string | null;
+  category?: null | SaBaiAPIDomainDiagnosisCategoryKey;
 };

@@ -3,17 +3,15 @@
 * Do not edit manually.
 */
 
-import type { SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointPath, SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointResponse, SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointStatus200, SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointStatus400, SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointStatus401, SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpoint'
+import type { SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointPath, SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointResponse, SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointStatus200, SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointStatus400 } from '../types/SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpoint'
 import { createFastEndpointsProblemDetails } from './createFastEndpointsProblemDetails'
 import { createSaBaiAPIEndpointsChildVitalsGetByVitalsGetResponse } from './createSaBaiAPIEndpointsChildVitalsGetByVitalsGetResponse'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointPath<TData extends Partial<SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointPath> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointPath<TData extends Partial<SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointPath> = object>(data?: TData) {
   const defaultFakeData = {
-  vitalsId: faker.number.int(),
-}
+    vitalsId: faker.number.int(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

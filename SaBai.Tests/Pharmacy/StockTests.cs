@@ -12,7 +12,7 @@ public sealed class StockTests(AppFixture fixture)
     public async Task Adjust_Increase_ListShowsNewQuantity()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
         var suffix = ClinicSetup.Suffix();
         var location = $"adjust-{suffix}";
@@ -39,7 +39,7 @@ public sealed class StockTests(AppFixture fixture)
     public async Task Adjust_BelowZero_ReturnsBadRequestAndLeavesQuantity()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
         var suffix = ClinicSetup.Suffix();
         var location = $"floor-{suffix}";
@@ -66,7 +66,7 @@ public sealed class StockTests(AppFixture fixture)
     public async Task Create_UnknownBrand_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
         var location = $"missing-{ClinicSetup.Suffix()}";
 
@@ -92,7 +92,7 @@ public sealed class StockTests(AppFixture fixture)
     public async Task Update_UnknownId_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
 
         // Act
@@ -110,7 +110,7 @@ public sealed class StockTests(AppFixture fixture)
     public async Task Split_SingleChild_ReturnsBadRequest()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
         var suffix = ClinicSetup.Suffix();
         var stockId = await CreateStockAsync(client, suffix, quantity: 4, $"parent-{suffix}");
@@ -141,7 +141,7 @@ public sealed class StockTests(AppFixture fixture)
     public async Task Update_Location_ListContainsNewLocation()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
         var suffix = ClinicSetup.Suffix();
         var stockId = await CreateStockAsync(client, suffix, quantity: 2, $"shelf-{suffix}");
@@ -168,7 +168,7 @@ public sealed class StockTests(AppFixture fixture)
     public async Task CreateAndSplit_RecordQuantityHistory()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
         var suffix = ClinicSetup.Suffix();
         var (stockId, brandId) = await CreateStockWithBrandAsync(
@@ -217,7 +217,7 @@ public sealed class StockTests(AppFixture fixture)
     public async Task WithBrand_FlagsLotsAtOrBelowFallBelow()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
         var suffix = ClinicSetup.Suffix();
         var (lowId, _) = await CreateStockWithBrandAsync(

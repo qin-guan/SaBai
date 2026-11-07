@@ -4,11 +4,12 @@
 */
 
 import type { SaBaiAPIEndpointsGlassesCreatePostEndpointResponse, SaBaiAPIEndpointsGlassesCreatePostEndpointStatus400, SaBaiAPIEndpointsGlassesCreatePostEndpointStatus401, SaBaiAPIEndpointsGlassesCreatePostEndpointStatus403, SaBaiAPIEndpointsGlassesCreatePostEndpointBody } from '../types/SaBaiAPIEndpointsGlassesCreatePostEndpoint'
-import type { HttpResponseResolver } from 'msw'
-import { http } from 'msw'
+import type { HttpResponseResolver } from 'msw/http'
+import type { DefaultBodyType } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsGlassesCreatePostEndpointHandlerResponse200(data: SaBaiAPIEndpointsGlassesCreatePostEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -17,7 +18,7 @@ export function saBaiAPIEndpointsGlassesCreatePostEndpointHandlerResponse200(dat
 }
 
 export function saBaiAPIEndpointsGlassesCreatePostEndpointHandlerResponse400(data: SaBaiAPIEndpointsGlassesCreatePostEndpointStatus400) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 400,
     headers: {
       'Content-Type': 'application/problem+json'
@@ -26,22 +27,22 @@ export function saBaiAPIEndpointsGlassesCreatePostEndpointHandlerResponse400(dat
 }
 
 export function saBaiAPIEndpointsGlassesCreatePostEndpointHandlerResponse401(data?: SaBaiAPIEndpointsGlassesCreatePostEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsGlassesCreatePostEndpointHandlerResponse403(data?: SaBaiAPIEndpointsGlassesCreatePostEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsGlassesCreatePostEndpointHandler(data?: SaBaiAPIEndpointsGlassesCreatePostEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsGlassesCreatePostEndpointBody>) {
-  return http.post<Record<string, string>, SaBaiAPIEndpointsGlassesCreatePostEndpointBody>(`/glasses`, function handler(info) {
+export function saBaiAPIEndpointsGlassesCreatePostEndpointHandler(data?: SaBaiAPIEndpointsGlassesCreatePostEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsGlassesCreatePostEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsGlassesCreatePostEndpointBody : DefaultBodyType>, options?: { baseURL?: string }) {
+  return http.post<Record<string, string>, SaBaiAPIEndpointsGlassesCreatePostEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsGlassesCreatePostEndpointBody : DefaultBodyType>(`${options?.baseURL ?? ''}/glasses`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

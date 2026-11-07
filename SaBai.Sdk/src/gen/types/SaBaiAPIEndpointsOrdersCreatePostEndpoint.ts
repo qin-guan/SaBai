@@ -10,9 +10,10 @@ import type { SaBaiAPIEndpointsOrdersCreatePostResponse } from './SaBaiAPIEndpoi
 export type SaBaiAPIEndpointsOrdersCreatePostEndpointStatus200 = SaBaiAPIEndpointsOrdersCreatePostResponse;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsOrdersCreatePostEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsOrdersCreatePostEndpointStatus401 = unknown;
@@ -22,20 +23,20 @@ export type SaBaiAPIEndpointsOrdersCreatePostEndpointStatus403 = unknown;
 export type SaBaiAPIEndpointsOrdersCreatePostEndpointBody = SaBaiAPIEndpointsOrdersCreatePostRequest;
 
 export type SaBaiAPIEndpointsOrdersCreatePostEndpointOptions = {
-    body: SaBaiAPIEndpointsOrdersCreatePostEndpointBody;
-    path?: never;
-    query?: never;
-    headers?: never;
+  body: SaBaiAPIEndpointsOrdersCreatePostEndpointBody;
+  path?: never;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsOrdersCreatePostEndpointResponses = {
-    "200": SaBaiAPIEndpointsOrdersCreatePostEndpointStatus200;
-    "400": SaBaiAPIEndpointsOrdersCreatePostEndpointStatus400;
-    "401": SaBaiAPIEndpointsOrdersCreatePostEndpointStatus401;
-    "403": SaBaiAPIEndpointsOrdersCreatePostEndpointStatus403;
+  '200': SaBaiAPIEndpointsOrdersCreatePostEndpointStatus200;
+  '400': SaBaiAPIEndpointsOrdersCreatePostEndpointStatus400;
+  '401': SaBaiAPIEndpointsOrdersCreatePostEndpointStatus401;
+  '403': SaBaiAPIEndpointsOrdersCreatePostEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsOrdersCreatePostEndpointResponse = SaBaiAPIEndpointsOrdersCreatePostEndpointStatus200;

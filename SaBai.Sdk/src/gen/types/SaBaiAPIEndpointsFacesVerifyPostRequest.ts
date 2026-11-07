@@ -4,16 +4,16 @@
 */
 
 export type SaBaiAPIEndpointsFacesVerifyPostRequest = {
-    /**
-     * @description
-     * Format: `binary`
-     * @type string | undefined
-    */
-    first?: Blob;
-    /**
-     * @description
-     * Format: `binary`
-     * @type string | undefined
-    */
-    second?: Blob;
+  /**
+   * @description
+   * Format: `binary`
+   * @type string | undefined
+   */
+  first?: Blob;
+  /**
+   * @description
+   * Format: `binary`
+   * @type string | undefined
+   */
+  second?: Blob;
 };

@@ -6,6 +6,6 @@
 import type { SaBaiAPIDomainReferralStateKey } from './SaBaiAPIDomainReferralState'
 
 export type SaBaiAPIEndpointsReferralsUpdateStatePatchRequest = {
-    referralState: (null | SaBaiAPIDomainReferralStateKey);
-    referralOutcome?: string | null;
+  referralState: null | SaBaiAPIDomainReferralStateKey;
+  referralOutcome?: string | null;
 };

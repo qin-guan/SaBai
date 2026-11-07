@@ -4,12 +4,12 @@
 */
 
 export type SaBaiAPIEndpointsConsultsPdfGetEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
 };
 
 export type SaBaiAPIEndpointsConsultsPdfGetEndpointStatus204 = unknown;
@@ -19,19 +19,19 @@ export type SaBaiAPIEndpointsConsultsPdfGetEndpointStatus401 = unknown;
 export type SaBaiAPIEndpointsConsultsPdfGetEndpointStatus403 = unknown;
 
 export type SaBaiAPIEndpointsConsultsPdfGetEndpointOptions = {
-    body?: never;
-    path: SaBaiAPIEndpointsConsultsPdfGetEndpointPath;
-    query?: never;
-    headers?: never;
+  body?: never;
+  path: SaBaiAPIEndpointsConsultsPdfGetEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsConsultsPdfGetEndpointResponses = {
-    "204": SaBaiAPIEndpointsConsultsPdfGetEndpointStatus204;
-    "401": SaBaiAPIEndpointsConsultsPdfGetEndpointStatus401;
-    "403": SaBaiAPIEndpointsConsultsPdfGetEndpointStatus403;
+  '204': SaBaiAPIEndpointsConsultsPdfGetEndpointStatus204;
+  '401': SaBaiAPIEndpointsConsultsPdfGetEndpointStatus401;
+  '403': SaBaiAPIEndpointsConsultsPdfGetEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsConsultsPdfGetEndpointResponse = SaBaiAPIEndpointsConsultsPdfGetEndpointStatus204;

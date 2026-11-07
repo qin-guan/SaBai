@@ -6,14 +6,14 @@
 import type { SaBaiAPIEndpointsAuthLoginPostEndpointBody, SaBaiAPIEndpointsAuthLoginPostEndpointResponse, SaBaiAPIEndpointsAuthLoginPostEndpointStatus200, SaBaiAPIEndpointsAuthLoginPostEndpointStatus400 } from '../types/SaBaiAPIEndpointsAuthLoginPostEndpoint'
 import { createFastEndpointsProblemDetails } from './createFastEndpointsProblemDetails'
 import { createSaBaiAPIEndpointsAuthLoginPostRequest } from './createSaBaiAPIEndpointsAuthLoginPostRequest'
-import { createSaBaiAPIEndpointsAuthLoginPostResponse } from './createSaBaiAPIEndpointsAuthLoginPostResponse'
+import { createSaBaiAPIEndpointsAuthSignInResponse } from './createSaBaiAPIEndpointsAuthSignInResponse'
 import { fakerEN as faker } from '@faker-js/faker'
 
 /**
  * @description Success
  */
 export function createSaBaiAPIEndpointsAuthLoginPostEndpointStatus200(data?: Partial<SaBaiAPIEndpointsAuthLoginPostEndpointStatus200>): SaBaiAPIEndpointsAuthLoginPostEndpointStatus200 {
-  return createSaBaiAPIEndpointsAuthLoginPostResponse(data) as SaBaiAPIEndpointsAuthLoginPostEndpointStatus200
+  return createSaBaiAPIEndpointsAuthSignInResponse(data) as SaBaiAPIEndpointsAuthLoginPostEndpointStatus200
 }
 
 /**

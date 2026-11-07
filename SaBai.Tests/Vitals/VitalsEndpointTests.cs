@@ -12,7 +12,7 @@ public sealed class VitalsEndpointTests(AppFixture fixture)
     public async Task CreateVitals_SecondCreate_ReturnsConflict()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var seed = await SeedVisitAsync(client);
 
@@ -46,7 +46,7 @@ public sealed class VitalsEndpointTests(AppFixture fixture)
     public async Task GetVitals_ByVisit_ReturnsRecord()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var seed = await SeedVisitAsync(client);
         var created = await client.PostAsJsonAsync(
@@ -82,7 +82,7 @@ public sealed class VitalsEndpointTests(AppFixture fixture)
     public async Task PatchVitals_UpdatesProvidedFields()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var seed = await SeedVisitAsync(client);
         var created = await client.PostAsJsonAsync(
@@ -116,7 +116,7 @@ public sealed class VitalsEndpointTests(AppFixture fixture)
     public async Task DeleteVitals_ReturnsNoContent()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var seed = await SeedVisitAsync(client);
         var created = await client.PostAsJsonAsync(
@@ -139,7 +139,7 @@ public sealed class VitalsEndpointTests(AppFixture fixture)
     public async Task CreateEyesight_InvalidAcuity_ReturnsBadRequest()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var seed = await SeedVisitAsync(client);
 
@@ -160,7 +160,7 @@ public sealed class VitalsEndpointTests(AppFixture fixture)
     public async Task CreateEyesight_ValidAcuity_StoresUppercased()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var seed = await SeedVisitAsync(client);
 
@@ -191,7 +191,7 @@ public sealed class VitalsEndpointTests(AppFixture fixture)
     public async Task CreatePuberty_AgeWhenFlagFalse_ReturnsBadRequest()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var seed = await SeedVisitAsync(client);
         var vitals = await client.PostAsJsonAsync(
@@ -234,7 +234,7 @@ public sealed class VitalsEndpointTests(AppFixture fixture)
     public async Task CreateGlasses_VisionComposite_ReturnsDegrees()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var seed = await SeedVisitAsync(client);
 

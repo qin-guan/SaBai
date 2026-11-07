@@ -4,23 +4,23 @@
 */
 
 export type SaBaiAPIEndpointsMedicationIngredientsCreatePostRequest = {
-    /**
-     * @minLength 0
-     * @maxLength 255
-     * @type string
-    */
-    name: string;
-    /**
-     * @minLength 0
-     * @maxLength 255
-     * @type string
-    */
-    unitOfMeasurement: string;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer | undefined
-    */
-    fallBelow?: number;
-    remarks?: string | null;
+  /**
+   * @minLength 0
+   * @maxLength 255
+   * @type string
+   */
+  name: string;
+  /**
+   * @minLength 0
+   * @maxLength 255
+   * @type string
+   */
+  unitOfMeasurement: string;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer | undefined
+   */
+  fallBelow?: number;
+  remarks?: string | null;
 };

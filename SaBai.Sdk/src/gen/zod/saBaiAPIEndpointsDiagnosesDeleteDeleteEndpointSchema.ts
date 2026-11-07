@@ -16,3 +16,7 @@ export const saBaiAPIEndpointsDiagnosesDeleteDeleteEndpointStatus403Schema = z.u
 export const saBaiAPIEndpointsDiagnosesDeleteDeleteEndpointResponseSchema = saBaiAPIEndpointsDiagnosesDeleteDeleteEndpointStatus204Schema
 
 export const saBaiAPIEndpointsDiagnosesDeleteDeleteEndpointErrorSchema = z.union([saBaiAPIEndpointsDiagnosesDeleteDeleteEndpointStatus401Schema, saBaiAPIEndpointsDiagnosesDeleteDeleteEndpointStatus403Schema])
+
+export const saBaiAPIEndpointsDiagnosesDeleteDeleteEndpointPathSchema = z.object({
+  id: z.int32(),
+})

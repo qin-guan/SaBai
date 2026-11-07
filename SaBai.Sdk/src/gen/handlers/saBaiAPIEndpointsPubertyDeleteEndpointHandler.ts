@@ -4,16 +4,16 @@
 */
 
 import type { SaBaiAPIEndpointsPubertyDeleteEndpointResponse, SaBaiAPIEndpointsPubertyDeleteEndpointStatus400, SaBaiAPIEndpointsPubertyDeleteEndpointStatus401, SaBaiAPIEndpointsPubertyDeleteEndpointStatus403 } from '../types/SaBaiAPIEndpointsPubertyDeleteEndpoint'
-import { http } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsPubertyDeleteEndpointHandlerResponse204(data?: SaBaiAPIEndpointsPubertyDeleteEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 204,
   })
 }
 
 export function saBaiAPIEndpointsPubertyDeleteEndpointHandlerResponse400(data: SaBaiAPIEndpointsPubertyDeleteEndpointStatus400) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 400,
     headers: {
       'Content-Type': 'application/problem+json'
@@ -22,22 +22,22 @@ export function saBaiAPIEndpointsPubertyDeleteEndpointHandlerResponse400(data: S
 }
 
 export function saBaiAPIEndpointsPubertyDeleteEndpointHandlerResponse401(data?: SaBaiAPIEndpointsPubertyDeleteEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsPubertyDeleteEndpointHandlerResponse403(data?: SaBaiAPIEndpointsPubertyDeleteEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsPubertyDeleteEndpointHandler(data?: string | number | boolean | null | object | ((info: Parameters<Parameters<typeof http.delete>[1]>[0]) => Response | Promise<Response>)) {
-  return http.delete(`/puberty/:id`, function handler(info) {
+export function saBaiAPIEndpointsPubertyDeleteEndpointHandler(data?: string | number | boolean | null | object | ((info: Parameters<Parameters<typeof http.delete>[1]>[0]) => Response | Promise<Response>), options?: { baseURL?: string }) {
+  return http.delete(`${options?.baseURL ?? ''}/puberty/:id`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 204,
       })
     })

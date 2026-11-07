@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsMedicationBrandsDeleteDeleteEndpointOptions } from '../types/SaBaiAPIEndpointsMedicationBrandsDeleteDeleteEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsMedicationBrandsDeleteDeleteEndpoint } from '../clients/saBaiAPIEndpointsMedicationBrandsDeleteDeleteEndpoint'
 
 /**
  * @summary Delete a medication brand
  * {@link /medication-brands/:id}
  */
-export async function saBaiAPIEndpointsMedicationBrandsDeleteDeleteEndpointHandler({ path }: SaBaiAPIEndpointsMedicationBrandsDeleteDeleteEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsMedicationBrandsDeleteDeleteEndpoint({ path, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsMedicationBrandsDeleteDeleteEndpointHandler({ path }: SaBaiAPIEndpointsMedicationBrandsDeleteDeleteEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsMedicationBrandsDeleteDeleteEndpoint({ path, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

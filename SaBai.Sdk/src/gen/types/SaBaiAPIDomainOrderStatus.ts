@@ -4,9 +4,9 @@
 */
 
 export const saBaiAPIDomainOrderStatus = {
-    PENDING: "PENDING",
-    APPROVED: "APPROVED",
-    CANCELLED: "CANCELLED"
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  CANCELLED: 'CANCELLED',
 } as const;
 
 export type SaBaiAPIDomainOrderStatusKey = (typeof saBaiAPIDomainOrderStatus)[keyof typeof saBaiAPIDomainOrderStatus];

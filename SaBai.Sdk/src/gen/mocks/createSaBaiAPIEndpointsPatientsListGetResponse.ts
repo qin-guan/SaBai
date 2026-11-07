@@ -6,12 +6,10 @@
 import type { SaBaiAPIEndpointsPatientsListGetResponse } from '../types/SaBaiAPIEndpointsPatientsListGetResponse'
 import { createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPatientsListGetItem } from './createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPatientsListGetItem'
 
-export function createSaBaiAPIEndpointsPatientsListGetResponse<TData extends Partial<SaBaiAPIEndpointsPatientsListGetResponse> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsPatientsListGetResponse<TData extends Partial<SaBaiAPIEndpointsPatientsListGetResponse> = object>(data?: TData) {
   const defaultFakeData = {
-  patients: createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPatientsListGetItem(),
-}
+    patients: createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPatientsListGetItem(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

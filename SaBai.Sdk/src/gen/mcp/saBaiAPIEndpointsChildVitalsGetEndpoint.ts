@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsChildVitalsGetEndpointOptions } from '../types/SaBaiAPIEndpointsChildVitalsGetEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsChildVitalsGetEndpoint } from '../clients/saBaiAPIEndpointsChildVitalsGetEndpoint'
 
 /**
  * @summary Get child vitals by id
  * {@link /child-vitals/:id}
  */
-export async function saBaiAPIEndpointsChildVitalsGetEndpointHandler({ path }: SaBaiAPIEndpointsChildVitalsGetEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsChildVitalsGetEndpoint({ path, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsChildVitalsGetEndpointHandler({ path }: SaBaiAPIEndpointsChildVitalsGetEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsChildVitalsGetEndpoint({ path, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

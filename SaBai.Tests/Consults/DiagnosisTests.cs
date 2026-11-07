@@ -11,7 +11,7 @@ public sealed class DiagnosisTests(AppFixture fixture)
     public async Task Create_ThenGet_ReturnsDetailsAndListIncludesId()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var consultId = await CreateConsultAsync(client);
 
@@ -46,7 +46,7 @@ public sealed class DiagnosisTests(AppFixture fixture)
     public async Task Patch_ThenDelete_RemovesDiagnosis()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var consultId = await CreateConsultAsync(client);
         var created = await client.PostAsJsonAsync(
@@ -88,7 +88,7 @@ public sealed class DiagnosisTests(AppFixture fixture)
     public async Task Create_MissingConsult_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
 
         // Act
@@ -111,7 +111,7 @@ public sealed class DiagnosisTests(AppFixture fixture)
     public async Task Create_EmptyDetails_ReturnsBadRequest()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var consultId = await CreateConsultAsync(client);
 
@@ -135,7 +135,7 @@ public sealed class DiagnosisTests(AppFixture fixture)
     public async Task Get_Missing_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
 
         // Act
@@ -149,7 +149,7 @@ public sealed class DiagnosisTests(AppFixture fixture)
     public async Task Delete_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var consultId = await CreateConsultAsync(client);
         var created = await client.PostAsJsonAsync(
@@ -167,7 +167,7 @@ public sealed class DiagnosisTests(AppFixture fixture)
             await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
             "id"
         );
-        var anonymous = fixture.CreateHttpClient("api");
+        var anonymous = fixture.CreateApiClient();
 
         // Act
         var response = await anonymous.DeleteAsync($"/diagnoses/{id}");

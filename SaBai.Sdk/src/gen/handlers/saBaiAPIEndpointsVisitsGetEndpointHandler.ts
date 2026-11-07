@@ -4,10 +4,10 @@
 */
 
 import type { SaBaiAPIEndpointsVisitsGetEndpointResponse, SaBaiAPIEndpointsVisitsGetEndpointStatus401, SaBaiAPIEndpointsVisitsGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsVisitsGetEndpoint'
-import { http } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsVisitsGetEndpointHandlerResponse200(data: SaBaiAPIEndpointsVisitsGetEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -16,22 +16,22 @@ export function saBaiAPIEndpointsVisitsGetEndpointHandlerResponse200(data: SaBai
 }
 
 export function saBaiAPIEndpointsVisitsGetEndpointHandlerResponse401(data?: SaBaiAPIEndpointsVisitsGetEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsVisitsGetEndpointHandlerResponse403(data?: SaBaiAPIEndpointsVisitsGetEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsVisitsGetEndpointHandler(data?: SaBaiAPIEndpointsVisitsGetEndpointResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>)) {
-  return http.get(`/visits/:id`, function handler(info) {
+export function saBaiAPIEndpointsVisitsGetEndpointHandler(data?: SaBaiAPIEndpointsVisitsGetEndpointResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>), options?: { baseURL?: string }) {
+  return http.get(`${options?.baseURL ?? ''}/visits/:id`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

@@ -3,18 +3,16 @@
 * Do not edit manually.
 */
 
-import type { SaBaiAPIEndpointsDiagnosesUpdatePatchEndpointBody, SaBaiAPIEndpointsDiagnosesUpdatePatchEndpointPath, SaBaiAPIEndpointsDiagnosesUpdatePatchEndpointResponse, SaBaiAPIEndpointsDiagnosesUpdatePatchEndpointStatus200, SaBaiAPIEndpointsDiagnosesUpdatePatchEndpointStatus400, SaBaiAPIEndpointsDiagnosesUpdatePatchEndpointStatus401, SaBaiAPIEndpointsDiagnosesUpdatePatchEndpointStatus403 } from '../types/SaBaiAPIEndpointsDiagnosesUpdatePatchEndpoint'
+import type { SaBaiAPIEndpointsDiagnosesUpdatePatchEndpointBody, SaBaiAPIEndpointsDiagnosesUpdatePatchEndpointPath, SaBaiAPIEndpointsDiagnosesUpdatePatchEndpointResponse, SaBaiAPIEndpointsDiagnosesUpdatePatchEndpointStatus200, SaBaiAPIEndpointsDiagnosesUpdatePatchEndpointStatus400 } from '../types/SaBaiAPIEndpointsDiagnosesUpdatePatchEndpoint'
 import { createFastEndpointsProblemDetails } from './createFastEndpointsProblemDetails'
 import { createSaBaiAPIEndpointsDiagnosesUpdatePatchRequest } from './createSaBaiAPIEndpointsDiagnosesUpdatePatchRequest'
 import { createSaBaiAPIEndpointsDiagnosesUpdatePatchResponse } from './createSaBaiAPIEndpointsDiagnosesUpdatePatchResponse'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsDiagnosesUpdatePatchEndpointPath<TData extends Partial<SaBaiAPIEndpointsDiagnosesUpdatePatchEndpointPath> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsDiagnosesUpdatePatchEndpointPath<TData extends Partial<SaBaiAPIEndpointsDiagnosesUpdatePatchEndpointPath> = object>(data?: TData) {
   const defaultFakeData = {
-  id: faker.number.int(),
-}
+    id: faker.number.int(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

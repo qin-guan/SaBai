@@ -18,3 +18,8 @@ export const saBaiAPIEndpointsPatientsFacesDeleteEndpointStatus403Schema = z.unk
 export const saBaiAPIEndpointsPatientsFacesDeleteEndpointResponseSchema = saBaiAPIEndpointsPatientsFacesDeleteEndpointStatus204Schema
 
 export const saBaiAPIEndpointsPatientsFacesDeleteEndpointErrorSchema = z.union([saBaiAPIEndpointsPatientsFacesDeleteEndpointStatus401Schema, saBaiAPIEndpointsPatientsFacesDeleteEndpointStatus403Schema])
+
+export const saBaiAPIEndpointsPatientsFacesDeleteEndpointPathSchema = z.object({
+  id: z.int32(),
+  faceId: z.uuid(),
+})

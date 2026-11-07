@@ -7,13 +7,11 @@ import type { SaBaiAPIEndpointsFacesIdentifyPostIdentifiedFace } from '../types/
 import { createSaBaiAPIEndpointsFacesFaceDto } from './createSaBaiAPIEndpointsFacesFaceDto'
 import { createSaBaiAPIEndpointsFacesMatchDtoArray } from './createSaBaiAPIEndpointsFacesMatchDtoArray'
 
-export function createSaBaiAPIEndpointsFacesIdentifyPostIdentifiedFace<TData extends Partial<SaBaiAPIEndpointsFacesIdentifyPostIdentifiedFace> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsFacesIdentifyPostIdentifiedFace<TData extends Partial<SaBaiAPIEndpointsFacesIdentifyPostIdentifiedFace> = object>(data?: TData) {
   const defaultFakeData = {
-  face: createSaBaiAPIEndpointsFacesFaceDto(),
-  matches: createSaBaiAPIEndpointsFacesMatchDtoArray(),
-}
+    face: createSaBaiAPIEndpointsFacesFaceDto(),
+    matches: createSaBaiAPIEndpointsFacesMatchDtoArray(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

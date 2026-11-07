@@ -6,12 +6,10 @@
 import type { SaBaiAPIEndpointsFacesIdentifyPostRequest } from '../types/SaBaiAPIEndpointsFacesIdentifyPostRequest'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsFacesIdentifyPostRequest<TData extends Partial<SaBaiAPIEndpointsFacesIdentifyPostRequest> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsFacesIdentifyPostRequest<TData extends Partial<SaBaiAPIEndpointsFacesIdentifyPostRequest> = object>(data?: TData) {
   const defaultFakeData = {
-  image: faker.image.url() as unknown as Blob,
-}
+    image: faker.image.url() as unknown as Blob,
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

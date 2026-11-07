@@ -4,12 +4,12 @@
 */
 
 export type SaBaiAPIEndpointsVillageCodesDeleteDeleteEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
 };
 
 export type SaBaiAPIEndpointsVillageCodesDeleteDeleteEndpointStatus204 = unknown;
@@ -19,19 +19,19 @@ export type SaBaiAPIEndpointsVillageCodesDeleteDeleteEndpointStatus401 = unknown
 export type SaBaiAPIEndpointsVillageCodesDeleteDeleteEndpointStatus403 = unknown;
 
 export type SaBaiAPIEndpointsVillageCodesDeleteDeleteEndpointOptions = {
-    body?: never;
-    path: SaBaiAPIEndpointsVillageCodesDeleteDeleteEndpointPath;
-    query?: never;
-    headers?: never;
+  body?: never;
+  path: SaBaiAPIEndpointsVillageCodesDeleteDeleteEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsVillageCodesDeleteDeleteEndpointResponses = {
-    "204": SaBaiAPIEndpointsVillageCodesDeleteDeleteEndpointStatus204;
-    "401": SaBaiAPIEndpointsVillageCodesDeleteDeleteEndpointStatus401;
-    "403": SaBaiAPIEndpointsVillageCodesDeleteDeleteEndpointStatus403;
+  '204': SaBaiAPIEndpointsVillageCodesDeleteDeleteEndpointStatus204;
+  '401': SaBaiAPIEndpointsVillageCodesDeleteDeleteEndpointStatus401;
+  '403': SaBaiAPIEndpointsVillageCodesDeleteDeleteEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsVillageCodesDeleteDeleteEndpointResponse = SaBaiAPIEndpointsVillageCodesDeleteDeleteEndpointStatus204;

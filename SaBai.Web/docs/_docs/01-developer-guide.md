@@ -12,7 +12,7 @@ This guide helps orientate new developers to the project.
 - React: UI rendering and component model.
 - @sabai/sdk: Generated, typesafe client for SaBai.API.
 - @tanstack/react-query: Client data fetching, caching, and mutations.
-- WorkOS (via SaBai.API): Authentication; the API issues a JWT bearer token.
+- ASP.NET Core Identity (via SaBai.API): Authentication with an HttpOnly session cookie, optional TOTP two-factor and roles.
 - Zod: Runtime input validation for forms.
 - Tailwind CSS: Utility-first styling.
 - react-hook-form: Form state management.
@@ -92,10 +92,10 @@ pnpm --filter @sabai/sdk build
 
 ## 5. Auth model (short)
 
-- Login calls `POST /auth/login` and stores the returned JWT in the
-  `sabai_token` cookie.
+- Login calls `POST /api/auth/login`; the API sets the HttpOnly `sabai.auth`
+  cookie (same-origin through the `/api` rewrite).
 - `src/proxy.ts` gates routes on the cookie and redirects to `/login`.
-- The SDK attaches the token as `Authorization: Bearer …`; a `401` clears it and
+- The browser sends the cookie with every SDK request; a `401` signs out and
   redirects to `/login`.
 
 See [API SDK & Authentication]({{ '/docs/api-and-auth/' | relative_url }}) for the full flow.

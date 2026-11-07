@@ -12,6 +12,8 @@ import {
   PhStethoscope,
   PhTag,
   PhTooth,
+  PhUserCircle,
+  PhUserGear,
   PhUsers,
 } from '@phosphor-icons/vue'
 import type { StationKey } from './journey'
@@ -25,6 +27,8 @@ export interface NavItem {
   keywords: string
   /** For station entries: the station filter this item opens. */
   station?: StationKey
+  /** Only shown to users with the admin role. */
+  adminOnly?: boolean
 }
 
 /**
@@ -56,6 +60,8 @@ export const SUB_PAGES: NavItem[] = [
   { name: 'Medication Brands', href: paths.medicationBrands(), icon: PhTag, keywords: 'brand medicine' },
   { name: 'Medication Active Ingredients', href: paths.medicationActiveIngredients(), icon: PhFlask, keywords: 'ingredient fall below threshold low stock' },
   { name: 'Village Codes', href: paths.settingsVillageCodes(), icon: PhMapPin, keywords: 'village code colour color location' },
+  { name: 'Staff Users', href: paths.settingsUsers(), icon: PhUserGear, keywords: 'users staff accounts roles admin password lock two-factor 2fa', adminOnly: true },
+  { name: 'My Account', href: paths.account(), icon: PhUserCircle, keywords: 'profile password two-factor 2fa authenticator totp security' },
 ]
 
 export const ALL_NAV_ITEMS = [...NAV_ITEMS, ...STATION_NAV_ITEMS, ...ADMIN_NAV_ITEMS]

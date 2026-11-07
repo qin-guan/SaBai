@@ -6,15 +6,13 @@
 import type { SaBaiAPIEndpointsMedicationBrandsUpdatePatchResponse } from '../types/SaBaiAPIEndpointsMedicationBrandsUpdatePatchResponse'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsMedicationBrandsUpdatePatchResponse<TData extends Partial<SaBaiAPIEndpointsMedicationBrandsUpdatePatchResponse> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsMedicationBrandsUpdatePatchResponse<TData extends Partial<SaBaiAPIEndpointsMedicationBrandsUpdatePatchResponse> = object>(data?: TData) {
   const defaultFakeData = {
-  id: faker.number.int(),
-  name: faker.string.alpha(),
-  activeIngredientId: faker.number.int(),
-  remarks: faker.string.alpha(),
-}
+    id: faker.number.int(),
+    name: faker.string.alpha(),
+    activeIngredientId: faker.number.int(),
+    remarks: faker.string.alpha(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

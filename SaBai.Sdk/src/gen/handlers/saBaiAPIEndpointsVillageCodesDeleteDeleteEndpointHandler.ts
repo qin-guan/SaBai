@@ -4,31 +4,31 @@
 */
 
 import type { SaBaiAPIEndpointsVillageCodesDeleteDeleteEndpointResponse, SaBaiAPIEndpointsVillageCodesDeleteDeleteEndpointStatus401, SaBaiAPIEndpointsVillageCodesDeleteDeleteEndpointStatus403 } from '../types/SaBaiAPIEndpointsVillageCodesDeleteDeleteEndpoint'
-import { http } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsVillageCodesDeleteDeleteEndpointHandlerResponse204(data?: SaBaiAPIEndpointsVillageCodesDeleteDeleteEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 204,
   })
 }
 
 export function saBaiAPIEndpointsVillageCodesDeleteDeleteEndpointHandlerResponse401(data?: SaBaiAPIEndpointsVillageCodesDeleteDeleteEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsVillageCodesDeleteDeleteEndpointHandlerResponse403(data?: SaBaiAPIEndpointsVillageCodesDeleteDeleteEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsVillageCodesDeleteDeleteEndpointHandler(data?: string | number | boolean | null | object | ((info: Parameters<Parameters<typeof http.delete>[1]>[0]) => Response | Promise<Response>)) {
-  return http.delete(`/village-codes/:id`, function handler(info) {
+export function saBaiAPIEndpointsVillageCodesDeleteDeleteEndpointHandler(data?: string | number | boolean | null | object | ((info: Parameters<Parameters<typeof http.delete>[1]>[0]) => Response | Promise<Response>), options?: { baseURL?: string }) {
+  return http.delete(`${options?.baseURL ?? ''}/village-codes/:id`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 204,
       })
     })

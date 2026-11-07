@@ -3,16 +3,15 @@
 * Do not edit manually.
 */
 
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsBroadcastsListGetEndpoint } from '../clients/saBaiAPIEndpointsBroadcastsListGetEndpoint'
 
 /**
  * @summary List broadcasts
  * {@link /broadcasts}
  */
-export async function saBaiAPIEndpointsBroadcastsListGetEndpointHandler(request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsBroadcastsListGetEndpoint({ signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsBroadcastsListGetEndpointHandler(ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsBroadcastsListGetEndpoint({ signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

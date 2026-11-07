@@ -4,10 +4,10 @@
 */
 
 import type { SaBaiAPIEndpointsEyesightGetEndpointResponse, SaBaiAPIEndpointsEyesightGetEndpointStatus400, SaBaiAPIEndpointsEyesightGetEndpointStatus401, SaBaiAPIEndpointsEyesightGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsEyesightGetEndpoint'
-import { http } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsEyesightGetEndpointHandlerResponse200(data: SaBaiAPIEndpointsEyesightGetEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -16,7 +16,7 @@ export function saBaiAPIEndpointsEyesightGetEndpointHandlerResponse200(data: SaB
 }
 
 export function saBaiAPIEndpointsEyesightGetEndpointHandlerResponse400(data: SaBaiAPIEndpointsEyesightGetEndpointStatus400) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 400,
     headers: {
       'Content-Type': 'application/problem+json'
@@ -25,22 +25,22 @@ export function saBaiAPIEndpointsEyesightGetEndpointHandlerResponse400(data: SaB
 }
 
 export function saBaiAPIEndpointsEyesightGetEndpointHandlerResponse401(data?: SaBaiAPIEndpointsEyesightGetEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsEyesightGetEndpointHandlerResponse403(data?: SaBaiAPIEndpointsEyesightGetEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsEyesightGetEndpointHandler(data?: SaBaiAPIEndpointsEyesightGetEndpointResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>)) {
-  return http.get(`/eyesight/:id`, function handler(info) {
+export function saBaiAPIEndpointsEyesightGetEndpointHandler(data?: SaBaiAPIEndpointsEyesightGetEndpointResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>), options?: { baseURL?: string }) {
+  return http.get(`${options?.baseURL ?? ''}/eyesight/:id`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

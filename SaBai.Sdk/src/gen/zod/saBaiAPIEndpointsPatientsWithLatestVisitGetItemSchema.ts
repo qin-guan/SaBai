@@ -28,5 +28,5 @@ export const saBaiAPIEndpointsPatientsWithLatestVisitGetItemSchema = z.object({
   lastVisitId: z.int32().nullable(),
   hasPhoto: z.boolean(),
   hasFace: z.boolean(),
-  lastVisitJourney: z.union([z.null(), saBaiAPIEndpointsPatientsVisitJourneySchema]),
+  lastVisitJourney: z.union([z.null(), saBaiAPIEndpointsPatientsVisitJourneySchema.strict()]),
 })

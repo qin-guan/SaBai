@@ -11,7 +11,7 @@ public sealed class PubertyTests(AppFixture fixture)
     public async Task Create_ThenGetByVitals_ReturnsAge()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var (_, visitId) = await RegisterAsync(client);
         var vitalsId = await CreateVitalsAsync(client, visitId);
@@ -40,7 +40,7 @@ public sealed class PubertyTests(AppFixture fixture)
     public async Task Create_UnknownVitals_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
 
         // Act
@@ -63,7 +63,7 @@ public sealed class PubertyTests(AppFixture fixture)
     public async Task Create_SecondTime_ReturnsConflict()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var (_, visitId) = await RegisterAsync(client);
         var vitalsId = await CreateVitalsAsync(client, visitId);
@@ -99,7 +99,7 @@ public sealed class PubertyTests(AppFixture fixture)
     public async Task Patch_AgeWhenFlagFalse_ReturnsBadRequest()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var (_, visitId) = await RegisterAsync(client);
         var vitalsId = await CreateVitalsAsync(client, visitId);
@@ -134,7 +134,7 @@ public sealed class PubertyTests(AppFixture fixture)
     public async Task Delete_ReturnsNoContent()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var (_, visitId) = await RegisterAsync(client);
         var vitalsId = await CreateVitalsAsync(client, visitId);

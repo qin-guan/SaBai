@@ -11,7 +11,7 @@ public sealed class OrderEdgeTests(AppFixture fixture)
     public async Task Create_UnknownConsult_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
         var suffix = ClinicSetup.Suffix();
         var brandId = await CreateBrandAsync(client, suffix);
@@ -37,7 +37,7 @@ public sealed class OrderEdgeTests(AppFixture fixture)
     public async Task Create_QuantityZero_ReturnsBadRequest()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
         var suffix = ClinicSetup.Suffix();
         var brandId = await CreateBrandAsync(client, suffix);
@@ -64,7 +64,7 @@ public sealed class OrderEdgeTests(AppFixture fixture)
     public async Task Approve_InsufficientStock_ReturnsBadRequest()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
         var suffix = ClinicSetup.Suffix();
         var brandId = await CreateBrandAsync(client, suffix);
@@ -87,7 +87,7 @@ public sealed class OrderEdgeTests(AppFixture fixture)
     public async Task Approve_WhenAlreadyApproved_ReturnsBadRequest()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
         var suffix = ClinicSetup.Suffix();
         var brandId = await CreateBrandAsync(client, suffix);
@@ -116,7 +116,7 @@ public sealed class OrderEdgeTests(AppFixture fixture)
     public async Task Cancel_LeavesStockQuantityUnchanged()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
         var suffix = ClinicSetup.Suffix();
         var brandId = await CreateBrandAsync(client, suffix);
@@ -146,7 +146,7 @@ public sealed class OrderEdgeTests(AppFixture fixture)
     public async Task PharmacyOrders_ContainsMedicationName()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
         var suffix = ClinicSetup.Suffix();
         var medicationName = $"Queue med {suffix}";
@@ -167,7 +167,7 @@ public sealed class OrderEdgeTests(AppFixture fixture)
     public async Task Get_UnknownId_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
 
         // Act
@@ -181,7 +181,7 @@ public sealed class OrderEdgeTests(AppFixture fixture)
     public async Task Create_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
 
         // Act
         var response = await client.PostAsJsonAsync(

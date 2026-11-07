@@ -8,20 +8,21 @@ import type { SaBaiAPIEndpointsMedicationBrandsUpdatePatchRequestOp144491D9C6BF 
 import type { SaBaiAPIEndpointsMedicationBrandsUpdatePatchResponse } from './SaBaiAPIEndpointsMedicationBrandsUpdatePatchResponse'
 
 export type SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint1Path = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
 };
 
 export type SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint1Status200 = SaBaiAPIEndpointsMedicationBrandsUpdatePatchResponse;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint1Status400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint1Status401 = unknown;
@@ -31,20 +32,20 @@ export type SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint1Status403 = unk
 export type SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint1Body = SaBaiAPIEndpointsMedicationBrandsUpdatePatchRequestOp144491D9C6BF;
 
 export type SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint1Options = {
-    body: SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint1Body;
-    path: SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint1Path;
-    query?: never;
-    headers?: never;
+  body: SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint1Body;
+  path: SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint1Path;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint1Responses = {
-    "200": SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint1Status200;
-    "400": SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint1Status400;
-    "401": SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint1Status401;
-    "403": SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint1Status403;
+  '200': SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint1Status200;
+  '400': SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint1Status400;
+  '401': SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint1Status401;
+  '403': SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint1Status403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint1Response = SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint1Status200;

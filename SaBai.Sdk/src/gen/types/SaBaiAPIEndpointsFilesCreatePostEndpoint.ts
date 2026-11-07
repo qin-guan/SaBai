@@ -15,19 +15,19 @@ export type SaBaiAPIEndpointsFilesCreatePostEndpointStatus403 = unknown;
 export type SaBaiAPIEndpointsFilesCreatePostEndpointBody = SaBaiAPIEndpointsFilesCreatePostRequest;
 
 export type SaBaiAPIEndpointsFilesCreatePostEndpointOptions = {
-    body: SaBaiAPIEndpointsFilesCreatePostEndpointBody;
-    path?: never;
-    query?: never;
-    headers?: never;
+  body: SaBaiAPIEndpointsFilesCreatePostEndpointBody;
+  path?: never;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsFilesCreatePostEndpointResponses = {
-    "200": SaBaiAPIEndpointsFilesCreatePostEndpointStatus200;
-    "401": SaBaiAPIEndpointsFilesCreatePostEndpointStatus401;
-    "403": SaBaiAPIEndpointsFilesCreatePostEndpointStatus403;
+  '200': SaBaiAPIEndpointsFilesCreatePostEndpointStatus200;
+  '401': SaBaiAPIEndpointsFilesCreatePostEndpointStatus401;
+  '403': SaBaiAPIEndpointsFilesCreatePostEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsFilesCreatePostEndpointResponse = SaBaiAPIEndpointsFilesCreatePostEndpointStatus200;

@@ -20,3 +20,7 @@ export const saBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointStatus403Schema =
 export const saBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointResponseSchema = saBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointStatus200Schema
 
 export const saBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointErrorSchema = z.union([saBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointStatus400Schema, saBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointStatus401Schema, saBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointStatus403Schema])
+
+export const saBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointPathSchema = z.object({
+  vitalsId: z.int32(),
+})

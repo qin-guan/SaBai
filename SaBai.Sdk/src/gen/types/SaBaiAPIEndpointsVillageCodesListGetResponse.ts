@@ -6,5 +6,5 @@
 import type { SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsVillageCodesListGetItem } from './SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsVillageCodesListGetItem'
 
 export type SaBaiAPIEndpointsVillageCodesListGetResponse = {
-    villageCodes: SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsVillageCodesListGetItem;
+  villageCodes: SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsVillageCodesListGetItem;
 };

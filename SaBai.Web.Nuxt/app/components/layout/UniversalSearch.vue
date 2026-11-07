@@ -32,6 +32,7 @@ const patients = computed(() => patientsData.value?.patients ?? [])
 const patientsById = computed(() => new Map(patients.value.map(p => [p.id, p])))
 const patientIndex = computed(() => buildPatientIndex(patients.value))
 
+const { isAdmin: userIsAdmin } = useCurrentUser()
 const pages = [...ALL_NAV_ITEMS, ...SUB_PAGES]
 const pageIndex = buildPageIndex(pages.map(p => ({ id: p.href, title: p.name, keywords: p.keywords })))
 
@@ -110,6 +111,7 @@ const groups = computed<Group[]>(() => {
   const pageHits = searchIndex(pageIndex, q)
     .slice(0, 5)
     .map(r => pages.find(p => p.href === r.id)!)
+    .filter(p => !p.adminOnly || userIsAdmin.value)
   const actionHits = actions.filter(a => a.label.toLowerCase().includes(q.toLowerCase()))
   return [
     { title: 'Go to', items: pageHits.map(pageItem) },
@@ -155,12 +157,7 @@ watch(open, (isOpen) => {
   }
 })
 
-async function signOut() {
-  clearToken()
-  clearAllFormDrafts()
-  clearRecentPatients()
-  await navigateTo(paths.login())
-}
+const signOut = useSignOut()
 
 const resultSummary = computed(() => {
   if (!open.value || !debounced.value.trim())

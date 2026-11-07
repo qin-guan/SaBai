@@ -11,7 +11,7 @@ public sealed class GlassesTests(AppFixture fixture)
     public async Task Create_ThenGetByVisit_ReturnsDegreeAndNotes()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var (_, visitId) = await RegisterAsync(client);
 
@@ -40,7 +40,7 @@ public sealed class GlassesTests(AppFixture fixture)
     public async Task Create_UnknownVisit_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
 
         // Act
@@ -63,7 +63,7 @@ public sealed class GlassesTests(AppFixture fixture)
     public async Task GetByVisit_WhenNone_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var (_, visitId) = await RegisterAsync(client);
 
@@ -78,7 +78,7 @@ public sealed class GlassesTests(AppFixture fixture)
     public async Task Patch_EmptyNotes_ClearsNotes()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var (_, visitId) = await RegisterAsync(client);
         var created = await client.PostAsJsonAsync(

@@ -6,19 +6,17 @@
 import type { SaBaiAPIEndpointsFilesListGetResponse } from '../types/SaBaiAPIEndpointsFilesListGetResponse'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsFilesListGetResponse<TData extends Partial<SaBaiAPIEndpointsFilesListGetResponse> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsFilesListGetResponse<TData extends Partial<SaBaiAPIEndpointsFilesListGetResponse> = object>(data?: TData) {
   const defaultFakeData = {
-  id: faker.number.int(),
-  patientId: faker.number.int(),
-  fileName: faker.string.alpha(),
-  storedFileName: faker.string.alpha(),
-  description: faker.string.alpha(),
-  sizeBytes: faker.number.bigInt(),
-  isDeleted: faker.datatype.boolean(),
-  createdAt: faker.date.anytime().toISOString(),
-}
+    id: faker.number.int(),
+    patientId: faker.number.int(),
+    fileName: faker.string.alpha(),
+    storedFileName: faker.string.alpha(),
+    description: faker.string.alpha(),
+    sizeBytes: faker.number.bigInt(),
+    isDeleted: faker.datatype.boolean(),
+    createdAt: faker.date.anytime().toISOString(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

@@ -3,7 +3,7 @@
 * Do not edit manually.
 */
 
-import type { SaBaiAPIEndpointsAuthUsersCreatePostEndpointBody, SaBaiAPIEndpointsAuthUsersCreatePostEndpointResponse, SaBaiAPIEndpointsAuthUsersCreatePostEndpointStatus200, SaBaiAPIEndpointsAuthUsersCreatePostEndpointStatus400, SaBaiAPIEndpointsAuthUsersCreatePostEndpointStatus401, SaBaiAPIEndpointsAuthUsersCreatePostEndpointStatus403 } from '../types/SaBaiAPIEndpointsAuthUsersCreatePostEndpoint'
+import type { SaBaiAPIEndpointsAuthUsersCreatePostEndpointBody, SaBaiAPIEndpointsAuthUsersCreatePostEndpointResponse, SaBaiAPIEndpointsAuthUsersCreatePostEndpointStatus200, SaBaiAPIEndpointsAuthUsersCreatePostEndpointStatus400 } from '../types/SaBaiAPIEndpointsAuthUsersCreatePostEndpoint'
 import { createFastEndpointsProblemDetails } from './createFastEndpointsProblemDetails'
 import { createSaBaiAPIEndpointsAuthUserResponse } from './createSaBaiAPIEndpointsAuthUserResponse'
 import { createSaBaiAPIEndpointsAuthUsersCreatePostRequest } from './createSaBaiAPIEndpointsAuthUsersCreatePostRequest'

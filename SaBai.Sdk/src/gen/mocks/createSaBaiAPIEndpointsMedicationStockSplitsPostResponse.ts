@@ -6,12 +6,10 @@
 import type { SaBaiAPIEndpointsMedicationStockSplitsPostResponse } from '../types/SaBaiAPIEndpointsMedicationStockSplitsPostResponse'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsMedicationStockSplitsPostResponse<TData extends Partial<SaBaiAPIEndpointsMedicationStockSplitsPostResponse> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsMedicationStockSplitsPostResponse<TData extends Partial<SaBaiAPIEndpointsMedicationStockSplitsPostResponse> = object>(data?: TData) {
   const defaultFakeData = {
-  success: faker.datatype.boolean(),
-}
+    success: faker.datatype.boolean(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

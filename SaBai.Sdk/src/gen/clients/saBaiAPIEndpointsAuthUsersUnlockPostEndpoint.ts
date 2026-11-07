@@ -8,11 +8,12 @@ import type { SaBaiAPIEndpointsAuthUsersUnlockPostEndpointOptions, SaBaiAPIEndpo
 import { client, withUnwrap } from '../.kubb/client'
 
 /**
+ * @description Also clears a temporary lock from too many failed sign-ins.
  * @summary Unlock a staff account
  * {@link /auth/users/:id/unlock}
  */
 export function saBaiAPIEndpointsAuthUsersUnlockPostEndpoint<ThrowOnError extends boolean = true>(options: Options<SaBaiAPIEndpointsAuthUsersUnlockPostEndpointOptions, ThrowOnError>): Unwrappable<RequestResult<SaBaiAPIEndpointsAuthUsersUnlockPostEndpointResponses, ThrowOnError>> {
   const { client: request = client, ...config } = options
 
-  return withUnwrap(request({ method: 'POST', url: '/auth/users/{id}/unlock', security: [{ type: 'http', scheme: 'bearer' }], ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<SaBaiAPIEndpointsAuthUsersUnlockPostEndpointResponses, ThrowOnError>>)
+  return withUnwrap(request({ method: 'POST', url: '/auth/users/{id}/unlock', security: [{ type: 'apiKey', name: 'sabai.auth', in: 'cookie', scopes: ['admin'] }], ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<SaBaiAPIEndpointsAuthUsersUnlockPostEndpointResponses, ThrowOnError>>)
 }

@@ -6,5 +6,5 @@
 import type { SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsAuthUserResponse } from './SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsAuthUserResponse'
 
 export type SaBaiAPIEndpointsAuthUsersListGetResponse = {
-    users: SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsAuthUserResponse;
+  users: SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsAuthUserResponse;
 };

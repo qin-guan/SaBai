@@ -4,25 +4,25 @@
 */
 
 export type SaBaiAPIEndpointsMedicationHistoryGetResponse = {
-    kind: string;
-    actorName: string;
-    patientName: string;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    quantityChanged: number;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    quantityRemaining: number;
-    /**
-     * @description
-     * Format: `date-time`
-     * @type string
-    */
-    date: string;
+  kind: string;
+  actorName: string;
+  patientName: string;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  quantityChanged: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  quantityRemaining: number;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string
+   */
+  date: string;
 };

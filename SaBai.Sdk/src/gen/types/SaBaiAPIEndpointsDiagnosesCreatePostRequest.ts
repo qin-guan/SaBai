@@ -6,16 +6,16 @@
 import type { SaBaiAPIDomainDiagnosisCategoryKey } from './SaBaiAPIDomainDiagnosisCategory'
 
 export type SaBaiAPIEndpointsDiagnosesCreatePostRequest = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer | undefined
-    */
-    consultId?: number;
-    /**
-     * @minLength 1
-     * @type string
-    */
-    details: string;
-    category?: (null | SaBaiAPIDomainDiagnosisCategoryKey);
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer | undefined
+   */
+  consultId?: number;
+  /**
+   * @minLength 1
+   * @type string
+   */
+  details: string;
+  category?: null | SaBaiAPIDomainDiagnosisCategoryKey;
 };

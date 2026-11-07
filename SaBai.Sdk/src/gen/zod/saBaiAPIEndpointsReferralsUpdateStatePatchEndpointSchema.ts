@@ -23,3 +23,7 @@ export const saBaiAPIEndpointsReferralsUpdateStatePatchEndpointResponseSchema = 
 export const saBaiAPIEndpointsReferralsUpdateStatePatchEndpointErrorSchema = z.union([saBaiAPIEndpointsReferralsUpdateStatePatchEndpointStatus400Schema, saBaiAPIEndpointsReferralsUpdateStatePatchEndpointStatus401Schema, saBaiAPIEndpointsReferralsUpdateStatePatchEndpointStatus403Schema])
 
 export const saBaiAPIEndpointsReferralsUpdateStatePatchEndpointBodySchema = saBaiAPIEndpointsReferralsUpdateStatePatchRequestSchema
+
+export const saBaiAPIEndpointsReferralsUpdateStatePatchEndpointPathSchema = z.object({
+  id: z.int32(),
+})

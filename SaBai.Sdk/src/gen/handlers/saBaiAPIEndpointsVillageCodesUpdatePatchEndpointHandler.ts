@@ -4,11 +4,12 @@
 */
 
 import type { SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointResponse, SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointStatus400, SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointStatus401, SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointStatus403, SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointBody } from '../types/SaBaiAPIEndpointsVillageCodesUpdatePatchEndpoint'
-import type { HttpResponseResolver } from 'msw'
-import { http } from 'msw'
+import type { HttpResponseResolver } from 'msw/http'
+import type { DefaultBodyType } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsVillageCodesUpdatePatchEndpointHandlerResponse200(data: SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -17,7 +18,7 @@ export function saBaiAPIEndpointsVillageCodesUpdatePatchEndpointHandlerResponse2
 }
 
 export function saBaiAPIEndpointsVillageCodesUpdatePatchEndpointHandlerResponse400(data: SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointStatus400) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 400,
     headers: {
       'Content-Type': 'application/problem+json'
@@ -26,22 +27,22 @@ export function saBaiAPIEndpointsVillageCodesUpdatePatchEndpointHandlerResponse4
 }
 
 export function saBaiAPIEndpointsVillageCodesUpdatePatchEndpointHandlerResponse401(data?: SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsVillageCodesUpdatePatchEndpointHandlerResponse403(data?: SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsVillageCodesUpdatePatchEndpointHandler(data?: SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointBody>) {
-  return http.patch<Record<string, string>, SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointBody>(`/village-codes/:id`, function handler(info) {
+export function saBaiAPIEndpointsVillageCodesUpdatePatchEndpointHandler(data?: SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointBody : DefaultBodyType>, options?: { baseURL?: string }) {
+  return http.patch<Record<string, string>, SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsVillageCodesUpdatePatchEndpointBody : DefaultBodyType>(`${options?.baseURL ?? ''}/village-codes/:id`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

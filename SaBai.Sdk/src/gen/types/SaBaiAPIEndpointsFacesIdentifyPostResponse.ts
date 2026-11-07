@@ -6,5 +6,5 @@
 import type { SaBaiAPIEndpointsFacesIdentifyPostIdentifiedFaceArray } from './SaBaiAPIEndpointsFacesIdentifyPostIdentifiedFaceArray'
 
 export type SaBaiAPIEndpointsFacesIdentifyPostResponse = {
-    faces: SaBaiAPIEndpointsFacesIdentifyPostIdentifiedFaceArray;
+  faces: SaBaiAPIEndpointsFacesIdentifyPostIdentifiedFaceArray;
 };

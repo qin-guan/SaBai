@@ -1,10 +1,5 @@
 import "@testing-library/jest-dom";
 
-// @sabai/sdk configuration reads NEXT_PUBLIC_API_URL at import time via
-// src/lib/envVariables.ts, which throws when the variable is missing. Provide a
-// default so component tests can import the app modules.
-process.env.NEXT_PUBLIC_API_URL ??= "http://localhost:5250";
-
 // Workaround for vitest - mock HTMLDialogElement methods
 // https://github.com/jsdom/jsdom/issues/3294
 beforeAll(() => {

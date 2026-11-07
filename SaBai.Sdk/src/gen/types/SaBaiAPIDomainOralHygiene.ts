@@ -4,9 +4,9 @@
 */
 
 export const saBaiAPIDomainOralHygiene = {
-    Good: "Good",
-    Fair: "Fair",
-    Poor: "Poor"
+  Good: 'Good',
+  Fair: 'Fair',
+  Poor: 'Poor',
 } as const;
 
 export type SaBaiAPIDomainOralHygieneKey = (typeof saBaiAPIDomainOralHygiene)[keyof typeof saBaiAPIDomainOralHygiene];

@@ -7,20 +7,21 @@ import type { FastEndpointsProblemDetails } from './FastEndpointsProblemDetails'
 import type { SaBaiAPIEndpointsEyesightGetResponse } from './SaBaiAPIEndpointsEyesightGetResponse'
 
 export type SaBaiAPIEndpointsEyesightGetEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
 };
 
 export type SaBaiAPIEndpointsEyesightGetEndpointStatus200 = SaBaiAPIEndpointsEyesightGetResponse;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsEyesightGetEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsEyesightGetEndpointStatus401 = unknown;
@@ -28,20 +29,20 @@ export type SaBaiAPIEndpointsEyesightGetEndpointStatus401 = unknown;
 export type SaBaiAPIEndpointsEyesightGetEndpointStatus403 = unknown;
 
 export type SaBaiAPIEndpointsEyesightGetEndpointOptions = {
-    body?: never;
-    path: SaBaiAPIEndpointsEyesightGetEndpointPath;
-    query?: never;
-    headers?: never;
+  body?: never;
+  path: SaBaiAPIEndpointsEyesightGetEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsEyesightGetEndpointResponses = {
-    "200": SaBaiAPIEndpointsEyesightGetEndpointStatus200;
-    "400": SaBaiAPIEndpointsEyesightGetEndpointStatus400;
-    "401": SaBaiAPIEndpointsEyesightGetEndpointStatus401;
-    "403": SaBaiAPIEndpointsEyesightGetEndpointStatus403;
+  '200': SaBaiAPIEndpointsEyesightGetEndpointStatus200;
+  '400': SaBaiAPIEndpointsEyesightGetEndpointStatus400;
+  '401': SaBaiAPIEndpointsEyesightGetEndpointStatus401;
+  '403': SaBaiAPIEndpointsEyesightGetEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsEyesightGetEndpointResponse = SaBaiAPIEndpointsEyesightGetEndpointStatus200;

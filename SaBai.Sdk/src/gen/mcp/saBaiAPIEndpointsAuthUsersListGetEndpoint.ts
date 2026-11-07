@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsAuthUsersListGetEndpointOptions } from '../types/SaBaiAPIEndpointsAuthUsersListGetEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsAuthUsersListGetEndpoint } from '../clients/saBaiAPIEndpointsAuthUsersListGetEndpoint'
 
 /**
  * @summary List staff users
  * {@link /auth/users}
  */
-export async function saBaiAPIEndpointsAuthUsersListGetEndpointHandler({ query }: SaBaiAPIEndpointsAuthUsersListGetEndpointOptions = {}, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsAuthUsersListGetEndpoint({ query, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsAuthUsersListGetEndpointHandler({ query }: SaBaiAPIEndpointsAuthUsersListGetEndpointOptions = {}, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsAuthUsersListGetEndpoint({ query, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

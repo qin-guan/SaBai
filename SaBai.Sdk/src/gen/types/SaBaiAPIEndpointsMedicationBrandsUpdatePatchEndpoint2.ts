@@ -10,9 +10,10 @@ import type { SaBaiAPIEndpointsMedicationBrandsUpdatePatchResponse } from './SaB
 export type SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Status200 = SaBaiAPIEndpointsMedicationBrandsUpdatePatchResponse;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Status400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Status401 = unknown;
@@ -22,20 +23,20 @@ export type SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Status403 = unk
 export type SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Body = SaBaiAPIEndpointsMedicationBrandsUpdatePatchRequestOpB04D6A8855E2;
 
 export type SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Options = {
-    body: SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Body;
-    path?: never;
-    query?: never;
-    headers?: never;
+  body: SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Body;
+  path?: never;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Responses = {
-    "200": SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Status200;
-    "400": SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Status400;
-    "401": SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Status401;
-    "403": SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Status403;
+  '200': SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Status200;
+  '400': SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Status400;
+  '401': SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Status401;
+  '403': SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Status403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Response = SaBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint2Status200;

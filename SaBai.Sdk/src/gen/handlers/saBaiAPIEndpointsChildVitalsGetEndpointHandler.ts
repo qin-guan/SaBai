@@ -4,10 +4,10 @@
 */
 
 import type { SaBaiAPIEndpointsChildVitalsGetEndpointResponse, SaBaiAPIEndpointsChildVitalsGetEndpointStatus400, SaBaiAPIEndpointsChildVitalsGetEndpointStatus401, SaBaiAPIEndpointsChildVitalsGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsChildVitalsGetEndpoint'
-import { http } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsChildVitalsGetEndpointHandlerResponse200(data: SaBaiAPIEndpointsChildVitalsGetEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -16,7 +16,7 @@ export function saBaiAPIEndpointsChildVitalsGetEndpointHandlerResponse200(data: 
 }
 
 export function saBaiAPIEndpointsChildVitalsGetEndpointHandlerResponse400(data: SaBaiAPIEndpointsChildVitalsGetEndpointStatus400) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 400,
     headers: {
       'Content-Type': 'application/problem+json'
@@ -25,22 +25,22 @@ export function saBaiAPIEndpointsChildVitalsGetEndpointHandlerResponse400(data: 
 }
 
 export function saBaiAPIEndpointsChildVitalsGetEndpointHandlerResponse401(data?: SaBaiAPIEndpointsChildVitalsGetEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsChildVitalsGetEndpointHandlerResponse403(data?: SaBaiAPIEndpointsChildVitalsGetEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsChildVitalsGetEndpointHandler(data?: SaBaiAPIEndpointsChildVitalsGetEndpointResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>)) {
-  return http.get(`/child-vitals/:id`, function handler(info) {
+export function saBaiAPIEndpointsChildVitalsGetEndpointHandler(data?: SaBaiAPIEndpointsChildVitalsGetEndpointResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>), options?: { baseURL?: string }) {
+  return http.get(`${options?.baseURL ?? ''}/child-vitals/:id`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

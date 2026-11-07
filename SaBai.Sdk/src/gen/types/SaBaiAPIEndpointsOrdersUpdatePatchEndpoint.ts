@@ -8,20 +8,21 @@ import type { SaBaiAPIEndpointsOrdersUpdatePatchRequest } from './SaBaiAPIEndpoi
 import type { SaBaiAPIEndpointsOrdersUpdatePatchResponse } from './SaBaiAPIEndpointsOrdersUpdatePatchResponse'
 
 export type SaBaiAPIEndpointsOrdersUpdatePatchEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
 };
 
 export type SaBaiAPIEndpointsOrdersUpdatePatchEndpointStatus200 = SaBaiAPIEndpointsOrdersUpdatePatchResponse;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsOrdersUpdatePatchEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsOrdersUpdatePatchEndpointStatus401 = unknown;
@@ -31,20 +32,20 @@ export type SaBaiAPIEndpointsOrdersUpdatePatchEndpointStatus403 = unknown;
 export type SaBaiAPIEndpointsOrdersUpdatePatchEndpointBody = SaBaiAPIEndpointsOrdersUpdatePatchRequest;
 
 export type SaBaiAPIEndpointsOrdersUpdatePatchEndpointOptions = {
-    body: SaBaiAPIEndpointsOrdersUpdatePatchEndpointBody;
-    path: SaBaiAPIEndpointsOrdersUpdatePatchEndpointPath;
-    query?: never;
-    headers?: never;
+  body: SaBaiAPIEndpointsOrdersUpdatePatchEndpointBody;
+  path: SaBaiAPIEndpointsOrdersUpdatePatchEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsOrdersUpdatePatchEndpointResponses = {
-    "200": SaBaiAPIEndpointsOrdersUpdatePatchEndpointStatus200;
-    "400": SaBaiAPIEndpointsOrdersUpdatePatchEndpointStatus400;
-    "401": SaBaiAPIEndpointsOrdersUpdatePatchEndpointStatus401;
-    "403": SaBaiAPIEndpointsOrdersUpdatePatchEndpointStatus403;
+  '200': SaBaiAPIEndpointsOrdersUpdatePatchEndpointStatus200;
+  '400': SaBaiAPIEndpointsOrdersUpdatePatchEndpointStatus400;
+  '401': SaBaiAPIEndpointsOrdersUpdatePatchEndpointStatus401;
+  '403': SaBaiAPIEndpointsOrdersUpdatePatchEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsOrdersUpdatePatchEndpointResponse = SaBaiAPIEndpointsOrdersUpdatePatchEndpointStatus200;

@@ -23,3 +23,7 @@ export const saBaiAPIEndpointsDentalUpsertByVisitPutEndpointResponseSchema = saB
 export const saBaiAPIEndpointsDentalUpsertByVisitPutEndpointErrorSchema = z.union([saBaiAPIEndpointsDentalUpsertByVisitPutEndpointStatus400Schema, saBaiAPIEndpointsDentalUpsertByVisitPutEndpointStatus401Schema, saBaiAPIEndpointsDentalUpsertByVisitPutEndpointStatus403Schema])
 
 export const saBaiAPIEndpointsDentalUpsertByVisitPutEndpointBodySchema = saBaiAPIEndpointsDentalUpsertByVisitPutRequestSchema
+
+export const saBaiAPIEndpointsDentalUpsertByVisitPutEndpointPathSchema = z.object({
+  visitId: z.int32(),
+})

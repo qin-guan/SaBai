@@ -11,7 +11,7 @@ public sealed class DentalTests(AppFixture fixture)
     public async Task Put_CreatesThenReturnsConsultation()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var (_, visitId) = await RegisterAsync(client);
 
@@ -63,7 +63,7 @@ public sealed class DentalTests(AppFixture fixture)
     public async Task Put_SecondTime_ReplacesAndClearsOmittedFields()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var (_, visitId) = await RegisterAsync(client);
         var first = await client.PutAsJsonAsync(
@@ -96,7 +96,7 @@ public sealed class DentalTests(AppFixture fixture)
     public async Task Put_UnknownOption_ReturnsBadRequest()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var (_, visitId) = await RegisterAsync(client);
 
@@ -115,7 +115,7 @@ public sealed class DentalTests(AppFixture fixture)
     public async Task Put_MissingVisit_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
 
         // Act
@@ -133,7 +133,7 @@ public sealed class DentalTests(AppFixture fixture)
     public async Task Get_NoConsultation_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var (_, visitId) = await RegisterAsync(client);
 

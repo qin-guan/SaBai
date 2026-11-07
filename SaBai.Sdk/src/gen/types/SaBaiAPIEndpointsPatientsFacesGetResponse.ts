@@ -6,11 +6,11 @@
 import type { SaBaiAPIFaceRecognitionStoredFaceArray } from './SaBaiAPIFaceRecognitionStoredFaceArray'
 
 export type SaBaiAPIEndpointsPatientsFacesGetResponse = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    patientId: number;
-    faces: SaBaiAPIFaceRecognitionStoredFaceArray;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  patientId: number;
+  faces: SaBaiAPIFaceRecognitionStoredFaceArray;
 };

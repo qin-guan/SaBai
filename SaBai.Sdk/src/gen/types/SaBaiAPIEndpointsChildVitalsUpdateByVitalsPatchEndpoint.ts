@@ -8,20 +8,21 @@ import type { SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchRequest } from './S
 import type { SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchResponse } from './SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchResponse'
 
 export type SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    vitalsId: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  vitalsId: number;
 };
 
 export type SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointStatus200 = SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchResponse;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointStatus401 = unknown;
@@ -31,20 +32,20 @@ export type SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointStatus403 = u
 export type SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointBody = SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchRequest;
 
 export type SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointOptions = {
-    body: SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointBody;
-    path: SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointPath;
-    query?: never;
-    headers?: never;
+  body: SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointBody;
+  path: SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointResponses = {
-    "200": SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointStatus200;
-    "400": SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointStatus400;
-    "401": SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointStatus401;
-    "403": SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointStatus403;
+  '200': SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointStatus200;
+  '400': SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointStatus400;
+  '401': SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointStatus401;
+  '403': SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointResponse = SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointStatus200;

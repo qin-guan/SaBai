@@ -4,11 +4,12 @@
 */
 
 import type { SaBaiAPIEndpointsOrdersUpdatePatchEndpointResponse, SaBaiAPIEndpointsOrdersUpdatePatchEndpointStatus400, SaBaiAPIEndpointsOrdersUpdatePatchEndpointStatus401, SaBaiAPIEndpointsOrdersUpdatePatchEndpointStatus403, SaBaiAPIEndpointsOrdersUpdatePatchEndpointBody } from '../types/SaBaiAPIEndpointsOrdersUpdatePatchEndpoint'
-import type { HttpResponseResolver } from 'msw'
-import { http } from 'msw'
+import type { HttpResponseResolver } from 'msw/http'
+import type { DefaultBodyType } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsOrdersUpdatePatchEndpointHandlerResponse200(data: SaBaiAPIEndpointsOrdersUpdatePatchEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -17,7 +18,7 @@ export function saBaiAPIEndpointsOrdersUpdatePatchEndpointHandlerResponse200(dat
 }
 
 export function saBaiAPIEndpointsOrdersUpdatePatchEndpointHandlerResponse400(data: SaBaiAPIEndpointsOrdersUpdatePatchEndpointStatus400) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 400,
     headers: {
       'Content-Type': 'application/problem+json'
@@ -26,22 +27,22 @@ export function saBaiAPIEndpointsOrdersUpdatePatchEndpointHandlerResponse400(dat
 }
 
 export function saBaiAPIEndpointsOrdersUpdatePatchEndpointHandlerResponse401(data?: SaBaiAPIEndpointsOrdersUpdatePatchEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsOrdersUpdatePatchEndpointHandlerResponse403(data?: SaBaiAPIEndpointsOrdersUpdatePatchEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsOrdersUpdatePatchEndpointHandler(data?: SaBaiAPIEndpointsOrdersUpdatePatchEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsOrdersUpdatePatchEndpointBody>) {
-  return http.patch<Record<string, string>, SaBaiAPIEndpointsOrdersUpdatePatchEndpointBody>(`/orders/:id`, function handler(info) {
+export function saBaiAPIEndpointsOrdersUpdatePatchEndpointHandler(data?: SaBaiAPIEndpointsOrdersUpdatePatchEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsOrdersUpdatePatchEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsOrdersUpdatePatchEndpointBody : DefaultBodyType>, options?: { baseURL?: string }) {
+  return http.patch<Record<string, string>, SaBaiAPIEndpointsOrdersUpdatePatchEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsOrdersUpdatePatchEndpointBody : DefaultBodyType>(`${options?.baseURL ?? ''}/orders/:id`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

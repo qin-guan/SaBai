@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsOrdersCreatePostEndpointOptions } from '../types/SaBaiAPIEndpointsOrdersCreatePostEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsOrdersCreatePostEndpoint } from '../clients/saBaiAPIEndpointsOrdersCreatePostEndpoint'
 
 /**
  * @summary Create a pending medication order
  * {@link /orders}
  */
-export async function saBaiAPIEndpointsOrdersCreatePostEndpointHandler({ body }: SaBaiAPIEndpointsOrdersCreatePostEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsOrdersCreatePostEndpoint({ body, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsOrdersCreatePostEndpointHandler({ body }: SaBaiAPIEndpointsOrdersCreatePostEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsOrdersCreatePostEndpoint({ body, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

@@ -4,11 +4,12 @@
 */
 
 import type { SaBaiAPIEndpointsFacesIdentifyPostEndpointResponse, SaBaiAPIEndpointsFacesIdentifyPostEndpointStatus401, SaBaiAPIEndpointsFacesIdentifyPostEndpointStatus403, SaBaiAPIEndpointsFacesIdentifyPostEndpointBody } from '../types/SaBaiAPIEndpointsFacesIdentifyPostEndpoint'
-import type { HttpResponseResolver } from 'msw'
-import { http } from 'msw'
+import type { HttpResponseResolver } from 'msw/http'
+import type { DefaultBodyType } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsFacesIdentifyPostEndpointHandlerResponse200(data: SaBaiAPIEndpointsFacesIdentifyPostEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -17,22 +18,22 @@ export function saBaiAPIEndpointsFacesIdentifyPostEndpointHandlerResponse200(dat
 }
 
 export function saBaiAPIEndpointsFacesIdentifyPostEndpointHandlerResponse401(data?: SaBaiAPIEndpointsFacesIdentifyPostEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsFacesIdentifyPostEndpointHandlerResponse403(data?: SaBaiAPIEndpointsFacesIdentifyPostEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsFacesIdentifyPostEndpointHandler(data?: SaBaiAPIEndpointsFacesIdentifyPostEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsFacesIdentifyPostEndpointBody>) {
-  return http.post<Record<string, string>, SaBaiAPIEndpointsFacesIdentifyPostEndpointBody>(`/faces/identify`, function handler(info) {
+export function saBaiAPIEndpointsFacesIdentifyPostEndpointHandler(data?: SaBaiAPIEndpointsFacesIdentifyPostEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsFacesIdentifyPostEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsFacesIdentifyPostEndpointBody : DefaultBodyType>, options?: { baseURL?: string }) {
+  return http.post<Record<string, string>, SaBaiAPIEndpointsFacesIdentifyPostEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsFacesIdentifyPostEndpointBody : DefaultBodyType>(`${options?.baseURL ?? ''}/faces/identify`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

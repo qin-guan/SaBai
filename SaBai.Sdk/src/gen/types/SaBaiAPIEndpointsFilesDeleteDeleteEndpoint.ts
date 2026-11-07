@@ -6,12 +6,12 @@
 import type { SaBaiAPIEndpointsFilesDeleteDeleteResponse } from './SaBaiAPIEndpointsFilesDeleteDeleteResponse'
 
 export type SaBaiAPIEndpointsFilesDeleteDeleteEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
 };
 
 export type SaBaiAPIEndpointsFilesDeleteDeleteEndpointStatus200 = SaBaiAPIEndpointsFilesDeleteDeleteResponse;
@@ -21,19 +21,19 @@ export type SaBaiAPIEndpointsFilesDeleteDeleteEndpointStatus401 = unknown;
 export type SaBaiAPIEndpointsFilesDeleteDeleteEndpointStatus403 = unknown;
 
 export type SaBaiAPIEndpointsFilesDeleteDeleteEndpointOptions = {
-    body?: never;
-    path: SaBaiAPIEndpointsFilesDeleteDeleteEndpointPath;
-    query?: never;
-    headers?: never;
+  body?: never;
+  path: SaBaiAPIEndpointsFilesDeleteDeleteEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsFilesDeleteDeleteEndpointResponses = {
-    "200": SaBaiAPIEndpointsFilesDeleteDeleteEndpointStatus200;
-    "401": SaBaiAPIEndpointsFilesDeleteDeleteEndpointStatus401;
-    "403": SaBaiAPIEndpointsFilesDeleteDeleteEndpointStatus403;
+  '200': SaBaiAPIEndpointsFilesDeleteDeleteEndpointStatus200;
+  '401': SaBaiAPIEndpointsFilesDeleteDeleteEndpointStatus401;
+  '403': SaBaiAPIEndpointsFilesDeleteDeleteEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsFilesDeleteDeleteEndpointResponse = SaBaiAPIEndpointsFilesDeleteDeleteEndpointStatus200;

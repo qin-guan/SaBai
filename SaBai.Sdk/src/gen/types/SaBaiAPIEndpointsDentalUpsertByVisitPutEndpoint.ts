@@ -8,20 +8,21 @@ import type { SaBaiAPIEndpointsDentalDentalConsultResponse } from './SaBaiAPIEnd
 import type { SaBaiAPIEndpointsDentalUpsertByVisitPutRequest } from './SaBaiAPIEndpointsDentalUpsertByVisitPutRequest'
 
 export type SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    visitId: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  visitId: number;
 };
 
 export type SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointStatus200 = SaBaiAPIEndpointsDentalDentalConsultResponse;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointStatus401 = unknown;
@@ -31,20 +32,20 @@ export type SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointStatus403 = unknown;
 export type SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointBody = SaBaiAPIEndpointsDentalUpsertByVisitPutRequest;
 
 export type SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointOptions = {
-    body: SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointBody;
-    path: SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointPath;
-    query?: never;
-    headers?: never;
+  body: SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointBody;
+  path: SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointResponses = {
-    "200": SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointStatus200;
-    "400": SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointStatus400;
-    "401": SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointStatus401;
-    "403": SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointStatus403;
+  '200': SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointStatus200;
+  '400': SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointStatus400;
+  '401': SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointStatus401;
+  '403': SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointResponse = SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointStatus200;

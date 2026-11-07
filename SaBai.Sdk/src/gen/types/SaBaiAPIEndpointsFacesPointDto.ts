@@ -4,16 +4,16 @@
 */
 
 export type SaBaiAPIEndpointsFacesPointDto = {
-    /**
-     * @description
-     * Format: `float`
-     * @type number
-    */
-    x: number;
-    /**
-     * @description
-     * Format: `float`
-     * @type number
-    */
-    y: number;
+  /**
+   * @description
+   * Format: `float`
+   * @type number
+   */
+  x: number;
+  /**
+   * @description
+   * Format: `float`
+   * @type number
+   */
+  y: number;
 };

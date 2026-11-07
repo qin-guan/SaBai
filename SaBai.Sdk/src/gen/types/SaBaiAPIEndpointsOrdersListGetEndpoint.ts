@@ -6,7 +6,7 @@
 import type { SystemCollectionsGenericListOfSaBaiAPIEndpointsOrdersListGetResponse } from './SystemCollectionsGenericListOfSaBaiAPIEndpointsOrdersListGetResponse'
 
 export type SaBaiAPIEndpointsOrdersListGetEndpointQuery = {
-    status?: string | null;
+  status?: string | null;
 };
 
 export type SaBaiAPIEndpointsOrdersListGetEndpointStatus200 = SystemCollectionsGenericListOfSaBaiAPIEndpointsOrdersListGetResponse;
@@ -16,19 +16,19 @@ export type SaBaiAPIEndpointsOrdersListGetEndpointStatus401 = unknown;
 export type SaBaiAPIEndpointsOrdersListGetEndpointStatus403 = unknown;
 
 export type SaBaiAPIEndpointsOrdersListGetEndpointOptions = {
-    body?: never;
-    path?: never;
-    query?: SaBaiAPIEndpointsOrdersListGetEndpointQuery;
-    headers?: never;
+  body?: never;
+  path?: never;
+  query?: SaBaiAPIEndpointsOrdersListGetEndpointQuery;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsOrdersListGetEndpointResponses = {
-    "200": SaBaiAPIEndpointsOrdersListGetEndpointStatus200;
-    "401": SaBaiAPIEndpointsOrdersListGetEndpointStatus401;
-    "403": SaBaiAPIEndpointsOrdersListGetEndpointStatus403;
+  '200': SaBaiAPIEndpointsOrdersListGetEndpointStatus200;
+  '401': SaBaiAPIEndpointsOrdersListGetEndpointStatus401;
+  '403': SaBaiAPIEndpointsOrdersListGetEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsOrdersListGetEndpointResponse = SaBaiAPIEndpointsOrdersListGetEndpointStatus200;

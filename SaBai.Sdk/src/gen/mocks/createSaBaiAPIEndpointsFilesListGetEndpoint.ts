@@ -3,17 +3,15 @@
 * Do not edit manually.
 */
 
-import type { SaBaiAPIEndpointsFilesListGetEndpointQuery, SaBaiAPIEndpointsFilesListGetEndpointResponse, SaBaiAPIEndpointsFilesListGetEndpointStatus200, SaBaiAPIEndpointsFilesListGetEndpointStatus401, SaBaiAPIEndpointsFilesListGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsFilesListGetEndpoint'
+import type { SaBaiAPIEndpointsFilesListGetEndpointQuery, SaBaiAPIEndpointsFilesListGetEndpointResponse, SaBaiAPIEndpointsFilesListGetEndpointStatus200 } from '../types/SaBaiAPIEndpointsFilesListGetEndpoint'
 import { createSystemCollectionsGenericListOfSaBaiAPIEndpointsFilesListGetResponse } from './createSystemCollectionsGenericListOfSaBaiAPIEndpointsFilesListGetResponse'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsFilesListGetEndpointQuery<TData extends Partial<SaBaiAPIEndpointsFilesListGetEndpointQuery> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsFilesListGetEndpointQuery<TData extends Partial<SaBaiAPIEndpointsFilesListGetEndpointQuery> = object>(data?: TData) {
   const defaultFakeData = {
-  patientId: faker.number.int(),
-  deleted: faker.string.alpha(),
-}
+    patientId: faker.number.int(),
+    deleted: faker.string.alpha(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

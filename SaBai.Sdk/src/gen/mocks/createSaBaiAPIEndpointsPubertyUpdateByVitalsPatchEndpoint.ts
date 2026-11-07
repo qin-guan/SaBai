@@ -3,18 +3,16 @@
 * Do not edit manually.
 */
 
-import type { SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointBody, SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointPath, SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointResponse, SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointStatus200, SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointStatus400, SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointStatus401, SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointStatus403 } from '../types/SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpoint'
+import type { SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointBody, SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointPath, SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointResponse, SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointStatus200, SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointStatus400 } from '../types/SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpoint'
 import { createFastEndpointsProblemDetails } from './createFastEndpointsProblemDetails'
 import { createSaBaiAPIEndpointsPubertyUpdateByVitalsPatchRequest } from './createSaBaiAPIEndpointsPubertyUpdateByVitalsPatchRequest'
 import { createSaBaiAPIEndpointsPubertyUpdateByVitalsPatchResponse } from './createSaBaiAPIEndpointsPubertyUpdateByVitalsPatchResponse'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointPath<TData extends Partial<SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointPath> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointPath<TData extends Partial<SaBaiAPIEndpointsPubertyUpdateByVitalsPatchEndpointPath> = object>(data?: TData) {
   const defaultFakeData = {
-  vitalsId: faker.number.int(),
-}
+    vitalsId: faker.number.int(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

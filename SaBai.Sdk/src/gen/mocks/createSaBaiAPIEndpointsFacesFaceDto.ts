@@ -8,14 +8,12 @@ import { createSaBaiAPIEndpointsFacesBoxDto } from './createSaBaiAPIEndpointsFac
 import { createSaBaiAPIEndpointsFacesPointDtoArray } from './createSaBaiAPIEndpointsFacesPointDtoArray'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsFacesFaceDto<TData extends Partial<SaBaiAPIEndpointsFacesFaceDto> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsFacesFaceDto<TData extends Partial<SaBaiAPIEndpointsFacesFaceDto> = object>(data?: TData) {
   const defaultFakeData = {
-  box: createSaBaiAPIEndpointsFacesBoxDto(),
-  score: faker.number.float(),
-  landmarks: createSaBaiAPIEndpointsFacesPointDtoArray(),
-}
+    box: createSaBaiAPIEndpointsFacesBoxDto(),
+    score: faker.number.float(),
+    landmarks: createSaBaiAPIEndpointsFacesPointDtoArray(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

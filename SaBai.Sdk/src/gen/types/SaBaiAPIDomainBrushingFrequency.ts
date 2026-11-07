@@ -4,11 +4,11 @@
 */
 
 export const saBaiAPIDomainBrushingFrequency = {
-    Once: "Once",
-    Twice: "Twice",
-    ThreeOrMore: "ThreeOrMore",
-    Occasionally: "Occasionally",
-    Never: "Never"
+  Once: 'Once',
+  Twice: 'Twice',
+  ThreeOrMore: 'ThreeOrMore',
+  Occasionally: 'Occasionally',
+  Never: 'Never',
 } as const;
 
 export type SaBaiAPIDomainBrushingFrequencyKey = (typeof saBaiAPIDomainBrushingFrequency)[keyof typeof saBaiAPIDomainBrushingFrequency];

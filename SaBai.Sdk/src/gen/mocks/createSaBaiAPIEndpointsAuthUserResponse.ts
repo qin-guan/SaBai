@@ -4,22 +4,22 @@
 */
 
 import type { SaBaiAPIEndpointsAuthUserResponse } from '../types/SaBaiAPIEndpointsAuthUserResponse'
-import { createSaBaiAPIDomainStaffRole } from './createSaBaiAPIDomainStaffRole'
+import { createSystemCollectionsGenericIReadOnlyListOfSystemString } from './createSystemCollectionsGenericIReadOnlyListOfSystemString'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsAuthUserResponse<TData extends Partial<SaBaiAPIEndpointsAuthUserResponse> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsAuthUserResponse<TData extends Partial<SaBaiAPIEndpointsAuthUserResponse> = object>(data?: TData) {
   const defaultFakeData = {
-  id: faker.string.uuid(),
-  workOsUserId: faker.string.alpha(),
-  username: faker.string.alpha(),
-  email: faker.string.alpha(),
-  nickname: faker.string.alpha(),
-  role: createSaBaiAPIDomainStaffRole(),
-  isLocked: faker.datatype.boolean(),
-  createdAt: faker.date.anytime().toISOString(),
-}
+    id: faker.string.uuid(),
+    userName: faker.string.alpha(),
+    email: faker.string.alpha(),
+    nickname: faker.string.alpha(),
+    roles: createSystemCollectionsGenericIReadOnlyListOfSystemString(),
+    isLocked: faker.datatype.boolean(),
+    lockoutEnd: faker.date.anytime().toISOString(),
+    twoFactorEnabled: faker.datatype.boolean(),
+    hasPassword: faker.datatype.boolean(),
+    createdAt: faker.date.anytime().toISOString(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsBroadcastsPublishPostEndpointOptions } from '../types/SaBaiAPIEndpointsBroadcastsPublishPostEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsBroadcastsPublishPostEndpoint } from '../clients/saBaiAPIEndpointsBroadcastsPublishPostEndpoint'
 
 /**
  * @summary Publish a broadcast
  * {@link /broadcasts/:id/publish}
  */
-export async function saBaiAPIEndpointsBroadcastsPublishPostEndpointHandler({ path }: SaBaiAPIEndpointsBroadcastsPublishPostEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsBroadcastsPublishPostEndpoint({ path, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsBroadcastsPublishPostEndpointHandler({ path }: SaBaiAPIEndpointsBroadcastsPublishPostEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsBroadcastsPublishPostEndpoint({ path, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

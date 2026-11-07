@@ -61,13 +61,14 @@ public static class Extensions
                 metrics
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
-                    .AddRuntimeInstrumentation();
+                    .AddRuntimeInstrumentation()
+                    // Sign-in, user-manager and lockout counters from ASP.NET Core Identity.
+                    .AddMeter("Microsoft.AspNetCore.Identity");
             })
             .WithTracing(tracing =>
             {
                 tracing
                     .AddSource(builder.Environment.ApplicationName)
-                    .AddSource("SaBai.WorkOS")
                     .AddAspNetCoreInstrumentation(tracing =>
                         // Exclude health check requests from tracing
                         tracing.Filter = context =>

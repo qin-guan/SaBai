@@ -3,17 +3,15 @@
 * Do not edit manually.
 */
 
-import type { SaBaiAPIEndpointsPubertyGetByVitalsGetEndpointPath, SaBaiAPIEndpointsPubertyGetByVitalsGetEndpointResponse, SaBaiAPIEndpointsPubertyGetByVitalsGetEndpointStatus200, SaBaiAPIEndpointsPubertyGetByVitalsGetEndpointStatus400, SaBaiAPIEndpointsPubertyGetByVitalsGetEndpointStatus401, SaBaiAPIEndpointsPubertyGetByVitalsGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsPubertyGetByVitalsGetEndpoint'
+import type { SaBaiAPIEndpointsPubertyGetByVitalsGetEndpointPath, SaBaiAPIEndpointsPubertyGetByVitalsGetEndpointResponse, SaBaiAPIEndpointsPubertyGetByVitalsGetEndpointStatus200, SaBaiAPIEndpointsPubertyGetByVitalsGetEndpointStatus400 } from '../types/SaBaiAPIEndpointsPubertyGetByVitalsGetEndpoint'
 import { createFastEndpointsProblemDetails } from './createFastEndpointsProblemDetails'
 import { createSaBaiAPIEndpointsPubertyGetByVitalsGetResponse } from './createSaBaiAPIEndpointsPubertyGetByVitalsGetResponse'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsPubertyGetByVitalsGetEndpointPath<TData extends Partial<SaBaiAPIEndpointsPubertyGetByVitalsGetEndpointPath> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsPubertyGetByVitalsGetEndpointPath<TData extends Partial<SaBaiAPIEndpointsPubertyGetByVitalsGetEndpointPath> = object>(data?: TData) {
   const defaultFakeData = {
-  vitalsId: faker.number.int(),
-}
+    vitalsId: faker.number.int(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

@@ -20,3 +20,7 @@ export const saBaiAPIEndpointsDentalGetByVisitGetEndpointStatus403Schema = z.unk
 export const saBaiAPIEndpointsDentalGetByVisitGetEndpointResponseSchema = saBaiAPIEndpointsDentalGetByVisitGetEndpointStatus200Schema
 
 export const saBaiAPIEndpointsDentalGetByVisitGetEndpointErrorSchema = z.union([saBaiAPIEndpointsDentalGetByVisitGetEndpointStatus400Schema, saBaiAPIEndpointsDentalGetByVisitGetEndpointStatus401Schema, saBaiAPIEndpointsDentalGetByVisitGetEndpointStatus403Schema])
+
+export const saBaiAPIEndpointsDentalGetByVisitGetEndpointPathSchema = z.object({
+  visitId: z.int32(),
+})

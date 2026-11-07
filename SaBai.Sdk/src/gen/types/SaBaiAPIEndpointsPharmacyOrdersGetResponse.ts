@@ -7,6 +7,6 @@ import type { SaBaiAPIEndpointsPharmacyOrdersGetPatientHeader } from './SaBaiAPI
 import type { SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPharmacyOrdersGetVisitBundle } from './SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPharmacyOrdersGetVisitBundle'
 
 export type SaBaiAPIEndpointsPharmacyOrdersGetResponse = {
-    patient: SaBaiAPIEndpointsPharmacyOrdersGetPatientHeader;
-    visits: SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPharmacyOrdersGetVisitBundle;
+  patient: SaBaiAPIEndpointsPharmacyOrdersGetPatientHeader;
+  visits: SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPharmacyOrdersGetVisitBundle;
 };

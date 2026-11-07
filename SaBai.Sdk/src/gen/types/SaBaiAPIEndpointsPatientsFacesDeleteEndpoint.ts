@@ -4,18 +4,18 @@
 */
 
 export type SaBaiAPIEndpointsPatientsFacesDeleteEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
-    /**
-     * @description
-     * Format: `uuid`
-     * @type string
-    */
-    faceId: string;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string
+   */
+  faceId: string;
 };
 
 export type SaBaiAPIEndpointsPatientsFacesDeleteEndpointStatus204 = unknown;
@@ -25,19 +25,19 @@ export type SaBaiAPIEndpointsPatientsFacesDeleteEndpointStatus401 = unknown;
 export type SaBaiAPIEndpointsPatientsFacesDeleteEndpointStatus403 = unknown;
 
 export type SaBaiAPIEndpointsPatientsFacesDeleteEndpointOptions = {
-    body?: never;
-    path: SaBaiAPIEndpointsPatientsFacesDeleteEndpointPath;
-    query?: never;
-    headers?: never;
+  body?: never;
+  path: SaBaiAPIEndpointsPatientsFacesDeleteEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsPatientsFacesDeleteEndpointResponses = {
-    "204": SaBaiAPIEndpointsPatientsFacesDeleteEndpointStatus204;
-    "401": SaBaiAPIEndpointsPatientsFacesDeleteEndpointStatus401;
-    "403": SaBaiAPIEndpointsPatientsFacesDeleteEndpointStatus403;
+  '204': SaBaiAPIEndpointsPatientsFacesDeleteEndpointStatus204;
+  '401': SaBaiAPIEndpointsPatientsFacesDeleteEndpointStatus401;
+  '403': SaBaiAPIEndpointsPatientsFacesDeleteEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsPatientsFacesDeleteEndpointResponse = SaBaiAPIEndpointsPatientsFacesDeleteEndpointStatus204;

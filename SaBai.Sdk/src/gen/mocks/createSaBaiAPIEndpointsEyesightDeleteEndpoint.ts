@@ -3,16 +3,14 @@
 * Do not edit manually.
 */
 
-import type { SaBaiAPIEndpointsEyesightDeleteEndpointPath, SaBaiAPIEndpointsEyesightDeleteEndpointResponse, SaBaiAPIEndpointsEyesightDeleteEndpointStatus204, SaBaiAPIEndpointsEyesightDeleteEndpointStatus400, SaBaiAPIEndpointsEyesightDeleteEndpointStatus401, SaBaiAPIEndpointsEyesightDeleteEndpointStatus403 } from '../types/SaBaiAPIEndpointsEyesightDeleteEndpoint'
+import type { SaBaiAPIEndpointsEyesightDeleteEndpointPath, SaBaiAPIEndpointsEyesightDeleteEndpointResponse, SaBaiAPIEndpointsEyesightDeleteEndpointStatus400 } from '../types/SaBaiAPIEndpointsEyesightDeleteEndpoint'
 import { createFastEndpointsProblemDetails } from './createFastEndpointsProblemDetails'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsEyesightDeleteEndpointPath<TData extends Partial<SaBaiAPIEndpointsEyesightDeleteEndpointPath> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsEyesightDeleteEndpointPath<TData extends Partial<SaBaiAPIEndpointsEyesightDeleteEndpointPath> = object>(data?: TData) {
   const defaultFakeData = {
-  id: faker.number.int(),
-}
+    id: faker.number.int(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

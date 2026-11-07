@@ -7,13 +7,11 @@ import type { SaBaiAPIEndpointsPharmacyOrdersGetResponse } from '../types/SaBaiA
 import { createSaBaiAPIEndpointsPharmacyOrdersGetPatientHeader } from './createSaBaiAPIEndpointsPharmacyOrdersGetPatientHeader'
 import { createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPharmacyOrdersGetVisitBundle } from './createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPharmacyOrdersGetVisitBundle'
 
-export function createSaBaiAPIEndpointsPharmacyOrdersGetResponse<TData extends Partial<SaBaiAPIEndpointsPharmacyOrdersGetResponse> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsPharmacyOrdersGetResponse<TData extends Partial<SaBaiAPIEndpointsPharmacyOrdersGetResponse> = object>(data?: TData) {
   const defaultFakeData = {
-  patient: createSaBaiAPIEndpointsPharmacyOrdersGetPatientHeader(),
-  visits: createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPharmacyOrdersGetVisitBundle(),
-}
+    patient: createSaBaiAPIEndpointsPharmacyOrdersGetPatientHeader(),
+    visits: createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPharmacyOrdersGetVisitBundle(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

@@ -17,3 +17,7 @@ export const saBaiAPIEndpointsMedicationHistoryGetEndpointStatus403Schema = z.un
 export const saBaiAPIEndpointsMedicationHistoryGetEndpointResponseSchema = saBaiAPIEndpointsMedicationHistoryGetEndpointStatus200Schema
 
 export const saBaiAPIEndpointsMedicationHistoryGetEndpointErrorSchema = z.union([saBaiAPIEndpointsMedicationHistoryGetEndpointStatus401Schema, saBaiAPIEndpointsMedicationHistoryGetEndpointStatus403Schema])
+
+export const saBaiAPIEndpointsMedicationHistoryGetEndpointQuerySchema = z.object({
+  brandId: z.int32().nullish(),
+})

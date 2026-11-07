@@ -3,16 +3,15 @@
 * Do not edit manually.
 */
 
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsMedicationBrandsWithIngredientGetEndpoint } from '../clients/saBaiAPIEndpointsMedicationBrandsWithIngredientGetEndpoint'
 
 /**
  * @summary List medication brands with ingredient names
  * {@link /medication-brands/with-ingredient}
  */
-export async function saBaiAPIEndpointsMedicationBrandsWithIngredientGetEndpointHandler(request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsMedicationBrandsWithIngredientGetEndpoint({ signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsMedicationBrandsWithIngredientGetEndpointHandler(ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsMedicationBrandsWithIngredientGetEndpoint({ signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

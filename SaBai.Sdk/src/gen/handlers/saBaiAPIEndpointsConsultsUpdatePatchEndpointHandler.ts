@@ -4,11 +4,12 @@
 */
 
 import type { SaBaiAPIEndpointsConsultsUpdatePatchEndpointResponse, SaBaiAPIEndpointsConsultsUpdatePatchEndpointStatus401, SaBaiAPIEndpointsConsultsUpdatePatchEndpointStatus403, SaBaiAPIEndpointsConsultsUpdatePatchEndpointBody } from '../types/SaBaiAPIEndpointsConsultsUpdatePatchEndpoint'
-import type { HttpResponseResolver } from 'msw'
-import { http } from 'msw'
+import type { HttpResponseResolver } from 'msw/http'
+import type { DefaultBodyType } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsConsultsUpdatePatchEndpointHandlerResponse200(data: SaBaiAPIEndpointsConsultsUpdatePatchEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -17,22 +18,22 @@ export function saBaiAPIEndpointsConsultsUpdatePatchEndpointHandlerResponse200(d
 }
 
 export function saBaiAPIEndpointsConsultsUpdatePatchEndpointHandlerResponse401(data?: SaBaiAPIEndpointsConsultsUpdatePatchEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsConsultsUpdatePatchEndpointHandlerResponse403(data?: SaBaiAPIEndpointsConsultsUpdatePatchEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsConsultsUpdatePatchEndpointHandler(data?: SaBaiAPIEndpointsConsultsUpdatePatchEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsConsultsUpdatePatchEndpointBody>) {
-  return http.patch<Record<string, string>, SaBaiAPIEndpointsConsultsUpdatePatchEndpointBody>(`/consults/:id`, function handler(info) {
+export function saBaiAPIEndpointsConsultsUpdatePatchEndpointHandler(data?: SaBaiAPIEndpointsConsultsUpdatePatchEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsConsultsUpdatePatchEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsConsultsUpdatePatchEndpointBody : DefaultBodyType>, options?: { baseURL?: string }) {
+  return http.patch<Record<string, string>, SaBaiAPIEndpointsConsultsUpdatePatchEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsConsultsUpdatePatchEndpointBody : DefaultBodyType>(`${options?.baseURL ?? ''}/consults/:id`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

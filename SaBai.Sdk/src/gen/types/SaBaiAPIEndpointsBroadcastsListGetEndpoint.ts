@@ -12,19 +12,19 @@ export type SaBaiAPIEndpointsBroadcastsListGetEndpointStatus401 = unknown;
 export type SaBaiAPIEndpointsBroadcastsListGetEndpointStatus403 = unknown;
 
 export type SaBaiAPIEndpointsBroadcastsListGetEndpointOptions = {
-    body?: never;
-    path?: never;
-    query?: never;
-    headers?: never;
+  body?: never;
+  path?: never;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsBroadcastsListGetEndpointResponses = {
-    "200": SaBaiAPIEndpointsBroadcastsListGetEndpointStatus200;
-    "401": SaBaiAPIEndpointsBroadcastsListGetEndpointStatus401;
-    "403": SaBaiAPIEndpointsBroadcastsListGetEndpointStatus403;
+  '200': SaBaiAPIEndpointsBroadcastsListGetEndpointStatus200;
+  '401': SaBaiAPIEndpointsBroadcastsListGetEndpointStatus401;
+  '403': SaBaiAPIEndpointsBroadcastsListGetEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsBroadcastsListGetEndpointResponse = SaBaiAPIEndpointsBroadcastsListGetEndpointStatus200;

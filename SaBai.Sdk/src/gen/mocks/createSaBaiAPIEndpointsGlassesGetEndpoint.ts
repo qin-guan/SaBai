@@ -3,17 +3,15 @@
 * Do not edit manually.
 */
 
-import type { SaBaiAPIEndpointsGlassesGetEndpointPath, SaBaiAPIEndpointsGlassesGetEndpointResponse, SaBaiAPIEndpointsGlassesGetEndpointStatus200, SaBaiAPIEndpointsGlassesGetEndpointStatus400, SaBaiAPIEndpointsGlassesGetEndpointStatus401, SaBaiAPIEndpointsGlassesGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsGlassesGetEndpoint'
+import type { SaBaiAPIEndpointsGlassesGetEndpointPath, SaBaiAPIEndpointsGlassesGetEndpointResponse, SaBaiAPIEndpointsGlassesGetEndpointStatus200, SaBaiAPIEndpointsGlassesGetEndpointStatus400 } from '../types/SaBaiAPIEndpointsGlassesGetEndpoint'
 import { createFastEndpointsProblemDetails } from './createFastEndpointsProblemDetails'
 import { createSaBaiAPIEndpointsGlassesGetResponse } from './createSaBaiAPIEndpointsGlassesGetResponse'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsGlassesGetEndpointPath<TData extends Partial<SaBaiAPIEndpointsGlassesGetEndpointPath> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsGlassesGetEndpointPath<TData extends Partial<SaBaiAPIEndpointsGlassesGetEndpointPath> = object>(data?: TData) {
   const defaultFakeData = {
-  id: faker.number.int(),
-}
+    id: faker.number.int(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

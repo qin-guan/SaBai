@@ -7,13 +7,11 @@ import type { SaBaiAPIEndpointsConsultsCreatePostDiagnosisInput } from '../types
 import { createSaBaiAPIDomainDiagnosisCategory } from './createSaBaiAPIDomainDiagnosisCategory'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsConsultsCreatePostDiagnosisInput<TData extends Partial<SaBaiAPIEndpointsConsultsCreatePostDiagnosisInput> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsConsultsCreatePostDiagnosisInput<TData extends Partial<SaBaiAPIEndpointsConsultsCreatePostDiagnosisInput> = object>(data?: TData) {
   const defaultFakeData = {
-  details: faker.string.alpha(),
-  category: faker.helpers.arrayElement([null, createSaBaiAPIDomainDiagnosisCategory()]),
-}
+    details: faker.string.alpha(),
+    category: faker.helpers.arrayElement([null, createSaBaiAPIDomainDiagnosisCategory()]),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

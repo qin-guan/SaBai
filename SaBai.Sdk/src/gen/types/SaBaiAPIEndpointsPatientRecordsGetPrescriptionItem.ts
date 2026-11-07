@@ -6,25 +6,25 @@
 import type { SaBaiAPIDomainOrderStatusKey } from './SaBaiAPIDomainOrderStatus'
 
 export type SaBaiAPIEndpointsPatientRecordsGetPrescriptionItem = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    consultId: number;
-    /**
-     * @description
-     * Format: `date-time`
-     * @type string
-    */
-    visitDate: string;
-    medicationName: string;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    quantity: number;
-    notes: string | null;
-    status: SaBaiAPIDomainOrderStatusKey;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  consultId: number;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string
+   */
+  visitDate: string;
+  medicationName: string;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  quantity: number;
+  notes: string | null;
+  status: SaBaiAPIDomainOrderStatusKey;
 };

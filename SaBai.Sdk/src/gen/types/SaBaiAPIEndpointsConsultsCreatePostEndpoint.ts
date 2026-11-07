@@ -10,9 +10,10 @@ import type { SaBaiAPIEndpointsConsultsCreatePostResponse } from './SaBaiAPIEndp
 export type SaBaiAPIEndpointsConsultsCreatePostEndpointStatus200 = SaBaiAPIEndpointsConsultsCreatePostResponse;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsConsultsCreatePostEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsConsultsCreatePostEndpointStatus401 = unknown;
@@ -22,20 +23,20 @@ export type SaBaiAPIEndpointsConsultsCreatePostEndpointStatus403 = unknown;
 export type SaBaiAPIEndpointsConsultsCreatePostEndpointBody = SaBaiAPIEndpointsConsultsCreatePostRequest;
 
 export type SaBaiAPIEndpointsConsultsCreatePostEndpointOptions = {
-    body: SaBaiAPIEndpointsConsultsCreatePostEndpointBody;
-    path?: never;
-    query?: never;
-    headers?: never;
+  body: SaBaiAPIEndpointsConsultsCreatePostEndpointBody;
+  path?: never;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsConsultsCreatePostEndpointResponses = {
-    "200": SaBaiAPIEndpointsConsultsCreatePostEndpointStatus200;
-    "400": SaBaiAPIEndpointsConsultsCreatePostEndpointStatus400;
-    "401": SaBaiAPIEndpointsConsultsCreatePostEndpointStatus401;
-    "403": SaBaiAPIEndpointsConsultsCreatePostEndpointStatus403;
+  '200': SaBaiAPIEndpointsConsultsCreatePostEndpointStatus200;
+  '400': SaBaiAPIEndpointsConsultsCreatePostEndpointStatus400;
+  '401': SaBaiAPIEndpointsConsultsCreatePostEndpointStatus401;
+  '403': SaBaiAPIEndpointsConsultsCreatePostEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsConsultsCreatePostEndpointResponse = SaBaiAPIEndpointsConsultsCreatePostEndpointStatus200;

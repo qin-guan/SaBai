@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsVisitsGetEndpointOptions } from '../types/SaBaiAPIEndpointsVisitsGetEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsVisitsGetEndpoint } from '../clients/saBaiAPIEndpointsVisitsGetEndpoint'
 
 /**
  * @summary Get a visit
  * {@link /visits/:id}
  */
-export async function saBaiAPIEndpointsVisitsGetEndpointHandler({ path }: SaBaiAPIEndpointsVisitsGetEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsVisitsGetEndpoint({ path, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsVisitsGetEndpointHandler({ path }: SaBaiAPIEndpointsVisitsGetEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsVisitsGetEndpoint({ path, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

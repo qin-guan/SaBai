@@ -6,46 +6,46 @@
 import type { SaBaiAPIDomainGenderKey } from './SaBaiAPIDomainGender'
 
 export type SaBaiAPIEndpointsPatientRecordsGetPatientItem = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
-    name: string;
-    identificationNumber: string | null;
-    contactNo: string | null;
-    gender: SaBaiAPIDomainGenderKey;
-    /**
-     * @description
-     * Format: `date-time`
-     * @type string
-    */
-    dateOfBirth: string;
-    drugAllergy: string;
-    hasPoorCard: boolean;
-    hasBS2Card: boolean;
-    hasSabaiCard: boolean;
-    toGetReport: boolean;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    villageCodeId: number | null;
-    villageCode: string | null;
-    displayId: string;
-    filterString: string;
-    /**
-     * @description
-     * Format: `date-time`
-     * @type string
-    */
-    lastVisitDate: string | null;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    lastVisitId: number | null;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
+  name: string;
+  identificationNumber: string | null;
+  contactNo: string | null;
+  gender: SaBaiAPIDomainGenderKey;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string
+   */
+  dateOfBirth: string;
+  drugAllergy: string;
+  hasPoorCard: boolean;
+  hasBS2Card: boolean;
+  hasSabaiCard: boolean;
+  toGetReport: boolean;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  villageCodeId: number | null;
+  villageCode: string | null;
+  displayId: string;
+  filterString: string;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string
+   */
+  lastVisitDate: string | null;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  lastVisitId: number | null;
 };

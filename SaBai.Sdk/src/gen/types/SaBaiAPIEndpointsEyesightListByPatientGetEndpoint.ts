@@ -7,20 +7,21 @@ import type { FastEndpointsProblemDetails } from './FastEndpointsProblemDetails'
 import type { SystemCollectionsGenericListOfSaBaiAPIEndpointsEyesightListByPatientGetResponse } from './SystemCollectionsGenericListOfSaBaiAPIEndpointsEyesightListByPatientGetResponse'
 
 export type SaBaiAPIEndpointsEyesightListByPatientGetEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    patientId: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  patientId: number;
 };
 
 export type SaBaiAPIEndpointsEyesightListByPatientGetEndpointStatus200 = SystemCollectionsGenericListOfSaBaiAPIEndpointsEyesightListByPatientGetResponse;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsEyesightListByPatientGetEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsEyesightListByPatientGetEndpointStatus401 = unknown;
@@ -28,20 +29,20 @@ export type SaBaiAPIEndpointsEyesightListByPatientGetEndpointStatus401 = unknown
 export type SaBaiAPIEndpointsEyesightListByPatientGetEndpointStatus403 = unknown;
 
 export type SaBaiAPIEndpointsEyesightListByPatientGetEndpointOptions = {
-    body?: never;
-    path: SaBaiAPIEndpointsEyesightListByPatientGetEndpointPath;
-    query?: never;
-    headers?: never;
+  body?: never;
+  path: SaBaiAPIEndpointsEyesightListByPatientGetEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsEyesightListByPatientGetEndpointResponses = {
-    "200": SaBaiAPIEndpointsEyesightListByPatientGetEndpointStatus200;
-    "400": SaBaiAPIEndpointsEyesightListByPatientGetEndpointStatus400;
-    "401": SaBaiAPIEndpointsEyesightListByPatientGetEndpointStatus401;
-    "403": SaBaiAPIEndpointsEyesightListByPatientGetEndpointStatus403;
+  '200': SaBaiAPIEndpointsEyesightListByPatientGetEndpointStatus200;
+  '400': SaBaiAPIEndpointsEyesightListByPatientGetEndpointStatus400;
+  '401': SaBaiAPIEndpointsEyesightListByPatientGetEndpointStatus401;
+  '403': SaBaiAPIEndpointsEyesightListByPatientGetEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsEyesightListByPatientGetEndpointResponse = SaBaiAPIEndpointsEyesightListByPatientGetEndpointStatus200;

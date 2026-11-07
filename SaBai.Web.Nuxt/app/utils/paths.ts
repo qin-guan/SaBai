@@ -25,6 +25,8 @@ export const paths = {
   orders: () => "/orders",
   settings: () => "/settings",
   settingsVillageCodes: () => "/settings/village-codes",
+  settingsUsers: () => "/settings/users",
+  account: () => "/account",
 };
 
 /** Which page a patient link opens: their record, or one station's form. */

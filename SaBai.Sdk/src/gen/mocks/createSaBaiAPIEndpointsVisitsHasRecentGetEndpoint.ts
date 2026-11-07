@@ -3,17 +3,15 @@
 * Do not edit manually.
 */
 
-import type { SaBaiAPIEndpointsVisitsHasRecentGetEndpointQuery, SaBaiAPIEndpointsVisitsHasRecentGetEndpointResponse, SaBaiAPIEndpointsVisitsHasRecentGetEndpointStatus200, SaBaiAPIEndpointsVisitsHasRecentGetEndpointStatus400, SaBaiAPIEndpointsVisitsHasRecentGetEndpointStatus401, SaBaiAPIEndpointsVisitsHasRecentGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsVisitsHasRecentGetEndpoint'
+import type { SaBaiAPIEndpointsVisitsHasRecentGetEndpointQuery, SaBaiAPIEndpointsVisitsHasRecentGetEndpointResponse, SaBaiAPIEndpointsVisitsHasRecentGetEndpointStatus200, SaBaiAPIEndpointsVisitsHasRecentGetEndpointStatus400 } from '../types/SaBaiAPIEndpointsVisitsHasRecentGetEndpoint'
 import { createFastEndpointsProblemDetails } from './createFastEndpointsProblemDetails'
 import { createSaBaiAPIEndpointsVisitsHasRecentGetResponse } from './createSaBaiAPIEndpointsVisitsHasRecentGetResponse'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsVisitsHasRecentGetEndpointQuery<TData extends Partial<SaBaiAPIEndpointsVisitsHasRecentGetEndpointQuery> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsVisitsHasRecentGetEndpointQuery<TData extends Partial<SaBaiAPIEndpointsVisitsHasRecentGetEndpointQuery> = object>(data?: TData) {
   const defaultFakeData = {
-  patientId: faker.number.int(),
-}
+    patientId: faker.number.int(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

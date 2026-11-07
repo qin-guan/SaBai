@@ -23,3 +23,7 @@ export const saBaiAPIEndpointsGlassesUpdatePatchEndpointResponseSchema = saBaiAP
 export const saBaiAPIEndpointsGlassesUpdatePatchEndpointErrorSchema = z.union([saBaiAPIEndpointsGlassesUpdatePatchEndpointStatus400Schema, saBaiAPIEndpointsGlassesUpdatePatchEndpointStatus401Schema, saBaiAPIEndpointsGlassesUpdatePatchEndpointStatus403Schema])
 
 export const saBaiAPIEndpointsGlassesUpdatePatchEndpointBodySchema = saBaiAPIEndpointsGlassesUpdatePatchRequestSchema
+
+export const saBaiAPIEndpointsGlassesUpdatePatchEndpointPathSchema = z.object({
+  id: z.int32(),
+})

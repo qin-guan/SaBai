@@ -4,19 +4,19 @@
 */
 
 export type SaBaiAPIEndpointsGlassesUpdatePatchResponse = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    visitId: number;
-    leftGlassesDegree: string | null;
-    rightGlassesDegree: string | null;
-    notes: string | null;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  visitId: number;
+  leftGlassesDegree: string | null;
+  rightGlassesDegree: string | null;
+  notes: string | null;
 };

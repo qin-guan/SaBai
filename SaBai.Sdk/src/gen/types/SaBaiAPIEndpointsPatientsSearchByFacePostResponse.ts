@@ -6,5 +6,5 @@
 import type { SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPatientsSearchByFacePostPatientFaceMatch } from './SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPatientsSearchByFacePostPatientFaceMatch'
 
 export type SaBaiAPIEndpointsPatientsSearchByFacePostResponse = {
-    matches: SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPatientsSearchByFacePostPatientFaceMatch;
+  matches: SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPatientsSearchByFacePostPatientFaceMatch;
 };

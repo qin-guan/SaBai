@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsEyesightListByPatientGetEndpointOptions } from '../types/SaBaiAPIEndpointsEyesightListByPatientGetEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsEyesightListByPatientGetEndpoint } from '../clients/saBaiAPIEndpointsEyesightListByPatientGetEndpoint'
 
 /**
  * @summary List a patient's eyesight records
  * {@link /patients/:patientId/eyesight}
  */
-export async function saBaiAPIEndpointsEyesightListByPatientGetEndpointHandler({ path }: SaBaiAPIEndpointsEyesightListByPatientGetEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsEyesightListByPatientGetEndpoint({ path, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsEyesightListByPatientGetEndpointHandler({ path }: SaBaiAPIEndpointsEyesightListByPatientGetEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsEyesightListByPatientGetEndpoint({ path, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

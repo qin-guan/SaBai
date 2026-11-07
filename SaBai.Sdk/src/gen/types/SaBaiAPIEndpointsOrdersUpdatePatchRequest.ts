@@ -6,7 +6,7 @@
 import type { SaBaiAPIDomainOrderStatusKey } from './SaBaiAPIDomainOrderStatus'
 
 export type SaBaiAPIEndpointsOrdersUpdatePatchRequest = {
-    status: (null | SaBaiAPIDomainOrderStatusKey);
-    dosageInstructions?: string | null;
-    remarks?: string | null;
+  status: null | SaBaiAPIDomainOrderStatusKey;
+  dosageInstructions?: string | null;
+  remarks?: string | null;
 };

@@ -10,9 +10,10 @@ import type { SaBaiAPIEndpointsDiagnosesCreatePostResponse } from './SaBaiAPIEnd
 export type SaBaiAPIEndpointsDiagnosesCreatePostEndpointStatus200 = SaBaiAPIEndpointsDiagnosesCreatePostResponse;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsDiagnosesCreatePostEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsDiagnosesCreatePostEndpointStatus401 = unknown;
@@ -22,20 +23,20 @@ export type SaBaiAPIEndpointsDiagnosesCreatePostEndpointStatus403 = unknown;
 export type SaBaiAPIEndpointsDiagnosesCreatePostEndpointBody = SaBaiAPIEndpointsDiagnosesCreatePostRequest;
 
 export type SaBaiAPIEndpointsDiagnosesCreatePostEndpointOptions = {
-    body: SaBaiAPIEndpointsDiagnosesCreatePostEndpointBody;
-    path?: never;
-    query?: never;
-    headers?: never;
+  body: SaBaiAPIEndpointsDiagnosesCreatePostEndpointBody;
+  path?: never;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsDiagnosesCreatePostEndpointResponses = {
-    "200": SaBaiAPIEndpointsDiagnosesCreatePostEndpointStatus200;
-    "400": SaBaiAPIEndpointsDiagnosesCreatePostEndpointStatus400;
-    "401": SaBaiAPIEndpointsDiagnosesCreatePostEndpointStatus401;
-    "403": SaBaiAPIEndpointsDiagnosesCreatePostEndpointStatus403;
+  '200': SaBaiAPIEndpointsDiagnosesCreatePostEndpointStatus200;
+  '400': SaBaiAPIEndpointsDiagnosesCreatePostEndpointStatus400;
+  '401': SaBaiAPIEndpointsDiagnosesCreatePostEndpointStatus401;
+  '403': SaBaiAPIEndpointsDiagnosesCreatePostEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsDiagnosesCreatePostEndpointResponse = SaBaiAPIEndpointsDiagnosesCreatePostEndpointStatus200;

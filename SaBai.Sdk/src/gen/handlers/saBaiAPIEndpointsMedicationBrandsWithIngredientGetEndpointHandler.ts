@@ -4,10 +4,10 @@
 */
 
 import type { SaBaiAPIEndpointsMedicationBrandsWithIngredientGetEndpointResponse, SaBaiAPIEndpointsMedicationBrandsWithIngredientGetEndpointStatus401, SaBaiAPIEndpointsMedicationBrandsWithIngredientGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsMedicationBrandsWithIngredientGetEndpoint'
-import { http } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsMedicationBrandsWithIngredientGetEndpointHandlerResponse200(data: SaBaiAPIEndpointsMedicationBrandsWithIngredientGetEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -16,22 +16,22 @@ export function saBaiAPIEndpointsMedicationBrandsWithIngredientGetEndpointHandle
 }
 
 export function saBaiAPIEndpointsMedicationBrandsWithIngredientGetEndpointHandlerResponse401(data?: SaBaiAPIEndpointsMedicationBrandsWithIngredientGetEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsMedicationBrandsWithIngredientGetEndpointHandlerResponse403(data?: SaBaiAPIEndpointsMedicationBrandsWithIngredientGetEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsMedicationBrandsWithIngredientGetEndpointHandler(data?: SaBaiAPIEndpointsMedicationBrandsWithIngredientGetEndpointResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>)) {
-  return http.get(`/medication-brands/with-ingredient`, function handler(info) {
+export function saBaiAPIEndpointsMedicationBrandsWithIngredientGetEndpointHandler(data?: SaBaiAPIEndpointsMedicationBrandsWithIngredientGetEndpointResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>), options?: { baseURL?: string }) {
+  return http.get(`${options?.baseURL ?? ''}/medication-brands/with-ingredient`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

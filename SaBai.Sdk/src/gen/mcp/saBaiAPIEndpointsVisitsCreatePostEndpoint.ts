@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsVisitsCreatePostEndpointOptions } from '../types/SaBaiAPIEndpointsVisitsCreatePostEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsVisitsCreatePostEndpoint } from '../clients/saBaiAPIEndpointsVisitsCreatePostEndpoint'
 
 /**
  * @summary Create a visit
  * {@link /visits}
  */
-export async function saBaiAPIEndpointsVisitsCreatePostEndpointHandler({ body }: SaBaiAPIEndpointsVisitsCreatePostEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsVisitsCreatePostEndpoint({ body, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsVisitsCreatePostEndpointHandler({ body }: SaBaiAPIEndpointsVisitsCreatePostEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsVisitsCreatePostEndpoint({ body, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

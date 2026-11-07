@@ -6,16 +6,14 @@
 import type { SaBaiAPIEndpointsOrdersCreatePostRequest } from '../types/SaBaiAPIEndpointsOrdersCreatePostRequest'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsOrdersCreatePostRequest<TData extends Partial<SaBaiAPIEndpointsOrdersCreatePostRequest> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsOrdersCreatePostRequest<TData extends Partial<SaBaiAPIEndpointsOrdersCreatePostRequest> = object>(data?: TData) {
   const defaultFakeData = {
-  consultId: faker.number.int(),
-  medicationBrandId: faker.number.int(),
-  quantity: faker.number.int(),
-  dosageInstructions: faker.string.alpha({ length: 1 }),
-  remarks: faker.string.alpha(),
-}
+    consultId: faker.number.int(),
+    medicationBrandId: faker.number.int(),
+    quantity: faker.number.int(),
+    dosageInstructions: faker.string.alpha({ length: 1 }),
+    remarks: faker.string.alpha(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

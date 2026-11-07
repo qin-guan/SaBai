@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsVillageCodesDeleteDeleteEndpointOptions } from '../types/SaBaiAPIEndpointsVillageCodesDeleteDeleteEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsVillageCodesDeleteDeleteEndpoint } from '../clients/saBaiAPIEndpointsVillageCodesDeleteDeleteEndpoint'
 
 /**
  * @summary Delete a village code
  * {@link /village-codes/:id}
  */
-export async function saBaiAPIEndpointsVillageCodesDeleteDeleteEndpointHandler({ path }: SaBaiAPIEndpointsVillageCodesDeleteDeleteEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsVillageCodesDeleteDeleteEndpoint({ path, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsVillageCodesDeleteDeleteEndpointHandler({ path }: SaBaiAPIEndpointsVillageCodesDeleteDeleteEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsVillageCodesDeleteDeleteEndpoint({ path, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

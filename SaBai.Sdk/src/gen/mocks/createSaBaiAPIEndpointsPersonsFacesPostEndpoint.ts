@@ -3,17 +3,15 @@
 * Do not edit manually.
 */
 
-import type { SaBaiAPIEndpointsPersonsFacesPostEndpointBody, SaBaiAPIEndpointsPersonsFacesPostEndpointPath, SaBaiAPIEndpointsPersonsFacesPostEndpointResponse, SaBaiAPIEndpointsPersonsFacesPostEndpointStatus200, SaBaiAPIEndpointsPersonsFacesPostEndpointStatus401, SaBaiAPIEndpointsPersonsFacesPostEndpointStatus403 } from '../types/SaBaiAPIEndpointsPersonsFacesPostEndpoint'
+import type { SaBaiAPIEndpointsPersonsFacesPostEndpointBody, SaBaiAPIEndpointsPersonsFacesPostEndpointPath, SaBaiAPIEndpointsPersonsFacesPostEndpointResponse, SaBaiAPIEndpointsPersonsFacesPostEndpointStatus200 } from '../types/SaBaiAPIEndpointsPersonsFacesPostEndpoint'
 import { createSaBaiAPIEndpointsPersonsFacesPostRequest } from './createSaBaiAPIEndpointsPersonsFacesPostRequest'
 import { createSaBaiAPIEndpointsPersonsFacesPostResponse } from './createSaBaiAPIEndpointsPersonsFacesPostResponse'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsPersonsFacesPostEndpointPath<TData extends Partial<SaBaiAPIEndpointsPersonsFacesPostEndpointPath> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsPersonsFacesPostEndpointPath<TData extends Partial<SaBaiAPIEndpointsPersonsFacesPostEndpointPath> = object>(data?: TData) {
   const defaultFakeData = {
-  personId: faker.string.alpha(),
-}
+    personId: faker.string.alpha(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

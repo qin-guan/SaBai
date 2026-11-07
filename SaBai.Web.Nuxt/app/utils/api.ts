@@ -1,15 +1,15 @@
 /**
  * Shared configuration passed to every @sabai/sdk call.
  *
- * The generated SDK has no configurable client instance, so `baseURL` and the
- * bearer `auth` resolver are spread into each call. Requests go to this app's
- * own server under `/api`, which proxies them to SaBai.API
- * (server/api/[...path].ts), so the API never has to be reachable from the
- * browser.
+ * The generated SDK has no configurable client instance, so `baseURL` is
+ * spread into each call. Requests go to this app's own server under `/api`,
+ * which proxies them to SaBai.API (server/api/[...path].ts), so the API never
+ * has to be reachable from the browser. Being same-origin, the browser sends
+ * the API's HttpOnly session cookie by itself: no token is handled in JS.
  */
 export const apiConfig = {
   baseURL: "/api",
-  auth: () => getToken(),
+  credentials: "same-origin" as const,
 };
 
 /**
@@ -17,6 +17,10 @@ export const apiConfig = {
  * (e.g. invalidating ["patients"] refreshes the list, details and visits).
  */
 export const queryKeys = {
+  currentUser: () => ["auth", "me"] as const,
+  twoFactor: () => ["auth", "two-factor"] as const,
+  staffUsers: () => ["staff-users"] as const,
+  staffRoles: () => ["staff-roles"] as const,
   patients: () => ["patients"] as const,
   patientsList: () => ["patients", "list"] as const,
   patientsWithLatestVisit: () => ["patients", "with-latest-visit"] as const,

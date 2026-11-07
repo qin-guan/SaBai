@@ -4,11 +4,12 @@
 */
 
 import type { SaBaiAPIEndpointsAuthUsersUpdatePatchEndpointResponse, SaBaiAPIEndpointsAuthUsersUpdatePatchEndpointStatus400, SaBaiAPIEndpointsAuthUsersUpdatePatchEndpointStatus401, SaBaiAPIEndpointsAuthUsersUpdatePatchEndpointStatus403, SaBaiAPIEndpointsAuthUsersUpdatePatchEndpointBody } from '../types/SaBaiAPIEndpointsAuthUsersUpdatePatchEndpoint'
-import type { HttpResponseResolver } from 'msw'
-import { http } from 'msw'
+import type { HttpResponseResolver } from 'msw/http'
+import type { DefaultBodyType } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsAuthUsersUpdatePatchEndpointHandlerResponse200(data: SaBaiAPIEndpointsAuthUsersUpdatePatchEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -17,7 +18,7 @@ export function saBaiAPIEndpointsAuthUsersUpdatePatchEndpointHandlerResponse200(
 }
 
 export function saBaiAPIEndpointsAuthUsersUpdatePatchEndpointHandlerResponse400(data: SaBaiAPIEndpointsAuthUsersUpdatePatchEndpointStatus400) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 400,
     headers: {
       'Content-Type': 'application/problem+json'
@@ -26,22 +27,22 @@ export function saBaiAPIEndpointsAuthUsersUpdatePatchEndpointHandlerResponse400(
 }
 
 export function saBaiAPIEndpointsAuthUsersUpdatePatchEndpointHandlerResponse401(data?: SaBaiAPIEndpointsAuthUsersUpdatePatchEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsAuthUsersUpdatePatchEndpointHandlerResponse403(data?: SaBaiAPIEndpointsAuthUsersUpdatePatchEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsAuthUsersUpdatePatchEndpointHandler(data?: SaBaiAPIEndpointsAuthUsersUpdatePatchEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsAuthUsersUpdatePatchEndpointBody>) {
-  return http.patch<Record<string, string>, SaBaiAPIEndpointsAuthUsersUpdatePatchEndpointBody>(`/auth/users/:id`, function handler(info) {
+export function saBaiAPIEndpointsAuthUsersUpdatePatchEndpointHandler(data?: SaBaiAPIEndpointsAuthUsersUpdatePatchEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsAuthUsersUpdatePatchEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsAuthUsersUpdatePatchEndpointBody : DefaultBodyType>, options?: { baseURL?: string }) {
+  return http.patch<Record<string, string>, SaBaiAPIEndpointsAuthUsersUpdatePatchEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsAuthUsersUpdatePatchEndpointBody : DefaultBodyType>(`${options?.baseURL ?? ''}/auth/users/:id`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

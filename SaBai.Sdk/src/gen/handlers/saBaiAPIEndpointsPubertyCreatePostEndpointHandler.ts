@@ -4,11 +4,12 @@
 */
 
 import type { SaBaiAPIEndpointsPubertyCreatePostEndpointResponse, SaBaiAPIEndpointsPubertyCreatePostEndpointStatus400, SaBaiAPIEndpointsPubertyCreatePostEndpointStatus401, SaBaiAPIEndpointsPubertyCreatePostEndpointStatus403, SaBaiAPIEndpointsPubertyCreatePostEndpointBody } from '../types/SaBaiAPIEndpointsPubertyCreatePostEndpoint'
-import type { HttpResponseResolver } from 'msw'
-import { http } from 'msw'
+import type { HttpResponseResolver } from 'msw/http'
+import type { DefaultBodyType } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsPubertyCreatePostEndpointHandlerResponse200(data: SaBaiAPIEndpointsPubertyCreatePostEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -17,7 +18,7 @@ export function saBaiAPIEndpointsPubertyCreatePostEndpointHandlerResponse200(dat
 }
 
 export function saBaiAPIEndpointsPubertyCreatePostEndpointHandlerResponse400(data: SaBaiAPIEndpointsPubertyCreatePostEndpointStatus400) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 400,
     headers: {
       'Content-Type': 'application/problem+json'
@@ -26,22 +27,22 @@ export function saBaiAPIEndpointsPubertyCreatePostEndpointHandlerResponse400(dat
 }
 
 export function saBaiAPIEndpointsPubertyCreatePostEndpointHandlerResponse401(data?: SaBaiAPIEndpointsPubertyCreatePostEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsPubertyCreatePostEndpointHandlerResponse403(data?: SaBaiAPIEndpointsPubertyCreatePostEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsPubertyCreatePostEndpointHandler(data?: SaBaiAPIEndpointsPubertyCreatePostEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsPubertyCreatePostEndpointBody>) {
-  return http.post<Record<string, string>, SaBaiAPIEndpointsPubertyCreatePostEndpointBody>(`/puberty`, function handler(info) {
+export function saBaiAPIEndpointsPubertyCreatePostEndpointHandler(data?: SaBaiAPIEndpointsPubertyCreatePostEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsPubertyCreatePostEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsPubertyCreatePostEndpointBody : DefaultBodyType>, options?: { baseURL?: string }) {
+  return http.post<Record<string, string>, SaBaiAPIEndpointsPubertyCreatePostEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsPubertyCreatePostEndpointBody : DefaultBodyType>(`${options?.baseURL ?? ''}/puberty`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

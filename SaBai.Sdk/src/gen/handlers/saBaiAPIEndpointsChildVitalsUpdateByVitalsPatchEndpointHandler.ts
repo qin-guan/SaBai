@@ -4,11 +4,12 @@
 */
 
 import type { SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointResponse, SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointStatus400, SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointStatus401, SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointStatus403, SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointBody } from '../types/SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpoint'
-import type { HttpResponseResolver } from 'msw'
-import { http } from 'msw'
+import type { HttpResponseResolver } from 'msw/http'
+import type { DefaultBodyType } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointHandlerResponse200(data: SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -17,7 +18,7 @@ export function saBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointHandlerRe
 }
 
 export function saBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointHandlerResponse400(data: SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointStatus400) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 400,
     headers: {
       'Content-Type': 'application/problem+json'
@@ -26,22 +27,22 @@ export function saBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointHandlerRe
 }
 
 export function saBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointHandlerResponse401(data?: SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointHandlerResponse403(data?: SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointHandler(data?: SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointBody>) {
-  return http.patch<Record<string, string>, SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointBody>(`/vitals/:vitalsId/child-vitals`, function handler(info) {
+export function saBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointHandler(data?: SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointBody : DefaultBodyType>, options?: { baseURL?: string }) {
+  return http.patch<Record<string, string>, SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointBody : DefaultBodyType>(`${options?.baseURL ?? ''}/vitals/:vitalsId/child-vitals`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

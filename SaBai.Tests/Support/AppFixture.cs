@@ -14,7 +14,10 @@ public class AppFixture : AspireFixture<Projects.SaBai_AppHost>
 
     protected override TimeSpan ResourceTimeout => TimeSpan.FromMinutes(4);
 
-    protected override string[] Args => ["--WorkOS:UseFake=true"];
+    // Validate session cookies on every request so lock/role/password changes are
+    // observable immediately instead of after the one-minute production interval.
+    protected override string[] Args =>
+        ["--Auth:SeedDemoUsers=true", "--Auth:SecurityStampValidationMinutes=0"];
 
     protected override IEnumerable<string> ResourcesToRemove() => ["postgres-pgadmin"];
 
@@ -30,4 +33,18 @@ public class AppFixture : AspireFixture<Projects.SaBai_AppHost>
 
     private static bool IsEnabled(string? value) =>
         string.Equals(value, "true", StringComparison.OrdinalIgnoreCase) || value == "1";
+
+    /// <summary>
+    /// A client for the API with its own session. Cookies are not stored by the
+    /// handler (the shared factory handler would leak one test's session into
+    /// another); <see cref="ClinicApi.LoginAsync"/> attaches the session cookie instead.
+    /// </summary>
+    public HttpClient CreateApiClient()
+    {
+        var baseAddress = CreateHttpClient("api").BaseAddress;
+        return new HttpClient(new SocketsHttpHandler { UseCookies = false })
+        {
+            BaseAddress = baseAddress,
+        };
+    }
 }

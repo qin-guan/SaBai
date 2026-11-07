@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsGlassesUpdatePatchEndpointOptions } from '../types/SaBaiAPIEndpointsGlassesUpdatePatchEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsGlassesUpdatePatchEndpoint } from '../clients/saBaiAPIEndpointsGlassesUpdatePatchEndpoint'
 
 /**
  * @summary Update prescribed glasses
  * {@link /glasses/:id}
  */
-export async function saBaiAPIEndpointsGlassesUpdatePatchEndpointHandler({ path, body }: SaBaiAPIEndpointsGlassesUpdatePatchEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsGlassesUpdatePatchEndpoint({ path, body, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsGlassesUpdatePatchEndpointHandler({ path, body }: SaBaiAPIEndpointsGlassesUpdatePatchEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsGlassesUpdatePatchEndpoint({ path, body, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

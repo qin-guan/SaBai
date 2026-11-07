@@ -4,11 +4,12 @@
 */
 
 import type { SaBaiAPIEndpointsAuthLoginPostEndpointResponse, SaBaiAPIEndpointsAuthLoginPostEndpointStatus400, SaBaiAPIEndpointsAuthLoginPostEndpointBody } from '../types/SaBaiAPIEndpointsAuthLoginPostEndpoint'
-import type { HttpResponseResolver } from 'msw'
-import { http } from 'msw'
+import type { HttpResponseResolver } from 'msw/http'
+import type { DefaultBodyType } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsAuthLoginPostEndpointHandlerResponse200(data: SaBaiAPIEndpointsAuthLoginPostEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -17,7 +18,7 @@ export function saBaiAPIEndpointsAuthLoginPostEndpointHandlerResponse200(data: S
 }
 
 export function saBaiAPIEndpointsAuthLoginPostEndpointHandlerResponse400(data: SaBaiAPIEndpointsAuthLoginPostEndpointStatus400) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 400,
     headers: {
       'Content-Type': 'application/problem+json'
@@ -25,11 +26,11 @@ export function saBaiAPIEndpointsAuthLoginPostEndpointHandlerResponse400(data: S
   })
 }
 
-export function saBaiAPIEndpointsAuthLoginPostEndpointHandler(data?: SaBaiAPIEndpointsAuthLoginPostEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsAuthLoginPostEndpointBody>) {
-  return http.post<Record<string, string>, SaBaiAPIEndpointsAuthLoginPostEndpointBody>(`/auth/login`, function handler(info) {
+export function saBaiAPIEndpointsAuthLoginPostEndpointHandler(data?: SaBaiAPIEndpointsAuthLoginPostEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsAuthLoginPostEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsAuthLoginPostEndpointBody : DefaultBodyType>, options?: { baseURL?: string }) {
+  return http.post<Record<string, string>, SaBaiAPIEndpointsAuthLoginPostEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsAuthLoginPostEndpointBody : DefaultBodyType>(`${options?.baseURL ?? ''}/auth/login`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

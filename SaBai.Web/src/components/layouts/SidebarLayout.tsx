@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { ReactNode, useState } from "react";
-import { clearToken } from "@/lib/api/token";
+import { useQueryClient } from "@tanstack/react-query";
+import { endSession } from "@/lib/api/session";
 import { AiOutlineSetting, AiOutlineUser } from "react-icons/ai";
 import { BsEyeglasses } from "react-icons/bs";
 import { MdMonitorHeart } from "react-icons/md";
@@ -67,8 +68,11 @@ export default function SidebarLayout({ children }: SidebarLayoutProps) {
 function SidebarNavButtons() {
   const router = useRouter();
 
+  const queryClient = useQueryClient();
+
   const handleSignOut = async () => {
-    clearToken();
+    await endSession();
+    queryClient.clear();
     router.push(paths.login());
   };
 

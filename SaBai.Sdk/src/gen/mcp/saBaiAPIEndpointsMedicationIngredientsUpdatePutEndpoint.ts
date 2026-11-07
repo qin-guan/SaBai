@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsMedicationIngredientsUpdatePutEndpointOptions } from '../types/SaBaiAPIEndpointsMedicationIngredientsUpdatePutEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsMedicationIngredientsUpdatePutEndpoint } from '../clients/saBaiAPIEndpointsMedicationIngredientsUpdatePutEndpoint'
 
 /**
  * @summary Replace a medication active ingredient
  * {@link /medication-ingredients/:id}
  */
-export async function saBaiAPIEndpointsMedicationIngredientsUpdatePutEndpointHandler({ path, body }: SaBaiAPIEndpointsMedicationIngredientsUpdatePutEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsMedicationIngredientsUpdatePutEndpoint({ path, body, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsMedicationIngredientsUpdatePutEndpointHandler({ path, body }: SaBaiAPIEndpointsMedicationIngredientsUpdatePutEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsMedicationIngredientsUpdatePutEndpoint({ path, body, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

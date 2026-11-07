@@ -9,14 +9,12 @@ import { createSaBaiAPIEndpointsVisionGetGlassesResponse } from './createSaBaiAP
 import { createSaBaiAPIEndpointsVisionGetPatientResponse } from './createSaBaiAPIEndpointsVisionGetPatientResponse'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsVisionGetResponse<TData extends Partial<SaBaiAPIEndpointsVisionGetResponse> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsVisionGetResponse<TData extends Partial<SaBaiAPIEndpointsVisionGetResponse> = object>(data?: TData) {
   const defaultFakeData = {
-  patient: createSaBaiAPIEndpointsVisionGetPatientResponse(),
-  vision: faker.helpers.arrayElement([null, createSaBaiAPIEndpointsVisionGetGlassesResponse()]),
-  vitals: faker.helpers.arrayElement([null, createSaBaiAPIEndpointsVisionGetAcuityResponse()]),
-}
+    patient: createSaBaiAPIEndpointsVisionGetPatientResponse(),
+    vision: faker.helpers.arrayElement([null, createSaBaiAPIEndpointsVisionGetGlassesResponse()]),
+    vitals: faker.helpers.arrayElement([null, createSaBaiAPIEndpointsVisionGetAcuityResponse()]),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

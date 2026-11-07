@@ -6,18 +6,16 @@
 import type { SaBaiAPIEndpointsPatientsSearchByFacePostPatientFaceMatch } from '../types/SaBaiAPIEndpointsPatientsSearchByFacePostPatientFaceMatch'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsPatientsSearchByFacePostPatientFaceMatch<TData extends Partial<SaBaiAPIEndpointsPatientsSearchByFacePostPatientFaceMatch> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsPatientsSearchByFacePostPatientFaceMatch<TData extends Partial<SaBaiAPIEndpointsPatientsSearchByFacePostPatientFaceMatch> = object>(data?: TData) {
   const defaultFakeData = {
-  id: faker.number.int(),
-  name: faker.string.alpha(),
-  displayId: faker.string.alpha(),
-  villageCode: faker.string.alpha(),
-  villageColorHex: faker.string.alpha(),
-  hasPhoto: faker.datatype.boolean(),
-  similarity: faker.number.float(),
-}
+    id: faker.number.int(),
+    name: faker.string.alpha(),
+    displayId: faker.string.alpha(),
+    villageCode: faker.string.alpha(),
+    villageColorHex: faker.string.alpha(),
+    hasPhoto: faker.datatype.boolean(),
+    similarity: faker.number.float(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

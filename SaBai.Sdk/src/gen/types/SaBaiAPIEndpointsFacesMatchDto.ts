@@ -4,17 +4,17 @@
 */
 
 export type SaBaiAPIEndpointsFacesMatchDto = {
-    personId: string;
-    /**
-     * @description
-     * Format: `uuid`
-     * @type string
-    */
-    faceId: string;
-    /**
-     * @description
-     * Format: `float`
-     * @type number
-    */
-    similarity: number;
+  personId: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string
+   */
+  faceId: string;
+  /**
+   * @description
+   * Format: `float`
+   * @type number
+   */
+  similarity: number;
 };

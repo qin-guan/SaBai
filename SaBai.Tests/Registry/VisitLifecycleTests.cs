@@ -11,7 +11,7 @@ public sealed class VisitLifecycleTests(AppFixture fixture)
     public async Task Patch_StatusCompleted_IsReturnedOnGet()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var suffix = ClinicSetup.Suffix();
         var villageId = await ClinicSetup.CreateVillageAsync(client, $"V{suffix}");
@@ -40,7 +40,7 @@ public sealed class VisitLifecycleTests(AppFixture fixture)
     public async Task ListByPatient_ContainsRegistrationVisit()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var suffix = ClinicSetup.Suffix();
         var villageId = await ClinicSetup.CreateVillageAsync(client, $"V{suffix}");
@@ -69,7 +69,7 @@ public sealed class VisitLifecycleTests(AppFixture fixture)
     public async Task Create_MissingPatient_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var villageId = await ClinicSetup.CreateVillageAsync(client);
 
@@ -88,7 +88,7 @@ public sealed class VisitLifecycleTests(AppFixture fixture)
     public async Task Get_MissingVisit_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
 
         // Act
@@ -102,7 +102,7 @@ public sealed class VisitLifecycleTests(AppFixture fixture)
     public async Task Delete_WhenConsultExists_ReturnsConflict()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var suffix = ClinicSetup.Suffix();
         var villageId = await ClinicSetup.CreateVillageAsync(client, $"V{suffix}");
@@ -124,7 +124,7 @@ public sealed class VisitLifecycleTests(AppFixture fixture)
     public async Task Create_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
 
         // Act
         var response = await client.PostAsJsonAsync(

@@ -7,20 +7,21 @@ import type { FastEndpointsProblemDetails } from './FastEndpointsProblemDetails'
 import type { SaBaiAPIEndpointsChildVitalsGetByVitalsGetResponse } from './SaBaiAPIEndpointsChildVitalsGetByVitalsGetResponse'
 
 export type SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    vitalsId: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  vitalsId: number;
 };
 
 export type SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointStatus200 = SaBaiAPIEndpointsChildVitalsGetByVitalsGetResponse;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointStatus401 = unknown;
@@ -28,20 +29,20 @@ export type SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointStatus401 = unknow
 export type SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointStatus403 = unknown;
 
 export type SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointOptions = {
-    body?: never;
-    path: SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointPath;
-    query?: never;
-    headers?: never;
+  body?: never;
+  path: SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointResponses = {
-    "200": SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointStatus200;
-    "400": SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointStatus400;
-    "401": SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointStatus401;
-    "403": SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointStatus403;
+  '200': SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointStatus200;
+  '400': SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointStatus400;
+  '401': SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointStatus401;
+  '403': SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointResponse = SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointStatus200;

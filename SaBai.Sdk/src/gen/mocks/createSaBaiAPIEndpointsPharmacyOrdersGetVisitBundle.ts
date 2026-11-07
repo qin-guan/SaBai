@@ -8,15 +8,13 @@ import { createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPharmacyO
 import { createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPharmacyOrdersGetPharmacyOrderItem } from './createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPharmacyOrdersGetPharmacyOrderItem'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsPharmacyOrdersGetVisitBundle<TData extends Partial<SaBaiAPIEndpointsPharmacyOrdersGetVisitBundle> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsPharmacyOrdersGetVisitBundle<TData extends Partial<SaBaiAPIEndpointsPharmacyOrdersGetVisitBundle> = object>(data?: TData) {
   const defaultFakeData = {
-  visitId: faker.number.int(),
-  visitDate: faker.date.anytime().toISOString(),
-  orders: createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPharmacyOrdersGetPharmacyOrderItem(),
-  diagnoses: createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPharmacyOrdersGetDiagnosisItem(),
-}
+    visitId: faker.number.int(),
+    visitDate: faker.date.anytime().toISOString(),
+    orders: createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPharmacyOrdersGetPharmacyOrderItem(),
+    diagnoses: createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPharmacyOrdersGetDiagnosisItem(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

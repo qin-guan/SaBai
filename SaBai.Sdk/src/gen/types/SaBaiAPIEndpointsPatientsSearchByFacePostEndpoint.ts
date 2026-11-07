@@ -7,18 +7,18 @@ import type { SaBaiAPIEndpointsPatientsSearchByFacePostRequest } from './SaBaiAP
 import type { SaBaiAPIEndpointsPatientsSearchByFacePostResponse } from './SaBaiAPIEndpointsPatientsSearchByFacePostResponse'
 
 export type SaBaiAPIEndpointsPatientsSearchByFacePostEndpointQuery = {
-    /**
-     * @description
-     * Format: `float`
-     * @type number | undefined
-    */
-    threshold?: number | null;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    maxMatches: number;
+  /**
+   * @description
+   * Format: `float`
+   * @type number | undefined
+   */
+  threshold?: number | null;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  maxMatches: number;
 };
 
 export type SaBaiAPIEndpointsPatientsSearchByFacePostEndpointStatus200 = SaBaiAPIEndpointsPatientsSearchByFacePostResponse;
@@ -30,19 +30,19 @@ export type SaBaiAPIEndpointsPatientsSearchByFacePostEndpointStatus403 = unknown
 export type SaBaiAPIEndpointsPatientsSearchByFacePostEndpointBody = SaBaiAPIEndpointsPatientsSearchByFacePostRequest;
 
 export type SaBaiAPIEndpointsPatientsSearchByFacePostEndpointOptions = {
-    body: SaBaiAPIEndpointsPatientsSearchByFacePostEndpointBody;
-    path?: never;
-    query: SaBaiAPIEndpointsPatientsSearchByFacePostEndpointQuery;
-    headers?: never;
+  body: SaBaiAPIEndpointsPatientsSearchByFacePostEndpointBody;
+  path?: never;
+  query: SaBaiAPIEndpointsPatientsSearchByFacePostEndpointQuery;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsPatientsSearchByFacePostEndpointResponses = {
-    "200": SaBaiAPIEndpointsPatientsSearchByFacePostEndpointStatus200;
-    "401": SaBaiAPIEndpointsPatientsSearchByFacePostEndpointStatus401;
-    "403": SaBaiAPIEndpointsPatientsSearchByFacePostEndpointStatus403;
+  '200': SaBaiAPIEndpointsPatientsSearchByFacePostEndpointStatus200;
+  '401': SaBaiAPIEndpointsPatientsSearchByFacePostEndpointStatus401;
+  '403': SaBaiAPIEndpointsPatientsSearchByFacePostEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsPatientsSearchByFacePostEndpointResponse = SaBaiAPIEndpointsPatientsSearchByFacePostEndpointStatus200;

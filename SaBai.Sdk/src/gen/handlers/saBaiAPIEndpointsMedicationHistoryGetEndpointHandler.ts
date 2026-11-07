@@ -4,10 +4,10 @@
 */
 
 import type { SaBaiAPIEndpointsMedicationHistoryGetEndpointResponse, SaBaiAPIEndpointsMedicationHistoryGetEndpointStatus401, SaBaiAPIEndpointsMedicationHistoryGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsMedicationHistoryGetEndpoint'
-import { http } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsMedicationHistoryGetEndpointHandlerResponse200(data: SaBaiAPIEndpointsMedicationHistoryGetEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -16,22 +16,22 @@ export function saBaiAPIEndpointsMedicationHistoryGetEndpointHandlerResponse200(
 }
 
 export function saBaiAPIEndpointsMedicationHistoryGetEndpointHandlerResponse401(data?: SaBaiAPIEndpointsMedicationHistoryGetEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsMedicationHistoryGetEndpointHandlerResponse403(data?: SaBaiAPIEndpointsMedicationHistoryGetEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsMedicationHistoryGetEndpointHandler(data?: SaBaiAPIEndpointsMedicationHistoryGetEndpointResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>)) {
-  return http.get(`/medication-history`, function handler(info) {
+export function saBaiAPIEndpointsMedicationHistoryGetEndpointHandler(data?: SaBaiAPIEndpointsMedicationHistoryGetEndpointResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>), options?: { baseURL?: string }) {
+  return http.get(`${options?.baseURL ?? ''}/medication-history`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

@@ -11,7 +11,7 @@ public sealed class VitalsTests(AppFixture fixture)
     public async Task Create_ThenGet_ReturnsTemperature()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var (_, visitId) = await RegisterAsync(client);
 
@@ -36,7 +36,7 @@ public sealed class VitalsTests(AppFixture fixture)
     public async Task ListByPatient_IncludesCreatedId()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
         var (patientId, visitId) = await RegisterAsync(client);
         var created = await client.PostAsJsonAsync(
@@ -63,7 +63,7 @@ public sealed class VitalsTests(AppFixture fixture)
     public async Task Create_UnknownVisit_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
 
         // Act
@@ -81,7 +81,7 @@ public sealed class VitalsTests(AppFixture fixture)
     public async Task GetByVisit_UnknownVisit_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
 
         // Act
@@ -95,7 +95,7 @@ public sealed class VitalsTests(AppFixture fixture)
     public async Task Patch_UnknownId_ReturnsNotFound()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
         await client.LoginAsync();
 
         // Act
@@ -113,7 +113,7 @@ public sealed class VitalsTests(AppFixture fixture)
     public async Task Create_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
-        var client = fixture.CreateHttpClient("api");
+        var client = fixture.CreateApiClient();
 
         // Act
         var response = await client.PostAsJsonAsync(

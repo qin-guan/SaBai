@@ -12,19 +12,19 @@ export type SaBaiAPIEndpointsReferralsListGetEndpointStatus401 = unknown;
 export type SaBaiAPIEndpointsReferralsListGetEndpointStatus403 = unknown;
 
 export type SaBaiAPIEndpointsReferralsListGetEndpointOptions = {
-    body?: never;
-    path?: never;
-    query?: never;
-    headers?: never;
+  body?: never;
+  path?: never;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsReferralsListGetEndpointResponses = {
-    "200": SaBaiAPIEndpointsReferralsListGetEndpointStatus200;
-    "401": SaBaiAPIEndpointsReferralsListGetEndpointStatus401;
-    "403": SaBaiAPIEndpointsReferralsListGetEndpointStatus403;
+  '200': SaBaiAPIEndpointsReferralsListGetEndpointStatus200;
+  '401': SaBaiAPIEndpointsReferralsListGetEndpointStatus401;
+  '403': SaBaiAPIEndpointsReferralsListGetEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsReferralsListGetEndpointResponse = SaBaiAPIEndpointsReferralsListGetEndpointStatus200;

@@ -6,8 +6,8 @@
 import type { SaBaiAPIEndpointsPatientsListGetResponse } from './SaBaiAPIEndpointsPatientsListGetResponse'
 
 export type SaBaiAPIEndpointsPatientsListGetEndpointQuery = {
-    name?: string | null;
-    villageCode?: string | null;
+  name?: string | null;
+  villageCode?: string | null;
 };
 
 export type SaBaiAPIEndpointsPatientsListGetEndpointStatus200 = SaBaiAPIEndpointsPatientsListGetResponse;
@@ -17,19 +17,19 @@ export type SaBaiAPIEndpointsPatientsListGetEndpointStatus401 = unknown;
 export type SaBaiAPIEndpointsPatientsListGetEndpointStatus403 = unknown;
 
 export type SaBaiAPIEndpointsPatientsListGetEndpointOptions = {
-    body?: never;
-    path?: never;
-    query?: SaBaiAPIEndpointsPatientsListGetEndpointQuery;
-    headers?: never;
+  body?: never;
+  path?: never;
+  query?: SaBaiAPIEndpointsPatientsListGetEndpointQuery;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsPatientsListGetEndpointResponses = {
-    "200": SaBaiAPIEndpointsPatientsListGetEndpointStatus200;
-    "401": SaBaiAPIEndpointsPatientsListGetEndpointStatus401;
-    "403": SaBaiAPIEndpointsPatientsListGetEndpointStatus403;
+  '200': SaBaiAPIEndpointsPatientsListGetEndpointStatus200;
+  '401': SaBaiAPIEndpointsPatientsListGetEndpointStatus401;
+  '403': SaBaiAPIEndpointsPatientsListGetEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsPatientsListGetEndpointResponse = SaBaiAPIEndpointsPatientsListGetEndpointStatus200;

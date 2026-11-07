@@ -4,28 +4,28 @@
 */
 
 export type SaBaiAPIEndpointsFacesBoxDto = {
-    /**
-     * @description
-     * Format: `float`
-     * @type number
-    */
-    x: number;
-    /**
-     * @description
-     * Format: `float`
-     * @type number
-    */
-    y: number;
-    /**
-     * @description
-     * Format: `float`
-     * @type number
-    */
-    width: number;
-    /**
-     * @description
-     * Format: `float`
-     * @type number
-    */
-    height: number;
+  /**
+   * @description
+   * Format: `float`
+   * @type number
+   */
+  x: number;
+  /**
+   * @description
+   * Format: `float`
+   * @type number
+   */
+  y: number;
+  /**
+   * @description
+   * Format: `float`
+   * @type number
+   */
+  width: number;
+  /**
+   * @description
+   * Format: `float`
+   * @type number
+   */
+  height: number;
 };

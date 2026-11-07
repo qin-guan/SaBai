@@ -8,20 +8,21 @@ import type { SaBaiAPIEndpointsEyesightUpdatePatchRequest } from './SaBaiAPIEndp
 import type { SaBaiAPIEndpointsEyesightUpdatePatchResponse } from './SaBaiAPIEndpointsEyesightUpdatePatchResponse'
 
 export type SaBaiAPIEndpointsEyesightUpdatePatchEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
 };
 
 export type SaBaiAPIEndpointsEyesightUpdatePatchEndpointStatus200 = SaBaiAPIEndpointsEyesightUpdatePatchResponse;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsEyesightUpdatePatchEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsEyesightUpdatePatchEndpointStatus401 = unknown;
@@ -31,20 +32,20 @@ export type SaBaiAPIEndpointsEyesightUpdatePatchEndpointStatus403 = unknown;
 export type SaBaiAPIEndpointsEyesightUpdatePatchEndpointBody = SaBaiAPIEndpointsEyesightUpdatePatchRequest;
 
 export type SaBaiAPIEndpointsEyesightUpdatePatchEndpointOptions = {
-    body: SaBaiAPIEndpointsEyesightUpdatePatchEndpointBody;
-    path: SaBaiAPIEndpointsEyesightUpdatePatchEndpointPath;
-    query?: never;
-    headers?: never;
+  body: SaBaiAPIEndpointsEyesightUpdatePatchEndpointBody;
+  path: SaBaiAPIEndpointsEyesightUpdatePatchEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsEyesightUpdatePatchEndpointResponses = {
-    "200": SaBaiAPIEndpointsEyesightUpdatePatchEndpointStatus200;
-    "400": SaBaiAPIEndpointsEyesightUpdatePatchEndpointStatus400;
-    "401": SaBaiAPIEndpointsEyesightUpdatePatchEndpointStatus401;
-    "403": SaBaiAPIEndpointsEyesightUpdatePatchEndpointStatus403;
+  '200': SaBaiAPIEndpointsEyesightUpdatePatchEndpointStatus200;
+  '400': SaBaiAPIEndpointsEyesightUpdatePatchEndpointStatus400;
+  '401': SaBaiAPIEndpointsEyesightUpdatePatchEndpointStatus401;
+  '403': SaBaiAPIEndpointsEyesightUpdatePatchEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsEyesightUpdatePatchEndpointResponse = SaBaiAPIEndpointsEyesightUpdatePatchEndpointStatus200;

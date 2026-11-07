@@ -8,20 +8,21 @@ import type { SaBaiAPIEndpointsPubertyUpdatePatchRequest } from './SaBaiAPIEndpo
 import type { SaBaiAPIEndpointsPubertyUpdatePatchResponse } from './SaBaiAPIEndpointsPubertyUpdatePatchResponse'
 
 export type SaBaiAPIEndpointsPubertyUpdatePatchEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
 };
 
 export type SaBaiAPIEndpointsPubertyUpdatePatchEndpointStatus200 = SaBaiAPIEndpointsPubertyUpdatePatchResponse;
 
 /**
- * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
  * @type object
-*/
+ */
 export type SaBaiAPIEndpointsPubertyUpdatePatchEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsPubertyUpdatePatchEndpointStatus401 = unknown;
@@ -31,20 +32,20 @@ export type SaBaiAPIEndpointsPubertyUpdatePatchEndpointStatus403 = unknown;
 export type SaBaiAPIEndpointsPubertyUpdatePatchEndpointBody = SaBaiAPIEndpointsPubertyUpdatePatchRequest;
 
 export type SaBaiAPIEndpointsPubertyUpdatePatchEndpointOptions = {
-    body: SaBaiAPIEndpointsPubertyUpdatePatchEndpointBody;
-    path: SaBaiAPIEndpointsPubertyUpdatePatchEndpointPath;
-    query?: never;
-    headers?: never;
+  body: SaBaiAPIEndpointsPubertyUpdatePatchEndpointBody;
+  path: SaBaiAPIEndpointsPubertyUpdatePatchEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsPubertyUpdatePatchEndpointResponses = {
-    "200": SaBaiAPIEndpointsPubertyUpdatePatchEndpointStatus200;
-    "400": SaBaiAPIEndpointsPubertyUpdatePatchEndpointStatus400;
-    "401": SaBaiAPIEndpointsPubertyUpdatePatchEndpointStatus401;
-    "403": SaBaiAPIEndpointsPubertyUpdatePatchEndpointStatus403;
+  '200': SaBaiAPIEndpointsPubertyUpdatePatchEndpointStatus200;
+  '400': SaBaiAPIEndpointsPubertyUpdatePatchEndpointStatus400;
+  '401': SaBaiAPIEndpointsPubertyUpdatePatchEndpointStatus401;
+  '403': SaBaiAPIEndpointsPubertyUpdatePatchEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsPubertyUpdatePatchEndpointResponse = SaBaiAPIEndpointsPubertyUpdatePatchEndpointStatus200;

@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsPubertyDeleteEndpointOptions } from '../types/SaBaiAPIEndpointsPubertyDeleteEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsPubertyDeleteEndpoint } from '../clients/saBaiAPIEndpointsPubertyDeleteEndpoint'
 
 /**
  * @summary Delete a puberty assessment
  * {@link /puberty/:id}
  */
-export async function saBaiAPIEndpointsPubertyDeleteEndpointHandler({ path }: SaBaiAPIEndpointsPubertyDeleteEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsPubertyDeleteEndpoint({ path, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsPubertyDeleteEndpointHandler({ path }: SaBaiAPIEndpointsPubertyDeleteEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsPubertyDeleteEndpoint({ path, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

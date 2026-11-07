@@ -4,31 +4,31 @@
 */
 
 import type { SaBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpointResponse, SaBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpointStatus401, SaBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpointStatus403 } from '../types/SaBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpoint'
-import { http } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpointHandlerResponse204(data?: SaBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 204,
   })
 }
 
 export function saBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpointHandlerResponse401(data?: SaBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpointHandlerResponse403(data?: SaBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpointHandler(data?: string | number | boolean | null | object | ((info: Parameters<Parameters<typeof http.delete>[1]>[0]) => Response | Promise<Response>)) {
-  return http.delete(`/medication-ingredients/:id`, function handler(info) {
+export function saBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpointHandler(data?: string | number | boolean | null | object | ((info: Parameters<Parameters<typeof http.delete>[1]>[0]) => Response | Promise<Response>), options?: { baseURL?: string }) {
+  return http.delete(`${options?.baseURL ?? ''}/medication-ingredients/:id`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 204,
       })
     })

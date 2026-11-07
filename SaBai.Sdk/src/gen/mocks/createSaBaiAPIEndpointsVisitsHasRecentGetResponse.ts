@@ -6,13 +6,11 @@
 import type { SaBaiAPIEndpointsVisitsHasRecentGetResponse } from '../types/SaBaiAPIEndpointsVisitsHasRecentGetResponse'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsVisitsHasRecentGetResponse<TData extends Partial<SaBaiAPIEndpointsVisitsHasRecentGetResponse> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsVisitsHasRecentGetResponse<TData extends Partial<SaBaiAPIEndpointsVisitsHasRecentGetResponse> = object>(data?: TData) {
   const defaultFakeData = {
-  hasRecentVisit: faker.datatype.boolean(),
-  existingVisitDate: faker.date.anytime().toISOString(),
-}
+    hasRecentVisit: faker.datatype.boolean(),
+    existingVisitDate: faker.date.anytime().toISOString(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

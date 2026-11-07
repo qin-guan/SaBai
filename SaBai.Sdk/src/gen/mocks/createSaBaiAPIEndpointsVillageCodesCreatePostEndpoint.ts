@@ -3,7 +3,7 @@
 * Do not edit manually.
 */
 
-import type { SaBaiAPIEndpointsVillageCodesCreatePostEndpointBody, SaBaiAPIEndpointsVillageCodesCreatePostEndpointResponse, SaBaiAPIEndpointsVillageCodesCreatePostEndpointStatus200, SaBaiAPIEndpointsVillageCodesCreatePostEndpointStatus400, SaBaiAPIEndpointsVillageCodesCreatePostEndpointStatus401, SaBaiAPIEndpointsVillageCodesCreatePostEndpointStatus403 } from '../types/SaBaiAPIEndpointsVillageCodesCreatePostEndpoint'
+import type { SaBaiAPIEndpointsVillageCodesCreatePostEndpointBody, SaBaiAPIEndpointsVillageCodesCreatePostEndpointResponse, SaBaiAPIEndpointsVillageCodesCreatePostEndpointStatus200, SaBaiAPIEndpointsVillageCodesCreatePostEndpointStatus400 } from '../types/SaBaiAPIEndpointsVillageCodesCreatePostEndpoint'
 import { createFastEndpointsProblemDetails } from './createFastEndpointsProblemDetails'
 import { createSaBaiAPIEndpointsVillageCodesCreatePostRequest } from './createSaBaiAPIEndpointsVillageCodesCreatePostRequest'
 import { createSaBaiAPIEndpointsVillageCodesCreatePostResponse } from './createSaBaiAPIEndpointsVillageCodesCreatePostResponse'

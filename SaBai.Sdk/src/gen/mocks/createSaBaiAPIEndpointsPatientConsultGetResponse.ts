@@ -10,16 +10,14 @@ import { createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPatientCo
 import { createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPatientConsultGetPrescriptionItem } from './createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPatientConsultGetPrescriptionItem'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsPatientConsultGetResponse<TData extends Partial<SaBaiAPIEndpointsPatientConsultGetResponse> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsPatientConsultGetResponse<TData extends Partial<SaBaiAPIEndpointsPatientConsultGetResponse> = object>(data?: TData) {
   const defaultFakeData = {
-  patient: createSaBaiAPIEndpointsPatientConsultGetPatientItem(),
-  vitals: faker.helpers.arrayElement([null, createSaBaiAPIEndpointsPatientConsultGetVitalsItem()]),
-  visitDate: faker.date.anytime().toISOString(),
-  consults: createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPatientConsultGetConsultItem(),
-  prescriptions: createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPatientConsultGetPrescriptionItem(),
-}
+    patient: createSaBaiAPIEndpointsPatientConsultGetPatientItem(),
+    vitals: faker.helpers.arrayElement([null, createSaBaiAPIEndpointsPatientConsultGetVitalsItem()]),
+    visitDate: faker.date.anytime().toISOString(),
+    consults: createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPatientConsultGetConsultItem(),
+    prescriptions: createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPatientConsultGetPrescriptionItem(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

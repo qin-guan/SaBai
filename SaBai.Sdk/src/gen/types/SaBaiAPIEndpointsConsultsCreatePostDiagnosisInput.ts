@@ -6,6 +6,6 @@
 import type { SaBaiAPIDomainDiagnosisCategoryKey } from './SaBaiAPIDomainDiagnosisCategory'
 
 export type SaBaiAPIEndpointsConsultsCreatePostDiagnosisInput = {
-    details?: string;
-    category?: (null | SaBaiAPIDomainDiagnosisCategoryKey);
+  details?: string;
+  category?: null | SaBaiAPIDomainDiagnosisCategoryKey;
 };

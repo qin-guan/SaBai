@@ -6,15 +6,13 @@
 import type { SaBaiAPIEndpointsVisionGetAcuityResponse } from '../types/SaBaiAPIEndpointsVisionGetAcuityResponse'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsVisionGetAcuityResponse<TData extends Partial<SaBaiAPIEndpointsVisionGetAcuityResponse> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsVisionGetAcuityResponse<TData extends Partial<SaBaiAPIEndpointsVisionGetAcuityResponse> = object>(data?: TData) {
   const defaultFakeData = {
-  leftEyeDegree: faker.string.alpha(),
-  rightEyeDegree: faker.string.alpha(),
-  leftEyePinhole: faker.string.alpha(),
-  rightEyePinhole: faker.string.alpha(),
-}
+    leftEyeDegree: faker.string.alpha(),
+    rightEyeDegree: faker.string.alpha(),
+    leftEyePinhole: faker.string.alpha(),
+    rightEyePinhole: faker.string.alpha(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

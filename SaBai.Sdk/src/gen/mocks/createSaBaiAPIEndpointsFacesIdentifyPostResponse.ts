@@ -6,12 +6,10 @@
 import type { SaBaiAPIEndpointsFacesIdentifyPostResponse } from '../types/SaBaiAPIEndpointsFacesIdentifyPostResponse'
 import { createSaBaiAPIEndpointsFacesIdentifyPostIdentifiedFaceArray } from './createSaBaiAPIEndpointsFacesIdentifyPostIdentifiedFaceArray'
 
-export function createSaBaiAPIEndpointsFacesIdentifyPostResponse<TData extends Partial<SaBaiAPIEndpointsFacesIdentifyPostResponse> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsFacesIdentifyPostResponse<TData extends Partial<SaBaiAPIEndpointsFacesIdentifyPostResponse> = object>(data?: TData) {
   const defaultFakeData = {
-  faces: createSaBaiAPIEndpointsFacesIdentifyPostIdentifiedFaceArray(),
-}
+    faces: createSaBaiAPIEndpointsFacesIdentifyPostIdentifiedFaceArray(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

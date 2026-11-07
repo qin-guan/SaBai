@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsEyesightUpdatePatchEndpointOptions } from '../types/SaBaiAPIEndpointsEyesightUpdatePatchEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsEyesightUpdatePatchEndpoint } from '../clients/saBaiAPIEndpointsEyesightUpdatePatchEndpoint'
 
 /**
  * @summary Update eyesight
  * {@link /eyesight/:id}
  */
-export async function saBaiAPIEndpointsEyesightUpdatePatchEndpointHandler({ path, body }: SaBaiAPIEndpointsEyesightUpdatePatchEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsEyesightUpdatePatchEndpoint({ path, body, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsEyesightUpdatePatchEndpointHandler({ path, body }: SaBaiAPIEndpointsEyesightUpdatePatchEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsEyesightUpdatePatchEndpoint({ path, body, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

@@ -4,25 +4,25 @@
 */
 
 export type SaBaiAPIEndpointsChildVitalsCreatePostResponse = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    vitalsId: number;
-    grossMotor: string | null;
-    redReflex: string | null;
-    scoliosis: string | null;
-    pallor: boolean | null;
-    oralCavity: string | null;
-    heart: string | null;
-    abdomen: string | null;
-    lungs: string | null;
-    hernialOrifices: string | null;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  vitalsId: number;
+  grossMotor: string | null;
+  redReflex: string | null;
+  scoliosis: string | null;
+  pallor: boolean | null;
+  oralCavity: string | null;
+  heart: string | null;
+  abdomen: string | null;
+  lungs: string | null;
+  hernialOrifices: string | null;
 };

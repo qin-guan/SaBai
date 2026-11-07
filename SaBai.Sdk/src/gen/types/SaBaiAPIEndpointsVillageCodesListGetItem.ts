@@ -4,26 +4,26 @@
 */
 
 export type SaBaiAPIEndpointsVillageCodesListGetItem = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
-    code: string;
-    name: string;
-    colorHex: string;
-    isVisible: boolean;
-    /**
-     * @description
-     * Format: `date-time`
-     * @type string
-    */
-    createdAt: string;
-    /**
-     * @description
-     * Format: `date-time`
-     * @type string
-    */
-    updatedAt: string;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
+  code: string;
+  name: string;
+  colorHex: string;
+  isVisible: boolean;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string
+   */
+  createdAt: string;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string
+   */
+  updatedAt: string;
 };

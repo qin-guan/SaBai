@@ -4,10 +4,10 @@
 */
 
 import type { SaBaiAPIEndpointsVisionGetEndpointResponse, SaBaiAPIEndpointsVisionGetEndpointStatus400, SaBaiAPIEndpointsVisionGetEndpointStatus401, SaBaiAPIEndpointsVisionGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsVisionGetEndpoint'
-import { http } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsVisionGetEndpointHandlerResponse200(data: SaBaiAPIEndpointsVisionGetEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -16,7 +16,7 @@ export function saBaiAPIEndpointsVisionGetEndpointHandlerResponse200(data: SaBai
 }
 
 export function saBaiAPIEndpointsVisionGetEndpointHandlerResponse400(data: SaBaiAPIEndpointsVisionGetEndpointStatus400) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 400,
     headers: {
       'Content-Type': 'application/problem+json'
@@ -25,22 +25,22 @@ export function saBaiAPIEndpointsVisionGetEndpointHandlerResponse400(data: SaBai
 }
 
 export function saBaiAPIEndpointsVisionGetEndpointHandlerResponse401(data?: SaBaiAPIEndpointsVisionGetEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsVisionGetEndpointHandlerResponse403(data?: SaBaiAPIEndpointsVisionGetEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsVisionGetEndpointHandler(data?: SaBaiAPIEndpointsVisionGetEndpointResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>)) {
-  return http.get(`/vision`, function handler(info) {
+export function saBaiAPIEndpointsVisionGetEndpointHandler(data?: SaBaiAPIEndpointsVisionGetEndpointResponse | ((info: Parameters<Parameters<typeof http.get>[1]>[0]) => Response | Promise<Response>), options?: { baseURL?: string }) {
+  return http.get(`${options?.baseURL ?? ''}/vision`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

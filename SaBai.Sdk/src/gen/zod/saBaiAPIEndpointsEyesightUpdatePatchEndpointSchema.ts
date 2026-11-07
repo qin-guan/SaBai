@@ -23,3 +23,7 @@ export const saBaiAPIEndpointsEyesightUpdatePatchEndpointResponseSchema = saBaiA
 export const saBaiAPIEndpointsEyesightUpdatePatchEndpointErrorSchema = z.union([saBaiAPIEndpointsEyesightUpdatePatchEndpointStatus400Schema, saBaiAPIEndpointsEyesightUpdatePatchEndpointStatus401Schema, saBaiAPIEndpointsEyesightUpdatePatchEndpointStatus403Schema])
 
 export const saBaiAPIEndpointsEyesightUpdatePatchEndpointBodySchema = saBaiAPIEndpointsEyesightUpdatePatchRequestSchema
+
+export const saBaiAPIEndpointsEyesightUpdatePatchEndpointPathSchema = z.object({
+  id: z.int32(),
+})

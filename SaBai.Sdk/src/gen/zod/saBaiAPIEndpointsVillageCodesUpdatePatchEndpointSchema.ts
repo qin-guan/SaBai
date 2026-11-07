@@ -23,3 +23,7 @@ export const saBaiAPIEndpointsVillageCodesUpdatePatchEndpointResponseSchema = sa
 export const saBaiAPIEndpointsVillageCodesUpdatePatchEndpointErrorSchema = z.union([saBaiAPIEndpointsVillageCodesUpdatePatchEndpointStatus400Schema, saBaiAPIEndpointsVillageCodesUpdatePatchEndpointStatus401Schema, saBaiAPIEndpointsVillageCodesUpdatePatchEndpointStatus403Schema])
 
 export const saBaiAPIEndpointsVillageCodesUpdatePatchEndpointBodySchema = saBaiAPIEndpointsVillageCodesUpdatePatchRequestSchema
+
+export const saBaiAPIEndpointsVillageCodesUpdatePatchEndpointPathSchema = z.object({
+  id: z.int32(),
+})

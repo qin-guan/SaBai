@@ -6,12 +6,12 @@
 import type { SaBaiAPIEndpointsReferralsGetResponse } from './SaBaiAPIEndpointsReferralsGetResponse'
 
 export type SaBaiAPIEndpointsReferralsGetEndpointPath = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
 };
 
 export type SaBaiAPIEndpointsReferralsGetEndpointStatus200 = SaBaiAPIEndpointsReferralsGetResponse;
@@ -21,19 +21,19 @@ export type SaBaiAPIEndpointsReferralsGetEndpointStatus401 = unknown;
 export type SaBaiAPIEndpointsReferralsGetEndpointStatus403 = unknown;
 
 export type SaBaiAPIEndpointsReferralsGetEndpointOptions = {
-    body?: never;
-    path: SaBaiAPIEndpointsReferralsGetEndpointPath;
-    query?: never;
-    headers?: never;
+  body?: never;
+  path: SaBaiAPIEndpointsReferralsGetEndpointPath;
+  query?: never;
+  headers?: never;
 };
 
 export type SaBaiAPIEndpointsReferralsGetEndpointResponses = {
-    "200": SaBaiAPIEndpointsReferralsGetEndpointStatus200;
-    "401": SaBaiAPIEndpointsReferralsGetEndpointStatus401;
-    "403": SaBaiAPIEndpointsReferralsGetEndpointStatus403;
+  '200': SaBaiAPIEndpointsReferralsGetEndpointStatus200;
+  '401': SaBaiAPIEndpointsReferralsGetEndpointStatus401;
+  '403': SaBaiAPIEndpointsReferralsGetEndpointStatus403;
 };
 
 /**
  * @description Union of all possible responses
-*/
+ */
 export type SaBaiAPIEndpointsReferralsGetEndpointResponse = SaBaiAPIEndpointsReferralsGetEndpointStatus200;

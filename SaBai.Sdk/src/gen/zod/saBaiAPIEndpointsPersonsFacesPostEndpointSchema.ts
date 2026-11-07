@@ -20,3 +20,7 @@ export const saBaiAPIEndpointsPersonsFacesPostEndpointResponseSchema = saBaiAPIE
 export const saBaiAPIEndpointsPersonsFacesPostEndpointErrorSchema = z.union([saBaiAPIEndpointsPersonsFacesPostEndpointStatus401Schema, saBaiAPIEndpointsPersonsFacesPostEndpointStatus403Schema])
 
 export const saBaiAPIEndpointsPersonsFacesPostEndpointBodySchema = saBaiAPIEndpointsPersonsFacesPostRequestSchema
+
+export const saBaiAPIEndpointsPersonsFacesPostEndpointPathSchema = z.object({
+  personId: z.string(),
+})

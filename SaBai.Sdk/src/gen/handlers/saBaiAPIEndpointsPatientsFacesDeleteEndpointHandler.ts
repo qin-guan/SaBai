@@ -4,31 +4,31 @@
 */
 
 import type { SaBaiAPIEndpointsPatientsFacesDeleteEndpointResponse, SaBaiAPIEndpointsPatientsFacesDeleteEndpointStatus401, SaBaiAPIEndpointsPatientsFacesDeleteEndpointStatus403 } from '../types/SaBaiAPIEndpointsPatientsFacesDeleteEndpoint'
-import { http } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsPatientsFacesDeleteEndpointHandlerResponse204(data?: SaBaiAPIEndpointsPatientsFacesDeleteEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 204,
   })
 }
 
 export function saBaiAPIEndpointsPatientsFacesDeleteEndpointHandlerResponse401(data?: SaBaiAPIEndpointsPatientsFacesDeleteEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsPatientsFacesDeleteEndpointHandlerResponse403(data?: SaBaiAPIEndpointsPatientsFacesDeleteEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsPatientsFacesDeleteEndpointHandler(data?: string | number | boolean | null | object | ((info: Parameters<Parameters<typeof http.delete>[1]>[0]) => Response | Promise<Response>)) {
-  return http.delete(`/patients/:id/faces/:faceId`, function handler(info) {
+export function saBaiAPIEndpointsPatientsFacesDeleteEndpointHandler(data?: string | number | boolean | null | object | ((info: Parameters<Parameters<typeof http.delete>[1]>[0]) => Response | Promise<Response>), options?: { baseURL?: string }) {
+  return http.delete(`${options?.baseURL ?? ''}/patients/:id/faces/:faceId`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 204,
       })
     })

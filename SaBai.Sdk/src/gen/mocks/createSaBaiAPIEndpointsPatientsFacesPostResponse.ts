@@ -7,15 +7,13 @@ import type { SaBaiAPIEndpointsPatientsFacesPostResponse } from '../types/SaBaiA
 import { createSaBaiAPIEndpointsFacesFaceDto } from './createSaBaiAPIEndpointsFacesFaceDto'
 import { fakerEN as faker } from '@faker-js/faker'
 
-export function createSaBaiAPIEndpointsPatientsFacesPostResponse<TData extends Partial<SaBaiAPIEndpointsPatientsFacesPostResponse> = object>(data?: TData)
-
-{
+export function createSaBaiAPIEndpointsPatientsFacesPostResponse<TData extends Partial<SaBaiAPIEndpointsPatientsFacesPostResponse> = object>(data?: TData) {
   const defaultFakeData = {
-  faceId: faker.string.uuid(),
-  patientId: faker.number.int(),
-  face: createSaBaiAPIEndpointsFacesFaceDto(),
-  facesDetected: faker.number.int(),
-}
+    faceId: faker.string.uuid(),
+    patientId: faker.number.int(),
+    face: createSaBaiAPIEndpointsFacesFaceDto(),
+    facesDetected: faker.number.int(),
+  }
   return {
     ...defaultFakeData,
     ...(data || {}),

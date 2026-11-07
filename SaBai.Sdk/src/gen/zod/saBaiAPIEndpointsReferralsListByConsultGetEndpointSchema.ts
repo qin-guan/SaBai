@@ -17,3 +17,7 @@ export const saBaiAPIEndpointsReferralsListByConsultGetEndpointStatus403Schema =
 export const saBaiAPIEndpointsReferralsListByConsultGetEndpointResponseSchema = saBaiAPIEndpointsReferralsListByConsultGetEndpointStatus200Schema
 
 export const saBaiAPIEndpointsReferralsListByConsultGetEndpointErrorSchema = z.union([saBaiAPIEndpointsReferralsListByConsultGetEndpointStatus401Schema, saBaiAPIEndpointsReferralsListByConsultGetEndpointStatus403Schema])
+
+export const saBaiAPIEndpointsReferralsListByConsultGetEndpointPathSchema = z.object({
+  consultId: z.int32(),
+})

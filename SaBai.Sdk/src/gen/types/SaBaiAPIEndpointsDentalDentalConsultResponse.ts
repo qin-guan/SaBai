@@ -21,70 +21,70 @@ import type { SystemCollectionsGenericIReadOnlyListOfSystemString } from './Syst
 import type { SystemNullableOfSystemDateOnly } from './SystemNullableOfSystemDateOnly'
 
 export type SaBaiAPIEndpointsDentalDentalConsultResponse = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    id: number;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer
-    */
-    visitId: number;
-    previousDentalVisit?: (null | SaBaiAPIDomainYesNoUnknownKey);
-    previousDentalTreatment?: (null | SaBaiAPIDomainYesNoUnknownKey);
-    toothache?: boolean | null;
-    extraction?: boolean | null;
-    dentalTrauma?: boolean | null;
-    currentToothache?: boolean | null;
-    toothSensitivity?: boolean | null;
-    bleedingGums?: boolean | null;
-    brushingFrequency?: (null | SaBaiAPIDomainBrushingFrequencyKey);
-    fluorideToothpaste?: (null | SaBaiAPIDomainYesNoUnknownKey);
-    sugarConsumption?: (null | SaBaiAPIDomainSugarConsumptionKey);
-    otherDentalHistory?: string | null;
-    chiefComplaint?: string | null;
-    facialSymmetry?: (null | SaBaiAPIDomainFacialSymmetryKey);
-    facialSwelling?: (null | SaBaiAPIDomainAbsentPresentKey);
-    lymphadenopathy?: (null | SaBaiAPIDomainLymphadenopathyKey);
-    mouthOpening?: (null | SaBaiAPIDomainMouthOpeningKey);
-    oralHygiene?: (null | SaBaiAPIDomainOralHygieneKey);
-    plaque?: (null | SaBaiAPIDomainPlaqueLevelKey);
-    calculus?: (null | SaBaiAPIDomainAbsentPresentKey);
-    gingivalCondition?: (null | SaBaiAPIDomainGingivalConditionKey);
-    caries?: (null | SaBaiAPIDomainCariesStatusKey);
-    missingTeeth?: (null | SaBaiAPIDomainAbsentPresentKey);
-    fracturedTeeth?: (null | SaBaiAPIDomainAbsentPresentKey);
-    mucosalLesions?: (null | SaBaiAPIDomainAbsentPresentKey);
-    malocclusion?: (null | SaBaiAPIDomainMalocclusionKey);
-    diagnoses: SystemCollectionsGenericIReadOnlyListOfSystemString;
-    fluorideDone?: boolean | null;
-    fluorideDate?: (null | SystemNullableOfSystemDateOnly);
-    fluorideOperator?: string | null;
-    fluorideToothNumbers?: string | null;
-    sealantDone?: boolean | null;
-    sealantDate?: (null | SystemNullableOfSystemDateOnly);
-    sealantOperator?: string | null;
-    sealantToothNumbers?: string | null;
-    sdfDone?: boolean | null;
-    sdfDate?: (null | SystemNullableOfSystemDateOnly);
-    sdfOperator?: string | null;
-    sdfToothNumbers?: string | null;
-    scalingDone?: boolean | null;
-    scalingDate?: (null | SystemNullableOfSystemDateOnly);
-    scalingOperator?: string | null;
-    scalingToothNumbers?: string | null;
-    referredFor?: (null | SaBaiAPIDomainDentalReferralTypeKey);
-    referralPriority?: (null | SaBaiAPIDomainDentalReferralPriorityKey);
-    referralNotes?: string | null;
-    recommendedFacility?: string | null;
-    remarks?: string | null;
-    /**
-     * @description
-     * Format: `date-time`
-     * @type string
-    */
-    updatedAt: string;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  id: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  visitId: number;
+  previousDentalVisit?: null | SaBaiAPIDomainYesNoUnknownKey;
+  previousDentalTreatment?: null | SaBaiAPIDomainYesNoUnknownKey;
+  toothache?: boolean | null;
+  extraction?: boolean | null;
+  dentalTrauma?: boolean | null;
+  currentToothache?: boolean | null;
+  toothSensitivity?: boolean | null;
+  bleedingGums?: boolean | null;
+  brushingFrequency?: null | SaBaiAPIDomainBrushingFrequencyKey;
+  fluorideToothpaste?: null | SaBaiAPIDomainYesNoUnknownKey;
+  sugarConsumption?: null | SaBaiAPIDomainSugarConsumptionKey;
+  otherDentalHistory?: string | null;
+  chiefComplaint?: string | null;
+  facialSymmetry?: null | SaBaiAPIDomainFacialSymmetryKey;
+  facialSwelling?: null | SaBaiAPIDomainAbsentPresentKey;
+  lymphadenopathy?: null | SaBaiAPIDomainLymphadenopathyKey;
+  mouthOpening?: null | SaBaiAPIDomainMouthOpeningKey;
+  oralHygiene?: null | SaBaiAPIDomainOralHygieneKey;
+  plaque?: null | SaBaiAPIDomainPlaqueLevelKey;
+  calculus?: null | SaBaiAPIDomainAbsentPresentKey;
+  gingivalCondition?: null | SaBaiAPIDomainGingivalConditionKey;
+  caries?: null | SaBaiAPIDomainCariesStatusKey;
+  missingTeeth?: null | SaBaiAPIDomainAbsentPresentKey;
+  fracturedTeeth?: null | SaBaiAPIDomainAbsentPresentKey;
+  mucosalLesions?: null | SaBaiAPIDomainAbsentPresentKey;
+  malocclusion?: null | SaBaiAPIDomainMalocclusionKey;
+  diagnoses: SystemCollectionsGenericIReadOnlyListOfSystemString;
+  fluorideDone?: boolean | null;
+  fluorideDate?: null | SystemNullableOfSystemDateOnly;
+  fluorideOperator?: string | null;
+  fluorideToothNumbers?: string | null;
+  sealantDone?: boolean | null;
+  sealantDate?: null | SystemNullableOfSystemDateOnly;
+  sealantOperator?: string | null;
+  sealantToothNumbers?: string | null;
+  sdfDone?: boolean | null;
+  sdfDate?: null | SystemNullableOfSystemDateOnly;
+  sdfOperator?: string | null;
+  sdfToothNumbers?: string | null;
+  scalingDone?: boolean | null;
+  scalingDate?: null | SystemNullableOfSystemDateOnly;
+  scalingOperator?: string | null;
+  scalingToothNumbers?: string | null;
+  referredFor?: null | SaBaiAPIDomainDentalReferralTypeKey;
+  referralPriority?: null | SaBaiAPIDomainDentalReferralPriorityKey;
+  referralNotes?: string | null;
+  recommendedFacility?: string | null;
+  remarks?: string | null;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string
+   */
+  updatedAt: string;
 };

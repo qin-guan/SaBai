@@ -4,28 +4,28 @@
 */
 
 export type SaBaiAPIEndpointsVisitsUpdatePatchRequest = {
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer | undefined
-    */
-    patientId?: number | null;
-    /**
-     * @description
-     * Format: `int32`
-     * @type integer | undefined
-    */
-    villageCodeId?: number | null;
-    /**
-     * @description
-     * Format: `date-time`
-     * @type string | undefined
-    */
-    date?: string | null;
-    /**
-     * @minLength 0
-     * @maxLength 100
-     * @type string | undefined
-    */
-    status?: string | null;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer | undefined
+   */
+  patientId?: number | null;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer | undefined
+   */
+  villageCodeId?: number | null;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string | undefined
+   */
+  date?: string | null;
+  /**
+   * @minLength 0
+   * @maxLength 100
+   * @type string | undefined
+   */
+  status?: string | null;
 };

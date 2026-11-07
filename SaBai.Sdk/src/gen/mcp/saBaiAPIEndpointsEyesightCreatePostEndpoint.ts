@@ -4,16 +4,15 @@
 */
 
 import type { SaBaiAPIEndpointsEyesightCreatePostEndpointOptions } from '../types/SaBaiAPIEndpointsEyesightCreatePostEndpoint'
-import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
-import type { CallToolResult, ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsEyesightCreatePostEndpoint } from '../clients/saBaiAPIEndpointsEyesightCreatePostEndpoint'
 
 /**
  * @summary Record eyesight for a visit
  * {@link /eyesight}
  */
-export async function saBaiAPIEndpointsEyesightCreatePostEndpointHandler({ body }: SaBaiAPIEndpointsEyesightCreatePostEndpointOptions, request: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsEyesightCreatePostEndpoint({ body, signal: request.signal, throwOnError: true })
+export async function saBaiAPIEndpointsEyesightCreatePostEndpointHandler({ body }: SaBaiAPIEndpointsEyesightCreatePostEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsEyesightCreatePostEndpoint({ body, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

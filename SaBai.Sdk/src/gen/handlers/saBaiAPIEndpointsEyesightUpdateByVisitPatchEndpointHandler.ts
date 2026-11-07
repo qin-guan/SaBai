@@ -4,11 +4,12 @@
 */
 
 import type { SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointResponse, SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointStatus400, SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointStatus401, SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointStatus403, SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointBody } from '../types/SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpoint'
-import type { HttpResponseResolver } from 'msw'
-import { http } from 'msw'
+import type { HttpResponseResolver } from 'msw/http'
+import type { DefaultBodyType } from 'msw'
+import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointHandlerResponse200(data: SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointResponse) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -17,7 +18,7 @@ export function saBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointHandlerRespon
 }
 
 export function saBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointHandlerResponse400(data: SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointStatus400) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 400,
     headers: {
       'Content-Type': 'application/problem+json'
@@ -26,22 +27,22 @@ export function saBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointHandlerRespon
 }
 
 export function saBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointHandlerResponse401(data?: SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointStatus401) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 401,
   })
 }
 
 export function saBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointHandlerResponse403(data?: SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointStatus403) {
-  return new Response(JSON.stringify(data), {
+  return new HttpResponse<string>(JSON.stringify(data), {
     status: 403,
   })
 }
 
-export function saBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointHandler(data?: SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointBody>) {
-  return http.patch<Record<string, string>, SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointBody>(`/visits/:visitId/eyesight`, function handler(info) {
+export function saBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointHandler(data?: SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointResponse | HttpResponseResolver<Record<string, string>, SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointBody : DefaultBodyType>, options?: { baseURL?: string }) {
+  return http.patch<Record<string, string>, SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointBody extends DefaultBodyType ? SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointBody : DefaultBodyType>(`${options?.baseURL ?? ''}/visits/:visitId/eyesight`, function handler(info) {
       if(typeof data === 'function') return data(info)
 
-      return new Response(JSON.stringify(data), {
+      return new HttpResponse<string>(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

@@ -3,6 +3,48 @@ allowBuilds:
   unrs-resolver: true
   vue-demi: true
 
+minimumReleaseAgeExclude:
+  - '@kubb/adapter-oas@5.16.0'
+  - '@kubb/ast@5.16.0'
+  - '@kubb/cli@5.16.0'
+  - '@kubb/core@5.16.0'
+  - '@kubb/kit@5.16.0'
+  - '@kubb/mcp@5.16.0'
+  - '@kubb/parser-md@5.16.0'
+  - '@kubb/parser-ts@5.16.0'
+  - '@kubb/plugin-barrel@5.16.0'
+  - '@kubb/plugin-faker@5.3.1'
+  - '@kubb/plugin-mcp@5.4.1'
+  - '@kubb/plugin-msw@6.1.2'
+  - '@kubb/plugin-react-query@5.9.1'
+  - '@kubb/plugin-ts@5.4.1'
+  - '@kubb/plugin-zod@5.8.2'
+  - '@kubb/renderer-jsx@5.16.0'
+  - '@kubb/studio@5.16.0'
+  - '@tailwindcss/node@4.3.5'
+  - '@tailwindcss/oxide-android-arm64@4.3.5'
+  - '@tailwindcss/oxide-darwin-arm64@4.3.5'
+  - '@tailwindcss/oxide-darwin-x64@4.3.5'
+  - '@tailwindcss/oxide-freebsd-x64@4.3.5'
+  - '@tailwindcss/oxide-linux-arm-gnueabihf@4.3.5'
+  - '@tailwindcss/oxide-linux-arm64-gnu@4.3.5'
+  - '@tailwindcss/oxide-linux-arm64-musl@4.3.5'
+  - '@tailwindcss/oxide-linux-x64-gnu@4.3.5'
+  - '@tailwindcss/oxide-linux-x64-musl@4.3.5'
+  - '@tailwindcss/oxide-wasm32-wasi@4.3.5'
+  - '@tailwindcss/oxide-win32-arm64-msvc@4.3.5'
+  - '@tailwindcss/oxide-win32-x64-msvc@4.3.5'
+  - '@tailwindcss/oxide@4.3.5'
+  - '@tailwindcss/postcss@4.3.5'
+  - '@tailwindcss/vite@4.3.5'
+  - '@tanstack/query-core@5.107.1'
+  - '@tanstack/react-query@5.107.1'
+  - '@tanstack/vue-query@5.107.1'
+  - kubb@5.16.0
+  - tailwindcss@4.3.5
+  - tsdown@0.23.7
+  - unplugin-kubb@5.16.0
+
 packages:
   - SaBai.Sdk
   - SaBai.Web

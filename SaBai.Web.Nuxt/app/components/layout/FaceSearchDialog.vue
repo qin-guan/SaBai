@@ -5,7 +5,7 @@ import type { PatientLinkTarget } from '~/utils/paths'
 /**
  * Find a patient by face from anywhere. Capture a photo, pick a match and it
  * opens the station you are on (Vitals, Vision, Consults, Dental), or the record for that
- * patient — or any other section via the quick links. Mount with v-if.
+ * patient — or any station of a visit via its journey tiles. Mount with v-if.
  */
 const emit = defineEmits<{ close: [] }>()
 
@@ -17,6 +17,11 @@ const image = ref<string | null>(null)
 const search = useFaceSearch(image)
 const matches = computed(() => search.data.value ?? [])
 const { remember } = useRecentPatients()
+
+function closeOnLink(event: MouseEvent) {
+  if ((event.target as HTMLElement | null)?.closest('a'))
+    emit('close')
+}
 
 async function open(patientId: number, target: PatientLinkTarget | undefined = station.value) {
   remember(patientId)
@@ -64,7 +69,10 @@ async function open(patientId: number, target: PatientLinkTarget | undefined = s
               Open {{ stationName }}
             </Button>
           </div>
-          <StationLinks :patient-id="match.id" :active="station === 'patient' ? undefined : station" @navigate="emit('close')" />
+          <!-- Each journey tile opens that station for the visit; close on any link click. -->
+          <div class="pl-[3.75rem]" @click="closeOnLink">
+            <MatchVisits :patient-id="match.id" />
+          </div>
         </li>
       </ol>
     </div>

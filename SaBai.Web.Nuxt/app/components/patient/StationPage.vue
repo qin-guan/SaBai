@@ -69,6 +69,7 @@ useHead({ title: () => `${props.title}${props.patient ? ` — ${props.patient.na
               <PhIdentificationCard aria-hidden="true" /> Patient record
             </NuxtLink>
           </Button>
+          <StartVisitButton :patient-id="props.patient.id" :name="props.patient.name" />
         </template>
       </PatientBanner>
       <VisitSelector

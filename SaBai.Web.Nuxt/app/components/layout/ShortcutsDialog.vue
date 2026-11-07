@@ -47,7 +47,7 @@ const groups = [
   <AppDialog title="Keyboard shortcuts" size="md" @close="emit('close')">
     <div class="grid gap-4 sm:grid-cols-2">
       <section v-for="group in groups" :key="group.title">
-        <h3 class="mb-1 border-b border-border pb-1 text-xs font-bold uppercase tracking-wide text-chrome">
+        <h3 class="mb-1 border-b border-border pb-1 text-xs font-bold text-chrome">
           {{ group.title }}
         </h3>
         <dl class="grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-1.5 text-xs">

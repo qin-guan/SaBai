@@ -169,7 +169,7 @@ const diabetesLabelId = useId()
       @discard="form = draft.discard()"
     />
     <AppPanel title="Body Measurements" description="General physical measurements.">
-      <div class="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 lg:grid-cols-4">
+      <div class="grid grid-cols-2 items-end gap-3 lg:grid-cols-4">
         <FormField v-slot="{ id }" label="Height (cm)">
           <NumericInput :id="id" v-model="form.height" unit="cm" step="0.1" />
         </FormField>
@@ -202,7 +202,7 @@ const diabetesLabelId = useId()
     </div>
 
     <AppPanel title="Cardiovascular" description="Blood pressure and heart rate readings.">
-      <div class="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 md:grid-cols-3">
+      <div class="grid grid-cols-2 items-end gap-3 md:grid-cols-3">
         <FormField v-slot="{ id }" label="Systolic Blood Pressure (mmHg)">
           <NumericInput :id="id" v-model="form.systolic" unit="mmHg" />
         </FormField>

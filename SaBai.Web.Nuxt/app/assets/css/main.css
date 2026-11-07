@@ -10,9 +10,15 @@
 @custom-variant touch (@media (max-width: 639px), (pointer: coarse));
 
 @theme inline {
-  /* Lyra pairs its boxy components with a monospace face (served by @nuxt/fonts). */
-  --font-sans: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
-  --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  /*
+   * Atkinson Hyperlegible (Braille Institute) was drawn so similar glyphs
+   * never get confused — 1/l/I, 0/O, 5/S, 8/B — which is exactly what matters
+   * when reading patient IDs, doses and readings at arm's length on a phone in
+   * a field clinic. Proportional text for reading; the matching mono for IDs,
+   * codes and keycaps. Both are served by @nuxt/fonts.
+   */
+  --font-sans: "Atkinson Hyperlegible Next", ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "Atkinson Hyperlegible Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
   --color-chrome: var(--chrome);
   --color-chrome-foreground: var(--chrome-foreground);
   --color-chrome-hover: var(--chrome-hover);
@@ -168,6 +174,13 @@
   }
   body {
     @apply bg-background text-foreground text-sm antialiased;
+    font-optical-sizing: auto;
+  }
+  /* Numbers line up in columns everywhere (counts, times, readings). */
+  .tabular-nums,
+  td,
+  [data-slot="table"] {
+    font-variant-numeric: tabular-nums;
   }
   /* One focus treatment everywhere: thick, high-contrast, never hidden. */
   :focus-visible {
@@ -179,14 +192,25 @@
 @layer components {
   /* Dense gridded data table (EHR worklist style). */
   .grid-table thead th {
-    @apply sticky top-0 z-[1] h-8 border-b border-input bg-band text-xs font-bold uppercase tracking-wide text-muted-foreground;
+    @apply sticky top-0 z-[1] h-8 border-b border-input bg-band text-xs font-semibold text-chrome;
   }
   .grid-table tbody tr:nth-child(even) {
     @apply bg-stripe;
   }
+  .grid-table tbody tr:hover {
+    @apply bg-accent/50;
+  }
   .grid-table tbody tr:focus-within {
     @apply bg-accent;
   }
+}
+
+/*
+ * Dense rows: ~36px with a small button instead of 45px. Unlayered so it beats
+ * the table cell's own padding utility; the phone card layout below overrides it.
+ */
+.grid-table tbody td {
+  padding-block: 0.25rem;
 }
 
 /* Wrapped labels must not collide (Lyra's Label is leading-none). */

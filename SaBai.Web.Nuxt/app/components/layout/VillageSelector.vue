@@ -36,7 +36,7 @@ const selected = computed({
     <DropdownMenuTrigger as-child>
       <Button
         variant="outline"
-        class="w-full justify-start gap-2 md:w-56"
+        class="w-full justify-start gap-2 md:w-48 xl:w-56"
         :class="props.tone === 'chrome' && 'border-chrome-hover bg-chrome-hover text-chrome-foreground hover:bg-chrome-hover/80 hover:text-white'"
         aria-label="Village for new patients and visits"
       >
@@ -45,7 +45,7 @@ const selected = computed({
           <span class="size-2.5 shrink-0" :style="{ backgroundColor: selectedVillage.colorHex }" aria-hidden="true" />
           <span class="truncate">{{ selectedVillage.name }}</span>
         </template>
-        <span v-else class="font-bold text-warning" :class="props.tone === 'chrome' && 'text-amber-300'">Select village</span>
+        <span v-else class="font-bold" :class="props.tone === 'chrome' ? 'text-amber-200' : 'text-warning'">Select village</span>
         <PhCaretDown class="ml-auto" aria-hidden="true" />
       </Button>
     </DropdownMenuTrigger>

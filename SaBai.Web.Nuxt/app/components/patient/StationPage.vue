@@ -59,7 +59,7 @@ useHead({ title: () => `${props.title}${props.patient ? ` — ${props.patient.na
     <StateMessage v-else-if="!props.patient" kind="error" message="Patient not found" />
     <template v-else>
       <PageHeader :title="`${props.title} — ${props.patient.name}`" :breadcrumbs="crumbs" hide-title />
-      <PatientBanner :patient="props.patient">
+      <PatientBanner :patient="props.patient" :to="paths.patientDetail(props.patient.id)">
         <template #actions>
           <Button v-if="props.allowEdit" variant="outline" @click="isEditing = true">
             <PhPencilSimple aria-hidden="true" /> Edit Patient Details

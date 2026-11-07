@@ -1,4 +1,4 @@
-import { isWaitingFor, journeySteps, nextStep, requiredProgress } from "~/utils/journey";
+import { isWaitingFor, journeySteps, nextStep, requiredProgress, visitLink } from "~/utils/journey";
 import type { Journey } from "~/utils/journey";
 
 const blank: Journey = {
@@ -70,5 +70,15 @@ describe("isWaitingFor", () => {
   it("only waits for pharmacy with medication to dispense", () => {
     expect(isWaitingFor(blank, "pharmacy")).toBe(false);
     expect(isWaitingFor(j({ pharmacyOrders: 1, pharmacyPending: 1 }), "pharmacy")).toBe(true);
+  });
+});
+
+describe("visitLink", () => {
+  it("opens the next station for this visit", () => {
+    expect(visitLink(j({ vitals: true }), 4, 9)).toEqual({ to: "/vision/update-glasses/4?visit=9", label: "Open Vision" });
+  });
+
+  it("opens the patient record once every needed station is done", () => {
+    expect(visitLink(j({ vitals: true, vision: true, consult: true }), 4, 9)).toEqual({ to: "/patient/4", label: "Open record" });
   });
 });

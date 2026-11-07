@@ -83,6 +83,14 @@ function summary(entry: AuditLogEntry) {
   return fields.length > 4 ? `${fields.slice(0, 4).join(', ')} +${fields.length - 4} more` : fields.join(', ')
 }
 
+/** The page showing this record, when there is one to open. */
+function recordLink(entry: AuditLogEntry) {
+  const id = Number(entry.entityId)
+  return entry.entityType === 'Patient' && entry.action !== 'Deleted' && Number.isInteger(id) && id > 0
+    ? paths.patientDetail(id)
+    : undefined
+}
+
 function filterByEntity(entry: AuditLogEntry) {
   entityType.value = entry.entityType ?? ''
   entityId.value = entry.entityId ?? ''
@@ -175,7 +183,16 @@ function filterByEntity(entry: AuditLogEntry) {
                 {{ formatTime(entry.occurredAt) }}
               </TableCell>
               <TableCell data-label="Who">
-                <span v-if="entry.userName" class="font-mono">{{ entry.userName }}</span>
+                <button
+                  v-if="entry.userName && entry.userId"
+                  type="button"
+                  class="text-left font-mono underline-offset-2 hover:underline"
+                  title="Show only this user's activity"
+                  @click.stop="userId = entry.userId"
+                >
+                  {{ entry.userName }}
+                </button>
+                <span v-else-if="entry.userName" class="font-mono">{{ entry.userName }}</span>
                 <span v-else class="text-muted-foreground">System</span>
               </TableCell>
               <TableCell data-label="Action">
@@ -194,6 +211,14 @@ function filterByEntity(entry: AuditLogEntry) {
                   {{ subject(entry) }}
                 </button>
                 <span v-else class="text-muted-foreground">{{ subject(entry) }}</span>
+                <NuxtLink
+                  v-if="recordLink(entry)"
+                  :to="recordLink(entry)!"
+                  class="ml-2 text-xs font-semibold whitespace-nowrap text-primary hover:underline touch:text-sm"
+                  @click.stop
+                >
+                  Open record →
+                </NuxtLink>
               </TableCell>
               <TableCell data-label="Changed" class="text-muted-foreground">
                 {{ summary(entry) }}

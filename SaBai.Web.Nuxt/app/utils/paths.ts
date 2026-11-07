@@ -26,7 +26,15 @@ export const paths = {
   settings: () => "/settings",
   settingsVillageCodes: () => "/settings/village-codes",
   settingsUsers: () => "/settings/users",
-  settingsAuditLog: () => "/settings/audit-log",
+  /** The audit log, optionally filtered to one record's or one staff user's history. */
+  settingsAuditLog: (filter?: { entityType?: string; entityId?: string | number; userId?: string }) => {
+    const query = new URLSearchParams();
+    if (filter?.entityType) query.set("entityType", filter.entityType);
+    if (filter?.entityId !== undefined) query.set("entityId", String(filter.entityId));
+    if (filter?.userId) query.set("userId", filter.userId);
+    const qs = query.toString();
+    return qs ? `/settings/audit-log?${qs}` : "/settings/audit-log";
+  },
   account: () => "/account",
 };
 

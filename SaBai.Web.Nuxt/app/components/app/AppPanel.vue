@@ -65,38 +65,40 @@ function toggle() {
   <section :id="props.id" :aria-labelledby="headingId" class="scroll-mt-28 border border-border bg-card">
     <header
       v-if="props.title || $slots.actions"
-      class="flex flex-wrap items-center gap-x-3 gap-y-1 bg-band px-3 py-1.5"
+      class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 bg-band px-3 py-1.5"
       :class="open && 'border-b border-band-border'"
     >
-      <h2 :id="headingId" class="flex min-w-0 items-center gap-2 text-[0.8125rem] font-bold text-chrome touch:text-sm">
-        <component
-          :is="props.collapsible ? 'button' : 'span'"
-          :type="props.collapsible ? 'button' : undefined"
-          class="flex min-w-0 items-center gap-2 text-left"
-          :class="props.collapsible && 'cursor-pointer hover:underline touch:min-h-11'"
-          :aria-expanded="props.collapsible ? open : undefined"
-          :aria-controls="props.collapsible ? bodyId : undefined"
-          @click="props.collapsible && toggle()"
-        >
-          <PhCaretRight
-            v-if="props.collapsible"
-            weight="bold"
-            class="size-3.5 shrink-0 transition-transform motion-reduce:transition-none"
-            :class="open && 'rotate-90'"
-            aria-hidden="true"
-          />
-          <span
-            v-if="props.step"
-            class="inline-flex size-5 shrink-0 items-center justify-center bg-chrome text-xs text-white"
-            aria-hidden="true"
-          >{{ props.step }}</span>
-          <span>{{ props.title }}</span>
-        </component>
-      </h2>
-      <p v-if="props.description" class="text-xs text-muted-foreground touch:text-sm">
-        {{ props.description }}
-      </p>
-      <div v-if="$slots.actions && open" class="ml-auto flex flex-wrap items-center gap-2">
+      <div v-if="props.title || props.description" class="flex min-w-0 items-center gap-x-3 gap-y-1">
+        <h2 v-if="props.title" :id="headingId" class="flex min-w-0 items-center gap-2 text-[0.8125rem] font-bold text-chrome touch:text-sm">
+          <component
+            :is="props.collapsible ? 'button' : 'span'"
+            :type="props.collapsible ? 'button' : undefined"
+            class="flex min-w-0 items-center gap-2 text-left"
+            :class="props.collapsible && 'cursor-pointer hover:underline touch:min-h-11'"
+            :aria-expanded="props.collapsible ? open : undefined"
+            :aria-controls="props.collapsible ? bodyId : undefined"
+            @click="props.collapsible && toggle()"
+          >
+            <PhCaretRight
+              v-if="props.collapsible"
+              weight="bold"
+              class="size-3.5 shrink-0 transition-transform motion-reduce:transition-none"
+              :class="open && 'rotate-90'"
+              aria-hidden="true"
+            />
+            <span
+              v-if="props.step"
+              class="inline-flex size-5 shrink-0 items-center justify-center bg-chrome text-xs text-white"
+              aria-hidden="true"
+            >{{ props.step }}</span>
+            <span>{{ props.title }}</span>
+          </component>
+        </h2>
+        <p v-if="props.description" class="text-xs text-muted-foreground touch:text-sm">
+          {{ props.description }}
+        </p>
+      </div>
+      <div v-if="$slots.actions && open" class="flex flex-wrap items-center gap-2 max-sm:has-[>.w-full]:w-full">
         <slot name="actions" />
       </div>
     </header>

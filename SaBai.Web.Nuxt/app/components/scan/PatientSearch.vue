@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 const query = ref('')
 const debounced = useDebouncedRef(query, 120)
 
-const { data, isLoading, isError } = usePatientsList()
+const { data, isLoading, isError } = usePatientsWithLatestVisit()
 const patients = computed(() => data.value?.patients ?? [])
 const byId = computed(() => new Map(patients.value.map(p => [p.id, p])))
 const index = computed(() => buildPatientIndex(patients.value))
@@ -49,23 +49,28 @@ const lastVisit = (date: string) =>
         No patients match “{{ debounced.trim() }}”.
       </p>
       <ol v-else class="divide-y divide-border" aria-label="Matching patients">
-        <li v-for="p in hits" :key="p!.id" class="flex items-center gap-3 px-3 py-2">
-          <PatientPhoto :patient-id="p!.id" :has-photo="p!.hasPhoto" :size="40" alt="" zoomable :name="p!.name" />
-          <div class="min-w-0 flex-1">
-            <NuxtLink :to="paths.patientDetail(p!.id)" class="block truncate text-sm font-semibold hover:text-primary hover:underline">
-              {{ p!.name }}
-            </NuxtLink>
-            <p class="flex flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground touch:text-sm">
-              <span>{{ p!.displayId }}</span>
-              <span aria-hidden="true">·</span>
-              <span>{{ calculateAge(p!.dateOfBirth) }} y <span class="capitalize">{{ p!.gender }}</span></span>
-              <template v-if="p!.lastVisitDate">
+        <li v-for="p in hits" :key="p!.id" class="flex flex-col gap-2 px-3 py-2">
+          <div class="flex items-center gap-3">
+            <PatientPhoto :patient-id="p!.id" :has-photo="p!.hasPhoto" :size="40" alt="" zoomable :name="p!.name" />
+            <div class="min-w-0 flex-1">
+              <NuxtLink :to="paths.patientDetail(p!.id)" class="block truncate text-sm font-semibold hover:text-primary hover:underline">
+                {{ p!.name }}
+              </NuxtLink>
+              <p class="flex flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground touch:text-sm">
+                <PatientCode :id="p!.id" :village-code="p!.villageCode" :village-color-hex="p!.villageColorHex" />
                 <span aria-hidden="true">·</span>
-                <span>{{ lastVisit(p!.lastVisitDate) }}</span>
-              </template>
-            </p>
+                <span>{{ calculateAge(p!.dateOfBirth) }} y <span class="capitalize">{{ p!.gender }}</span></span>
+                <template v-if="p!.lastVisitDate">
+                  <span aria-hidden="true">·</span>
+                  <span>{{ lastVisit(p!.lastVisitDate) }}</span>
+                </template>
+              </p>
+            </div>
+            <StartVisitButton :patient-id="p!.id" :name="p!.name" size="sm" />
           </div>
-          <StartVisitButton :patient-id="p!.id" :name="p!.name" size="sm" />
+          <div v-if="p!.lastVisitJourney && p!.lastVisitId" class="pl-[3.25rem]">
+            <JourneyTracker :journey="p!.lastVisitJourney" :patient-id="p!.id" :visit-id="p!.lastVisitId" size="compact" />
+          </div>
         </li>
       </ol>
     </template>

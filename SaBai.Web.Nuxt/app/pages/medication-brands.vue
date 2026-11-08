@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PhPlus } from '@phosphor-icons/vue'
+import { PhFlask, PhPlus } from '@phosphor-icons/vue'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
@@ -22,6 +22,11 @@ const adding = ref(false)
       ]"
     >
       <template #actions>
+        <Button variant="outline" as-child>
+          <NuxtLink :to="paths.medicationActiveIngredients()">
+            <PhFlask aria-hidden="true" /> Manage Active Ingredients
+          </NuxtLink>
+        </Button>
         <Button :disabled="ingredientsLoading" @click="adding = true">
           <PhPlus aria-hidden="true" /> Add Brand
         </Button>

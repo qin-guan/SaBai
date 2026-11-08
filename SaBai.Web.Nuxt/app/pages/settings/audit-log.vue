@@ -23,6 +23,18 @@ const toDate = ref(fromQuery('to'))
 const debouncedType = useDebouncedRef(entityType, 300)
 const debouncedId = useDebouncedRef(entityId, 300)
 
+watch(
+  () => route.query,
+  () => {
+    action.value = fromQuery('action') as AuditAction | ''
+    userId.value = fromQuery('userId')
+    entityType.value = fromQuery('entityType')
+    entityId.value = fromQuery('entityId')
+    fromDate.value = fromQuery('from')
+    toDate.value = fromQuery('to')
+  },
+)
+
 const filters = computed<AuditLogFilters>(() => ({
   action: action.value || undefined,
   userId: userId.value || undefined,
@@ -85,10 +97,31 @@ function summary(entry: AuditLogEntry) {
 
 /** The page showing this record, when there is one to open. */
 function recordLink(entry: AuditLogEntry) {
-  const id = Number(entry.entityId)
-  return entry.entityType === 'Patient' && entry.action !== 'Deleted' && Number.isInteger(id) && id > 0
-    ? paths.patientDetail(id)
-    : undefined
+  const type = entry.entityType
+  if (!type)
+    return undefined
+  if (type === 'Patient') {
+    const id = Number(entry.entityId)
+    return entry.action !== 'Deleted' && Number.isInteger(id) && id > 0 ? paths.patientDetail(id) : undefined
+  }
+  if (type === 'Visit' || type === 'ClinicalFile') {
+    const patientField = entry.changes.find(c => c.field === 'PatientId')
+    const patientId = Number(patientField?.new ?? patientField?.old)
+    return Number.isInteger(patientId) && patientId > 0 ? paths.patientDetail(patientId) : undefined
+  }
+  if (type === 'MedicationStock' || type === 'StockChange')
+    return paths.medicationStock()
+  if (type === 'MedicationBrand')
+    return paths.medicationBrands()
+  if (type === 'MedicationActiveIngredient')
+    return paths.medicationActiveIngredients()
+  if (type === 'VillageCode')
+    return paths.settingsVillageCodes()
+  if (type === 'StaffUser' || type === 'UserRole' || type === 'UserToken')
+    return paths.settingsUsers()
+  if (type === 'Order' || type === 'OrderItem')
+    return paths.orders()
+  return undefined
 }
 
 function filterByEntity(entry: AuditLogEntry) {

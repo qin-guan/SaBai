@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { PhCaretDown, PhMapPin } from '@phosphor-icons/vue'
+import { PhCaretDown, PhGear, PhMapPin } from '@phosphor-icons/vue'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
@@ -30,12 +31,14 @@ const selected = computed({
   <div v-if="isLoading" class="px-2 py-1 text-xs opacity-80 touch:text-sm" role="status">
     Loading villages…
   </div>
-  <div
+  <NuxtLink
     v-else-if="!villageCodes || villageCodes.length === 0"
-    class="border border-warning-border bg-warning-subtle px-2 py-1 text-xs text-warning touch:text-sm"
+    :to="paths.settingsVillageCodes()"
+    class="border border-warning-border bg-warning-subtle px-2 py-1 text-xs text-warning hover:underline touch:text-sm"
+    title="Manage village codes"
   >
     No villages available
-  </div>
+  </NuxtLink>
   <DropdownMenu v-else>
     <DropdownMenuTrigger as-child>
       <Button
@@ -66,6 +69,13 @@ const selected = computed({
           <span class="text-muted-foreground">{{ village.code }}</span>
         </DropdownMenuRadioItem>
       </DropdownMenuRadioGroup>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem as-child>
+        <NuxtLink :to="paths.settingsVillageCodes()" class="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
+          <PhGear class="size-3.5" aria-hidden="true" />
+          <span>Manage village codes…</span>
+        </NuxtLink>
+      </DropdownMenuItem>
     </DropdownMenuContent>
   </DropdownMenu>
 </template>

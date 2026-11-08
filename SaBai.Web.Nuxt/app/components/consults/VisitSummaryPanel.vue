@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /** Read-only vitals and vision for the visit, shown beside the consult form. */
-const props = defineProps<{ visitId: number }>()
+const props = defineProps<{ patientId: number, visitId: number }>()
 
 const vitalsQuery = useVisitVitals(() => props.visitId)
 const eyesightQuery = useVisitEyesight(() => props.visitId)
@@ -46,6 +46,14 @@ const eyeRows = computed(() => {
   <StateMessage v-if="vitalsQuery.isLoading.value || eyesightQuery.isLoading.value" kind="loading" message="Loading vitals..." />
   <template v-else>
     <AppPanel title="Vitals" flush>
+      <template #actions>
+        <NuxtLink
+          :to="paths.vitalsDetail(props.patientId, props.visitId)"
+          class="text-xs font-semibold text-primary hover:underline touch:text-sm"
+        >
+          {{ vitals ? 'Edit Vitals →' : 'Record Vitals →' }}
+        </NuxtLink>
+      </template>
       <StateMessage v-if="!vitals" message="No vitals recorded for this visit." />
       <template v-else>
         <dl class="grid grid-cols-2 sm:grid-cols-4">
@@ -69,6 +77,14 @@ const eyeRows = computed(() => {
       </template>
     </AppPanel>
     <AppPanel title="Vision" flush>
+      <template #actions>
+        <NuxtLink
+          :to="paths.visionUpdateGlasses(props.patientId, props.visitId)"
+          class="text-xs font-semibold text-primary hover:underline touch:text-sm"
+        >
+          {{ eyesight ? 'Edit Vision →' : 'Record Vision →' }}
+        </NuxtLink>
+      </template>
       <StateMessage v-if="!eyesight" message="No vision recorded for this visit." />
       <dl v-else class="grid grid-cols-2 sm:grid-cols-4">
         <div v-for="row in eyeRows" :key="row.label" class="border-r border-b border-border px-2 py-1.5">

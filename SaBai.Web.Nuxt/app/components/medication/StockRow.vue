@@ -96,12 +96,18 @@ function onKeydown(event: KeyboardEvent) {
     @keydown="onKeydown"
   >
     <TableCell data-stack="title" class="font-semibold">
-      {{ item.ingredientName }}
+      <NuxtLink :to="paths.medicationActiveIngredients()" class="hover:text-primary hover:underline">
+        {{ item.ingredientName }}
+      </NuxtLink>
       <Badge v-if="item.isLowStock" variant="destructive" class="ml-1">
         Low
       </Badge>
     </TableCell>
-    <TableCell data-label="Brand">{{ item.brandName }}</TableCell>
+    <TableCell data-label="Brand">
+      <NuxtLink :to="paths.medicationBrands()" class="hover:text-primary hover:underline">
+        {{ item.brandName }}
+      </NuxtLink>
+    </TableCell>
     <TableCell data-label="Location" class="min-w-36">
       <template v-if="isEditing">
         <Input

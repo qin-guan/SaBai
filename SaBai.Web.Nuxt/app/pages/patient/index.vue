@@ -139,7 +139,9 @@ const SHOW_OPTIONS: { value: Show, label: string }[] = [
  * journey and the next step.
  */
 const rowLink = (p: Row) =>
-  station.value ? patientLinkFor(station.value, p.id, p.lastVisitId ?? undefined) : paths.patientDetail(p.id)
+  station.value && station.value !== 'pharmacy'
+    ? patientLinkFor(station.value, p.id, p.lastVisitId ?? undefined)
+    : paths.patientDetail(p.id)
 
 const emptyMessage = computed(() => {
   if (filter.value.trim())
@@ -251,11 +253,18 @@ const gridCols = 'md:grid-cols-[2rem_minmax(0,1fr)_minmax(15rem,22rem)_1rem] lg:
         <p class="text-xs text-muted-foreground touch:text-sm" role="status">
           {{ emptyMessage }}
         </p>
-        <Button v-if="scope === 'today' && !filter.trim()" as-child size="sm" variant="outline">
-          <NuxtLink :to="queryWith('scope', 'all')">
-            Show all time
-          </NuxtLink>
-        </Button>
+        <div class="flex flex-wrap justify-center gap-2">
+          <Button v-if="scope === 'today' && !filter.trim()" as-child size="sm" variant="outline">
+            <NuxtLink :to="queryWith('scope', 'all')">
+              Show all time
+            </NuxtLink>
+          </Button>
+          <Button v-if="!filter.trim() && !station" as-child size="sm" variant="outline">
+            <NuxtLink :to="paths.scanFace()">
+              <PhScan aria-hidden="true" /> Open Scan Face
+            </NuxtLink>
+          </Button>
+        </div>
       </div>
       <template v-else>
         <!-- Column headings (tablet and up); rows share the same grid. -->
@@ -293,7 +302,7 @@ const gridCols = 'md:grid-cols-[2rem_minmax(0,1fr)_minmax(15rem,22rem)_1rem] lg:
                     :to="rowLink(patient)"
                     class="row-link min-w-[6ch] shrink truncate text-sm font-semibold group-hover:text-primary after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-ring touch:text-base"
                   >
-                    <span class="sr-only">{{ station ? `Open ${stationLabel(station)}:` : 'Open record:' }}</span>
+                    <span class="sr-only">{{ station && station !== 'pharmacy' ? `Open ${stationLabel(station)}:` : 'Open record:' }}</span>
                     {{ patient.name }}
                   </NuxtLink>
                   <!-- Below laptop width the allergy rides next to the name (its own column on laptops). -->

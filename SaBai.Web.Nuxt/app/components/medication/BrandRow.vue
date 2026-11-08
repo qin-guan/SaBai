@@ -148,9 +148,9 @@ function onKeydown(event: KeyboardEvent) {
           {{ i.name }} ({{ i.unitOfMeasurement }})
         </NativeSelectOption>
       </NativeSelect>
-      <template v-else>
+      <NuxtLink v-else :to="paths.medicationActiveIngredients()" class="hover:text-primary hover:underline">
         {{ ingredientName }}
-      </template>
+      </NuxtLink>
     </TableCell>
     <TableCell data-label="Remarks" class="min-w-36">
       <Input v-if="isEditing" v-model="form.remarks" aria-label="Remarks" />

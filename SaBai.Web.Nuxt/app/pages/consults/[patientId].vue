@@ -15,10 +15,10 @@ const { patient, visits, selectedVisitId, selectedVisit, isLoading } = usePatien
     empty-message="No visits found for this patient. Please create a visit first to record a consult."
     choose-message="Please choose a visit to record a consult."
   >
-    <template #default="{ visit }">
+    <template #default="{ visit, patient: p }">
       <div class="grid grid-cols-1 gap-3 lg:grid-cols-2 lg:items-start">
         <aside class="flex min-w-0 flex-col gap-3" aria-label="This visit's vitals, vision and previous consults">
-          <VisitSummaryPanel :visit-id="visit.id" />
+          <VisitSummaryPanel :patient-id="p.id" :visit-id="visit.id" />
           <PreviousConsults :visit-id="visit.id" />
         </aside>
         <ConsultForm :key="visit.id" :visit-id="visit.id" />

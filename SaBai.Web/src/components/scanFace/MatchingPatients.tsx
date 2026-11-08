@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import toast from "react-hot-toast";
 import { MdPersonSearch } from "react-icons/md";
@@ -158,9 +159,12 @@ export default function MatchingPatients({
                 className="h-12 w-12 rounded-lg border border-slate-200 object-cover"
               />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-slate-900">
+                <Link
+                  href={paths.patientDetail(match.id)}
+                  className="block truncate text-sm font-medium text-slate-900 hover:text-indigo-700 hover:underline"
+                >
                   {match.name}
-                </p>
+                </Link>
                 <p className="text-xs text-slate-500">
                   {match.displayId}
                   {match.villageCode ? ` • ${match.villageCode}` : ""} •{" "}

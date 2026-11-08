@@ -82,7 +82,7 @@ function UpdateGlassesPage() {
 
   return (
     <div className="min-h-screen flex-1 p-8 bg-slate-50">
-      <div className="w-full mx-auto max-w-5xl">
+      <div className="w-full max-w-5xl">
         <Breadcrumbs
           items={[
             { label: "Home", href: "/" },

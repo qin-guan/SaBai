@@ -202,7 +202,7 @@ const gridCols = 'md:grid-cols-[2rem_minmax(0,1fr)_minmax(15rem,22rem)_1rem] lg:
         v-for="card in stationCards"
         :key="card.key ?? 'all'"
         :to="queryWith('station', card.key)"
-        class="flex min-w-0 flex-col gap-0.5 bg-card px-2.5 py-1.5 hover:bg-accent focus-visible:bg-accent sm:px-3"
+        class="flex min-w-0 flex-col gap-0.5 bg-card px-3 py-1.5 hover:bg-accent focus-visible:bg-accent"
         :class="station === card.key && 'bg-accent shadow-[inset_0_-3px_0_var(--color-primary)]'"
         :aria-current="station === card.key ? 'page' : undefined"
         :title="card.note"
@@ -300,7 +300,7 @@ const gridCols = 'md:grid-cols-[2rem_minmax(0,1fr)_minmax(15rem,22rem)_1rem] lg:
                 <p class="flex min-w-0 items-center gap-1.5">
                   <NuxtLink
                     :to="rowLink(patient)"
-                    class="row-link min-w-[6ch] shrink truncate text-sm font-semibold group-hover:text-primary after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-ring touch:text-base"
+                    class="row-link min-w-0 shrink truncate text-sm font-semibold group-hover:text-primary after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-ring touch:text-base"
                   >
                     <span class="sr-only">{{ station && station !== 'pharmacy' ? `Open ${stationLabel(station)}:` : 'Open record:' }}</span>
                     {{ patient.name }}

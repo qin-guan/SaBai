@@ -8,6 +8,48 @@ namespace SaBai.Tests.Broadcasts;
 public sealed class BroadcastEdgeTests(AppFixture fixture)
 {
     [Test]
+    public async Task List_LimitAndSince_PageNewestFirst()
+    {
+        // Arrange
+        var client = fixture.CreateApiClient();
+        await client.LoginAsync();
+        var ids = new List<int>();
+        for (var i = 0; i < 3; i++)
+        {
+            var created = await client.PostAsJsonAsync(
+                "/broadcasts",
+                new
+                {
+                    title = $"Page {i} {ClinicSetup.Suffix()}",
+                    body = "paging",
+                    severity = "info",
+                },
+                ApiJson.Options
+            );
+            ids.Add((await created.Content.ReadFromJsonAsync<BroadcastCreated>(ApiJson.Options))!.Id);
+        }
+
+        // Act
+        var newestTwo = await client.GetFromJsonAsync<List<BroadcastCreated>>(
+            "/broadcasts?limit=2",
+            ApiJson.Options
+        );
+        var afterFirst = await client.GetFromJsonAsync<List<BroadcastCreated>>(
+            $"/broadcasts?since={ids[0]}",
+            ApiJson.Options
+        );
+        var tooMany = await client.GetAsync("/broadcasts?limit=201");
+        var zero = await client.GetAsync("/broadcasts?limit=0");
+
+        // Assert
+        await Assert.That(newestTwo!.Select(x => x.Id)).IsEquivalentTo(new[] { ids[2], ids[1] });
+        await Assert.That(afterFirst!.Select(x => x.Id).Take(2)).IsEquivalentTo(new[] { ids[2], ids[1] });
+        await Assert.That(afterFirst!.All(x => x.Id > ids[0])).IsTrue();
+        await Assert.That(tooMany.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
+        await Assert.That(zero.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
+    }
+
+    [Test]
     public async Task Create_ListContainsTitleAndAdminCreator()
     {
         // Arrange

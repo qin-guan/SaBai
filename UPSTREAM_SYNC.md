@@ -39,3 +39,6 @@ Last synced upstream commit: `1559e9b9e0c1ad60426ae0e461a1f5b9b80b0c9b`
   tables, which overlap `DentalConsult` here (from qin-guan/SaBai#7). Already ported from the
   same range, so don't redo them: #318 (zod, already newer here), #328 (spacing and
   breadcrumbs), #330 (stock page buttons).
+- Already ported from the held range, so don't redo it: #311 (broadcast list `limit`/`since`).
+  The SDK was not regenerated for it because `pnpm generate` currently fails on main (kubb
+  core 5.16.0 with plugin-fetch 5.5.6); the new query params are optional and unused by the web app.

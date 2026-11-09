@@ -41,6 +41,7 @@ public sealed class Validator : Validator<Request>
         RuleFor(x => x.ReferralNotes).MaximumLength(2000);
         RuleFor(x => x.RecommendedFacility).MaximumLength(200);
         RuleFor(x => x.Remarks).MaximumLength(2000);
+        RuleFor(x => x.ImageFileId).GreaterThan(0).When(x => x.ImageFileId is not null);
         RuleFor(x => x.Diagnoses).Must(x => x is null || x.Count <= 50).WithMessage("At most 50 diagnoses can be recorded.");
         RuleForEach(x => x.Diagnoses).NotNull().MaximumLength(500);
     }

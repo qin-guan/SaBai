@@ -105,6 +105,9 @@ public sealed record DentalConsultResponse
 
     public string? Remarks { get; init; }
 
+    /// <summary>Id of the consultation's image; fetch its bytes from <c>GET /files/{id}/content</c>.</summary>
+    public int? ImageFileId { get; init; }
+
     public required DateTimeOffset UpdatedAt { get; init; }
 
     public static DentalConsultResponse From(DentalConsult d) =>
@@ -160,6 +163,7 @@ public sealed record DentalConsultResponse
             ReferralNotes = d.ReferralNotes,
             RecommendedFacility = d.RecommendedFacility,
             Remarks = d.Remarks,
+            ImageFileId = d.ImageFileId,
             UpdatedAt = d.UpdatedAt,
         };
 }

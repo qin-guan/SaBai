@@ -124,6 +124,13 @@ public sealed class DentalConsult
 
     public string? Remarks { get; set; }
 
+    // 8. Image
+
+    /// <summary>An uploaded image for the consultation (stored like any other file).</summary>
+    public int? ImageFileId { get; set; }
+
+    public StoredFile? ImageFile { get; set; }
+
     public DateTimeOffset UpdatedAt { get; set; }
 
     /// <summary>When the record was first saved; stamped by <c>AppDbContext</c>. Null for records from before it was tracked.</summary>

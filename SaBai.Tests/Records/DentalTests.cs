@@ -1,3 +1,4 @@
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using SaBai.Tests.Support;
@@ -142,6 +143,114 @@ public sealed class DentalTests(AppFixture fixture)
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.NotFound);
+    }
+
+    [Test]
+    public async Task Put_WithImageFile_LinksItAndOmittingClearsIt()
+    {
+        // Arrange
+        var client = fixture.CreateApiClient();
+        await client.LoginAsync();
+        var (patientId, visitId) = await RegisterAsync(client);
+        var fileId = await UploadImageAsync(client, patientId);
+
+        // Act
+        var linked = await client.PutAsJsonAsync(
+            $"/visits/{visitId}/dental",
+            new { chiefComplaint = "Pain", imageFileId = fileId },
+            ApiJson.Options
+        );
+        var linkedBody = await linked.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
+        var content = await client.GetAsync($"/files/{fileId}/content");
+        var cleared = await client.PutAsJsonAsync(
+            $"/visits/{visitId}/dental",
+            new { chiefComplaint = "Pain" },
+            ApiJson.Options
+        );
+        var clearedBody = await cleared.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
+
+        // Assert
+        await Assert.That(linked.StatusCode).IsEqualTo(HttpStatusCode.OK);
+        await Assert.That(linkedBody.GetProperty("imageFileId").GetInt32()).IsEqualTo(fileId);
+        await Assert.That(content.StatusCode).IsEqualTo(HttpStatusCode.OK);
+        await Assert.That(cleared.StatusCode).IsEqualTo(HttpStatusCode.OK);
+        await Assert.That(IsNullOrMissing(clearedBody, "imageFileId")).IsTrue();
+    }
+
+    [Test]
+    public async Task Put_ImageFileUnknown_ReturnsBadRequest()
+    {
+        // Arrange
+        var client = fixture.CreateApiClient();
+        await client.LoginAsync();
+        var (_, visitId) = await RegisterAsync(client);
+
+        // Act
+        var response = await client.PutAsJsonAsync(
+            $"/visits/{visitId}/dental",
+            new { imageFileId = 99999999 },
+            ApiJson.Options
+        );
+
+        // Assert
+        await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
+    }
+
+    [Test]
+    public async Task Put_ImageFileOfAnotherPatient_ReturnsBadRequest()
+    {
+        // Arrange
+        var client = fixture.CreateApiClient();
+        await client.LoginAsync();
+        var (_, visitId) = await RegisterAsync(client);
+        var (otherPatientId, _) = await RegisterAsync(client);
+        var fileId = await UploadImageAsync(client, otherPatientId);
+
+        // Act
+        var response = await client.PutAsJsonAsync(
+            $"/visits/{visitId}/dental",
+            new { imageFileId = fileId },
+            ApiJson.Options
+        );
+
+        // Assert
+        await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
+    }
+
+    [Test]
+    public async Task Put_ImageFileSoftDeleted_ReturnsBadRequest()
+    {
+        // Arrange
+        var client = fixture.CreateApiClient();
+        await client.LoginAsync();
+        var (patientId, visitId) = await RegisterAsync(client);
+        var fileId = await UploadImageAsync(client, patientId);
+        (await client.DeleteAsync($"/files/{fileId}")).EnsureSuccessStatusCode();
+
+        // Act
+        var response = await client.PutAsJsonAsync(
+            $"/visits/{visitId}/dental",
+            new { imageFileId = fileId },
+            ApiJson.Options
+        );
+
+        // Assert
+        await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
+    }
+
+    private static async Task<int> UploadImageAsync(HttpClient client, int patientId)
+    {
+        using var content = new MultipartFormDataContent();
+        content.Add(new StringContent(patientId.ToString()), "patientId");
+        var bytes = new ByteArrayContent([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);
+        bytes.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+        content.Add(bytes, "files", $"dental-{ClinicSetup.Suffix()}.png");
+        content.Add(new StringContent("dental image"), "descriptions");
+
+        var response = await client.PostAsync("/files", content);
+        response.EnsureSuccessStatusCode();
+        var created = await response.Content.ReadFromJsonAsync<List<JsonElement>>(ApiJson.Options);
+        return created![0].GetProperty("id").GetInt32();
     }
 
     private static bool IsNullOrMissing(JsonElement body, string name) =>

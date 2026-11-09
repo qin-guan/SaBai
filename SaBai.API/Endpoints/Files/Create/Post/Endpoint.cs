@@ -16,7 +16,7 @@ public sealed class Endpoint(AppDbContext db, IAmazonS3 s3, RustFsSettings stora
     {
         Post("/files");
         AllowFileUploads();
-        MaxRequestBodySize(ClinicalFile.MaxBytes * 8L);
+        MaxRequestBodySize(StoredFile.MaxBytes * 8L);
         Roles(StaffRoles.Admin, StaffRoles.Member);
         Summary(s => s.Summary = "Upload clinical files to RustFS");
     }
@@ -40,7 +40,7 @@ public sealed class Endpoint(AppDbContext db, IAmazonS3 s3, RustFsSettings stora
         }
 
         var uploadedKeys = new List<string>();
-        var created = new List<ClinicalFile>();
+        var created = new List<StoredFile>();
         try
         {
             for (var i = 0; i < files.Count; i++)
@@ -62,12 +62,12 @@ public sealed class Endpoint(AppDbContext db, IAmazonS3 s3, RustFsSettings stora
                     throw new BadRequestException($"{fileName} - File is empty.");
                 }
 
-                if (upload.Length > ClinicalFile.MaxBytes)
+                if (upload.Length > StoredFile.MaxBytes)
                 {
                     throw new BadRequestException($"{fileName} - File is too large.");
                 }
 
-                if (!ClinicalFile.AllowedContentTypes.Contains(upload.ContentType ?? ""))
+                if (!StoredFile.AllowedContentTypes.Contains(upload.ContentType ?? ""))
                 {
                     throw new BadRequestException(
                         $"{fileName} - Only PDF, JPEG, PNG and DOCX files are allowed."
@@ -89,7 +89,7 @@ public sealed class Endpoint(AppDbContext db, IAmazonS3 s3, RustFsSettings stora
                 );
                 uploadedKeys.Add(storedName);
 
-                var file = new ClinicalFile
+                var file = new StoredFile
                 {
                     PatientId = patientId,
                     FileName = fileName,
@@ -100,7 +100,7 @@ public sealed class Endpoint(AppDbContext db, IAmazonS3 s3, RustFsSettings stora
                     CreatedAt = DateTimeOffset.UtcNow,
                 };
                 created.Add(file);
-                db.ClinicalFiles.Add(file);
+                db.Files.Add(file);
             }
 
             await db.SaveChangesAsync(ct);

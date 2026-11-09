@@ -51,7 +51,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
 
-    public DbSet<ClinicalFile> ClinicalFiles => Set<ClinicalFile>();
+    public DbSet<StoredFile> Files => Set<StoredFile>();
 
     public DbSet<Broadcast> Broadcasts => Set<Broadcast>();
 
@@ -190,6 +190,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
                 .WithOne(x => x.DentalConsult)
                 .HasForeignKey<DentalConsult>(x => x.VisitId)
                 .OnDelete(DeleteBehavior.Cascade);
+            entity
+                .HasOne(x => x.ImageFile)
+                .WithMany()
+                .HasForeignKey(x => x.ImageFileId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             // Store every examination/history choice by name, like the other enums here.
             foreach (
@@ -340,8 +345,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
-        modelBuilder.Entity<ClinicalFile>(entity =>
+        modelBuilder.Entity<StoredFile>(entity =>
         {
+            entity.ToTable("Files");
             entity.Property(x => x.FileName).HasMaxLength(255);
             entity.Property(x => x.StoredFileName).HasMaxLength(255);
             entity.HasIndex(x => new { x.PatientId, x.IsDeleted });

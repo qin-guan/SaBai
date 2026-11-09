@@ -34,11 +34,18 @@ describe("stationThroughput", () => {
     expect(stationThroughput(journeys, "consults", now).perMinute).toBeCloseTo(3 / 30);
   });
 
-  it("falls back to the whole day when the last hour is quiet", () => {
+  it("falls back to the recent session window when the last hour is quiet", () => {
     const journeys = [240, 180, 120, 30].map(m => done(minsAgo(m)));
     const t = stationThroughput(journeys, "consults", now);
-    expect(t.basis).toBe("today");
+    expect(t.basis).toBe("recent");
     expect(t.perMinute).toBeCloseTo(4 / 240);
+  });
+
+  it("ignores completions from older clinic sessions beyond the 12-hour window", () => {
+    const journeys = [2_000, 1_500, 1_000, 5].map(m => done(minsAgo(m)));
+    const t = stationThroughput(journeys, "consults", now);
+    expect(t.perMinute).toBeNull();
+    expect(t.samples).toBe(1);
   });
 
   it("has no estimate with too few completions", () => {

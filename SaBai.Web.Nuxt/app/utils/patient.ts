@@ -57,10 +57,16 @@ export function hasDrugAllergy(drugAllergy: string | null | undefined) {
   return !!value && !/^(nil|nkda|none|no|-|n\/a|na)$/i.test(value);
 }
 
-/** Whether a date falls on the same local calendar day as `now`. */
-export function isSameDay(date: Date | string, now = new Date()) {
-  const d = new Date(date);
-  return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+export const RECENT_VISIT_MS = 24 * 60 * 60_000;
+
+/**
+ * Whether a visit timestamp is within the last 24 hours of `now` (spanning
+ * overnight clinics that run past midnight without splitting by calendar day).
+ */
+export function isRecentVisit(date: Date | string | null | undefined, now = new Date()) {
+  if (!date) return false;
+  const elapsed = now.getTime() - new Date(date).getTime();
+  return elapsed >= 0 && elapsed < RECENT_VISIT_MS;
 }
 
 /**

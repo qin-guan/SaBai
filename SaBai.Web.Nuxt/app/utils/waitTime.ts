@@ -13,11 +13,12 @@ import type { Journey, StationKey } from './journey'
  *
  * The window is the last hour, so the estimate follows the clinic's current
  * pace. When the last hour has too few completions to be meaningful it falls
- * back to the whole day (from the day's first completion). With fewer than
- * MIN_SAMPLES completions there is no estimate.
+ * back to the last 12 hours (spanning overnight clinics without pulling in old
+ * clinic days). With fewer than MIN_SAMPLES completions there is no estimate.
  */
 
 export const WINDOW_MINUTES = 60
+export const SESSION_MINUTES = 12 * 60
 export const MIN_SAMPLES = 3
 /** Shortest span to divide by, so two quick completions don't imply a huge rate. */
 export const MIN_SPAN_MINUTES = 10
@@ -27,8 +28,8 @@ export interface StationThroughput {
   perMinute: number | null
   /** Completions the rate is based on. */
   samples: number
-  /** What the rate is based on: saved records (last hour / today) or this device's form timings. */
-  basis: 'last hour' | 'today' | 'form timing' | null
+  /** What the rate is based on: saved records (last hour / recent session) or this device's form timings. */
+  basis: 'last hour' | 'recent' | 'form timing' | null
 }
 
 type TimestampKey = 'vitalsAt' | 'visionAt' | 'consultAt' | 'dentalAt' | 'pharmacyAt'
@@ -53,18 +54,20 @@ export function completionTimes(journeys: Journey[], station: StationKey): numbe
 /** Throughput of one station, from completions that happened before `now`. */
 export function stationThroughput(journeys: Journey[], station: StationKey, now = Date.now()): StationThroughput {
   const times = completionTimes(journeys, station).filter(t => t <= now)
+  const sessionStart = now - SESSION_MINUTES * 60_000
+  const session = times.filter(t => t >= sessionStart)
   const windowStart = now - WINDOW_MINUTES * 60_000
-  const recent = times.filter(t => t >= windowStart)
+  const recent = session.filter(t => t >= windowStart)
   if (recent.length >= MIN_SAMPLES) {
     // Measure from the first completion in the window if the station started within it.
-    const span = Math.max((now - Math.max(windowStart, Math.min(...times))) / 60_000, MIN_SPAN_MINUTES)
+    const span = Math.max((now - Math.max(windowStart, Math.min(...session))) / 60_000, MIN_SPAN_MINUTES)
     return { perMinute: recent.length / span, samples: recent.length, basis: 'last hour' }
   }
-  if (times.length >= MIN_SAMPLES) {
-    const span = Math.max((now - Math.min(...times)) / 60_000, MIN_SPAN_MINUTES)
-    return { perMinute: times.length / span, samples: times.length, basis: 'today' }
+  if (session.length >= MIN_SAMPLES) {
+    const span = Math.max((now - Math.min(...session)) / 60_000, MIN_SPAN_MINUTES)
+    return { perMinute: session.length / span, samples: session.length, basis: 'recent' }
   }
-  return { perMinute: null, samples: times.length, basis: null }
+  return { perMinute: null, samples: session.length, basis: null }
 }
 
 /**

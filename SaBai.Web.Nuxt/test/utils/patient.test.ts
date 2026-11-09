@@ -1,7 +1,7 @@
 import {
   hasDrugAllergy,
   parseDrugAllergies,
-  isSameDay,
+  isRecentVisit,
   formatPatientCode,
   formatPatientId,
   toDateInputValue,
@@ -117,10 +117,11 @@ describe("parseDrugAllergies", () => {
   });
 });
 
-describe("isSameDay", () => {
-  it("compares local calendar days", () => {
-    const now = new Date(2026, 10, 6, 9, 0);
-    expect(isSameDay(new Date(2026, 10, 6, 23, 59), now)).toBe(true);
-    expect(isSameDay(new Date(2026, 10, 5, 23, 59), now)).toBe(false);
+describe("isRecentVisit", () => {
+  it("includes visits within the last 24 hours, including across midnight", () => {
+    const afterMidnight = new Date(2026, 10, 7, 0, 30);
+    expect(isRecentVisit(new Date(2026, 10, 6, 23, 45), afterMidnight)).toBe(true);
+    expect(isRecentVisit(new Date(2026, 10, 5, 23, 45), afterMidnight)).toBe(false);
+    expect(isRecentVisit(null, afterMidnight)).toBe(false);
   });
 });

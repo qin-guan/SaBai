@@ -9,48 +9,31 @@ import { Input } from '@/components/ui/input'
 /**
  * The patient list — one page for every station.
  *
- * Unfiltered it is the front desk's overview: everyone seen today and where
- * each is in their journey (vitals → vision → consult → dental → pharmacy).
- * With `?station=vitals` (the sidebar's station links) it becomes that
- * station's worklist: who still needs it, earliest arrival first, and a row
- * that opens the station's form on the patient's current visit.
+ * Unfiltered it is the front desk's overview: every patient and where their
+ * latest visit is in its journey (vitals → vision → consult → dental → pharmacy).
+ * With `?station=vitals` (the sidebar's station links) it splits into two
+ * sections: a "Waiting for <Station>" queue on top (earliest arrival first) and
+ * a collapsible "Completed & other patients" section below, with no calendar-day
+ * cutoff so clinics running past midnight work without interruption.
  *
  * The station cards show how backlogged each station is: how many still need
  * it and roughly how long someone sent there now would wait. The pace comes
  * from each station's measured throughput (records saved in the last hour, or
- * today), falling back to this device's form-fill times — see
+ * recent session), falling back to this device's form-fill times — see
  * utils/waitTime.ts and utils/serviceTime.ts.
  */
 const route = useRoute()
 const station = computed<StationKey | undefined>(() =>
   isStationKey(route.query.station) ? route.query.station : undefined,
 )
-type Show = 'waiting' | 'done' | 'all'
-const show = computed<Show>(() =>
-  route.query.show === 'done' || route.query.show === 'all' ? route.query.show : 'waiting',
-)
-const scope = computed<'today' | 'all'>(() => (route.query.scope === 'all' ? 'all' : 'today'))
 
 useHead({ title: () => `${station.value ? stationLabel(station.value) : 'Patients'} · Sa'Bai` })
-
-/** Changes one query parameter, keeping the others (defaults are left out of the URL). */
-function queryWith(key: string, value: string | undefined) {
-  const query = { ...route.query, [key]: value }
-  for (const k of Object.keys(query)) {
-    if (query[k] === undefined || query[k] === '')
-      delete query[k]
-  }
-  return { path: paths.patient(), query }
-}
 
 const filter = ref('')
 const { data, isLoading, isError } = usePatientsWithLatestVisit()
 type Row = NonNullable<typeof data.value>['patients'][number]
 
-const inScope = computed(() => {
-  const all = data.value?.patients ?? []
-  return scope.value === 'all' ? all : all.filter(p => p.lastVisitDate && isSameDay(p.lastVisitDate))
-})
+const allPatients = computed(() => data.value?.patients ?? [])
 
 const matchesFilter = (p: Row) => {
   const needle = filter.value.trim().toLowerCase()
@@ -64,7 +47,7 @@ const matchesFilter = (p: Row) => {
 const waitingCounts = computed(() => {
   const counts = {} as Record<StationKey, number>
   for (const { key } of STATIONS)
-    counts[key] = inScope.value.filter(p => p.lastVisitJourney && isWaitingFor(p.lastVisitJourney, key)).length
+    counts[key] = allPatients.value.filter(p => p.lastVisitJourney && isWaitingFor(p.lastVisitJourney, key)).length
   return counts
 })
 
@@ -72,7 +55,7 @@ const waitingCounts = computed(() => {
 const now = shallowRef(new Date())
 useIntervalFn(() => (now.value = new Date()), 60_000)
 const throughput = computed(() => {
-  const journeys = (data.value?.patients ?? []).flatMap(p => (p.lastVisitJourney ? [p.lastVisitJourney] : []))
+  const journeys = allPatients.value.flatMap(p => (p.lastVisitJourney ? [p.lastVisitJourney] : []))
   const out = {} as Record<StationKey, StationThroughput>
   for (const { key } of STATIONS) {
     out[key] = withServiceTimeFallback(
@@ -86,32 +69,41 @@ const basisNote = (t: StationThroughput) =>
   t.basis === 'form timing'
     ? `About ${formatRate(t.perMinute)}, from how long forms take on this device`
     : t.basis
-      ? `About ${formatRate(t.perMinute)}, from ${t.samples} patients seen ${t.basis === 'today' ? 'today' : 'in the last hour'}`
+      ? `About ${formatRate(t.perMinute)}, from ${t.samples} patients seen ${t.basis === 'last hour' ? 'in the last hour' : 'recently'}`
       : 'Not enough patients seen yet to estimate a wait'
 
-const rows = computed(() => {
+const filteredAll = computed(() => allPatients.value.filter(matchesFilter))
+
+/** Patients currently in the selected station's queue, earliest visit first. */
+const waitingRows = computed(() => {
   const s = station.value
-  let list = inScope.value.filter(matchesFilter)
   if (!s)
-    return list
-  // A station can only work on a visit.
-  list = list.filter(p => p.lastVisitJourney)
-  if (show.value !== 'all') {
-    const waiting = show.value === 'waiting'
-    list = list.filter(p => isWaitingFor(p.lastVisitJourney!, s) === waiting)
-  }
-  if (show.value === 'waiting')
-    list = [...list].sort((a, b) => new Date(a.lastVisitDate!).getTime() - new Date(b.lastVisitDate!).getTime())
-  return list
+    return []
+  return allPatients.value
+    .filter(p => p.lastVisitJourney && isWaitingFor(p.lastVisitJourney, s) && matchesFilter(p))
+    .sort((a, b) => new Date(a.lastVisitDate!).getTime() - new Date(b.lastVisitDate!).getTime())
+})
+
+const isDoneAtStation = (p: Row, s: StationKey) =>
+  !!p.lastVisitJourney && stepState(p.lastVisitJourney, s).state === 'done'
+
+/** Everyone not waiting for the selected station (completed this station first, then others). */
+const otherRows = computed(() => {
+  const s = station.value
+  if (!s)
+    return []
+  return allPatients.value
+    .filter(p => !(p.lastVisitJourney && isWaitingFor(p.lastVisitJourney, s)) && matchesFilter(p))
+    .sort((a, b) => Number(isDoneAtStation(b, s)) - Number(isDoneAtStation(a, s)))
 })
 
 /** The summary row: all patients, then each station's backlog and wait for someone sent now. */
 const stationCards = computed(() => [
   {
     key: undefined as StationKey | undefined,
-    label: 'All',
-    count: inScope.value.length,
-    detail: scope.value === 'today' ? 'In clinic today' : 'Patients',
+    label: 'All patients',
+    count: allPatients.value.length,
+    detail: 'All records',
     note: '',
   },
   ...STATIONS.map(({ key, label }) => {
@@ -119,19 +111,88 @@ const stationCards = computed(() => [
     const waiting = waitingCounts.value[key]
     const minutes = stationWaitMinutes(t, waiting)
     const detail = !waiting
-      ? 'No wait'
+      ? 'None waiting'
       : minutes !== null
-        ? `${formatWait(minutes)} wait`
+        ? `Waiting · ${formatWait(minutes)}`
         : 'Waiting'
     return { key: key as StationKey | undefined, label, count: waiting, detail, note: basisNote(t) }
   }),
 ])
 
-const SHOW_OPTIONS: { value: Show, label: string }[] = [
-  { value: 'waiting', label: 'Waiting' },
-  { value: 'done', label: 'Done' },
-  { value: 'all', label: 'All' },
-]
+const sections = computed(() => {
+  const trimmed = filter.value.trim()
+  const s = station.value
+  if (!s) {
+    return [
+      {
+        key: 'all',
+        title: 'All patients',
+        description: isLoading.value ? undefined : `${filteredAll.value.length}`,
+        collapsible: false,
+        defaultOpen: true,
+        arrivedLabel: 'Last visit',
+        rows: filteredAll.value,
+        emptyMessage: trimmed
+          ? `No patients match “${trimmed}”.`
+          : 'No patients found. Register a patient from Scan Face.',
+        showSearch: true,
+        showScanFaceEmptyAction: !trimmed,
+      },
+    ]
+  }
+
+  const label = stationLabel(s)
+  const waitingCount = waitingRows.value.length
+  const minutes = stationWaitMinutes(throughput.value[s], waitingCounts.value[s])
+  const waitingDescription = isLoading.value
+    ? undefined
+    : !waitingCount
+        ? 'None waiting'
+        : minutes !== null
+          ? `${waitingCount} waiting · ${formatWait(minutes)} wait`
+          : `${waitingCount} waiting`
+
+  const doneCount = otherRows.value.filter(p => isDoneAtStation(p, s)).length
+  const otherDescription = doneCount > 0
+    ? `${doneCount} done · ${otherRows.value.length} total`
+    : `${otherRows.value.length}`
+
+  const list = [
+    {
+      key: `waiting-${s}`,
+      title: `Waiting for ${label}`,
+      description: waitingDescription,
+      collapsible: false,
+      defaultOpen: true,
+      arrivedLabel: 'Arrived',
+      rows: waitingRows.value,
+      emptyMessage: trimmed
+        ? `No patients waiting for ${label} match “${trimmed}”.`
+        : `Nobody is waiting for ${label}.`,
+      showSearch: true,
+      showScanFaceEmptyAction: false,
+    },
+  ]
+
+  if (!isLoading.value && !isError.value) {
+    list.push({
+      key: `other-${s}`,
+      title: 'Completed & other patients',
+      description: otherDescription,
+      collapsible: true,
+      defaultOpen: waitingCount === 0 || !!trimmed,
+      arrivedLabel: 'Last visit',
+      rows: otherRows.value,
+      emptyMessage: trimmed
+        ? `No other patients match “${trimmed}”.`
+        : 'No other patients.',
+      showSearch: false,
+      showScanFaceEmptyAction: false,
+    })
+  }
+
+  return list
+})
 
 /**
  * Where a row leads: in a station worklist, that station's form for the
@@ -143,27 +204,16 @@ const rowLink = (p: Row) =>
     ? patientLinkFor(station.value, p.id, p.lastVisitId ?? undefined)
     : paths.patientDetail(p.id)
 
-const emptyMessage = computed(() => {
-  if (filter.value.trim())
-    return `No patients match “${filter.value.trim()}”.`
-  if (station.value && show.value === 'waiting')
-    return `Nobody is waiting for ${stationLabel(station.value)}${scope.value === 'today' ? ' today' : ''}.`
-  if (scope.value === 'today')
-    return 'No visits today yet. Start one from Scan Face (by face or search).'
-  return 'No patients found. Register a patient from Scan Face.'
-})
-
 const timeOf = (date: string) => new Date(date).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
-const dateOf = (date: string) => (isSameDay(date) ? timeOf(date) : new Date(date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: '2-digit' }))
+const dateOf = (date: string) => (isRecentVisit(date, now.value) ? timeOf(date) : new Date(date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: '2-digit' }))
 
-/** Time in clinic so far ("42 min", "1 h 05"), for today's arrivals only. */
+/** Time in clinic so far ("42 min", "1 h 05"), for visits within the last 24 hours. */
 function waited(date: string | null) {
-  if (!date || !isSameDay(date))
+  if (!isRecentVisit(date, now.value))
     return ''
-  const minutes = Math.max(0, Math.floor((now.value.getTime() - new Date(date).getTime()) / 60_000))
+  const minutes = Math.max(0, Math.floor((now.value.getTime() - new Date(date!).getTime()) / 60_000))
   return minutes < 60 ? `${minutes} min` : `${Math.floor(minutes / 60)} h ${String(minutes % 60).padStart(2, '0')}`
 }
-const arrivedLabel = computed(() => (scope.value === 'today' ? 'Arrived' : 'Last visit'))
 
 /*
  * One grid for the heading and every row, so columns line up:
@@ -201,7 +251,7 @@ const gridCols = 'md:grid-cols-[2rem_minmax(0,1fr)_minmax(15rem,22rem)_1rem] lg:
       <NuxtLink
         v-for="card in stationCards"
         :key="card.key ?? 'all'"
-        :to="queryWith('station', card.key)"
+        :to="paths.patient(card.key)"
         class="flex min-w-0 flex-col gap-0.5 bg-card px-3 py-1.5 hover:bg-accent focus-visible:bg-accent"
         :class="station === card.key && 'bg-accent shadow-[inset_0_-3px_0_var(--color-primary)]'"
         :aria-current="station === card.key ? 'page' : undefined"
@@ -219,47 +269,29 @@ const gridCols = 'md:grid-cols-[2rem_minmax(0,1fr)_minmax(15rem,22rem)_1rem] lg:
     </nav>
 
     <AppPanel
-      :title="station ? `${SHOW_OPTIONS.find(o => o.value === show)!.label} for ${stationLabel(station)}` : (scope === 'today' ? 'In clinic today' : 'All patients')"
-      :description="isLoading ? undefined : `${rows.length}`"
+      v-for="section in sections"
+      :key="section.key"
+      :title="section.title"
+      :description="section.description"
+      :collapsible="section.collapsible"
+      :default-open="section.defaultOpen"
       flush
     >
-      <!-- Controls sit on the list they filter. -->
-      <template #actions>
+      <template v-if="section.showSearch" #actions>
         <div class="relative w-full sm:w-56">
           <PhMagnifyingGlass class="pointer-events-none absolute top-1/2 left-2 size-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
           <Input v-model="filter" type="search" class="h-7 bg-card pl-7 text-xs touch:h-11" placeholder="Name, ID or phone" aria-label="Filter patients" />
-        </div>
-        <div class="flex flex-wrap gap-2">
-          <Segmented
-            v-if="station"
-            label="Show"
-            :options="SHOW_OPTIONS.map(o => ({ ...o, to: queryWith('show', o.value === 'waiting' ? undefined : o.value) }))"
-            :value="show"
-          />
-          <Segmented
-            label="Visits"
-            :options="[
-              { value: 'today', label: 'Today', to: queryWith('scope', undefined) },
-              { value: 'all', label: 'All time', to: queryWith('scope', 'all') },
-            ]"
-            :value="scope"
-          />
         </div>
       </template>
 
       <StateMessage v-if="isError" kind="error" message="Patients could not be loaded. Check the connection and reload." />
       <StateMessage v-else-if="isLoading" kind="loading" message="Loading patients..." />
-      <div v-else-if="rows.length === 0" class="flex flex-col items-center gap-2 px-3 py-10 text-center">
+      <div v-else-if="section.rows.length === 0" class="flex flex-col items-center gap-2 px-3 py-10 text-center">
         <p class="text-xs text-muted-foreground touch:text-sm" role="status">
-          {{ emptyMessage }}
+          {{ section.emptyMessage }}
         </p>
-        <div class="flex flex-wrap justify-center gap-2">
-          <Button v-if="scope === 'today' && !filter.trim()" as-child size="sm" variant="outline">
-            <NuxtLink :to="queryWith('scope', 'all')">
-              Show all time
-            </NuxtLink>
-          </Button>
-          <Button v-if="!filter.trim() && !station" as-child size="sm" variant="outline">
+        <div v-if="section.showScanFaceEmptyAction" class="flex flex-wrap justify-center gap-2">
+          <Button as-child size="sm" variant="outline">
             <NuxtLink :to="paths.scanFace()">
               <PhScan aria-hidden="true" /> Open Scan Face
             </NuxtLink>
@@ -278,12 +310,12 @@ const gridCols = 'md:grid-cols-[2rem_minmax(0,1fr)_minmax(15rem,22rem)_1rem] lg:
           <span class="hidden lg:block">Allergies</span>
           <span class="hidden lg:block">ID</span>
           <span class="hidden lg:block">Age / sex</span>
-          <span class="hidden lg:block">{{ arrivedLabel }}</span>
+          <span class="hidden lg:block">{{ section.arrivedLabel }}</span>
           <span>Journey</span>
           <span />
         </div>
         <ul class="divide-y divide-border">
-          <li v-for="patient in rows" :key="patient.id">
+          <li v-for="patient in section.rows" :key="patient.id">
             <!--
               The whole row opens the patient (the name's link stretches over
               it); the journey tiles sit above that and open their own station.

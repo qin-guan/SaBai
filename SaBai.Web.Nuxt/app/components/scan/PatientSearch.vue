@@ -22,10 +22,7 @@ const hits = computed(() =>
     .map(r => byId.value.get(r.id as number))
     .filter(p => !!p),
 )
-const lastVisit = (date: string) =>
-  isSameDay(date)
-    ? `Visit today ${new Date(date).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}`
-    : `Last visit ${new Date(date).toLocaleDateString()}`
+const lastVisit = (date: string) => `Last visit ${formatVisitDate(date)}`
 </script>
 
 <template>

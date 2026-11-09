@@ -63,14 +63,15 @@ and `<JourneyTracker>` shows it the same way everywhere: done steps in green,
 the next step highlighted, optional steps dashed. Every step links to that
 station's form for the same visit, so a patient can be sent on from any screen.
 
-- **`/patient` is the one patient list.** Unfiltered it shows everyone seen
-  today and their journeys; a row opens the patient record. A station card
-  (or a sidebar *Stations* link) filters it to
-  `?station=vitals|vision|consults|dental|pharmacy`: who that station is
-  waiting for, earliest arrival first; a row opens that station's form. Each row is one link, so
-  there are no per-row buttons.
-  `/vitals`, `/vision`, `/consults` and `/dental` redirect there; they used to
-  be four near-identical lists.
+- **`/patient` is the one patient list.** Unfiltered it shows every patient and
+  their latest visit's journey; a row opens the patient record. A station card
+  (or a sidebar *Stations* link) opens `?station=vitals|vision|consults|dental|pharmacy`
+  with two sections: **Waiting for `<Station>`** on top (earliest arrival
+  first) and a collapsible **Completed & other patients** section below, with no
+  calendar-day split so clinics running past midnight are unaffected; a row
+  opens that station's form. Each row is one link, so there are no per-row
+  buttons. `/vitals`, `/vision`, `/consults` and `/dental` redirect there; they
+  used to be four near-identical lists.
 - **Starting a visit** works without the camera too: Scan Face has a *Find
   patient* search (name, any form of the ID, ID number, phone or village — the
   same index as the universal search), and the patient record has a *New Visit*
@@ -118,7 +119,8 @@ station's pace, `app/utils/waitTime.ts`). There are no per-patient estimates.
 The pace comes from:
 
 - **Measured throughput**: patients finished per minute in the last hour (or
-  today, if the last hour has fewer than 3), from when each record was saved.
+  the last 12 hours, if the last hour has fewer than 3), from when each record
+  was saved.
   The API stamps `RecordedAt` on vitals, eyesight and dental records; consults
   and dispensed orders already have timestamps. This includes however many
   staff work the station.

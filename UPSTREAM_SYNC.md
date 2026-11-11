@@ -3,7 +3,7 @@
 SaBai is a port of [NUS-Project-SaBai/project-sabai](https://github.com/NUS-Project-SaBai/project-sabai).
 Merges to upstream `dev` are ported here daily.
 
-Last synced upstream commit: `90de598e21bb0bd4da69bbfed9a985bbc51c9b9c`
+Last synced upstream commit: `e16af5fbb6f100d32e78377367115e75bca61288`
 
 ## Mapping upstream changes
 
@@ -45,3 +45,5 @@ Last synced upstream commit: `90de598e21bb0bd4da69bbfed9a985bbc51c9b9c`
   (spacing and breadcrumbs), #330 (stock page buttons), #311 (broadcast list `limit`/`since`;
   the SDK was not regenerated for it because `pnpm generate` fails on main, kubb core 5.16.0 with
   plugin-fetch 5.5.6; the new query params are optional and unused by the web app).
+- Upstream #336 (undici bump) only changes upstream's lockfile for a transitive dependency. This
+  repo's lockfile resolves undici on its own, so there is nothing to port.

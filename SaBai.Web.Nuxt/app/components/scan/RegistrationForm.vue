@@ -104,6 +104,7 @@ async function submit() {
 
 useSaveShortcut(submit)
 useKeyShortcut('m', () => emit('match'))
+useKeyShortcut('Escape', () => emit('match'))
 </script>
 
 <template>

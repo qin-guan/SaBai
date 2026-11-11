@@ -18,7 +18,9 @@ import {
   PhUsers,
 } from '@phosphor-icons/vue'
 import type { StationKey } from './journey'
+import { isStationKey } from './journey'
 import type { PatientLinkTarget } from './paths'
+import { paths } from './paths'
 
 export interface NavItem {
   name: string
@@ -74,10 +76,10 @@ export const ALL_NAV_ITEMS = [...NAV_ITEMS, ...STATION_NAV_ITEMS, ...ADMIN_NAV_I
  * elsewhere.
  */
 export function currentStation(route: Pick<RouteLocationNormalizedLoaded, 'path' | 'query' | 'meta'>): StationKey | undefined {
-  const meta = route.meta.patientLink as PatientLinkTarget | undefined
+  const meta = route.meta?.patientLink as PatientLinkTarget | undefined
   if (meta && meta !== 'patient')
     return meta
-  const station = route.query.station
+  const station = route.query?.station
   return route.path === paths.patient() && isStationKey(station) ? station : undefined
 }
 
@@ -88,6 +90,35 @@ export function currentStation(route: Pick<RouteLocationNormalizedLoaded, 'path'
 export function patientTargetFor(route: Pick<RouteLocationNormalizedLoaded, 'path' | 'query' | 'meta'>): PatientLinkTarget {
   const station = currentStation(route)
   return station && station !== 'pharmacy' ? station : 'patient'
+}
+
+/**
+ * Where pressing Escape navigates back to: the parent page in the breadcrumb
+ * hierarchy (e.g. a patient record → the patient list, a station form → that
+ * station's queue, a settings sub-page → Settings). Undefined on top-level
+ * pages.
+ */
+export function logicalBackTarget(route: Pick<RouteLocationNormalizedLoaded, 'path' | 'query' | 'meta'>): string | undefined {
+  const meta = route.meta?.patientLink as PatientLinkTarget | undefined
+  if (meta && meta !== 'patient')
+    return paths.patient(meta)
+  if (route.path.startsWith(`${paths.vitals()}/`))
+    return paths.patient('vitals')
+  if (route.path.startsWith(`${paths.vision()}/`))
+    return paths.patient('vision')
+  if (route.path.startsWith(`${paths.consults()}/`))
+    return paths.patient('consults')
+  if (route.path.startsWith(`${paths.dental()}/`))
+    return paths.patient('dental')
+  if (route.path.startsWith(`${paths.patient()}/`))
+    return paths.patient()
+  if (route.path === paths.patient() && isStationKey(route.query?.station))
+    return paths.patient()
+  if (route.path === paths.medicationBrands() || route.path === paths.medicationActiveIngredients())
+    return paths.medicationStock()
+  if (route.path.startsWith(`${paths.settings()}/`))
+    return paths.settings()
+  return undefined
 }
 
 export function isNavItemActive(item: NavItem, route: Pick<RouteLocationNormalizedLoaded, 'path' | 'query' | 'meta'>) {

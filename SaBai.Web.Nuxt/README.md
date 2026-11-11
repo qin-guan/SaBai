@@ -52,7 +52,7 @@ stored under the same `localStorage` key (`villageCodeState`).
 | `Ctrl/⌘+B` | Collapse / expand the sidebar. |
 | `?` | Shortcut help. |
 | `←`/`→` | Change the answer in a choice group (selecting the active answer again clears it). |
-| `Esc` | Close a dialog, or cancel an inline table edit (Enter saves it). |
+| `Esc` | Close a dialog, cancel an inline table edit (Enter saves it), or go back to the parent page. |
 
 ## Patient journey and station backlog
 

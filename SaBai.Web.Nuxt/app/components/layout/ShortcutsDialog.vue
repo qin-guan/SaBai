@@ -7,6 +7,7 @@ const groups = [
     items: [
       { keys: 'Ctrl+K  or  /', label: 'Search patients, sections and actions' },
       { keys: 'F', label: 'Find a patient by face scan (opens the current station)' },
+      { keys: 'Esc', label: 'Go back to the parent page' },
       { keys: 'Ctrl+B', label: 'Collapse / expand sidebar' },
       { keys: '?', label: 'Show this help' },
     ],
@@ -27,7 +28,7 @@ const groups = [
       { keys: 'C', label: 'Capture the photo' },
       { keys: 'R', label: 'Retake the photo' },
       { keys: 'N', label: 'Register a new patient' },
-      { keys: 'M', label: 'Back to matching (from registration)' },
+      { keys: 'M  or  Esc', label: 'Back to matching (from registration)' },
     ],
   },
   {

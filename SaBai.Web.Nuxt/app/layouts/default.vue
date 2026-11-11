@@ -42,10 +42,25 @@ function onKeydown(event: KeyboardEvent) {
     return
   }
 
-  if (mod || event.altKey || isTypingTarget(event.target))
+  if (event.defaultPrevented || mod || event.altKey)
     return
-  if (document.querySelector('[role="dialog"]'))
+  if (document.querySelector('[role="dialog"], [role="menu"]'))
     return
+
+  if (isTypingTarget(event.target)) {
+    if (event.key === 'Escape' && !event.shiftKey && !event.repeat)
+      (event.target as HTMLElement).blur()
+    return
+  }
+
+  if (event.key === 'Escape' && !event.shiftKey && !event.repeat) {
+    const back = logicalBackTarget(route)
+    if (back) {
+      event.preventDefault()
+      navigateTo(back)
+    }
+    return
+  }
 
   if (event.key === '/') {
     event.preventDefault()

@@ -1,10 +1,12 @@
+import { cleanKhmerText, normalizeKhmerDigits } from "./khmer";
+
 /**
  * Computes BMI from height (cm) and weight (kg), or an explanatory string when either measurement is missing/invalid.
  * Formula for BMI: weight (kg) / (height (m) * height (m))
  */
 export function computeBmi(height: string | null, weight: string | null): string {
-  const h = height ? Number(height) : NaN;
-  const w = weight ? Number(weight) : NaN;
+  const h = height ? Number(normalizeKhmerDigits(cleanKhmerText(height))) : NaN;
+  const w = weight ? Number(normalizeKhmerDigits(cleanKhmerText(weight))) : NaN;
   if (!h || !w || Number.isNaN(h) || Number.isNaN(w)) {
     return "Invalid/Missing Height or Weight";
   }

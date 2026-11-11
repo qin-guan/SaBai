@@ -1,3 +1,4 @@
+using QuestPDF.Drawing;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
@@ -24,6 +25,28 @@ public sealed record ConsultPdfDiagnosis(string? Category, string Details);
 /// <summary>Builds the consult report with QuestPDF.</summary>
 public static class PdfDocument
 {
+    private const string KhmerFontFamily = "Noto Sans Khmer";
+
+    static PdfDocument()
+    {
+        var assembly = typeof(PdfDocument).Assembly;
+        foreach (
+            var resource in new[]
+            {
+                "SaBai.API.Fonts.NotoSansKhmer-Regular.ttf",
+                "SaBai.API.Fonts.NotoSansKhmer-SemiBold.ttf",
+            }
+        )
+        {
+            using var stream =
+                assembly.GetManifestResourceStream(resource)
+                ?? throw new InvalidOperationException(
+                    $"Embedded font resource '{resource}' was not found."
+                );
+            FontManager.RegisterFont(stream);
+        }
+    }
+
     public static byte[] Create(ConsultPdfContent content)
     {
         return Document
@@ -34,7 +57,11 @@ public static class PdfDocument
                     page.Size(PageSizes.A4);
                     page.Margin(2, Unit.Centimetre);
                     page.PageColor(Colors.White);
-                    page.DefaultTextStyle(style => style.FontSize(11));
+                    page.DefaultTextStyle(style =>
+                        style
+                            .FontSize(11)
+                            .Fallback(fallback => fallback.FontFamily(KhmerFontFamily))
+                    );
 
                     page.Header()
                         .Column(header =>

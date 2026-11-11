@@ -36,11 +36,11 @@ type Row = NonNullable<typeof data.value>['patients'][number]
 const allPatients = computed(() => data.value?.patients ?? [])
 
 const matchesFilter = (p: Row) => {
-  const needle = filter.value.trim().toLowerCase()
+  const needle = cleanKhmerText(filter.value)
   if (!needle)
     return true
   return [p.name, p.displayId, p.filterString, p.identificationNumber ?? '', p.contactNo ?? '']
-    .some(v => v.toLowerCase().includes(needle))
+    .some(v => matchesSearchText(v, needle))
 }
 
 /** How many patients each station still has to see. */

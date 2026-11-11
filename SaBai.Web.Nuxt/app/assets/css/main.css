@@ -15,19 +15,22 @@
    * never get confused — 1/l/I, 0/O, 5/S, 8/B — which is exactly what matters
    * when reading patient IDs, doses and readings at arm's length on a phone in
    * a field clinic. Proportional text for reading; the matching mono for IDs,
-   * codes and keycaps. Both are served by @nuxt/fonts.
+   * codes and keycaps. Noto Sans Khmer (plus OS Khmer UI fallbacks) covers
+   * Khmer script everywhere in the app. All web fonts are served by @nuxt/fonts.
    */
-  --font-sans: "Atkinson Hyperlegible Next", ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
-  --font-mono: "Atkinson Hyperlegible Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --font-khmer: "Noto Sans Khmer", "Khmer OS Battambang", "Khmer OS Content", "Khmer OS", "Leelawadee UI", "Koh Santepheap";
+  --font-sans: "Atkinson Hyperlegible Next", var(--font-khmer), ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "Atkinson Hyperlegible Mono", var(--font-khmer), ui-monospace, "Cascadia Mono", Consolas, monospace;
   /*
    * Lyra sizes most controls and table text with text-xs. 12px is too small to
    * read comfortably at arm's length, so the two smallest steps go up a notch
-   * on every screen (phones step up further below).
+   * on every screen (phones step up further below). Line heights leave vertical
+   * room for Khmer above-base vowels and below-base subscript consonants (coeng).
    */
   --text-xs: 0.8125rem;
-  --text-xs--line-height: 1.125rem;
+  --text-xs--line-height: 1.25rem;
   --text-sm: 0.90625rem;
-  --text-sm--line-height: 1.375rem;
+  --text-sm--line-height: 1.4375rem;
   --color-chrome: var(--chrome);
   --color-chrome-foreground: var(--chrome-foreground);
   --color-chrome-hover: var(--chrome-hover);
@@ -222,9 +225,9 @@
   padding-block: 0.25rem;
 }
 
-/* Wrapped labels must not collide (Lyra's Label is leading-none). */
+/* Wrapped labels and Khmer glyph stacks must not collide (Lyra's Label is leading-none). */
 [data-slot="label"] {
-  line-height: 1.3;
+  line-height: 1.45;
 }
 
 /*

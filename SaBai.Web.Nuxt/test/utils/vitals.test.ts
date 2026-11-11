@@ -6,9 +6,10 @@ import {
 } from "~/utils/vitals";
 
 describe("computeBmi", () => {
-  it("computes BMI to two decimal places", () => {
+  it("computes BMI to two decimal places (including Khmer numerals)", () => {
     // 70kg at 175cm => 22.857... => "22.86" (rounded to 2 decimal places)
     expect(computeBmi("175", "70")).toBe("22.86");
+    expect(computeBmi("១៧៥", "៧០")).toBe("22.86");
   });
 
   it("returns a placeholder when height is missing", () => {

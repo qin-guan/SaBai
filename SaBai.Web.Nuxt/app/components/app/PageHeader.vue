@@ -46,7 +46,7 @@ const props = defineProps<{
           </template>
         </BreadcrumbList>
       </Breadcrumb>
-      <h1 class="text-base font-bold leading-tight sm:text-lg" :class="props.hideTitle && 'sr-only'">
+      <h1 class="text-base font-bold leading-snug sm:text-lg" :class="props.hideTitle && 'sr-only'">
         {{ props.title }}
       </h1>
       <p v-if="props.description" class="text-xs text-muted-foreground touch:text-sm">

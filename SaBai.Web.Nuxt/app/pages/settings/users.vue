@@ -29,12 +29,12 @@ const { user: me } = useCurrentUser()
 
 const filter = ref('')
 const users = computed(() => {
-  const q = filter.value.trim().toLowerCase()
+  const q = cleanKhmerText(filter.value)
   const all = data.value ?? []
   if (!q)
     return all
   return all.filter(u =>
-    [u.nickname, u.userName, u.email ?? '', ...u.roles].some(x => x.toLowerCase().includes(q)),
+    [u.nickname, u.userName, u.email ?? '', ...u.roles].some(x => matchesSearchText(x, q)),
   )
 })
 

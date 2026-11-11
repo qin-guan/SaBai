@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { cleanKhmerText, normalizeKhmerDigits } from "./khmer";
 
 /**
  * Validation primitives for eyesight fields.
@@ -18,9 +19,13 @@ export const VISUAL_ACUITY_REGEX = new RegExp(`^(${ACUITY_PATTERN})$`, "i");
 /** Pinhole fields: acuity values plus "NI" (no improvement). Case-insensitive. */
 export const PINHOLE_REGEX = new RegExp(`^(${ACUITY_PATTERN}|NI)$`, "i");
 
-// Optional, trimmed string field; empty string means "not recorded".
+// Optional, trimmed string field; empty string means "not recorded". Khmer digits (៦/៩) are normalized to ASCII.
 const optionalField = (regex: RegExp, message: string) =>
-  z.string().trim().regex(regex, message).toUpperCase().or(z.literal("")).optional();
+  z
+    .string()
+    .transform(v => normalizeKhmerDigits(cleanKhmerText(v)))
+    .pipe(z.string().regex(regex, message).toUpperCase().or(z.literal("")))
+    .optional();
 
 export const visualAcuitySchema = optionalField(
   VISUAL_ACUITY_REGEX,

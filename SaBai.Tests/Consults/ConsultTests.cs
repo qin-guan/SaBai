@@ -229,6 +229,30 @@ public sealed class ConsultTests(AppFixture fixture)
         await Assert.That(header).IsEqualTo("%PDF");
     }
 
+    [Test]
+    public async Task ConsultPdf_WithKhmerText_StartsWithPdfHeader()
+    {
+        // Arrange
+        var bytes = SaBai.API.Endpoints.Consults.Pdf.Get.PdfDocument.Create(
+            new SaBai.API.Endpoints.Consults.Pdf.Get.ConsultPdfContent(
+                "PC0012",
+                "សុខ តារា (Sok Dara)",
+                "វេជ្ជបណ្ឌិត ហេង សុភា",
+                "ជំងឺហឺត",
+                "ក្អករយៈពេល ៣ ថ្ងៃ និងគ្រុនក្តៅ",
+                [new SaBai.API.Endpoints.Consults.Pdf.Get.ConsultPdfDiagnosis("Respiratory", "ក្អកស្រួចស្រាវ")],
+                "សម្រាក និងផឹកទឹកឱ្យបានច្រើន",
+                "ផ្នែកធ្មេញ",
+                "ពិនិត្យបន្ត",
+                "គ្មាន"
+            )
+        );
+
+        // Assert
+        var header = Encoding.ASCII.GetString(bytes, 0, 4);
+        await Assert.That(header).IsEqualTo("%PDF");
+    }
+
     private static async Task<int> CreateVisitAsync(HttpClient client)
     {
         var suffix = Guid.NewGuid().ToString("N")[..8];

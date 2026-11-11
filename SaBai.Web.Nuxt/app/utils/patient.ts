@@ -1,3 +1,5 @@
+import { cleanKhmerText, matchesSearchText, normalizeForSearch } from "./khmer";
+
 /** Formats a patient id as a zero-padded, 4-digit string, e.g. 12 → "0012". */
 export function formatPatientId(id: number) {
   return id.toString().padStart(4, "0");
@@ -34,27 +36,26 @@ export function toDateInputValue(dateOfBirth: Date | string) {
   return Number.isNaN(date.getTime()) ? "" : date.toISOString().slice(0, 10);
 }
 
-/** Matches a patient against free-text search on id, name or identification number. */
+/** Matches a patient against free-text search on id, name or identification number (including Khmer script and numerals). */
 export function patientMatches(
   patient: { id: number; name: string; identificationNumber?: string | null },
   search: string,
 ) {
-  const needle = search.trim().toLowerCase();
-  if (!needle) return false;
+  if (!cleanKhmerText(search)) return false;
   return (
-    patient.id.toString().includes(needle) ||
-    patient.name.toLowerCase().includes(needle) ||
-    (patient.identificationNumber?.toLowerCase() ?? "").includes(needle)
+    matchesSearchText(patient.id.toString(), search) ||
+    matchesSearchText(patient.name, search) ||
+    matchesSearchText(patient.identificationNumber, search)
   );
 }
 
 /**
  * True when a recorded drug allergy is a real allergy, not a "none" answer
- * ("nil", "NKDA", "-", …), so it can be flagged in red.
+ * ("nil", "NKDA", "-", or Khmer "គ្មាន" / "មិនមាន" / "ទេ"), so it can be flagged in red.
  */
 export function hasDrugAllergy(drugAllergy: string | null | undefined) {
-  const value = drugAllergy?.trim();
-  return !!value && !/^(nil|nkda|none|no|-|n\/a|na)$/i.test(value);
+  const value = cleanKhmerText(drugAllergy).replace(/[.។៕]+$/, "").trim();
+  return !!value && !/^(nil|nkda|none|no|-|n\/a|na|គ្មាន|មិនមាន|ទេ|គ្មានអាឡែស៊ី)$/i.test(value);
 }
 
 export const RECENT_VISIT_MS = 24 * 60 * 60_000;
@@ -72,21 +73,25 @@ export function isRecentVisit(date: Date | string | null | undefined, now = new 
 /**
  * Splits a free-text drug allergy answer into separate allergies
  * ("Penicillin, sulfa drugs; aspirin" → three items), so long lists can be
- * shown as a count in lists and in full on the patient banner. Duplicates and
- * "none"-style answers are dropped.
+ * shown as a count in lists and in full on the patient banner. Supports Khmer
+ * punctuation (។, ៕) and conjunction (និង). Duplicates and "none"-style answers
+ * are dropped.
  */
 export function parseDrugAllergies(drugAllergy: string | null | undefined): string[] {
   if (!hasDrugAllergy(drugAllergy))
     return [];
   const seen = new Set<string>();
-  return drugAllergy!
-    .split(/[,;\n/]+|\s+(?:and|&)\s+/i)
-    .map(item => item.trim().replace(/\.$/, ""))
+  return (drugAllergy ?? "")
+    .normalize("NFC")
+    .replace(/[\u200B\uFEFF]+/g, " ")
+    .split(/[,;\r\n/،，；។៕]+|\s+(?:and|&|និង)\s+/i)
+    .map(item => cleanKhmerText(item).replace(/[.។៕]+$/, "").trim())
     .filter((item) => {
-      const key = item.toLowerCase();
+      const key = normalizeForSearch(item);
       if (!hasDrugAllergy(item) || seen.has(key))
         return false;
       seen.add(key);
       return true;
     });
 }
+

@@ -1,0 +1,102 @@
+# Equivalent of appsettings.json. Every key can be overridden by an environment
+# variable (sabai.auth.seed-demo-users -> SABAI_AUTH_SEEDDEMOUSERS).
+spring:
+  application:
+    name: sabai-api
+  autoconfigure:
+    # Sign-in is our own (auth/SignInService); no generated in-memory user.
+    exclude: org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration
+  # Blocking code on virtual threads: no async/await colouring, same scalability.
+  threads:
+    virtual:
+      enabled: true
+  datasource:
+    url: ${SABAI_DB_URL:jdbc:postgresql://localhost:5432/sabai}
+    username: ${SABAI_DB_USER:postgres}
+    password: ${SABAI_DB_PASSWORD:postgres}
+  jpa:
+    open-in-view: false
+    hibernate:
+      # Flyway owns the schema; Hibernate only checks the entities match it.
+      ddl-auto: validate
+    properties:
+      hibernate:
+        physical_naming_strategy: sabai.api.data.PascalCaseNamingStrategy
+        jdbc.time_zone: UTC
+  flyway:
+    # Adopts a database the C# API already migrated: V1 is assumed present.
+    baseline-on-migrate: true
+    baseline-version: 1
+  session:
+    timeout: ${sabai.auth.session-lifetime-minutes}m
+    jdbc:
+      initialize-schema: never
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 12MB
+
+management:
+  # OpenTelemetry export, off unless an OTLP endpoint is configured (Aspire's dashboard sets one).
+  otlp:
+    metrics:
+      export:
+        enabled: ${SABAI_OTLP_ENABLED:false}
+        url: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318}/v1/metrics
+  tracing:
+    export:
+      otlp:
+        enabled: ${SABAI_OTLP_ENABLED:false}
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318}/v1/traces
+  endpoints:
+    web:
+      base-path: /
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+springdoc:
+  # Every endpoint's DTOs are called Request/Response, so schemas use full names.
+  use-fqn: true
+  swagger-ui:
+    path: /scalar
+
+sabai:
+  auth:
+    session-lifetime-minutes: 480
+    security-stamp-validation-minutes: 1
+    authenticator-issuer: "Sa'Bai"
+    seed-demo-users: false
+    bootstrap-admin:
+      user-name: ""
+      password: ""
+  cors:
+    allowed-origins: http://localhost:3000,http://localhost:3300
+  storage:
+    bucket: sabai
+    region: us-east-1
+    endpoint: ""
+    access-key: ""
+    secret-key: ""
+  qdrant:
+    host: localhost
+    port: 6334
+  face-recognition:
+    detector-model: det_10g.onnx
+    recognizer-model: w600k_r50.onnx
+    auto-download-models: true
+    detection-size: 640
+    detection-threshold: 0.5
+    enable-detection-fallback: true
+    detection-fallback-size: 1024
+    detection-fallback-threshold: 0.35
+    nms-threshold: 0.4
+    match-threshold: 0.4
+    collection-name: faces

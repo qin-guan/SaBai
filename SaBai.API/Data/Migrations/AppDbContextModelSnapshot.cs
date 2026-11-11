@@ -312,47 +312,6 @@ namespace SaBai.API.Data.Migrations
                     b.ToTable("ChildVitals");
                 });
 
-            modelBuilder.Entity("SaBai.API.Domain.ClinicalFile", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("FileName")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("PatientId")
-                        .HasColumnType("integer");
-
-                    b.Property<long>("SizeBytes")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("StoredFileName")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PatientId", "IsDeleted");
-
-                    b.ToTable("ClinicalFiles");
-                });
-
             modelBuilder.Entity("SaBai.API.Domain.Consult", b =>
                 {
                     b.Property<int>("Id")
@@ -468,6 +427,9 @@ namespace SaBai.API.Data.Migrations
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)");
 
+                    b.Property<int?>("ImageFileId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Lymphadenopathy")
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)");
@@ -580,6 +542,8 @@ namespace SaBai.API.Data.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ImageFileId");
 
                     b.HasIndex("VisitId")
                         .IsUnique();
@@ -1096,6 +1060,47 @@ namespace SaBai.API.Data.Migrations
                     b.ToTable("StockChanges");
                 });
 
+            modelBuilder.Entity("SaBai.API.Domain.StoredFile", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("PatientId")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("StoredFileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PatientId", "IsDeleted");
+
+                    b.ToTable("Files", (string)null);
+                });
+
             modelBuilder.Entity("SaBai.API.Domain.VillageCode", b =>
                 {
                     b.Property<int>("Id")
@@ -1330,17 +1335,6 @@ namespace SaBai.API.Data.Migrations
                     b.Navigation("Vitals");
                 });
 
-            modelBuilder.Entity("SaBai.API.Domain.ClinicalFile", b =>
-                {
-                    b.HasOne("SaBai.API.Domain.Patient", "Patient")
-                        .WithMany("Files")
-                        .HasForeignKey("PatientId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Patient");
-                });
-
             modelBuilder.Entity("SaBai.API.Domain.Consult", b =>
                 {
                     b.HasOne("SaBai.API.Domain.StaffUser", "Doctor")
@@ -1362,11 +1356,18 @@ namespace SaBai.API.Data.Migrations
 
             modelBuilder.Entity("SaBai.API.Domain.DentalConsult", b =>
                 {
+                    b.HasOne("SaBai.API.Domain.StoredFile", "ImageFile")
+                        .WithMany()
+                        .HasForeignKey("ImageFileId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("SaBai.API.Domain.Visit", "Visit")
                         .WithOne("DentalConsult")
                         .HasForeignKey("SaBai.API.Domain.DentalConsult", "VisitId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("ImageFile");
 
                     b.Navigation("Visit");
                 });
@@ -1509,6 +1510,16 @@ namespace SaBai.API.Data.Migrations
                     b.Navigation("Stock");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SaBai.API.Domain.StoredFile", b =>
+                {
+                    b.HasOne("SaBai.API.Domain.Patient", "Patient")
+                        .WithMany("Files")
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Patient");
                 });
 
             modelBuilder.Entity("SaBai.API.Domain.Visit", b =>

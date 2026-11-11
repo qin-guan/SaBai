@@ -20,9 +20,25 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, DentalConsultR
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        _ = await db
+        var visit = await db
             .Visits.AsNoTracking()
             .FirstOrNotFoundAsync(x => x.Id == req.VisitId, "Visit was not found.", ct);
+
+        if (req.ImageFileId is int imageFileId)
+        {
+            var file = await db
+                .Files.AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == imageFileId && !x.IsDeleted, ct);
+            if (file is null)
+            {
+                throw new BadRequestException("Image file was not found.");
+            }
+
+            if (file.PatientId is not null && file.PatientId != visit.PatientId)
+            {
+                throw new BadRequestException("Image file belongs to a different patient.");
+            }
+        }
 
         var entity = await db.DentalConsults.FirstOrDefaultAsync(
             x => x.VisitId == req.VisitId,

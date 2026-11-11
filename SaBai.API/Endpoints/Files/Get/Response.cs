@@ -5,7 +5,7 @@ namespace SaBai.API.Endpoints.Files.Get;
 /// <summary>Clinical file metadata. Bytes are stored in the RustFS bucket.</summary>
 public sealed record Response(
     int Id,
-    int PatientId,
+    int? PatientId,
     string FileName,
     string StoredFileName,
     string Description,
@@ -14,7 +14,7 @@ public sealed record Response(
     DateTimeOffset CreatedAt
 )
 {
-    public static Response From(ClinicalFile file) =>
+    public static Response From(StoredFile file) =>
         new(
             file.Id,
             file.PatientId,

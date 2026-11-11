@@ -16,7 +16,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var file = await db.ClinicalFiles.FirstOrNotFoundAsync(
+        var file = await db.Files.FirstOrNotFoundAsync(
             x => x.Id == req.Id,
             "File was not found.",
             ct

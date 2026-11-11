@@ -54,5 +54,6 @@ internal static class Apply
         entity.ReferralNotes = FreeText.Normalize(req.ReferralNotes);
         entity.RecommendedFacility = FreeText.Normalize(req.RecommendedFacility);
         entity.Remarks = FreeText.Normalize(req.Remarks);
+        entity.ImageFileId = req.ImageFileId;
     }
 }

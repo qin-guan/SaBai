@@ -1,6 +1,10 @@
 namespace SaBai.API.Domain;
 
-public sealed class ClinicalFile
+/// <summary>
+/// A file kept in the RustFS bucket. Patient documents, dental images and any other upload
+/// share this table; the bytes live in the bucket under <see cref="StoredFileName"/>.
+/// </summary>
+public sealed class StoredFile
 {
     public const int MaxBytes = 26_214_400;
 
@@ -17,9 +21,10 @@ public sealed class ClinicalFile
 
     public int Id { get; set; }
 
-    public int PatientId { get; set; }
+    /// <summary>The patient the file belongs to. Null for files that are not about a patient.</summary>
+    public int? PatientId { get; set; }
 
-    public Patient Patient { get; set; } = null!;
+    public Patient? Patient { get; set; }
 
     public required string FileName { get; set; }
 

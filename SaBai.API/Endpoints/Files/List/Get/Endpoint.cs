@@ -28,7 +28,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, List<Response>
             ),
         };
 
-        var query = db.ClinicalFiles.AsNoTracking().AsQueryable();
+        var query = db.Files.AsNoTracking().AsQueryable();
         if (req.PatientId is int patientId)
         {
             query = query.Where(x => x.PatientId == patientId);

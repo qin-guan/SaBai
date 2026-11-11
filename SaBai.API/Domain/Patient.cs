@@ -41,7 +41,7 @@ public sealed class Patient
 
     public ICollection<Visit> Visits { get; set; } = [];
 
-    public ICollection<ClinicalFile> Files { get; set; } = [];
+    public ICollection<StoredFile> Files { get; set; } = [];
 
     public static string FormatDisplayId(string? villageCode, int id) =>
         string.IsNullOrWhiteSpace(villageCode) ? id.ToString("D4") : $"{villageCode}{id:0000}";

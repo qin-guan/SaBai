@@ -20,7 +20,7 @@ public sealed class Endpoint(AppDbContext db, IAmazonS3 s3, RustFsSettings stora
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var file = await db.ClinicalFiles.FirstOrNotFoundAsync(
+        var file = await db.Files.FirstOrNotFoundAsync(
             x => x.Id == req.Id && !x.IsDeleted,
             "File was not found.",
             ct

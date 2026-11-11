@@ -5,21 +5,26 @@ using SaBai.API.Data;
 
 namespace SaBai.API.Endpoints.Broadcasts.List.Get;
 
-public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Response>>
+public sealed class Endpoint(AppDbContext db) : Endpoint<Request, List<Response>>
 {
     public override void Configure()
     {
         Get("/broadcasts");
         Roles(StaffRoles.Admin, StaffRoles.Member);
-        Summary(s => s.Summary = "List broadcasts");
+        Summary(s => s.Summary = "List broadcasts, newest first");
     }
 
-    public override async Task HandleAsync(CancellationToken ct)
+    public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var broadcasts = await db
-            .Broadcasts.AsNoTracking()
-            .OrderByDescending(x => x.CreatedAt)
-            .ThenByDescending(x => x.Id)
+        var query = db.Broadcasts.AsNoTracking().AsQueryable();
+        if (req.Since is int since)
+        {
+            query = query.Where(x => x.Id > since);
+        }
+
+        var broadcasts = await query
+            .OrderByDescending(x => x.Id)
+            .Take(req.Limit ?? Request.DefaultLimit)
             .Select(x => new Response(
                 x.Id,
                 x.Title,

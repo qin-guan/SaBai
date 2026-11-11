@@ -105,4 +105,7 @@ public sealed record Request
     public string? RecommendedFacility { get; init; }
 
     public string? Remarks { get; init; }
+
+    /// <summary>Id of a file uploaded through <c>POST /files</c> for this patient. Null clears it.</summary>
+    public int? ImageFileId { get; init; }
 }

@@ -3,7 +3,8 @@ import { Input } from '@/components/ui/input'
 
 /**
  * Number input: decimal keypad on phones, exponent characters (e/E) blocked,
- * and an optional unit rendered inside the field (e.g. "cm", "mmHg").
+ * Khmer numerals (០–៩) converted to ASCII digits, and an optional unit
+ * rendered inside the field (e.g. "cm", "mmHg").
  */
 defineOptions({ inheritAttrs: false })
 const model = defineModel<string>({ default: '' })
@@ -13,9 +14,26 @@ function onKeydown(event: KeyboardEvent) {
   if (event.key === 'e' || event.key === 'E')
     event.preventDefault()
 }
-function onPaste(event: ClipboardEvent) {
-  if (/[eE]/.test(event.clipboardData?.getData('text') ?? ''))
+
+function onBeforeInput(event: InputEvent) {
+  if (event.data && /[\u17E0-\u17E9]/.test(event.data)) {
     event.preventDefault()
+    model.value = `${model.value ?? ''}${normalizeKhmerDigits(event.data)}`
+  }
+}
+
+function onPaste(event: ClipboardEvent) {
+  const text = event.clipboardData?.getData('text') ?? ''
+  if (/[eE]/.test(text)) {
+    event.preventDefault()
+    return
+  }
+  if (/[\u17E0-\u17E9]/.test(text)) {
+    event.preventDefault()
+    const normalized = normalizeKhmerDigits(cleanKhmerText(text))
+    if (/^-?\d*(?:\.\d*)?$/.test(normalized))
+      model.value = normalized
+  }
 }
 </script>
 
@@ -30,6 +48,7 @@ function onPaste(event: ClipboardEvent) {
       class="tabular-nums"
       :class="props.unit && 'pr-14'"
       @keydown="onKeydown"
+      @beforeinput="onBeforeInput"
       @paste="onPaste"
     />
     <span

@@ -27,7 +27,7 @@ const cards = computed(() =>
     <div class="flex min-w-0 items-center gap-3 sm:flex-1">
     <PatientPhoto :patient-id="props.patient.id" :has-photo="props.patient.hasPhoto" :size="48" alt="" zoomable :name="props.patient.name" />
     <div class="min-w-0 flex-1">
-      <p class="text-base font-bold leading-tight break-words sm:text-lg">
+      <p class="text-base font-bold leading-snug break-words sm:text-lg">
         <NuxtLink v-if="props.to" :to="props.to" class="hover:text-primary hover:underline" :title="`Open ${props.patient.name}'s record`">
           {{ props.patient.name }}
         </NuxtLink>

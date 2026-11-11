@@ -30,6 +30,19 @@ export default defineNuxtConfig({
       ],
     },
   },
+  fonts: {
+    defaults: {
+      weights: [400, 500, 600, 700],
+    },
+    families: [
+      {
+        name: 'Noto Sans Khmer',
+        subsets: ['khmer'],
+        styles: ['normal'],
+        fallbacks: [],
+      },
+    ],
+  },
   vite: {
     plugins: [
       tailwindcss(),

@@ -31,6 +31,54 @@ describe("patient search", () => {
   });
   it("returns nothing for an empty query", () => {
     expect(ids("  ")).toEqual([]);
+    expect(ids("\u200B\u200B")).toEqual([]);
+  });
+  it("matches Khmer digits in patient IDs and phone numbers", () => {
+    expect(ids("១២")[0]).toBe(12);
+    expect(ids("០០០៤")).toEqual([4]);
+    expect(ids("០៩៧១១១")).toEqual([4]);
+  });
+});
+
+describe("Khmer patient search", () => {
+  const khmerPatients = [
+    { id: 1, name: "សុខ តារា", identificationNumber: "KH១០០១", contactNo: "០១២ ៣៤៥ ៦៧៨", villageCode: "ភ្នំពេញ", displayId: "PP0001" },
+    { id: 2, name: "ហេងសុភា", identificationNumber: "KH1002", contactNo: "097 222 333", villageCode: "KK", displayId: "KK0002" },
+    { id: 3, name: "គីម\u200Bវុទ្ធី", identificationNumber: null, contactNo: null, villageCode: null, displayId: "0003" },
+  ];
+  const khmerIds = (q: string) => searchIndex(buildPatientIndex(khmerPatients), q).map((r) => r.id);
+
+  it("matches Khmer names whether stored or queried with spaces, zero-width spaces, or no spaces", () => {
+    expect(khmerIds("សុខ")).toEqual([1]);
+    expect(khmerIds("តារា")).toEqual([1]);
+    expect(khmerIds("សុខ តារា")).toEqual([1]);
+    expect(khmerIds("សុខតារា")).toEqual([1]);
+    expect(khmerIds("សុខតា")).toEqual([1]);
+
+    expect(khmerIds("ហេង")).toEqual([2]);
+    expect(khmerIds("សុភា")).toEqual([2]);
+    expect(khmerIds("ហេង សុភា")).toEqual([2]);
+    expect(khmerIds("ហេងសុភា")).toEqual([2]);
+
+    expect(khmerIds("គីម")).toEqual([3]);
+    expect(khmerIds("វុទ្ធី")).toEqual([3]);
+    expect(khmerIds("គីម វុទ្ធី")).toEqual([3]);
+    expect(khmerIds("គីមវុទ្ធី")).toEqual([3]);
+  });
+
+  it("matches prefixes of compound Khmer words and Khmer digits in stored records", () => {
+    expect(khmerIds("ភ្នំពេ")).toEqual([1]);
+    expect(khmerIds("ភ្នំពេញ")).toEqual([1]);
+    expect(khmerIds("KH1001")).toEqual([1]);
+    expect(khmerIds("012345")).toEqual([1]);
+  });
+
+  it("tolerates a typo in a Khmer word with combining vowel/consonant marks", () => {
+    expect(khmerIds("វុទ្ធិ")).toEqual([3]);
+  });
+
+  it("requires every word in a multi-word Khmer query to match", () => {
+    expect(khmerIds("សុខ វុទ្ធី")).toEqual([]);
   });
 });
 

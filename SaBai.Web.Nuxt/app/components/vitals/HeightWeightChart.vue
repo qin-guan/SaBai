@@ -63,7 +63,7 @@ function drawLabel(ctx: CanvasRenderingContext2D, cx: number, cy: number, text: 
   drawRoundedRect(ctx, x, y, W, H, 5)
   ctx.fill()
   ctx.fillStyle = color
-  ctx.font = '14px Arial'
+  ctx.font = '14px "Atkinson Hyperlegible Next", "Noto Sans Khmer", Arial, sans-serif'
   ctx.fillText(text, x + 5, cy - crossSize)
 }
 

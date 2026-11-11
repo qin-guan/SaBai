@@ -57,8 +57,10 @@ describe("visualAcuitySchema", () => {
     expect(visualAcuitySchema.parse("6/9+2")).toBe("6/9+2"); // numeric unchanged
   });
 
-  it("trims whitespace before validation", () => {
+  it("trims whitespace and normalizes Khmer digits before validation", () => {
     expect(visualAcuitySchema.parse(" 6/9+2 ")).toBe("6/9+2");
+    expect(visualAcuitySchema.parse("៦/៩+២")).toBe("6/9+2");
+    expect(pinholeSchema.parse("៦/១២")).toBe("6/12");
   });
 
   it("treats empty string as not recorded (valid)", () => {

@@ -1,3 +1,5 @@
+import { cleanKhmerText } from './khmer'
+
 export interface PatientFormValues {
   name: string
   identificationNumber: string
@@ -35,7 +37,7 @@ export const blankPatientForm = (): PatientFormValues => ({
 export function validatePatientForm(values: PatientFormValues) {
   const errors: Partial<Record<keyof PatientFormValues, string>> = {}
   for (const key of Object.keys(LABELS) as (keyof PatientFormValues)[]) {
-    if (!String(values[key] ?? '').trim())
+    if (!cleanKhmerText(String(values[key] ?? '')))
       errors[key] = `Missing ${LABELS[key]}!`
   }
   return errors

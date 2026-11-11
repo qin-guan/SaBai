@@ -1,6 +1,7 @@
 import {
   hasDrugAllergy,
   parseDrugAllergies,
+  patientMatches,
   isRecentVisit,
   formatPatientCode,
   formatPatientId,
@@ -95,10 +96,11 @@ describe("calculateAge", () => {
 describe("hasDrugAllergy", () => {
   it("flags a recorded allergy", () => {
     expect(hasDrugAllergy("Penicillin")).toBe(true);
+    expect(hasDrugAllergy("ប៉េនីស៊ីលីន")).toBe(true);
   });
 
-  it("ignores empty and 'none' answers", () => {
-    for (const value of [null, "", " ", "nil", "NKDA", "None", "-", "n/a"])
+  it("ignores empty, zero-width space, and English or Khmer 'none' answers", () => {
+    for (const value of [null, "", " ", "\u200B", "nil", "NKDA", "None", "-", "n/a", "គ្មាន", "គ្មាន។", "មិនមាន", "ទេ", "គ្មានអាឡែស៊ី"])
       expect(hasDrugAllergy(value)).toBe(false);
   });
 });
@@ -110,10 +112,29 @@ describe("parseDrugAllergies", () => {
     ]);
   });
 
+  it("splits on Khmer punctuation (។, ៕) and conjunction (និង)", () => {
+    expect(parseDrugAllergies("ប៉េនីស៊ីលីន និង អាស្ពីរីន។")).toEqual([
+      "ប៉េនីស៊ីលីន",
+      "អាស្ពីរីន",
+    ]);
+  });
+
   it("drops duplicates and empty or 'none' answers", () => {
     expect(parseDrugAllergies("Penicillin, penicillin, , nil")).toEqual(["Penicillin"]);
     expect(parseDrugAllergies("None")).toEqual([]);
+    expect(parseDrugAllergies("គ្មាន")).toEqual([]);
     expect(parseDrugAllergies(null)).toEqual([]);
+  });
+});
+
+describe("patientMatches", () => {
+  it("matches Khmer names with or without spaces and Khmer digits", () => {
+    const patient = { id: 12, name: "សុខ តារា", identificationNumber: "KH1012" };
+    expect(patientMatches(patient, "សុខតារា")).toBe(true);
+    expect(patientMatches(patient, "តារា")).toBe(true);
+    expect(patientMatches(patient, "១២")).toBe(true);
+    expect(patientMatches(patient, "KH១០១២")).toBe(true);
+    expect(patientMatches(patient, "\u200B")).toBe(false);
   });
 });
 

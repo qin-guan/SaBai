@@ -96,7 +96,7 @@ const actions: Item[] = [
 const MAX_PATIENTS = 25
 
 const groups = computed<Group[]>(() => {
-  const q = debounced.value.trim()
+  const q = cleanKhmerText(debounced.value)
   if (!q) {
     const recent = recentIds.value.map(id => patientsById.value.get(id)).filter((p): p is Patient => !!p)
     return [
@@ -112,7 +112,7 @@ const groups = computed<Group[]>(() => {
     .slice(0, 5)
     .map(r => pages.find(p => p.href === r.id)!)
     .filter(p => !p.adminOnly || userIsAdmin.value)
-  const actionHits = actions.filter(a => a.label.toLowerCase().includes(q.toLowerCase()))
+  const actionHits = actions.filter(a => matchesSearchText(a.label, q))
   return [
     { title: 'Go to', items: pageHits.map(pageItem) },
     { title: 'Patients', items: patientHits.map(patientItem) },

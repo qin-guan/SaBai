@@ -26,6 +26,8 @@ cargo test
 Integration tests (`tests/api`) start the real application against a database they
 create on a local Postgres (`SABAI_TEST_POSTGRES`, default
 `postgres://postgres@localhost:5432/postgres`). Each run leaves a `sabai_test_*` database behind.
+Face tests run the real models and skip themselves when the model files are not installed;
+enrolled faces are kept in memory unless `SABAI_TEST_QDRANT` names a Qdrant gRPC endpoint.
 
 ## Layout
 

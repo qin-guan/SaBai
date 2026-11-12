@@ -1,0 +1,94 @@
+# The whole stack with the Rust API: Postgres, Qdrant, RustFS, the API and the Nuxt app.
+# The same services and settings as the compose file the Aspire AppHost publishes
+# (SaBai.AppHost/aspire-output), with the API built from this directory.
+#
+#   cp .env.example .env   # set the passwords
+#   docker compose up --build
+#
+# Run from sabai-api/. The app is then at http://localhost:3000.
+name: sabai
+
+services:
+  qdrant:
+    image: docker.io/qdrant/qdrant:v1.18.0
+    environment:
+      QDRANT__SERVICE__API_KEY: ${QDRANT_KEY}
+      QDRANT__SERVICE__ENABLE_STATIC_CONTENT: "0"
+    volumes:
+      - qdrant-data:/qdrant/storage
+
+  postgres:
+    image: docker.io/library/postgres:18.3
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: sabai
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d sabai"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  fs:
+    image: rustfs/rustfs:latest
+    environment:
+      RUSTFS_VOLUMES: /data/rustfs0
+      RUSTFS_ADDRESS: 0.0.0.0:9000
+      RUSTFS_CONSOLE_ADDRESS: 0.0.0.0:9001
+      RUSTFS_CONSOLE_ENABLE: "true"
+      RUSTFS_CORS_ALLOWED_ORIGINS: "*"
+      RUSTFS_CONSOLE_CORS_ALLOWED_ORIGINS: "*"
+      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY}
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY}
+      RUSTFS_OBS_LOGGER_LEVEL: info
+    ports:
+      - "9001:9001"
+    volumes:
+      - fs-data:/data
+      - fs-logs:/app/logs
+
+  api:
+    build:
+      context: .
+    environment:
+      ASPNETCORE_HTTP_PORTS: "8080"
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      ConnectionStrings__sabai: Host=postgres;Port=5432;Username=postgres;Password=${POSTGRES_PASSWORD};Database=sabai
+      ConnectionStrings__qdrant: Endpoint=http://qdrant:6334;Key=${QDRANT_KEY}
+      ConnectionStrings__fs-sabai: Endpoint=http://fs:9000;AccessKey=${RUSTFS_ACCESS_KEY};SecretKey=${RUSTFS_SECRET_KEY};Bucket=sabai
+      Auth__BootstrapAdmin__UserName: ${ADMIN_USER_NAME:-admin}
+      Auth__BootstrapAdmin__Password: ${ADMIN_PASSWORD}
+    ports:
+      - "8080:8080"
+    volumes:
+      - face-models:/home/app/.local/share/sabai/models
+    depends_on:
+      postgres:
+        condition: service_healthy
+      fs:
+        condition: service_started
+      qdrant:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: SaBai.Web.Nuxt/Dockerfile
+    environment:
+      NUXT_API_URL: http://api:8080
+      PORT: "3000"
+      HOSTNAME: 0.0.0.0
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        condition: service_started
+
+volumes:
+  qdrant-data:
+  postgres-data:
+  fs-data:
+  fs-logs:
+  face-models:

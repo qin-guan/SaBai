@@ -1,0 +1,61 @@
+name: Test (API, Rust)
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    paths:
+      - "sabai-api/**"
+      - ".github/workflows/test-api-rust.yaml"
+  push:
+    paths:
+      - "sabai-api/**"
+      - ".github/workflows/test-api-rust.yaml"
+
+defaults:
+  run:
+    working-directory: sabai-api
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      SABAI_TEST_POSTGRES: postgres://postgres:postgres@localhost:5432/postgres
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Install Rust
+        run: rustup toolchain install stable --profile minimal --component clippy
+
+      - name: Cache build
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            sabai-api/target
+          key: sabai-api-${{ runner.os }}-${{ hashFiles('sabai-api/Cargo.lock') }}
+
+      - name: Build
+        run: cargo build --locked --all-targets
+
+      - name: Lint
+        run: cargo clippy --locked --all-targets -- -D warnings
+
+      - name: Run tests
+        run: cargo test --locked

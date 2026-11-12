@@ -15,6 +15,7 @@ pub mod error;
 pub mod face;
 pub mod http;
 pub mod openapi;
+pub mod pdf;
 pub mod routes;
 pub mod state;
 pub mod storage;

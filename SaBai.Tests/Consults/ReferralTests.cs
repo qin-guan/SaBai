@@ -98,6 +98,81 @@ public sealed class ReferralTests(AppFixture fixture)
     }
 
     [Test]
+    public async Task UpdateOutcome_KeepsStateAndCanBeCleared()
+    {
+        // Arrange
+        var client = fixture.CreateApiClient();
+        await client.LoginAsync();
+        var suffix = ClinicSetup.Suffix();
+        var (consultId, _) = await CreateConsultAsync(client, $"Outcome {suffix}");
+        var created = await client.PostAsJsonAsync(
+            "/referrals",
+            new { consultId, referredFor = $"outcome {suffix}" },
+            ApiJson.Options
+        );
+        created.EnsureSuccessStatusCode();
+        var id = ClinicSetup.ReadInt(
+            await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
+            "id"
+        );
+        (
+            await client.PatchAsJsonAsync(
+                $"/referrals/{id}/state",
+                new { referralState = "Seen" },
+                ApiJson.Options
+            )
+        ).EnsureSuccessStatusCode();
+
+        // Act
+        var set = await client.PatchAsJsonAsync(
+            $"/referrals/{id}/outcome",
+            new { referralOutcome = "booked for Monday" },
+            ApiJson.Options
+        );
+        var setBody = await set.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
+        var cleared = await client.PatchAsJsonAsync(
+            $"/referrals/{id}/outcome",
+            new { referralOutcome = "" },
+            ApiJson.Options
+        );
+        var clearedBody = await cleared.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
+
+        // Assert
+        await Assert.That(set.StatusCode).IsEqualTo(HttpStatusCode.OK);
+        await Assert.That(setBody.GetProperty("referralState").GetString()).IsEqualTo("Seen");
+        await Assert
+            .That(setBody.GetProperty("referralOutcome").GetString())
+            .IsEqualTo("booked for Monday");
+        await Assert.That(cleared.StatusCode).IsEqualTo(HttpStatusCode.OK);
+        await Assert.That(clearedBody.GetProperty("referralState").GetString()).IsEqualTo("Seen");
+        await Assert.That(clearedBody.GetProperty("referralOutcome").GetString()).IsEqualTo("");
+    }
+
+    [Test]
+    public async Task UpdateOutcome_UnknownReferralOrMissingOutcome_Fails()
+    {
+        // Arrange
+        var client = fixture.CreateApiClient();
+        await client.LoginAsync();
+
+        // Act
+        var unknown = await client.PatchAsJsonAsync(
+            "/referrals/99999999/outcome",
+            new { referralOutcome = "x" },
+            ApiJson.Options
+        );
+        var missing = await client.PatchAsJsonAsync(
+            "/referrals/1/outcome",
+            new { },
+            ApiJson.Options
+        );
+
+        // Assert
+        await Assert.That(unknown.StatusCode).IsEqualTo(HttpStatusCode.NotFound);
+        await Assert.That(missing.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
+    }
+
+    [Test]
     public async Task UpdateState_InvalidState_ReturnsBadRequest()
     {
         // Arrange

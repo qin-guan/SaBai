@@ -47,3 +47,12 @@ Last synced upstream commit: `e16af5fbb6f100d32e78377367115e75bca61288`
   plugin-fetch 5.5.6; the new query params are optional and unused by the web app).
 - Upstream #336 (undici bump) only changes upstream's lockfile for a transitive dependency. This
   repo's lockfile resolves undici on its own, so there is nothing to port.
+- Upstream #308 (`publishBroadcast` helper posting to Supabase Realtime) has no equivalent here:
+  there is no Realtime channel.
+- Upstream #340 (Khmer font) is already covered for `SaBai.Web.Nuxt` by qin-guan/SaBai#27 (Noto Sans
+  Khmer in `main.css`, and Khmer fonts for the consult PDF). It is not applied to `SaBai.Web`.
+- Held, so the synced commit stays at `e16af5f`: upstream #301 (referrals pages). Its API part is
+  ported (`PATCH /referrals/{id}/outcome` sets only the outcome, so it can't overwrite a newer
+  state; the referral states already matched). Its UI (referral list and detail pages, status
+  dropdown, Referrals sidebar entry) waits on which frontend should receive upstream UI changes:
+  `SaBai.Web` (Next.js, a mirror of upstream) or `SaBai.Web.Nuxt` (the app `main` builds and ships).

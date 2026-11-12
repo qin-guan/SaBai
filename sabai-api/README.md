@@ -38,7 +38,7 @@ enrolled faces are kept in memory unless `SABAI_TEST_QDRANT` names a Qdrant gRPC
 | `src/db/` | Audited transactions, entity mapping, migrations |
 | `src/auth/` | Staff accounts, passwords, two-factor, cookie sessions |
 | `src/http/` | Request binding, validation, per-request context |
-| `src/face/`, `src/storage.rs` | Face recognition, the file bucket |
+| `src/face/`, `src/storage.rs`, `src/pdf.rs` | Face recognition, the file bucket, the consult report |
 | `migrations/` | SQL migrations; `0001` is the schema EF Core produced |
 | `openapi/v1.json` | The API contract, served as-is |
 
@@ -82,3 +82,59 @@ async fn update(ctx: Ctx, _: Staff, Req(req): Req<UpdateRequest>) -> ApiResult<J
 
 When an endpoint is added or changed, update `openapi/v1.json` with it;
 `tests/api/contract.rs` fails if a documented operation has no route.
+
+## Coming from the .NET API
+
+| .NET | Here |
+| --- | --- |
+| FastEndpoints slice (`Endpoint`/`Request`/`Response`/`Validator`) | A handler function with its request and response types in `src/routes/<area>` |
+| FluentValidation validator | `impl Validate`, same messages |
+| EF Core entity and `DbContext` | `entity!` struct in `src/domain`, `sqlx` queries |
+| EF Core migrations | SQL files in `migrations/` |
+| `SaveChanges` audit interceptor | `Tx::insert` / `update` / `delete` |
+| ASP.NET Core Identity (`UserManager`, `SignInManager`) | `src/auth` (`users`, `signin`, `session`) on the same tables |
+| `appsettings.json`, environment, arguments | `src/config.rs`, same keys (`Auth__SeedDemoUsers`, `--Auth:SeedDemoUsers=true`) |
+| AWS SDK for S3 | Signed requests to the same bucket and keys (`src/storage.rs`) |
+| Qdrant .NET client | `qdrant-client`, same collection and payload |
+| ONNX Runtime + SkiaSharp | `ort` (the same runtime) + the `image` crate |
+| QuestPDF | Typst, as a library |
+| Generated OpenAPI document | `openapi/v1.json`, kept by hand |
+| Aspire AppHost | `compose.yaml` |
+| TUnit tests over an Aspire host | `tests/api`, over the real app and a real Postgres |
+
+### Moving a deployment
+
+Point this API at the same Postgres, bucket and Qdrant with the same environment
+variables. On first start it adopts the EF Core schema (the database must be at the last
+EF migration, `20261109033008_GeneralizeFilesAndAddDentalImage`) and creates its own
+session key. Staff keep their passwords, authenticator apps and recovery codes. Everyone
+signs in again once, because session cookies issued by the .NET API cannot be read.
+
+### Known differences
+
+Behaviour is the same wherever the previous test suite looks. These are the places it is not:
+
+- **More forgiving requests.** Enum values are accepted in any case (`"pending"` for
+  `"PENDING"`); one value is accepted where a list is expected; an empty body with a JSON
+  content type is treated as no body; a timestamp with a non-UTC offset is converted
+  (the .NET API answered 500 on some endpoints).
+- **Wording of unreadable-request errors.** A malformed body or a value of the wrong type
+  is still a 400 naming the same property, but the reason text is not System.Text.Json's.
+  Validation messages and domain errors are identical.
+- **Decimals** are written without trailing zeros (`36.6`, not `36.60`).
+- **Timestamps** have microsecond precision everywhere; the .NET API showed seven
+  fraction digits in the response to a create and six afterwards.
+- **Order approval and stock edits lock the rows they change**, so two simultaneous
+  approvals cannot both take the same stock. The .NET API had no such guard.
+- **Consult PDF**: same content and layout, set in Lato with Noto Sans Khmer as the
+  fallback, so line heights differ slightly from QuestPDF's output.
+- **Sign-out** clears `sabai.auth` and the two-factor cookie; the .NET API also cleared
+  the unused `Identity.External` cookie.
+- **Face recognition** runs one inference per model at a time, rejects truncated image
+  files that Skia would partly decode, and has no GPU provider in this build.
+
+### Not ported
+
+- **OpenTelemetry export** (traces, metrics and logs to `OTEL_EXPORTER_OTLP_ENDPOINT`).
+  Logs go to standard output.
+- **The Scalar page** loads its script from a CDN instead of serving it from the API.

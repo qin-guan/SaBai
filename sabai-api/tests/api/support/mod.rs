@@ -61,6 +61,8 @@ async fn start() -> anyhow::Result<TestApp> {
 
     // The same configuration the previous test fixture used: demo staff, and sessions
     // re-validated on every request so lock/role/password changes are seen immediately.
+    // Enrolled faces are kept in memory unless a Qdrant endpoint is given.
+    let qdrant = std::env::var("SABAI_TEST_QDRANT").ok().filter(|endpoint| !endpoint.trim().is_empty());
     let config = Config::from_sources(
         [
             ("ASPNETCORE_ENVIRONMENT", "Development".to_owned()),
@@ -72,11 +74,20 @@ async fn start() -> anyhow::Result<TestApp> {
             ("Auth__SeedDemoUsers", "true".to_owned()),
             ("Auth__SecurityStampValidationMinutes", "0".to_owned()),
             ("FaceRecognition__AutoDownloadModels", "false".to_owned()),
+            ("FaceRecognition__CollectionName", format!("faces_test_{}", suffix())),
+            ("ConnectionStrings__qdrant", qdrant.clone().unwrap_or_default()),
         ]
         .map(|(key, value)| (key.to_owned(), value)),
         [],
     );
-    let state = sabai_api::build_state(Settings::load(&config)?).await?;
+    let settings = Settings::load(&config)?;
+    let state = match qdrant {
+        Some(_) => sabai_api::build_state(settings).await?,
+        None => {
+            let faces = std::sync::Arc::new(sabai_api::face::InMemoryFaceIndex::new());
+            sabai_api::build_state_with(settings, Some(faces)).await?
+        }
+    };
     state.storage.ensure_bucket().await?;
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await?;

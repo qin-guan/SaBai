@@ -43,6 +43,10 @@ pub enum ApiError {
     /// The request could not be read (`detail` set) or failed validation.
     #[error("request validation failed")]
     Validation { detail: Option<String>, errors: Vec<FieldError> },
+    /// The request was read but its content cannot be used (422), reported per field
+    /// like a validation failure.
+    #[error("request content is unusable")]
+    Unprocessable { errors: Vec<FieldError> },
     /// No session: empty 401.
     #[error("not signed in")]
     Unauthenticated,
@@ -160,7 +164,11 @@ impl Problem {
                 (
                     "application/problem+json; charset=utf-8",
                     serde_json::to_string(&Body {
-                        r#type: "https://www.rfc-editor.org/rfc/rfc7231#section-6.5.1",
+                        r#type: if self.status == StatusCode::UNPROCESSABLE_ENTITY {
+                            "https://www.rfc-editor.org/rfc/rfc4918#section-11.2"
+                        } else {
+                            "https://www.rfc-editor.org/rfc/rfc7231#section-6.5.1"
+                        },
                         title: self.title,
                         status,
                         instance,
@@ -210,6 +218,15 @@ impl IntoResponse for ApiError {
                 status: StatusCode::BAD_REQUEST,
                 title: "Bad Request",
                 kind: ProblemKind::Validation { detail, errors },
+            },
+            ApiError::Unprocessable { errors } => Problem {
+                status: StatusCode::UNPROCESSABLE_ENTITY,
+                title: "Unprocessable Entity",
+                // A lone failure is repeated as the problem's detail.
+                kind: ProblemKind::Validation {
+                    detail: (errors.len() == 1).then(|| errors[0].reason.clone()),
+                    errors,
+                },
             },
             ApiError::Unauthenticated => return StatusCode::UNAUTHORIZED.into_response(),
             ApiError::AccessDenied => return StatusCode::FORBIDDEN.into_response(),

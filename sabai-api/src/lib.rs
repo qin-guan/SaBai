@@ -33,12 +33,22 @@ use crate::state::{AppState, Inner};
 /// Connects to the database, migrates it, seeds roles and configured accounts, and
 /// assembles the application state.
 pub async fn build_state(settings: Settings) -> anyhow::Result<AppState> {
+    let face_index = face::configured_index(&settings.qdrant, &settings.face)?;
+    build_state_with(settings, face_index).await
+}
+
+/// [`build_state`] with the index enrolled faces are kept in given by the caller
+/// (tests keep them in memory). `None` leaves the face store unavailable.
+pub async fn build_state_with(
+    settings: Settings,
+    face_index: Option<std::sync::Arc<dyn face::FaceIndex>>,
+) -> anyhow::Result<AppState> {
     let db = db::connect(&settings.database).await?;
     db::migrate::run(&db).await?;
     auth::seed::ensure(&db, &settings.auth, &settings.identity).await?;
     let keys = auth::session::SessionKeys::load(&db).await?;
     let storage = storage::Storage::new(&settings.storage)?;
-    let faces = face::FaceService { settings: settings.face.clone() };
+    let faces = face::FaceService::new(settings.face.clone(), face_index);
     Ok(AppState::new(Inner { settings, db, keys, storage, faces }))
 }
 

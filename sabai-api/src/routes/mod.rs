@@ -18,6 +18,7 @@ pub mod medication_ingredients;
 pub mod medication_stock;
 pub mod orders;
 pub mod patient_consult;
+pub mod patient_faces;
 pub mod patient_records;
 pub mod patients;
 pub mod persons;
@@ -63,6 +64,7 @@ pub fn router() -> Router<AppState> {
         .merge(medication_stock::router())
         .merge(orders::router())
         .merge(patient_consult::router())
+        .merge(patient_faces::router())
         .merge(patient_records::router())
         .merge(patients::router())
         .merge(persons::router())

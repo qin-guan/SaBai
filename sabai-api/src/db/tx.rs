@@ -81,7 +81,9 @@ impl Tx {
         query.push(" RETURNING *");
         let stored: E = query.build_query_as().fetch_one(&mut *self.inner).await?;
 
-        let changes = audit::snapshot(&stored, true);
+        // Logged as given, like the previous API: a measurement sent as `36.5` reads
+        // `36.5` in the log even though its column keeps it as `36.50`.
+        let changes = audit::snapshot(&entity, true);
         self.log(AuditAction::Created, E::NAME, &audit::entity_id(&stored), &changes).await?;
         Ok(stored)
     }

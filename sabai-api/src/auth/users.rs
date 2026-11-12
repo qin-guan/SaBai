@@ -488,6 +488,9 @@ impl<'a> Users<'a> {
     }
 
     pub async fn set_lockout_end(&mut self, user: &mut StaffUser, end: Option<Ts>) -> UserResult<()> {
+        if !user.lockout_enabled {
+            return fail("UserLockoutNotEnabled", "Lockout is not enabled for this user.");
+        }
         self.save(user, |user| user.lockout_end = end).await
     }
 

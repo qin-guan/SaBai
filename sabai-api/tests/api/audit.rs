@@ -91,10 +91,47 @@ async fn sign_ins_failures_and_sign_out_are_logged() {
 }
 
 #[tokio::test]
+async fn secrets_are_redacted() {
+    let mut admin = Client::admin().await;
+    let user_name = format!("audit{}", suffix());
+    let user = admin
+        .post(
+            "/auth/users",
+            json!({ "userName": user_name, "nickname": "Audit Target", "password": "Password1!", "roles": ["member"] }),
+        )
+        .await
+        .expect(StatusCode::CREATED)
+        .json();
+    let user_id = user["id"].as_str().unwrap();
+
+    admin.post(&format!("/auth/users/{user_id}/password"), json!({ "password": "Another-Password1!" })).await.ok();
+    let log = admin.get(&format!("/audit-logs?entityType=StaffUser&entityId={user_id}")).await.ok().json();
+
+    let entries = log["entries"].as_array().unwrap();
+    let actions: Vec<_> = entries.iter().map(|entry| entry["action"].as_str().unwrap()).collect();
+    assert_eq!(actions, ["Updated", "Created"]);
+    let secrets: Vec<&Value> = entries
+        .iter()
+        .flat_map(|entry| entry["changes"].as_array().unwrap())
+        .filter(|change| change["field"] == "PasswordHash" || change["field"] == "SecurityStamp")
+        .collect();
+    assert_eq!(secrets.len(), 4);
+    let redacted = |value: &Value| value.is_null() || value == "[redacted]";
+    assert!(secrets.iter().all(|change| redacted(&change["old"]) && redacted(&change["new"])));
+    assert_eq!(
+        change(&entries[0], "PasswordHash"),
+        &json!({ "field": "PasswordHash", "old": "[redacted]", "new": "[redacted]" })
+    );
+    assert_eq!(change(&entries[1], "UserName")["new"], user_name.as_str());
+    assert!(entries[1]["changes"].as_array().unwrap().iter().all(|c| c["field"] != "ConcurrencyStamp"));
+}
+
+#[tokio::test]
 async fn audit_log_is_admin_only_and_validates_its_filters() {
     let mut doctor = Client::signed_in(DOCTOR).await;
     let forbidden = doctor.get("/audit-logs").await.expect(StatusCode::FORBIDDEN);
     assert!(forbidden.bytes.is_empty());
+    Client::anonymous().get("/audit-logs").await.expect(StatusCode::UNAUTHORIZED);
 
     let mut admin = Client::admin().await;
     let invalid = admin.get("/audit-logs?take=0&from=2026-01-02&to=2026-01-01").await.expect(StatusCode::BAD_REQUEST);

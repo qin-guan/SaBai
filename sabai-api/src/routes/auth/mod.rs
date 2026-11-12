@@ -1,5 +1,8 @@
 //! Sign-in, the signed-in user's own account, and staff administration.
 
+mod account;
+mod users;
+
 use axum::Router;
 use axum::http::HeaderMap;
 use axum::routing::{get, post};
@@ -8,7 +11,7 @@ use sqlx::PgConnection;
 use uuid::Uuid;
 
 use crate::auth::signin::{self, SignIn, SignInResult};
-use crate::auth::users::{self, StaffUser};
+use crate::auth::users::{StaffUser, find_by_email, find_by_name, roles_of};
 use crate::auth::Staff;
 use crate::db::{AuditAction, Tx};
 use crate::error::{ApiError, ApiResult};
@@ -54,7 +57,7 @@ impl UserResponse {
     }
 
     pub async fn load(conn: &mut PgConnection, user: &StaffUser) -> Result<Self, sqlx::Error> {
-        Ok(Self::from(user, users::roles_of(conn, user.id).await?))
+        Ok(Self::from(user, roles_of(conn, user.id).await?))
     }
 }
 
@@ -132,9 +135,9 @@ async fn login(
 ) -> ApiResult<(SetCookies, Json<SignInResponse>)> {
     let name = req.user_name.trim();
     let mut tx = ctx.begin().await?;
-    let mut user = users::find_by_name(&mut tx, name).await?;
+    let mut user = find_by_name(&mut tx, name).await?;
     if user.is_none() && name.contains('@') {
-        user = users::find_by_email(&mut tx, name).await?;
+        user = find_by_email(&mut tx, name).await?;
     }
     let Some(mut user) = user else {
         tx.record(AuditAction::SignInFailed, None, Some(name), Some("Password: unknown user")).await?;
@@ -145,6 +148,78 @@ async fn login(
     let outcome =
         signin::password_sign_in(&ctx.state, &mut tx, &headers, &mut user, &req.password, req.remember_me).await?;
     finish_sign_in(tx, outcome, &user, "Password").await
+}
+
+/// Second sign-in step: the 6-digit code from the authenticator app.
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LoginTwoFactorRequest {
+    pub code: String,
+    /// Same as on the password step: keep the session after the browser closes.
+    #[serde(default)]
+    pub remember_me: bool,
+    /// Skip the code on this browser for future sign-ins.
+    #[serde(default)]
+    pub remember_machine: bool,
+}
+
+impl Validate for LoginTwoFactorRequest {
+    fn validate(&self, v: &mut Rules) {
+        v.not_empty("code", &self.code).max_len("code", &self.code, 16);
+    }
+}
+
+/// Finish sign-in with an authenticator code.
+///
+/// Must follow a `POST /auth/login` that returned `requiresTwoFactor`. Sets the session
+/// cookie on success.
+async fn login_two_factor(
+    ctx: Ctx,
+    headers: HeaderMap,
+    Req(req): Req<LoginTwoFactorRequest>,
+) -> ApiResult<(SetCookies, Json<SignInResponse>)> {
+    let mut tx = ctx.begin().await?;
+    let mut user = signin::two_factor_user(&ctx.state, &mut tx, &headers).await?.ok_or(ApiError::AuthRejected)?;
+    let code = req.code.replace([' ', '-'], "");
+    let outcome = signin::two_factor_authenticator_sign_in(
+        &ctx.state,
+        &mut tx,
+        &mut user,
+        &code,
+        req.remember_me,
+        req.remember_machine,
+    )
+    .await?;
+    finish_sign_in(tx, outcome, &user, "Authenticator code").await
+}
+
+/// Second sign-in step when the authenticator is not available.
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LoginRecoveryCodeRequest {
+    pub recovery_code: String,
+}
+
+impl Validate for LoginRecoveryCodeRequest {
+    fn validate(&self, v: &mut Rules) {
+        v.not_empty("recoveryCode", &self.recovery_code).max_len("recoveryCode", &self.recovery_code, 32);
+    }
+}
+
+/// Finish sign-in with a one-time recovery code.
+///
+/// Must follow a `POST /auth/login` that returned `requiresTwoFactor`. Each recovery
+/// code works once.
+async fn login_recovery_code(
+    ctx: Ctx,
+    headers: HeaderMap,
+    Req(req): Req<LoginRecoveryCodeRequest>,
+) -> ApiResult<(SetCookies, Json<SignInResponse>)> {
+    let mut tx = ctx.begin().await?;
+    let mut user = signin::two_factor_user(&ctx.state, &mut tx, &headers).await?.ok_or(ApiError::AuthRejected)?;
+    let code = req.recovery_code.replace(' ', "");
+    let outcome = signin::two_factor_recovery_code_sign_in(&ctx.state, &mut tx, &mut user, &code).await?;
+    finish_sign_in(tx, outcome, &user, "Recovery code").await
 }
 
 /// Sign out.
@@ -173,6 +248,10 @@ async fn who_am_i(ctx: Ctx, _: Staff) -> ApiResult<Json<WhoAmIResponse>> {
 pub fn router() -> Router<AppState> {
     Router::new()
         .route("/auth/login", post(login))
+        .route("/auth/login/two-factor", post(login_two_factor))
+        .route("/auth/login/recovery-code", post(login_recovery_code))
         .route("/auth/logout", post(logout))
         .route("/auth/whoami", get(who_am_i))
+        .merge(account::router())
+        .merge(users::router())
 }

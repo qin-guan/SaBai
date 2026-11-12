@@ -55,6 +55,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<Broadcast> Broadcasts => Set<Broadcast>();
 
+    public DbSet<StaffPushSubscription> PushSubscriptions => Set<StaffPushSubscription>();
+
     public DbSet<AuditLogEntry> AuditLogs => Set<AuditLogEntry>();
 
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
@@ -363,6 +365,21 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             entity.Property(x => x.Title).HasMaxLength(255);
             entity.Property(x => x.CreatedBy).HasMaxLength(255);
             entity.Property(x => x.Severity).HasConversion<string>().HasMaxLength(16);
+        });
+
+        modelBuilder.Entity<StaffPushSubscription>(entity =>
+        {
+            entity.ToTable("PushSubscriptions");
+            entity.Property(x => x.Endpoint).HasMaxLength(2048);
+            entity.Property(x => x.P256dhKey).HasMaxLength(128);
+            entity.Property(x => x.AuthSecret).HasMaxLength(64);
+            // A device has one subscription; whoever subscribed last owns it.
+            entity.HasIndex(x => x.Endpoint).IsUnique();
+            entity
+                .HasOne(x => x.StaffUser)
+                .WithMany()
+                .HasForeignKey(x => x.StaffUserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<AuditLogEntry>(entity =>

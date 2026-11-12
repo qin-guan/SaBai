@@ -19,6 +19,7 @@ export const apiConfig = {
 export const queryKeys = {
   currentUser: () => ["auth", "me"] as const,
   twoFactor: () => ["auth", "two-factor"] as const,
+  pushConfig: () => ["push", "config"] as const,
   staffUsers: () => ["staff-users"] as const,
   staffRoles: () => ["staff-roles"] as const,
   auditLog: () => ["audit-log"] as const,

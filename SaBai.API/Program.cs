@@ -12,6 +12,7 @@ using SaBai.API.Domain;
 using SaBai.API.FaceRecognition;
 using SaBai.API.Middleware;
 using SaBai.API.OpenApi;
+using SaBai.API.Push;
 using SaBai.API.Storage;
 using Scalar.AspNetCore;
 
@@ -50,6 +51,15 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 builder.Services.Configure<AuthSettings>(
     builder.Configuration.GetSection(AuthSettings.SectionName)
 );
+
+// Web Push notifications to installed copies of the web app. Off until a VAPID
+// key pair is configured under "Push".
+builder.Services.Configure<PushSettings>(builder.Configuration.GetSection(PushSettings.SectionName));
+builder
+    .Services.AddHttpClient<PushSender>(client => client.Timeout = TimeSpan.FromSeconds(15))
+    // The request URL is the device's push address; keep it out of the logs.
+    .RemoveAllLoggers();
+builder.Services.AddScoped<PushNotifier>();
 
 builder.Services.AddSingleton(sp => RustFsS3.Read(sp.GetRequiredService<IConfiguration>()));
 builder.Services.AddSingleton<Amazon.S3.IAmazonS3>(sp =>
@@ -167,6 +177,12 @@ if (pendingMigrations.Any())
 }
 
 await AuthSeeder.EnsureAsync(scope.ServiceProvider, auth, app.Logger);
+
+var push = app.Services.GetRequiredService<Microsoft.Extensions.Options.IOptions<PushSettings>>().Value;
+if (!push.IsEnabled)
+{
+    app.Logger.LogWarning("Push notifications are off: {Reason}", push.Problem);
+}
 
 app.MapOpenApi();
 

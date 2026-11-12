@@ -48,6 +48,9 @@ public sealed class AuditInterceptor(IHttpContextAccessor http, TimeProvider clo
     [
         nameof(StaffUser.PasswordHash),
         nameof(StaffUser.SecurityStamp),
+        nameof(StaffPushSubscription.Endpoint),
+        nameof(StaffPushSubscription.P256dhKey),
+        nameof(StaffPushSubscription.AuthSecret),
     ];
 
     private readonly ConditionalWeakTable<DbContext, List<Pending>> _pending = new();

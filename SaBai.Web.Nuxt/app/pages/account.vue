@@ -48,5 +48,9 @@ const { user } = useCurrentUser()
     <AppPanel title="Two-factor authentication">
       <TwoFactorSettings />
     </AppPanel>
+
+    <AppPanel title="Notifications">
+      <NotificationSettings />
+    </AppPanel>
   </div>
 </template>

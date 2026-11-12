@@ -125,3 +125,101 @@ async fn signed_out_requests_are_unauthorized() {
     let response = client.get("/village-codes").await.expect(StatusCode::UNAUTHORIZED);
     assert!(response.bytes.is_empty());
 }
+
+#[tokio::test]
+async fn created_village_is_returned_and_its_code_cannot_be_reused() {
+    let mut client = Client::admin().await;
+    let code = suffix()[..6].to_owned();
+
+    let created = client
+        .post("/village-codes", json!({ "code": code, "name": format!("Village {code}"), "colorHex": "#A1B2C3", "isVisible": true }))
+        .await
+        .expect(StatusCode::CREATED);
+    let village = created.json();
+    let duplicate = client.post("/village-codes", json!({ "code": code, "name": "Other", "colorHex": "#111111" })).await;
+
+    assert_eq!(created.header("location"), Some(format!("/village-codes/{}", id(&village)).as_str()));
+    assert_eq!(village["code"], code);
+    assert_eq!(village["colorHex"], "#A1B2C3");
+    assert_eq!(village["isVisible"], true);
+    assert_eq!(duplicate.status, StatusCode::CONFLICT);
+}
+
+#[tokio::test]
+async fn list_hides_invisible_codes_unless_requested() {
+    let mut client = Client::admin().await;
+    let visible = create_village(&mut client).await;
+    let hidden_code = village_code();
+    client
+        .post("/village-codes", json!({ "code": hidden_code, "name": "Hidden", "colorHex": "#ABC", "isVisible": false }))
+        .await
+        .ok();
+
+    let visible_only = client.get("/village-codes").await.ok().json();
+    let including_hidden = client.get("/village-codes?includeHidden=true").await.ok().json();
+
+    let visible_only = visible_only["villageCodes"].as_array().unwrap();
+    assert!(visible_only.iter().any(|x| x["code"] == visible["code"]));
+    assert!(!visible_only.iter().any(|x| x["code"] == hidden_code));
+    let including_hidden = including_hidden["villageCodes"].as_array().unwrap();
+    assert!(including_hidden.iter().any(|x| x["code"] == hidden_code && x["colorHex"] == "#ABC"));
+}
+
+#[tokio::test]
+async fn village_with_a_visit_cannot_be_deleted() {
+    let mut client = Client::admin().await;
+    let village = create_village(&mut client).await;
+    register_patient(&mut client, id(&village)).await;
+    let path = format!("/village-codes/{}", id(&village));
+
+    let deleted = client.delete(&path).await.expect(StatusCode::CONFLICT);
+    let still_there = client.get(&path).await;
+
+    assert_eq!(deleted.detail(), "A visit still references this village code.");
+    assert_eq!(still_there.status, StatusCode::OK);
+}
+
+#[tokio::test]
+async fn hidden_village_can_still_be_fetched() {
+    let mut client = Client::admin().await;
+    let village = create_village(&mut client).await;
+    let path = format!("/village-codes/{}", id(&village));
+    client.patch(&path, json!({ "isVisible": false })).await.ok();
+
+    let body = client.get(&path).await.expect(StatusCode::OK).json();
+
+    assert_eq!(body["code"], village["code"]);
+    assert_eq!(body["isVisible"], false);
+}
+
+#[tokio::test]
+async fn invalid_color_is_rejected() {
+    let mut client = Client::admin().await;
+    let code = village_code();
+
+    let response = client.post("/village-codes", json!({ "code": code, "name": format!("Village {code}"), "colorHex": "red" })).await;
+
+    assert_eq!(response.status, StatusCode::BAD_REQUEST);
+}
+
+#[tokio::test]
+async fn empty_name_is_rejected() {
+    let mut client = Client::admin().await;
+
+    let response = client.post("/village-codes", json!({ "code": village_code(), "name": "", "colorHex": "#336699" })).await;
+
+    assert_eq!(response.status, StatusCode::BAD_REQUEST);
+}
+
+#[tokio::test]
+async fn missing_village_is_not_found() {
+    let mut client = Client::admin().await;
+
+    let fetched = client.get("/village-codes/99999999").await;
+    let patched = client.patch("/village-codes/99999999", json!({ "name": "Missing" })).await;
+    let deleted = client.delete("/village-codes/99999999").await;
+
+    assert_eq!(fetched.status, StatusCode::NOT_FOUND);
+    assert_eq!(patched.status, StatusCode::NOT_FOUND);
+    assert_eq!(deleted.status, StatusCode::NOT_FOUND);
+}

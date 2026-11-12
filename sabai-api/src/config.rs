@@ -124,6 +124,10 @@ pub struct Settings {
     pub qdrant: QdrantSettings,
     pub face: FaceRecognitionSettings,
     pub otlp_endpoint: Option<String>,
+    /// Trust `X-Forwarded-For` / `X-Forwarded-Proto` from the proxy in front of the API
+    /// (`ASPNETCORE_FORWARDEDHEADERS_ENABLED`): the audit log then records the client's
+    /// address, and cookies are marked `secure` when the client used HTTPS.
+    pub forwarded_headers_enabled: bool,
 }
 
 impl Settings {
@@ -153,6 +157,7 @@ impl Settings {
             qdrant: QdrantSettings::load(config),
             face: FaceRecognitionSettings::load(config)?,
             otlp_endpoint: config.non_blank("OTEL_EXPORTER_OTLP_ENDPOINT"),
+            forwarded_headers_enabled: config.flag("ASPNETCORE_FORWARDEDHEADERS_ENABLED")?.unwrap_or(false),
             environment,
         };
         settings.face.validate()?;
@@ -160,8 +165,8 @@ impl Settings {
     }
 }
 
-/// `ASPNETCORE_URLS` (`http://+:8080;http://localhost:5000`), `ASPNETCORE_HTTP_PORTS`
-/// (`8080;8081`) or `PORT`. Defaults to port 8080 on every interface.
+/// `ASPNETCORE_URLS` (`http://+:8080;http://localhost:5000`), `ASPNETCORE_HTTP_PORTS` or
+/// `HTTP_PORTS` (`8080;8081`), or `PORT`. Defaults to port 8080 on every interface.
 fn listen_addresses(config: &Config) -> anyhow::Result<Vec<String>> {
     let mut addresses = Vec::new();
     if let Some(urls) = config.non_blank("ASPNETCORE_URLS").or_else(|| config.non_blank("urls")) {
@@ -179,7 +184,10 @@ fn listen_addresses(config: &Config) -> anyhow::Result<Vec<String>> {
             };
             addresses.push(format!("{host}:{port}"));
         }
-    } else if let Some(ports) = config.non_blank("ASPNETCORE_HTTP_PORTS") {
+    } else if let Some(ports) = ["ASPNETCORE_HTTP_PORTS", "DOTNET_HTTP_PORTS", "HTTP_PORTS"]
+        .iter()
+        .find_map(|key| config.non_blank(key))
+    {
         for port in ports.split(';').map(str::trim).filter(|port| !port.is_empty()) {
             addresses.push(format!("0.0.0.0:{port}"));
         }

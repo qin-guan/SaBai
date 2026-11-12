@@ -31,7 +31,18 @@ pub struct RequestContext {
 pub async fn layer(State(state): State<AppState>, mut request: Request, next: Next) -> Response {
     let path = request.uri().path().to_owned();
     let trace_id = new_trace_id();
-    let ip = request.extensions().get::<ConnectInfo<SocketAddr>>().map(|info| info.0.ip());
+    let mut ip = request.extensions().get::<ConnectInfo<SocketAddr>>().map(|info| info.0.ip());
+    let mut https = false;
+    if state.settings.forwarded_headers_enabled {
+        // One proxy hop is trusted: the last address it appended, and its scheme.
+        let forwarded = |name: &str| {
+            request.headers().get(name).and_then(|value| value.to_str().ok()).and_then(|value| value.rsplit(',').next())
+        };
+        if let Some(client) = forwarded("x-forwarded-for").and_then(|value| value.trim().parse().ok()) {
+            ip = Some(client);
+        }
+        https = forwarded("x-forwarded-proto").is_some_and(|value| value.trim().eq_ignore_ascii_case("https"));
+    }
     let mut actor = AuditActor::for_request(request.method().as_str(), &path, ip);
 
     let authentication =
@@ -56,6 +67,21 @@ pub async fn layer(State(state): State<AppState>, mut request: Request, next: Ne
             .any(|value| value.to_str().is_ok_and(|value| value.starts_with(&prefix)));
         if !handler_set_it {
             response.headers_mut().append(header::SET_COOKIE, cookie);
+        }
+    }
+    if https {
+        // Cookies follow the scheme the client used, as before.
+        let cookies: Vec<HeaderValue> = response
+            .headers()
+            .get_all(header::SET_COOKIE)
+            .iter()
+            .filter_map(|value| HeaderValue::from_str(&format!("{}; secure", value.to_str().ok()?)).ok())
+            .collect();
+        if !cookies.is_empty() {
+            response.headers_mut().remove(header::SET_COOKIE);
+            for cookie in cookies {
+                response.headers_mut().append(header::SET_COOKIE, cookie);
+            }
         }
     }
     if response.headers().contains_key(header::SET_COOKIE) {

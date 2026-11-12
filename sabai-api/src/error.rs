@@ -129,16 +129,21 @@ impl Problem {
     pub fn render(&self, instance: &str, trace_id: &str) -> Response {
         let status = self.status.as_u16();
         let (content_type, body) = match &self.kind {
-            ProblemKind::Domain { detail } => (
-                "application/json; charset=utf-8",
-                serde_json::json!({
-                    "title": self.title,
-                    "status": status,
-                    "detail": detail,
-                    "instance": instance,
-                })
-                .to_string(),
-            ),
+            ProblemKind::Domain { detail } => {
+                // A struct, not `json!`, to keep the properties in this order.
+                #[derive(Serialize)]
+                struct Body<'a> {
+                    title: &'static str,
+                    status: u16,
+                    detail: &'a str,
+                    instance: &'a str,
+                }
+                (
+                    "application/json; charset=utf-8",
+                    serde_json::to_string(&Body { title: self.title, status, detail, instance })
+                        .unwrap_or_default(),
+                )
+            }
             ProblemKind::Validation { detail, errors } => {
                 #[derive(Serialize)]
                 #[serde(rename_all = "camelCase")]
@@ -168,13 +173,10 @@ impl Problem {
             }
             ProblemKind::Unhandled => (
                 "application/problem+json; charset=utf-8",
-                serde_json::json!({
-                    "type": "https://tools.ietf.org/html/rfc9110#section-15.6.1",
-                    "title": self.title,
-                    "status": status,
-                    "traceId": trace_id,
-                })
-                .to_string(),
+                format!(
+                    r#"{{"type":"https://tools.ietf.org/html/rfc9110#section-15.6.1","title":"{}","status":{status},"traceId":"{trace_id}"}}"#,
+                    self.title
+                ),
             ),
         };
         let mut response = (self.status, body).into_response();

@@ -89,6 +89,9 @@ pub fn display_name(property: &str) -> String {
     out
 }
 
+// Comparisons are written as "not greater than" on purpose: a value that cannot be
+// ordered (NaN) fails the rule.
+#[allow(clippy::neg_cmp_op_on_partial_ord)]
 impl Rules {
     pub fn new() -> Self {
         Rules::default()
@@ -170,11 +173,10 @@ impl Rules {
     }
 
     pub fn matches(&mut self, name: &str, value: impl Text, pattern: &Regex) -> &mut Self {
-        if let Some(text) = value.text() {
-            if !pattern.is_match(text) {
+        if let Some(text) = value.text()
+            && !pattern.is_match(text) {
                 self.add(name, format!("'{}' is not in the correct format.", display_name(name)));
             }
-        }
         self
     }
 
@@ -196,11 +198,10 @@ impl Rules {
         value: impl Into<Option<T>>,
         than: T,
     ) -> &mut Self {
-        if let Some(value) = value.into() {
-            if !(value > than) {
+        if let Some(value) = value.into()
+            && !(value > than) {
                 self.add(name, format!("'{}' must be greater than '{than}'.", display_name(name)));
             }
-        }
         self
     }
 
@@ -210,14 +211,13 @@ impl Rules {
         value: impl Into<Option<T>>,
         than: T,
     ) -> &mut Self {
-        if let Some(value) = value.into() {
-            if !(value >= than) {
+        if let Some(value) = value.into()
+            && !(value >= than) {
                 self.add(
                     name,
                     format!("'{}' must be greater than or equal to '{than}'.", display_name(name)),
                 );
             }
-        }
         self
     }
 
@@ -227,11 +227,10 @@ impl Rules {
         value: impl Into<Option<T>>,
         than: T,
     ) -> &mut Self {
-        if let Some(value) = value.into() {
-            if !(value < than) {
+        if let Some(value) = value.into()
+            && !(value < than) {
                 self.add(name, format!("'{}' must be less than '{than}'.", display_name(name)));
             }
-        }
         self
     }
 
@@ -241,14 +240,13 @@ impl Rules {
         value: impl Into<Option<T>>,
         than: T,
     ) -> &mut Self {
-        if let Some(value) = value.into() {
-            if !(value <= than) {
+        if let Some(value) = value.into()
+            && !(value <= than) {
                 self.add(
                     name,
                     format!("'{}' must be less than or equal to '{than}'.", display_name(name)),
                 );
             }
-        }
         self
     }
 
@@ -259,8 +257,8 @@ impl Rules {
         from: T,
         to: T,
     ) -> &mut Self {
-        if let Some(value) = value.into() {
-            if !(value >= from && value <= to) {
+        if let Some(value) = value.into()
+            && !(value >= from && value <= to) {
                 self.add(
                     name,
                     format!(
@@ -269,7 +267,6 @@ impl Rules {
                     ),
                 );
             }
-        }
         self
     }
 }

@@ -334,11 +334,10 @@ impl<'a> Users<'a> {
                 format!("Username '{name}' is invalid, can only contain letters or digits."),
             );
         }
-        if let Some(owner) = find_by_name(self.tx, name).await? {
-            if owner.id != user.id {
+        if let Some(owner) = find_by_name(self.tx, name).await?
+            && owner.id != user.id {
                 return fail("DuplicateUserName", format!("Username '{name}' is already taken."));
             }
-        }
         Ok(())
     }
 

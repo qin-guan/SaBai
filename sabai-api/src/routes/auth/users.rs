@@ -157,11 +157,10 @@ async fn create(ctx: Ctx, _: Admin, Req(req): Req<CreateRequest>) -> ApiResult<C
     let user_name = req.user_name.trim();
     let email = req.email.as_deref().map(str::trim).filter(|email| !email.is_empty());
     let mut tx = ctx.begin().await?;
-    if let Some(email) = email {
-        if users::find_by_email(&mut tx, email).await?.is_some() {
+    if let Some(email) = email
+        && users::find_by_email(&mut tx, email).await?.is_some() {
             return Err(ApiError::conflict("A user with this email already exists."));
         }
-    }
 
     let nickname = req.nickname.as_deref().map(str::trim).filter(|nickname| !nickname.is_empty()).unwrap_or(user_name);
     let new = NewUser {
@@ -214,20 +213,18 @@ impl Validate for UpdateRequest {
 
 async fn apply_update(ctx: &Ctx, tx: &mut Tx, user: &mut StaffUser, req: &UpdateRequest) -> ApiResult<()> {
     let rules = &ctx.state.settings.identity;
-    if let Some(name) = req.user_name.as_deref().map(str::trim) {
-        if user.user_name.as_deref() != Some(name) {
+    if let Some(name) = req.user_name.as_deref().map(str::trim)
+        && user.user_name.as_deref() != Some(name) {
             Users::new(tx, rules).set_user_name(user, name).await?;
         }
-    }
 
     let mut saved = user.clone();
     if let Some(email) = req.email.as_deref() {
         let email = Some(email.trim()).filter(|email| !email.is_empty());
-        if let Some(email) = email {
-            if users::find_by_email(tx, email).await?.is_some_and(|other| other.id != user.id) {
+        if let Some(email) = email
+            && users::find_by_email(tx, email).await?.is_some_and(|other| other.id != user.id) {
                 return Err(ApiError::conflict("A user with this email already exists."));
             }
-        }
         if email != user.email.as_deref() {
             Users::new(tx, rules).set_email(user, email).await?;
             saved = user.clone();

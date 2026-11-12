@@ -568,13 +568,13 @@ impl FaceRecognitionSettings {
     }
 
     pub fn validate(&self) -> anyhow::Result<()> {
-        if self.detection_size == 0 || self.detection_size % 32 != 0 {
+        if self.detection_size == 0 || !self.detection_size.is_multiple_of(32) {
             bail!("DetectionSize must be a positive multiple of 32.");
         }
         if !(0.0..=1.0).contains(&self.detection_threshold) {
             bail!("DetectionThreshold must be between 0 and 1.");
         }
-        if self.detection_fallback_size == 0 || self.detection_fallback_size % 32 != 0 {
+        if self.detection_fallback_size == 0 || !self.detection_fallback_size.is_multiple_of(32) {
             bail!("DetectionFallbackSize must be a positive multiple of 32.");
         }
         if !(self.detection_fallback_threshold >= 0.0

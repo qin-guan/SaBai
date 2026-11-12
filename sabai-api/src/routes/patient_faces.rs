@@ -18,21 +18,6 @@ use crate::face::{self, StoredFace};
 use crate::http::{Ctx, Json, NoContent, Req, Rules, Validate};
 use crate::state::AppState;
 
-/// Maps a patient to the free-form person id used by the face store. Faces for patients
-/// are namespaced (`patient:42`) so they can never collide with identities enrolled
-/// through the generic `/persons` endpoints.
-mod identity {
-    const PREFIX: &str = "patient:";
-
-    pub fn for_patient(patient_id: i32) -> String {
-        format!("{PREFIX}{patient_id}")
-    }
-
-    pub fn parse(person_id: &str) -> Option<i32> {
-        person_id.strip_prefix(PREFIX)?.trim().parse().ok()
-    }
-}
-
 async fn find_patient(db: &Pool, id: i32) -> ApiResult<Patient> {
     sqlx::query_as(r#"SELECT * FROM "Patients" WHERE "Id" = $1"#)
         .bind(id)
@@ -76,7 +61,7 @@ async fn enroll(ctx: Ctx, _: Staff, upload: Upload) -> ApiResult<Response> {
     let faces = ctx.state.faces.analyze(image).await?;
     let face = face::largest(&faces).ok_or_else(|| no_usable_face(&["image"]))?;
 
-    let stored = ctx.state.faces.add(&identity::for_patient(patient.id), &face.embedding).await?;
+    let stored = ctx.state.faces.add(&crate::routes::patients::face_person_id(patient.id), &face.embedding).await?;
 
     let mut tx = ctx.begin().await?;
     let mut updated = patient.clone();
@@ -104,7 +89,7 @@ struct ListResponse {
 /// List the faces enrolled for a patient
 async fn list(ctx: Ctx, _: Staff, Req(req): Req<PatientRequest>) -> ApiResult<Json<ListResponse>> {
     let patient = find_patient(ctx.db(), req.id).await?;
-    let faces = ctx.state.faces.list(&identity::for_patient(patient.id)).await?;
+    let faces = ctx.state.faces.list(&crate::routes::patients::face_person_id(patient.id)).await?;
     Ok(Json(ListResponse { patient_id: patient.id, faces }))
 }
 
@@ -123,7 +108,7 @@ impl Validate for DeleteRequest {}
 async fn delete_face(ctx: Ctx, _: Staff, Req(req): Req<DeleteRequest>) -> ApiResult<NoContent> {
     let patient = find_patient(ctx.db(), req.id).await?;
 
-    let faces = ctx.state.faces.list(&identity::for_patient(patient.id)).await?;
+    let faces = ctx.state.faces.list(&crate::routes::patients::face_person_id(patient.id)).await?;
     if faces.iter().all(|face| face.face_id != req.face_id) {
         return Err(ApiError::not_found("Face was not found for this patient."));
     }
@@ -187,7 +172,7 @@ async fn search(ctx: Ctx, _: Staff, upload: Upload) -> ApiResult<Json<SearchResp
     let mut best: HashMap<i32, f32> = HashMap::new();
     for found in faces.analyze(image).await? {
         for candidate in faces.search(&found.embedding, threshold, max_matches).await? {
-            if let Some(patient_id) = identity::parse(&candidate.person_id)
+            if let Some(patient_id) = crate::routes::patients::patient_of_face_person(&candidate.person_id)
                 && best.get(&patient_id).is_none_or(|&current| candidate.similarity > current)
             {
                 best.insert(patient_id, candidate.similarity);
@@ -238,15 +223,14 @@ pub fn router() -> Router<AppState> {
 
 #[cfg(test)]
 mod tests {
-    use super::identity;
 
     #[test]
     fn patient_identities_are_namespaced() {
-        assert_eq!(identity::for_patient(42), "patient:42");
-        assert_eq!(identity::parse("patient:42"), Some(42));
-        assert_eq!(identity::parse("patient:"), None);
-        assert_eq!(identity::parse("patient:abc"), None);
-        assert_eq!(identity::parse("42"), None);
-        assert_eq!(identity::parse("Patient:42"), None);
+        assert_eq!(crate::routes::patients::face_person_id(42), "patient:42");
+        assert_eq!(crate::routes::patients::patient_of_face_person("patient:42"), Some(42));
+        assert_eq!(crate::routes::patients::patient_of_face_person("patient:"), None);
+        assert_eq!(crate::routes::patients::patient_of_face_person("patient:abc"), None);
+        assert_eq!(crate::routes::patients::patient_of_face_person("42"), None);
+        assert_eq!(crate::routes::patients::patient_of_face_person("Patient:42"), None);
     }
 }

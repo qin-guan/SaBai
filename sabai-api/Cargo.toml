@@ -1,0 +1,64 @@
+[package]
+name = "sabai-api"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.88"
+description = "Sa'Bai clinic API"
+publish = false
+
+[dependencies]
+anyhow = "1"
+async-trait = "0.1"
+axum = { version = "0.8", features = ["multipart", "macros"] }
+base64 = "0.22"
+bytes = "1"
+chacha20poly1305 = "0.10"
+chrono = { version = "0.4", features = ["serde"] }
+data-encoding = "2"
+futures = "0.3"
+hmac = "0.12"
+image = { version = "0.25", default-features = false, features = ["jpeg", "png", "webp", "bmp", "gif"] }
+ndarray = "0.16"
+ort = { version = "=2.0.0-rc.10", features = ["ndarray"] }
+pbkdf2 = "0.12"
+percent-encoding = "2"
+qdrant-client = "1"
+rand = "0.9"
+regex = "1"
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "stream", "json"] }
+rust_decimal = { version = "1", features = ["serde-float"] }
+rusty-s3 = "0.8"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha1 = "0.10"
+sha2 = "0.10"
+sqlx = { version = "0.8", default-features = false, features = ["runtime-tokio", "tls-rustls", "postgres", "uuid", "chrono", "rust_decimal", "json", "migrate", "macros"] }
+subtle = "2"
+thiserror = "2"
+tokio = { version = "1", features = ["full"] }
+tower = "0.5"
+tower-http = { version = "0.6", features = ["cors", "trace"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+typst = "0.13"
+typst-pdf = "0.13"
+url = "2"
+uuid = { version = "1", features = ["v4", "v7", "serde"] }
+zip = { version = "2", default-features = false, features = ["deflate"] }
+
+[[test]]
+name = "api"
+path = "tests/api/main.rs"
+
+[dev-dependencies]
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "stream", "json", "multipart"] }
+
+[profile.dev]
+debug = false
+
+[profile.dev.package."*"]
+opt-level = 1
+
+[profile.release]
+lto = "thin"
+strip = true

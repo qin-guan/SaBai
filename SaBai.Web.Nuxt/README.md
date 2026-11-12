@@ -28,6 +28,7 @@ pnpm dev
 | `app/components/app` | Building blocks: `AppPanel`, `PageHeader`, `FormField`, `ChoiceGroup`, `AppDialog`, `SaveBar`… |
 | `app/components/patient` | Patient banner, journey tracker, visit selector, station page frame, inline details form and edit dialog. |
 | `app/composables` | Vue Query data hooks over `@sabai/sdk/clients`, village selection, shortcuts. |
+| `app/service-worker` | Service worker of the installed app: push notifications. |
 | `app/utils` | Framework-free logic ported from SaBai.Web (formatting, vitals, splits, eyesight, dental mapping). |
 
 Auth is an HttpOnly session cookie (`sabai.auth`) set by the API's
@@ -150,6 +151,31 @@ reload or closed tab does not lose work. A restored draft is announced with a
 "Discard draft" button; drafts clear on a successful save, expire after 24h,
 and — together with recent patients — are wiped on sign-out because they hold
 patient data.
+
+## Installable app and notifications
+
+The app is an installable PWA (`@vite-pwa/nuxt`, `pwa` in `nuxt.config.ts`) so
+that notifications can reach phones and desktops. Sending them is not built
+yet; the receiving side is:
+
+- **Manifest and icons** (`/manifest.webmanifest`, `public/pwa-*.png`,
+  `apple-touch-icon.png`): the app installs from Chrome/Edge (desktop and
+  Android) and from Safari's *Add to Home Screen* / *Add to Dock*. iOS and
+  iPadOS deliver Web Push only to the Home Screen copy (16.4+).
+- **Service worker** (`app/service-worker/sw.ts`): shows a notification for
+  every push message and opens the app at the message's `url` when it is
+  tapped. It has no `fetch` handler and caches nothing, so there is no offline
+  mode and the `/api` proxy and session cookie are untouched. It also runs
+  under `pnpm dev`.
+- **Message format** (`app/utils/pushPayload.ts`): a JSON body
+  `{ title, body?, url?, tag?, requireInteraction? }`. `url` must be a path in
+  this app; anything else opens the home page.
+
+Still to build: a VAPID key pair, API endpoints that store each device's
+`PushSubscription` and send messages, and a screen that asks for permission
+(from a tap, which iOS requires) and calls
+`registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey })`.
+Push needs HTTPS (or `localhost`).
 
 ## Screen sizes
 

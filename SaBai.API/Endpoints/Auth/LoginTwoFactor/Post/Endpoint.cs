@@ -8,6 +8,7 @@ namespace SaBai.API.Endpoints.Auth.LoginTwoFactor.Post;
 public sealed class Endpoint(
     UserManager<StaffUser> users,
     SignInManager<StaffUser> signIn,
+    AppDbContext db,
     AuditTrail audit
 )
     : Endpoint<Request, SignInResponse>
@@ -35,6 +36,6 @@ public sealed class Endpoint(
             req.RememberMe,
             req.RememberMachine
         );
-        await Send.OkAsync(await SignInResponse.FromAsync(result, user, users, audit, "Authenticator code", ct), ct);
+        await Send.OkAsync(await SignInResponse.FromAsync(result, user, users, db, audit, "Authenticator code", ct), ct);
     }
 }

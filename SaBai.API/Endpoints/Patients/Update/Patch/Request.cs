@@ -28,4 +28,7 @@ public sealed record Request
     public bool? ToGetReport { get; init; }
 
     public int? VillageCodeId { get; init; }
+
+    /// <summary>The full set of freeform tags the patient should have.</summary>
+    public IReadOnlyList<string>? Tags { get; init; }
 }

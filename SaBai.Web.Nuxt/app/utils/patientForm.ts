@@ -10,6 +10,7 @@ export interface PatientFormValues {
   hasPoorCard: boolean
   hasBS2Card: boolean
   hasSabaiCard: boolean
+  tags: string[]
 }
 
 const LABELS: Record<string, string> = {
@@ -31,6 +32,7 @@ export const blankPatientForm = (): PatientFormValues => ({
   hasPoorCard: false,
   hasBS2Card: false,
   hasSabaiCard: false,
+  tags: [],
 })
 
 /** Every demographic field is required (same rule as SaBai.Web: "Missing <label>!"). */

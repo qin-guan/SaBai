@@ -39,7 +39,7 @@ const matchesFilter = (p: Row) => {
   const needle = cleanKhmerText(filter.value)
   if (!needle)
     return true
-  return [p.name, p.displayId, p.filterString, p.identificationNumber ?? '', p.contactNo ?? '']
+  return [p.name, p.displayId, p.filterString, p.identificationNumber ?? '', p.contactNo ?? '', ...(p.tags ?? [])]
     .some(v => matchesSearchText(v, needle))
 }
 

@@ -92,5 +92,8 @@ const cards = [
         </div>
       </div>
     </fieldset>
+    <FormField v-slot="{ id, describedby }" label="Tags" hint="Optional freeform labels for quick identification (e.g. Follow-Up, Mobility-Aid)." class="sm:col-span-2">
+      <TagInput :id="id" v-model="model.tags" :describedby="describedby" />
+    </FormField>
   </div>
 </template>

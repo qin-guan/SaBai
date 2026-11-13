@@ -126,3 +126,35 @@ describe('matchesReferral filtering', () => {
     expect(matchesReferral(sampleReferral, { search: 'Sokha\u200BChan' })).toBe(true)
   })
 })
+
+import { calculateAge } from '../../app/utils/patient'
+import {
+  ADULT_AGE,
+  GUARDIANS_CONTACTED_LABELS,
+  MAX_RIELS,
+  REFERRAL_SERVICE_CLASS_LABELS,
+  USD_AMOUNT_PATTERN,
+} from '../../app/utils/referral'
+
+describe('referrals overhaul helpers', () => {
+  it('computes age as of the referral date for minor/adult guardian check', () => {
+    const dob = '2008-10-15T00:00:00Z'
+    expect(calculateAge(dob, '2026-10-14T00:00:00Z')).toBe(17)
+    expect(calculateAge(dob, '2026-10-15T00:00:00Z')).toBe(ADULT_AGE)
+  })
+
+  it('validates USD amounts up to 2 decimal places', () => {
+    expect(USD_AMOUNT_PATTERN.test('0')).toBe(true)
+    expect(USD_AMOUNT_PATTERN.test('25.50')).toBe(true)
+    expect(USD_AMOUNT_PATTERN.test('99999999.99')).toBe(true)
+    expect(USD_AMOUNT_PATTERN.test('12.345')).toBe(false)
+    expect(USD_AMOUNT_PATTERN.test('-5')).toBe(false)
+    expect(USD_AMOUNT_PATTERN.test('abc')).toBe(false)
+  })
+
+  it('exposes labels for service classes and guardians contacted and max riels', () => {
+    expect(REFERRAL_SERVICE_CLASS_LABELS.ImagingDiagnostics).toBe('Imaging/Diagnostics')
+    expect(GUARDIANS_CONTACTED_LABELS.NotApplicable).toBe('Not Applicable')
+    expect(MAX_RIELS).toBe(2_147_483_647)
+  })
+})

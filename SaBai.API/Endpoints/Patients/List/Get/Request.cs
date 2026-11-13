@@ -6,4 +6,6 @@ public sealed record Request
     public string? Name { get; init; }
 
     public string? VillageCode { get; init; }
+
+    public string? Tag { get; init; }
 }

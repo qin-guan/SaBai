@@ -27,6 +27,8 @@ public sealed record Request
 
     public int VillageCodeId { get; init; }
 
+    public IReadOnlyList<string>? Tags { get; init; }
+
     public VitalsRequest? Vitals { get; init; }
 }
 

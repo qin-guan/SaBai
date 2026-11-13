@@ -12,7 +12,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
     public override void Configure()
     {
         Get("/patient-records");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.Admin, StaffRoles.Member, StaffRoles.Pn);
         Summary(s => s.Summary = "Load the patient chart for a visit");
     }
 
@@ -60,10 +60,11 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             .ThenByDescending(x => x.Id)
             .Select(x => new { x.Id, x.Date })
             .FirstOrDefaultAsync(ct);
+        var tags = await TagSync.LoadPatientTagsAsync(db, visit.PatientId, ct);
 
         await Send.OkAsync(
             new Response(
-                MapPatient(visit.Patient, lastVisit?.Date, lastVisit?.Id),
+                MapPatient(visit.Patient, lastVisit?.Date, lastVisit?.Id, tags),
                 MapVitals(visit.Vitals),
                 visit.Date,
                 consults,
@@ -76,7 +77,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
     private static PatientItem MapPatient(
         Patient patient,
         DateTimeOffset? lastVisitDate,
-        int? lastVisitId
+        int? lastVisitId,
+        IReadOnlyList<string> tags
     )
     {
         var code = patient.VillageCode?.Code;
@@ -97,7 +99,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             Patient.FormatDisplayId(code, patient.Id),
             Patient.FormatFilterString(code, patient.Id, patient.ContactNo, patient.Name),
             lastVisitDate,
-            lastVisitId
+            lastVisitId,
+            tags
         );
     }
 

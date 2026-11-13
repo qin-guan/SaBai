@@ -24,6 +24,7 @@ export const paths = {
   medicationActiveIngredients: () => "/medication-active-ingredients",
   orders: () => "/orders",
   settings: () => "/settings",
+  settingsNotifications: () => "/settings/notifications",
   settingsVillageCodes: () => "/settings/village-codes",
   settingsUsers: () => "/settings/users",
   /** The audit log, optionally filtered to one record's or one staff user's history. */

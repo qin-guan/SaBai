@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PhBell, PhBellRinging, PhBellSlash } from '@phosphor-icons/vue'
+import { PhBell, PhBellRinging, PhBellSlash, PhPaperPlaneTilt } from '@phosphor-icons/vue'
 import { useMutation } from '@tanstack/vue-query'
 import { toast } from 'vue-sonner'
 import { Badge } from '@/components/ui/badge'
@@ -98,6 +98,19 @@ const otherDevices = computed(() => {
         <Button variant="outline" :disabled="disable.isPending.value" @click="disable.mutate()">
           <PhBellSlash aria-hidden="true" /> Turn off
         </Button>
+      </div>
+
+      <div class="mt-2 border-t border-border pt-3">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <p class="text-xs text-muted-foreground touch:text-sm">
+            Need to send a clinic announcement or push notification to staff?
+          </p>
+          <Button variant="outline" size="sm" as-child>
+            <NuxtLink :to="paths.settingsNotifications()">
+              <PhPaperPlaneTilt aria-hidden="true" /> Send notification
+            </NuxtLink>
+          </Button>
+        </div>
       </div>
     </template>
   </div>

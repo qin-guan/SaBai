@@ -47,6 +47,7 @@ describe('notificationTargetUrl', () => {
 
   it('resolves app paths against the origin', () => {
     expect(notificationTargetUrl('/patient/12?station=vitals', origin)).toBe(`${origin}/patient/12?station=vitals`)
+    expect(notificationTargetUrl('/settings/notifications', origin)).toBe(`${origin}/settings/notifications`)
     expect(notificationTargetUrl(`${origin}/pharmacy`, origin)).toBe(`${origin}/pharmacy`)
   })
 

@@ -1,6 +1,7 @@
 import type { Component } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import {
+  PhArrowUpRight,
   PhBell,
   PhClockCounterClockwise,
   PhEyeglasses,
@@ -43,6 +44,7 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { name: 'Scan Face', href: paths.scanFace(), icon: PhScan, keywords: 'camera photo face match register new patient registration front desk visit start search find' },
   { name: 'Patients', href: paths.patient(), icon: PhUsers, keywords: 'patients records list demographics queue journey today' },
+  { name: 'Referrals', href: paths.referrals(), icon: PhArrowUpRight, keywords: 'referrals hospital specialist outcome status follow-up tracking' },
 ]
 
 export const STATION_NAV_ITEMS: NavItem[] = [
@@ -114,6 +116,8 @@ export function logicalBackTarget(route: Pick<RouteLocationNormalizedLoaded, 'pa
     return paths.patient('dental')
   if (route.path.startsWith(`${paths.patient()}/`))
     return paths.patient()
+  if (route.path.startsWith(`${paths.referrals()}/`))
+    return paths.referrals()
   if (route.path === paths.patient() && isStationKey(route.query?.station))
     return paths.patient()
   if (route.path === paths.medicationBrands() || route.path === paths.medicationActiveIngredients())

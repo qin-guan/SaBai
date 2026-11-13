@@ -27,9 +27,17 @@ const trailing = [
     flush
   >
     <article v-for="consult in consults" :key="consult.id" class="flex flex-col gap-2 border-b border-border px-3 py-2 last:border-b-0">
-      <p class="text-xs font-semibold text-muted-foreground touch:text-sm">
-        {{ formatVisitDate(consult.date) }}
-      </p>
+      <div class="flex items-center justify-between gap-2">
+        <div>
+          <p class="text-xs font-semibold text-muted-foreground touch:text-sm">
+            {{ formatVisitDate(consult.date) }}
+          </p>
+          <p v-if="consult.doctorNickname" class="text-xs text-muted-foreground">
+            Dr. {{ consult.doctorNickname }}
+          </p>
+        </div>
+        <ConsultPdfLink :consult-id="consult.id" size="sm" />
+      </div>
       <template v-for="f in fields" :key="f.key">
         <div v-if="consult[f.key]">
           <p class="text-xs touch:text-xs font-semibold text-muted-foreground">
@@ -49,6 +57,14 @@ const trailing = [
             <span class="font-semibold">{{ d.category ?? '-' }}:</span> {{ d.details }}
           </li>
         </ul>
+      </div>
+      <div v-if="consult.referredFor" class="rounded border border-purple-200 bg-purple-50/60 p-2 dark:border-purple-900/50 dark:bg-purple-950/20">
+        <p class="text-xs font-semibold text-purple-900 dark:text-purple-300">
+          Referred for: {{ consult.referredFor }}
+        </p>
+        <p v-if="consult.referralNotes" class="mt-0.5 text-xs text-muted-foreground whitespace-pre-wrap break-words">
+          {{ consult.referralNotes }}
+        </p>
       </div>
       <template v-for="f in trailing" :key="f.key">
         <div v-if="consult[f.key]">

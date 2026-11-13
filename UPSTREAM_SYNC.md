@@ -3,7 +3,7 @@
 SaBai is a port of [NUS-Project-SaBai/project-sabai](https://github.com/NUS-Project-SaBai/project-sabai).
 Merges to upstream `dev` are ported here daily.
 
-Last synced upstream commit: `e16af5fbb6f100d32e78377367115e75bca61288`
+Last synced upstream commit: `ba266fddbf481ba276f6ab249c713c63b3c9c9d2`
 
 ## Mapping upstream changes
 
@@ -51,8 +51,8 @@ Last synced upstream commit: `e16af5fbb6f100d32e78377367115e75bca61288`
   there is no Realtime channel.
 - Upstream #340 (Khmer font) is already covered for `SaBai.Web.Nuxt` by qin-guan/SaBai#27 (Noto Sans
   Khmer in `main.css`, and Khmer fonts for the consult PDF). It is not applied to `SaBai.Web`.
-- Held, so the synced commit stays at `e16af5f`: upstream #301 (referrals pages). Its API part is
-  ported (`PATCH /referrals/{id}/outcome` sets only the outcome, so it can't overwrite a newer
-  state; the referral states already matched). Its UI (referral list and detail pages, status
-  dropdown, Referrals sidebar entry) waits on which frontend should receive upstream UI changes:
-  `SaBai.Web` (Next.js, a mirror of upstream) or `SaBai.Web.Nuxt` (the app `main` builds and ships).
+- Upstream #301 (referrals frontend) and #256 (referral creation in consult form): The referral UI
+  (referral list page at `/referrals`, detail page at `/referrals/:id`, `ReferralStateDropdown` component,
+  and "Referrals" navigation item) and referral creation in the doctor's consult form are fully implemented
+  in `SaBai.Web.Nuxt`. In addition, consult PDF generation and download (upstream #47) are integrated across
+  the consult form, previous consults cards, and referral pages.

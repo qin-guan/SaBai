@@ -36,9 +36,14 @@ describe('logicalBackTarget', () => {
     expect(logicalBackTarget(route('/settings/audit-log', { entityType: 'Patient', entityId: '42' }))).toBe('/settings')
   })
 
+  it('goes from referral details to the referrals list', () => {
+    expect(logicalBackTarget(route('/referrals/42'))).toBe('/referrals')
+  })
+
   it('returns undefined on top-level pages', () => {
     expect(logicalBackTarget(route('/patient'))).toBeUndefined()
     expect(logicalBackTarget(route('/scan-face'))).toBeUndefined()
+    expect(logicalBackTarget(route('/referrals'))).toBeUndefined()
     expect(logicalBackTarget(route('/medication-stock'))).toBeUndefined()
     expect(logicalBackTarget(route('/orders'))).toBeUndefined()
     expect(logicalBackTarget(route('/settings'))).toBeUndefined()

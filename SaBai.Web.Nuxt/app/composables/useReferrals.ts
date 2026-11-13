@@ -47,14 +47,17 @@ export function useReferralsList() {
 /**
  * Single referral with consult and patient context.
  */
-export function useReferral(id: MaybeRefOrGetter<number>) {
+export function useReferral(id: MaybeRefOrGetter<number | null | undefined>) {
   return useQuery({
-    queryKey: computed(() => queryKeys.referral(toValue(id))),
-    enabled: computed(() => Number.isFinite(toValue(id)) && toValue(id) > 0),
+    queryKey: computed(() => queryKeys.referral(toValue(id) ?? 0)),
+    enabled: computed(() => {
+      const v = toValue(id)
+      return typeof v === 'number' && Number.isFinite(v) && v > 0
+    }),
     queryFn: ({ signal }) =>
       saBaiAPIEndpointsReferralsGetEndpoint({
         ...apiConfig,
-        path: { id: toValue(id) },
+        path: { id: toValue(id)! },
         signal,
       }).unwrap(),
   })
@@ -109,7 +112,6 @@ export function useUpdateReferralState() {
         ...apiConfig,
         path: { id: input.id },
         body: {
-          id: input.id,
           referralState: input.referralState,
           referralOutcome: input.referralOutcome,
         },

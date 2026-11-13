@@ -275,10 +275,12 @@
  * Stacked tables: below 768px a `.stack-table` turns each row into a card and
  * each cell into a "label: value" line (label from the cell's data-label), so
  * wide tables never scroll sideways on a phone. Cells marked
- * `data-stack="actions"` become a full-width button row.
+ * `data-stack="actions"` become a full-width button row. Cells marked
+ * `data-stack="detail"` or rows marked `data-stack="detail-row"` span the full
+ * card width for expanded details.
  */
 @media (max-width: 767px) {
-  .stack-table thead {
+  .stack-table > thead {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -286,16 +288,20 @@
     clip: rect(0 0 0 0);
   }
   .stack-table,
-  .stack-table tbody {
+  .stack-table > tbody {
     display: block;
     width: 100%;
   }
-  .stack-table tbody tr {
+  .stack-table > tbody > tr {
     display: block;
     padding: 0.5rem 0.75rem;
     border-bottom: 1px solid var(--border);
   }
-  .stack-table tbody td {
+  .stack-table > tbody > tr[data-stack="detail-row"] {
+    border-top: 0;
+    padding-top: 0;
+  }
+  .stack-table > tbody > tr > td {
     display: grid;
     grid-template-columns: minmax(6.5rem, 36%) minmax(0, 1fr);
     align-items: center;
@@ -307,31 +313,70 @@
     min-width: 0;
     text-align: left;
   }
-  .stack-table tbody td::before {
+  .stack-table > tbody > tr > td::before {
     content: attr(data-label);
     font-size: 0.8125rem;
     font-weight: 600;
     color: var(--muted-foreground);
   }
-  .stack-table tbody td[data-stack="title"] {
+  .stack-table > tbody > tr > td[data-stack="title"] {
     display: block;
     font-size: 1rem;
     font-weight: 700;
     padding-bottom: 0.4rem;
   }
-  .stack-table tbody td[data-stack="title"]::before,
-  .stack-table tbody td[data-stack="actions"]::before {
+  .stack-table > tbody > tr > td[data-stack="title"]::before,
+  .stack-table > tbody > tr > td[data-stack="actions"]::before,
+  .stack-table > tbody > tr > td[data-stack="detail"]::before,
+  .stack-table > tbody > tr > td[colspan]::before {
     content: none;
   }
-  .stack-table tbody td[data-stack="actions"] {
+  .stack-table > tbody > tr > td[data-stack="detail"],
+  .stack-table > tbody > tr > td[colspan] {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+  }
+  .stack-table > tbody > tr > td[data-stack="actions"] {
     display: block;
     padding-top: 0.5rem;
   }
-  .stack-table tbody td[data-stack="actions"] > div {
+  .stack-table > tbody > tr > td[data-stack="actions"] > div {
     justify-content: stretch;
   }
-  .stack-table tbody td[data-stack="actions"] [data-slot="button"] {
+  .stack-table > tbody > tr > td[data-stack="actions"] [data-slot="button"] {
     flex: 1 1 0;
+  }
+
+  /* Nested tables inside stacked table cells keep their standard table layout */
+  .stack-table table {
+    display: table;
+    width: 100%;
+  }
+  .stack-table table thead {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip: auto;
+    display: table-header-group;
+  }
+  .stack-table table tbody {
+    display: table-row-group;
+  }
+  .stack-table table tr {
+    display: table-row;
+    padding: 0;
+    border-bottom: 0;
+  }
+  .stack-table table td,
+  .stack-table table th {
+    display: table-cell;
+    padding: 0.25rem 0.5rem;
+  }
+  .stack-table table td::before,
+  .stack-table table th::before {
+    content: none;
   }
 }
 

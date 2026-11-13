@@ -1,9 +1,9 @@
 using FastEndpoints;
-using Hl7.Fhir.Model;
 using Microsoft.EntityFrameworkCore;
 using SaBai.API.Auth;
 using SaBai.API.Data;
 using SaBai.API.Fhir;
+using FhirBundle = Hl7.Fhir.Model.Bundle;
 
 namespace SaBai.API.Endpoints.Fhir.Patients.Search;
 
@@ -41,14 +41,14 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request>
         var limit = Math.Clamp(req.Count ?? 20, 1, 100);
         var matches = await query.OrderBy(x => x.Id).Take(limit).ToListAsync(ct);
 
-        var bundle = new Bundle
+        var bundle = new FhirBundle
         {
-            Type = Bundle.BundleType.Searchset,
+            Type = FhirBundle.BundleType.Searchset,
             Total = matches.Count,
             Timestamp = DateTimeOffset.UtcNow,
             Entry =
             [
-                .. matches.Select(p => new Bundle.EntryComponent
+                .. matches.Select(p => new FhirBundle.EntryComponent
                 {
                     FullUrl = $"Patient/{p.Id}",
                     Resource = FhirMapper.ToFhirPatient(p),

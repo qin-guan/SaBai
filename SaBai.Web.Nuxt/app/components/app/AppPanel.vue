@@ -24,6 +24,8 @@ const props = withDefaults(defineProps<{
   defaultOpen?: boolean
   /** Remember the open/closed choice on this device under this key. */
   collapseKey?: string
+  /** Enable two-tier header layout (row 1: title + headerActions, row 2: description). */
+  twoTier?: boolean
 }>(), { defaultOpen: false })
 
 const autoId = useId()
@@ -64,42 +66,109 @@ function toggle() {
 <template>
   <section :id="props.id" :aria-labelledby="headingId" class="scroll-mt-28 border border-border bg-card">
     <header
-      v-if="props.title || $slots.actions"
-      class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 bg-band px-3 py-1.5"
+      v-if="props.title || $slots.title || $slots.actions || $slots.headerActions"
+      class="bg-band px-3 py-1.5"
       :class="open && 'border-b border-band-border'"
     >
-      <div v-if="props.title || props.description" class="flex min-w-0 items-center gap-x-3 gap-y-1">
-        <h2 v-if="props.title" :id="headingId" class="flex min-w-0 items-center gap-2 text-[0.8125rem] font-bold text-chrome touch:text-sm">
-          <component
-            :is="props.collapsible ? 'button' : 'span'"
-            :type="props.collapsible ? 'button' : undefined"
-            class="flex min-w-0 items-center gap-2 text-left"
-            :class="props.collapsible && 'cursor-pointer hover:underline touch:min-h-11'"
-            :aria-expanded="props.collapsible ? open : undefined"
-            :aria-controls="props.collapsible ? bodyId : undefined"
-            @click="props.collapsible && toggle()"
+      <!-- Two-tier layout: used when twoTier prop is true or #headerActions slot is provided -->
+      <div v-if="props.twoTier || $slots.headerActions" class="flex flex-col gap-1">
+        <div class="flex items-center justify-between gap-3">
+          <h2
+            v-if="props.title || $slots.title"
+            :id="headingId"
+            class="flex min-w-0 shrink-0 items-center gap-2 text-[0.8125rem] font-bold text-chrome touch:text-sm"
           >
-            <PhCaretRight
-              v-if="props.collapsible"
-              weight="bold"
-              class="size-3.5 shrink-0 transition-transform motion-reduce:transition-none"
-              :class="open && 'rotate-90'"
-              aria-hidden="true"
-            />
-            <span
-              v-if="props.step"
-              class="inline-flex size-5 shrink-0 items-center justify-center bg-chrome text-xs text-white"
-              aria-hidden="true"
-            >{{ props.step }}</span>
-            <span>{{ props.title }}</span>
-          </component>
-        </h2>
-        <p v-if="props.description" class="text-xs text-muted-foreground touch:text-sm">
-          {{ props.description }}
-        </p>
+            <component
+              :is="props.collapsible ? 'button' : 'span'"
+              :type="props.collapsible ? 'button' : undefined"
+              class="flex items-center gap-2 text-left"
+              :class="props.collapsible && 'cursor-pointer hover:underline touch:min-h-11'"
+              :aria-expanded="props.collapsible ? open : undefined"
+              :aria-controls="props.collapsible ? bodyId : undefined"
+              @click="props.collapsible && toggle()"
+            >
+              <PhCaretRight
+                v-if="props.collapsible"
+                weight="bold"
+                class="size-3.5 shrink-0 transition-transform motion-reduce:transition-none"
+                :class="open && 'rotate-90'"
+                aria-hidden="true"
+              />
+              <span
+                v-if="props.step"
+                class="inline-flex size-5 shrink-0 items-center justify-center bg-chrome text-xs text-white"
+                aria-hidden="true"
+              >{{ props.step }}</span>
+              <slot name="title">
+                <span class="whitespace-nowrap">{{ props.title }}</span>
+              </slot>
+            </component>
+          </h2>
+          <div v-if="$slots.headerActions" class="flex shrink-0 items-center gap-2">
+            <slot name="headerActions" />
+          </div>
+        </div>
+        <div
+          v-if="props.description || $slots.description"
+          class="text-xs text-muted-foreground touch:text-sm"
+          :class="[
+            props.collapsible && 'cursor-pointer',
+            props.collapsible ? 'pl-[22px]' : props.step ? 'pl-7' : 'pl-0'
+          ]"
+          @click="props.collapsible && toggle()"
+        >
+          <slot name="description">
+            <p>{{ props.description }}</p>
+          </slot>
+        </div>
+        <div v-if="$slots.actions && open" class="mt-1 flex flex-wrap items-center gap-2 max-sm:has-[>.w-full]:w-full">
+          <slot name="actions" />
+        </div>
       </div>
-      <div v-if="$slots.actions && open" class="flex flex-wrap items-center gap-2 max-sm:has-[>.w-full]:w-full">
-        <slot name="actions" />
+
+      <!-- Standard single-row / wrapping layout for standard panels -->
+      <div v-else class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5">
+        <div v-if="props.title || $slots.title || props.description || $slots.description" class="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1">
+          <h2
+            v-if="props.title || $slots.title"
+            :id="headingId"
+            class="flex shrink-0 items-center gap-2 text-[0.8125rem] font-bold text-chrome touch:text-sm"
+          >
+            <component
+              :is="props.collapsible ? 'button' : 'span'"
+              :type="props.collapsible ? 'button' : undefined"
+              class="flex items-center gap-2 text-left"
+              :class="props.collapsible && 'cursor-pointer hover:underline touch:min-h-11'"
+              :aria-expanded="props.collapsible ? open : undefined"
+              :aria-controls="props.collapsible ? bodyId : undefined"
+              @click="props.collapsible && toggle()"
+            >
+              <PhCaretRight
+                v-if="props.collapsible"
+                weight="bold"
+                class="size-3.5 shrink-0 transition-transform motion-reduce:transition-none"
+                :class="open && 'rotate-90'"
+                aria-hidden="true"
+              />
+              <span
+                v-if="props.step"
+                class="inline-flex size-5 shrink-0 items-center justify-center bg-chrome text-xs text-white"
+                aria-hidden="true"
+              >{{ props.step }}</span>
+              <slot name="title">
+                <span class="whitespace-nowrap">{{ props.title }}</span>
+              </slot>
+            </component>
+          </h2>
+          <div v-if="props.description || $slots.description" class="min-w-0 text-xs text-muted-foreground touch:text-sm">
+            <slot name="description">
+              <p>{{ props.description }}</p>
+            </slot>
+          </div>
+        </div>
+        <div v-if="$slots.actions && open" class="flex flex-wrap items-center gap-2 max-sm:has-[>.w-full]:w-full">
+          <slot name="actions" />
+        </div>
       </div>
     </header>
     <div v-show="open" :id="bodyId" :class="props.flush ? '' : 'p-3'">

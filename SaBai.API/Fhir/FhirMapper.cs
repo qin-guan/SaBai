@@ -70,7 +70,7 @@ public static class FhirMapper
     ) =>
         new()
         {
-            Type = type,
+            Type = type.ToString(),
             Interaction =
             [
                 .. interactions.Select(op => new CapabilityStatement.ResourceInteractionComponent

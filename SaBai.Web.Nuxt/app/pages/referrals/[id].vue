@@ -69,66 +69,67 @@ function saveOutcome() {
         ]"
       />
 
-      <!-- Patient context banner -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded border border-border bg-card p-4">
-        <div class="flex items-center gap-4">
-          <PatientPhoto
-            :patient-id="referral.patientId"
-            :has-photo="referral.hasPhoto"
-            :name="referral.patientName"
-            :size="64"
-            zoomable
-          />
-          <div>
-            <div class="flex items-center gap-2">
-              <span
-                class="size-3 rounded-full"
-                :style="{ backgroundColor: referral.villageColorHex }"
-                :title="referral.villageCode"
-                aria-hidden="true"
-              />
-              <span class="font-mono text-sm font-semibold text-muted-foreground">
-                {{ patientCode }}
-              </span>
+      <!-- Patient context banner (storyboard) -->
+      <section aria-label="Patient" class="border border-band-border bg-banner p-3">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div class="flex items-center gap-3 min-w-0">
+            <PatientPhoto
+              :patient-id="referral.patientId"
+              :has-photo="referral.hasPhoto"
+              :name="referral.patientName"
+              :size="52"
+              zoomable
+            />
+            <div class="min-w-0">
+              <div class="flex items-center gap-1.5">
+                <span
+                  class="size-2.5 shrink-0 border border-border/40"
+                  :style="{ backgroundColor: referral.villageColorHex }"
+                  :title="referral.villageCode"
+                  aria-hidden="true"
+                />
+                <span class="font-mono text-xs font-semibold text-muted-foreground">
+                  {{ patientCode }}
+                </span>
+                <span class="text-xs text-muted-foreground">· Village {{ referral.villageCode }}</span>
+              </div>
+              <h2 class="text-base font-bold text-foreground sm:text-lg">
+                {{ referral.patientName }}
+              </h2>
             </div>
-            <h2 class="text-lg font-bold text-foreground">
-              {{ referral.patientName }}
-            </h2>
-            <p class="text-xs text-muted-foreground">
-              Village: {{ referral.villageCode }}
-            </p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2 max-sm:[&>*]:flex-1">
+            <Button as-child variant="outline" size="sm" class="touch:h-10">
+              <NuxtLink :to="paths.patientDetail(referral.patientId)">
+                <PhUser class="size-4" aria-hidden="true" />
+                <span>Patient record</span>
+              </NuxtLink>
+            </Button>
+
+            <Button as-child variant="outline" size="sm" class="touch:h-10">
+              <NuxtLink :to="paths.consultsDetail(referral.patientId)">
+                <PhStethoscope class="size-4" aria-hidden="true" />
+                <span>Consults</span>
+              </NuxtLink>
+            </Button>
+
+            <ConsultPdfLink
+              :consult-id="referral.consultId"
+              variant="default"
+              size="sm"
+              label="Consult PDF"
+              class="touch:h-10"
+            />
           </div>
         </div>
-
-        <div class="flex flex-wrap items-center gap-2">
-          <Button as-child variant="outline" size="sm">
-            <NuxtLink :to="paths.patientDetail(referral.patientId)">
-              <PhUser class="size-4" aria-hidden="true" />
-              <span>Patient record</span>
-            </NuxtLink>
-          </Button>
-
-          <Button as-child variant="outline" size="sm">
-            <NuxtLink :to="paths.consultsDetail(referral.patientId)">
-              <PhStethoscope class="size-4" aria-hidden="true" />
-              <span>Patient's consults</span>
-            </NuxtLink>
-          </Button>
-
-          <ConsultPdfLink
-            :consult-id="referral.consultId"
-            variant="default"
-            size="sm"
-            label="Consult PDF"
-          />
-        </div>
-      </div>
+      </section>
 
       <!-- Referral Details Card -->
-      <AppPanel title="Referral Information" description="Care tracking and follow-up details">
+      <AppPanel title="Referral Information" description="Care tracking and follow-up details" flush>
         <dl class="divide-y divide-border text-xs touch:text-sm">
           <!-- Status -->
-          <div class="grid grid-cols-1 gap-1 py-3 sm:grid-cols-[12rem_1fr] sm:items-center">
+          <div class="grid grid-cols-1 gap-1 px-3 py-3 sm:grid-cols-[12rem_1fr] sm:items-center">
             <dt class="font-semibold text-muted-foreground">
               Referral Status
             </dt>
@@ -141,7 +142,7 @@ function saveOutcome() {
           </div>
 
           <!-- Referral Date -->
-          <div class="grid grid-cols-1 gap-1 py-3 sm:grid-cols-[12rem_1fr]">
+          <div class="grid grid-cols-1 gap-1 px-3 py-3 sm:grid-cols-[12rem_1fr]">
             <dt class="font-semibold text-muted-foreground">
               Referral Date
             </dt>
@@ -151,17 +152,17 @@ function saveOutcome() {
           </div>
 
           <!-- Referred For -->
-          <div class="grid grid-cols-1 gap-1 py-3 sm:grid-cols-[12rem_1fr]">
+          <div class="grid grid-cols-1 gap-1 px-3 py-3 sm:grid-cols-[12rem_1fr]">
             <dt class="font-semibold text-muted-foreground">
               Referred For
             </dt>
-            <dd class="font-semibold text-primary">
+            <dd class="font-bold text-chrome">
               {{ referral.referredFor }}
             </dd>
           </div>
 
           <!-- Notes -->
-          <div class="grid grid-cols-1 gap-1 py-3 sm:grid-cols-[12rem_1fr]">
+          <div class="grid grid-cols-1 gap-1 px-3 py-3 sm:grid-cols-[12rem_1fr]">
             <dt class="font-semibold text-muted-foreground">
               Referral Notes
             </dt>
@@ -171,7 +172,7 @@ function saveOutcome() {
           </div>
 
           <!-- Outcome -->
-          <div class="grid grid-cols-1 gap-1 py-3 sm:grid-cols-[12rem_1fr]">
+          <div class="grid grid-cols-1 gap-1 px-3 py-3 sm:grid-cols-[12rem_1fr]">
             <dt class="font-semibold text-muted-foreground">
               Referral Outcome
             </dt>
@@ -182,12 +183,13 @@ function saveOutcome() {
                   rows="4"
                   placeholder="Enter referral outcome from hospital / external clinic..."
                   aria-label="Referral outcome"
-                  class="text-xs touch:text-sm"
+                  class="text-xs touch:text-base border-input"
                 />
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 max-sm:[&>*]:flex-1">
                   <Button
                     size="sm"
                     variant="success"
+                    class="touch:h-10"
                     :disabled="updateOutcome.isPending.value"
                     @click="saveOutcome"
                   >
@@ -197,6 +199,7 @@ function saveOutcome() {
                   <Button
                     size="sm"
                     variant="outline"
+                    class="touch:h-10"
                     :disabled="updateOutcome.isPending.value"
                     @click="cancelEditingOutcome"
                   >
@@ -206,15 +209,19 @@ function saveOutcome() {
                 </div>
               </div>
 
-              <div v-else class="flex items-start justify-between gap-4 max-w-xl">
-                <p class="whitespace-pre-wrap text-foreground">
-                  <span v-if="referral.referralOutcome">{{ referral.referralOutcome }}</span>
-                  <span v-else class="text-muted-foreground italic">No outcome recorded yet</span>
-                </p>
+              <div v-else class="flex flex-col sm:flex-row sm:items-start justify-between gap-3 max-w-xl">
+                <div class="flex-1 min-w-0">
+                  <p v-if="referral.referralOutcome" class="whitespace-pre-wrap text-foreground border-l-2 border-success/60 bg-success-subtle/30 px-3 py-2 text-xs touch:text-sm">
+                    {{ referral.referralOutcome }}
+                  </p>
+                  <p v-else class="text-muted-foreground italic text-xs touch:text-sm">
+                    No outcome recorded yet
+                  </p>
+                </div>
                 <Button
                   variant="outline"
                   size="sm"
-                  class="h-7 text-xs shrink-0"
+                  class="h-7 text-xs shrink-0 self-start touch:h-10 max-sm:w-full"
                   @click="startEditingOutcome"
                 >
                   <PhPencilSimple class="size-3.5" aria-hidden="true" />
@@ -225,7 +232,7 @@ function saveOutcome() {
           </div>
 
           <!-- Consultation Origin & PDF -->
-          <div class="grid grid-cols-1 gap-1 py-3 sm:grid-cols-[12rem_1fr] sm:items-center">
+          <div class="grid grid-cols-1 gap-1 px-3 py-3 sm:grid-cols-[12rem_1fr] sm:items-center">
             <dt class="font-semibold text-muted-foreground">
               Consultation Origin
             </dt>
@@ -250,7 +257,7 @@ function saveOutcome() {
 
       <!-- Back link -->
       <div class="mt-2">
-        <Button as-child variant="ghost" size="sm">
+        <Button as-child variant="ghost" size="sm" class="touch:h-10">
           <NuxtLink :to="paths.referrals()">
             <PhArrowLeft class="size-4" aria-hidden="true" />
             <span>Back to Referrals</span>

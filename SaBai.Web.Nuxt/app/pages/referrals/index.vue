@@ -44,67 +44,69 @@ function clearFilters() {
     />
 
     <!-- Filter & search bar -->
-    <div class="flex flex-col gap-2 rounded border border-border bg-card p-3 sm:flex-row sm:items-center sm:justify-between">
-      <div class="relative flex-1">
-        <PhMagnifyingGlass class="text-muted-foreground absolute top-1/2 left-2.5 size-4 -translate-y-1/2" aria-hidden="true" />
-        <Input
-          v-model="search"
-          type="search"
-          placeholder="Search by patient name, ID (e.g. SB0012), reason, notes…"
-          class="pl-8 text-xs touch:text-sm"
-          aria-label="Search referrals"
-        />
-        <button
-          v-if="search"
-          type="button"
-          class="text-muted-foreground hover:text-foreground absolute top-1/2 right-2.5 -translate-y-1/2"
-          aria-label="Clear search"
-          @click="search = ''"
-        >
-          <PhX class="size-3.5" aria-hidden="true" />
-        </button>
-      </div>
-
-      <div class="flex flex-wrap items-center gap-2">
-        <div class="w-40">
-          <NativeSelect v-model="selectedVillageId" aria-label="Filter by village" class="text-xs">
-            <NativeSelectOption value="">
-              All villages
-            </NativeSelectOption>
-            <NativeSelectOption
-              v-for="v in villageCodes"
-              :key="v.id"
-              :value="String(v.id)"
-            >
-              {{ v.name }} ({{ v.code }})
-            </NativeSelectOption>
-          </NativeSelect>
+    <div class="border border-border bg-card p-2.5 sm:p-3">
+      <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        <div class="relative flex-1">
+          <PhMagnifyingGlass class="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2" aria-hidden="true" />
+          <Input
+            v-model="search"
+            type="search"
+            placeholder="Search by patient name, ID (e.g. SB0012), reason, notes…"
+            class="h-8 pl-8 text-xs border-input touch:h-11 touch:text-base"
+            aria-label="Search referrals"
+          />
+          <button
+            v-if="search"
+            type="button"
+            class="text-muted-foreground hover:text-foreground absolute top-1/2 right-2.5 -translate-y-1/2 p-1"
+            aria-label="Clear search"
+            @click="search = ''"
+          >
+            <PhX class="size-3.5" aria-hidden="true" />
+          </button>
         </div>
 
-        <div class="w-44">
-          <NativeSelect v-model="selectedStatus" aria-label="Filter by status" class="text-xs">
-            <NativeSelectOption value="">
-              All statuses
-            </NativeSelectOption>
-            <NativeSelectOption
-              v-for="opt in REFERRAL_STATE_OPTIONS"
-              :key="opt.value"
-              :value="opt.value"
-            >
-              {{ opt.label }}
-            </NativeSelectOption>
-          </NativeSelect>
-        </div>
+        <div class="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-2">
+          <div class="w-full sm:w-40">
+            <NativeSelect v-model="selectedVillageId" aria-label="Filter by village" class="text-xs touch:h-11">
+              <NativeSelectOption value="">
+                All villages
+              </NativeSelectOption>
+              <NativeSelectOption
+                v-for="v in villageCodes"
+                :key="v.id"
+                :value="String(v.id)"
+              >
+                {{ v.name }} ({{ v.code }})
+              </NativeSelectOption>
+            </NativeSelect>
+          </div>
 
-        <Button
-          v-if="hasActiveFilters"
-          variant="ghost"
-          size="sm"
-          class="text-xs"
-          @click="clearFilters"
-        >
-          Reset
-        </Button>
+          <div class="w-full sm:w-44">
+            <NativeSelect v-model="selectedStatus" aria-label="Filter by status" class="text-xs touch:h-11">
+              <NativeSelectOption value="">
+                All statuses
+              </NativeSelectOption>
+              <NativeSelectOption
+                v-for="opt in REFERRAL_STATE_OPTIONS"
+                :key="opt.value"
+                :value="opt.value"
+              >
+                {{ opt.label }}
+              </NativeSelectOption>
+            </NativeSelect>
+          </div>
+
+          <Button
+            v-if="hasActiveFilters"
+            variant="ghost"
+            size="sm"
+            class="col-span-2 text-xs sm:col-span-1 touch:h-10"
+            @click="clearFilters"
+          >
+            Reset
+          </Button>
+        </div>
       </div>
     </div>
 
@@ -114,13 +116,13 @@ function clearFilters() {
     <AppPanel v-else-if="!referrals || referrals.length === 0" title="Referrals">
       <div class="p-8 text-center text-muted-foreground">
         <PhArrowUpRight class="mx-auto mb-2 size-8 text-muted-foreground/60" aria-hidden="true" />
-        <p class="font-medium">No referrals recorded yet</p>
+        <p class="font-medium text-foreground">No referrals recorded yet</p>
         <p class="text-xs mt-1">Referrals opened during doctor consultations will appear here.</p>
       </div>
     </AppPanel>
     <AppPanel v-else-if="filteredReferrals.length === 0" title="Referrals">
       <div class="p-8 text-center text-muted-foreground">
-        <p class="font-medium">No referrals match your search</p>
+        <p class="font-medium text-foreground">No referrals match your search</p>
         <p class="text-xs mt-1">Try adjusting the search query or filters.</p>
         <Button variant="outline" size="sm" class="mt-3 text-xs" @click="clearFilters">
           Clear filters
@@ -128,47 +130,144 @@ function clearFilters() {
       </div>
     </AppPanel>
 
-    <!-- Referrals Table -->
+    <!-- Referrals List / Table -->
     <AppPanel
       v-else
       :title="`Referrals (${filteredReferrals.length}${filteredReferrals.length !== referrals.length ? ` of ${referrals.length}` : ''})`"
       description="Active and completed patient referrals"
       flush
     >
-      <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs touch:text-sm">
-          <thead class="border-b border-border bg-muted/50 text-xs font-semibold text-muted-foreground">
+      <!-- Mobile card list (< md) -->
+      <div class="divide-y divide-border md:hidden">
+        <article
+          v-for="referral in filteredReferrals"
+          :key="referral.id"
+          class="flex flex-col gap-2.5 p-3 hover:bg-accent/30 transition-colors"
+        >
+          <!-- Top row: Photo, Patient Info, Status -->
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <PatientPhoto
+                :patient-id="referral.patientId"
+                :has-photo="referral.hasPhoto"
+                :name="referral.patientName"
+                :size="44"
+                zoomable
+              />
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5">
+                  <span
+                    class="size-2.5 shrink-0 border border-border/40"
+                    :style="{ backgroundColor: referral.villageColorHex }"
+                    :title="referral.villageCode"
+                    aria-hidden="true"
+                  />
+                  <NuxtLink
+                    :to="paths.patientDetail(referral.patientId)"
+                    class="font-mono text-xs font-bold text-chrome hover:underline"
+                  >
+                    {{ formatPatientCode(referral.villageCode, referral.patientId) }}
+                  </NuxtLink>
+                  <span class="text-xs text-muted-foreground">· {{ referral.villageCode }}</span>
+                </div>
+                <p class="truncate text-sm font-bold text-foreground">
+                  {{ referral.patientName }}
+                </p>
+              </div>
+            </div>
+
+            <div class="shrink-0">
+              <ReferralStateDropdown
+                :referral-id="referral.id"
+                v-model="referral.referralState"
+              />
+            </div>
+          </div>
+
+          <!-- Referral detail box -->
+          <div class="flex flex-col gap-1.5 border-l-2 border-band-border bg-stripe px-2.5 py-1.5 text-xs">
+            <div class="flex items-baseline gap-1.5">
+              <span class="font-semibold text-muted-foreground">Referred for:</span>
+              <span class="font-bold text-chrome">{{ referral.referredFor }}</span>
+            </div>
+            <p v-if="referral.referralNotes" class="text-xs text-foreground whitespace-pre-wrap break-words">
+              {{ referral.referralNotes }}
+            </p>
+            <div
+              v-if="referral.referralOutcome"
+              class="border-l-2 border-success/60 bg-success-subtle/50 px-2 py-1 text-xs text-foreground"
+            >
+              <span class="font-semibold text-success">Outcome: </span>
+              <span>{{ referral.referralOutcome }}</span>
+            </div>
+            <div class="flex flex-wrap items-center gap-x-3 text-[0.75rem] text-muted-foreground pt-0.5">
+              <span>Visited: {{ formatVisitDate(referral.consultDate) }}</span>
+              <span>Referred: {{ formatVisitDate(referral.createdAt) }}</span>
+            </div>
+          </div>
+
+          <!-- Bottom Action Buttons: 3 equal touch targets -->
+          <div class="grid grid-cols-3 gap-1.5 pt-0.5">
+            <Button as-child variant="outline" size="sm" class="h-9 text-xs touch:h-10">
+              <NuxtLink :to="paths.referralsDetail(referral.id)">
+                <PhPencilSimple class="size-3.5" aria-hidden="true" />
+                <span>Details</span>
+              </NuxtLink>
+            </Button>
+
+            <Button as-child variant="outline" size="sm" class="h-9 text-xs touch:h-10">
+              <NuxtLink :to="paths.consultsDetail(referral.patientId)">
+                <PhStethoscope class="size-3.5" aria-hidden="true" />
+                <span>Consults</span>
+              </NuxtLink>
+            </Button>
+
+            <ConsultPdfLink
+              :consult-id="referral.consultId"
+              variant="outline"
+              size="sm"
+              label="PDF"
+              class="h-9 text-xs touch:h-10"
+            />
+          </div>
+        </article>
+      </div>
+
+      <!-- Desktop table (hidden on mobile, visible md and up) -->
+      <div class="hidden md:block overflow-x-auto">
+        <table class="grid-table w-full text-left text-xs">
+          <thead>
             <tr>
-              <th scope="col" class="py-2.5 pr-2 pl-3">Photo</th>
-              <th scope="col" class="px-2 py-2.5">Patient</th>
-              <th scope="col" class="px-2 py-2.5">Referral summary</th>
-              <th scope="col" class="px-2 py-2.5 min-w-[150px]">Status</th>
-              <th scope="col" class="py-2.5 pr-3 pl-2 text-right">Actions</th>
+              <th scope="col" class="py-2 pr-2 pl-3 w-12">Photo</th>
+              <th scope="col" class="px-2 py-2 min-w-[140px]">Patient</th>
+              <th scope="col" class="px-2 py-2 min-w-[200px]">Referral summary</th>
+              <th scope="col" class="px-2 py-2 min-w-[140px]">Status</th>
+              <th scope="col" class="py-2 pr-3 pl-2 text-right min-w-[180px]">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-border">
             <tr
               v-for="referral in filteredReferrals"
               :key="referral.id"
-              class="transition-colors hover:bg-muted/30"
+              class="transition-colors"
             >
               <!-- Photo -->
-              <td class="py-2.5 pr-2 pl-3 align-top">
+              <td class="py-2 pr-2 pl-3 align-top">
                 <PatientPhoto
                   :patient-id="referral.patientId"
                   :has-photo="referral.hasPhoto"
                   :name="referral.patientName"
-                  :size="48"
+                  :size="40"
                   zoomable
                 />
               </td>
 
               <!-- Patient info -->
-              <td class="px-2 py-2.5 align-top">
+              <td class="px-2 py-2 align-top">
                 <div class="flex flex-col gap-0.5">
-                  <div class="flex items-center gap-1.5 font-semibold text-foreground">
+                  <div class="flex items-center gap-1.5 font-bold text-chrome">
                     <span
-                      class="size-2.5 shrink-0 rounded-full"
+                      class="size-2.5 shrink-0 border border-border/40"
                       :style="{ backgroundColor: referral.villageColorHex }"
                       :title="referral.villageCode"
                       aria-hidden="true"
@@ -190,18 +289,19 @@ function clearFilters() {
               </td>
 
               <!-- Referral details -->
-              <td class="px-2 py-2.5 align-top">
+              <td class="px-2 py-2 align-top">
                 <div class="flex flex-col gap-1 max-w-md">
                   <p class="font-semibold text-foreground">
-                    Referred for: <span class="text-primary">{{ referral.referredFor }}</span>
+                    Referred for: <span class="font-bold text-chrome">{{ referral.referredFor }}</span>
                   </p>
                   <p v-if="referral.referralNotes" class="text-xs text-muted-foreground line-clamp-2 whitespace-pre-wrap">
                     {{ referral.referralNotes }}
                   </p>
-                  <p v-if="referral.referralOutcome" class="text-xs text-emerald-700 dark:text-emerald-400 font-medium line-clamp-1">
-                    Outcome: {{ referral.referralOutcome }}
-                  </p>
-                  <div class="flex flex-wrap items-center gap-x-3 text-xs text-muted-foreground">
+                  <div v-if="referral.referralOutcome" class="border-l-2 border-success/60 bg-success-subtle/40 px-2 py-0.5 text-xs text-foreground">
+                    <span class="font-semibold text-success">Outcome: </span>
+                    <span class="line-clamp-1">{{ referral.referralOutcome }}</span>
+                  </div>
+                  <div class="flex flex-wrap items-center gap-x-3 text-[0.75rem] text-muted-foreground">
                     <span>Visited: {{ formatVisitDate(referral.consultDate) }}</span>
                     <span>Referred: {{ formatVisitDate(referral.createdAt) }}</span>
                   </div>
@@ -209,7 +309,7 @@ function clearFilters() {
               </td>
 
               <!-- Status Dropdown -->
-              <td class="px-2 py-2.5 align-top">
+              <td class="px-2 py-2 align-top">
                 <ReferralStateDropdown
                   :referral-id="referral.id"
                   v-model="referral.referralState"
@@ -217,8 +317,8 @@ function clearFilters() {
               </td>
 
               <!-- Actions -->
-              <td class="py-2.5 pr-3 pl-2 align-top text-right">
-                <div class="flex flex-col sm:flex-row items-end sm:items-center justify-end gap-1.5">
+              <td class="py-2 pr-3 pl-2 align-top text-right">
+                <div class="flex items-center justify-end gap-1.5">
                   <Button as-child variant="outline" size="sm" class="h-7 text-xs">
                     <NuxtLink :to="paths.referralsDetail(referral.id)">
                       <PhPencilSimple class="size-3.5" aria-hidden="true" />
@@ -226,10 +326,10 @@ function clearFilters() {
                     </NuxtLink>
                   </Button>
 
-                  <Button as-child variant="ghost" size="sm" class="h-7 text-xs">
+                  <Button as-child variant="outline" size="sm" class="h-7 text-xs">
                     <NuxtLink :to="paths.consultsDetail(referral.patientId)">
                       <PhStethoscope class="size-3.5" aria-hidden="true" />
-                      <span>Consult</span>
+                      <span>Consults</span>
                     </NuxtLink>
                   </Button>
 

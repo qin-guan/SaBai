@@ -1,8 +1,8 @@
 <script setup lang="ts">
+import { PhCaretDown } from '@phosphor-icons/vue'
 import { toast } from 'vue-sonner'
 import type { SaBaiAPIDomainReferralStateKey } from '@sabai/sdk/types'
-import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
-import { REFERRAL_STATE_OPTIONS } from '@/utils/referral'
+import { REFERRAL_STATE_OPTIONS, referralStateBadgeClass } from '@/utils/referral'
 
 const props = defineProps<{
   referralId: number
@@ -43,21 +43,27 @@ function onChange(event: Event) {
 </script>
 
 <template>
-  <div class="relative min-w-[130px]">
-    <NativeSelect
-      :model-value="props.modelValue"
+  <div class="relative min-w-[125px] inline-flex">
+    <select
+      :value="props.modelValue"
       :disabled="props.disabled || updateState.isPending.value"
       aria-label="Referral status"
-      class="w-full text-xs"
+      class="h-7 w-full appearance-none rounded-none border px-2 py-0.5 pr-6 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 touch:h-10 touch:text-sm"
+      :class="referralStateBadgeClass(props.modelValue)"
       @change="onChange"
     >
-      <NativeSelectOption
+      <option
         v-for="opt in REFERRAL_STATE_OPTIONS"
         :key="opt.value"
         :value="opt.value"
+        class="bg-popover text-popover-foreground font-normal"
       >
         {{ opt.label }}
-      </NativeSelectOption>
-    </NativeSelect>
+      </option>
+    </select>
+    <PhCaretDown
+      class="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 opacity-70"
+      aria-hidden="true"
+    />
   </div>
 </template>

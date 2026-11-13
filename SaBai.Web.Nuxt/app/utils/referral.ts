@@ -1,4 +1,4 @@
-import type { Option } from './dental'
+import type { Option } from './options'
 import { cleanKhmerText, matchesSearchText } from './khmer'
 import { formatPatientCode } from './patient'
 import type {

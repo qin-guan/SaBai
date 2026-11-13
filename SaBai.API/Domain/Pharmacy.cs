@@ -12,6 +12,12 @@ public sealed class MedicationActiveIngredient
 
     public string? Remarks { get; set; }
 
+    /// <summary>Optional RxNorm concept identifier for FHIR Medication interoperability.</summary>
+    public string? RxNormCode { get; set; }
+
+    /// <summary>Optional WHO ATC code for FHIR Medication interoperability.</summary>
+    public string? AtcCode { get; set; }
+
     public ICollection<MedicationBrand> Brands { get; set; } = [];
 }
 

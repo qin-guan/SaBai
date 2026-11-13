@@ -45,6 +45,15 @@ public sealed class Diagnosis
 
     public DiagnosisCategory? Category { get; set; }
 
+    /// <summary>Optional standard terminology URI (e.g. http://hl7.org/fhir/sid/icd-10 or http://snomed.info/sct).</summary>
+    public string? CodingSystem { get; set; }
+
+    /// <summary>Optional standard code within <see cref="CodingSystem"/>.</summary>
+    public string? Code { get; set; }
+
+    /// <summary>Optional preferred term for <see cref="Code"/>.</summary>
+    public string? CodeDisplay { get; set; }
+
     public int ConsultId { get; set; }
 
     public Consult Consult { get; set; } = null!;

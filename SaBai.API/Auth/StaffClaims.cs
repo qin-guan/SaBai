@@ -11,8 +11,26 @@ public static class StaffRoles
 {
     public const string Admin = "admin";
     public const string Member = "member";
+    public const string Doctor = "doctor";
+    public const string Nurse = "nurse";
+    public const string Pharmacist = "pharmacist";
+    public const string Dentist = "dentist";
+    public const string Optometrist = "optometrist";
+    public const string Registration = "registration";
+    public const string Auditor = "auditor";
 
-    public static readonly IReadOnlyList<string> All = [Admin, Member];
+    public static readonly IReadOnlyList<string> All =
+    [
+        Admin,
+        Member,
+        Doctor,
+        Nurse,
+        Pharmacist,
+        Dentist,
+        Optometrist,
+        Registration,
+        Auditor,
+    ];
 
     public static bool IsKnown(string role) => All.Contains(role, StringComparer.Ordinal);
 }

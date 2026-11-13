@@ -59,6 +59,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<AuditLogEntry> AuditLogs => Set<AuditLogEntry>();
 
+    public DbSet<PatientConsent> PatientConsents => Set<PatientConsent>();
+
+    public DbSet<DisclosureLog> DisclosureLogs => Set<DisclosureLog>();
+
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
         StampRecordedAt();
@@ -397,6 +401,29 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             entity.HasIndex(x => x.OccurredAt);
             entity.HasIndex(x => new { x.EntityType, x.EntityId });
             entity.HasIndex(x => x.UserId);
+        });
+
+        modelBuilder.Entity<PatientConsent>(entity =>
+        {
+            entity.Property(x => x.ConsentType).HasConversion<string>().HasMaxLength(64);
+            entity.HasIndex(x => new { x.PatientId, x.ConsentType });
+            entity
+                .HasOne(x => x.Patient)
+                .WithMany()
+                .HasForeignKey(x => x.PatientId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<DisclosureLog>(entity =>
+        {
+            entity.Property(x => x.Recipient).HasMaxLength(255);
+            entity.Property(x => x.Purpose).HasMaxLength(255);
+            entity.HasIndex(x => new { x.PatientId, x.DisclosedAt });
+            entity
+                .HasOne(x => x.Patient)
+                .WithMany()
+                .HasForeignKey(x => x.PatientId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

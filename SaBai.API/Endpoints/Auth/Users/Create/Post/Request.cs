@@ -15,7 +15,4 @@ public sealed record Request
 
     /// <summary>Role names from <c>GET /auth/roles</c>. Defaults to <c>member</c>.</summary>
     public IReadOnlyList<string>? Roles { get; init; }
-
-    /// <summary>Optional staff tags (e.g. <c>PN</c>, <c>PL</c>).</summary>
-    public IReadOnlyList<string>? Tags { get; init; }
 }

@@ -11,7 +11,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Get.Response>
     public override void Configure()
     {
         Patch("/referrals/{Id}/party");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.Admin, StaffRoles.Member, StaffRoles.Pn);
         Summary(s =>
             s.Summary = "Update only the referral party fields, preventing overwrites of booth or money sections"
         );

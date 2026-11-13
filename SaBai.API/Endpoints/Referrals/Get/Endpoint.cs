@@ -10,7 +10,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
     public override void Configure()
     {
         Get("/referrals/{Id}");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.Admin, StaffRoles.Member, StaffRoles.Pn);
         Summary(s => s.Summary = "Get a referral");
     }
 

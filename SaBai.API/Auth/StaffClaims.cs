@@ -11,8 +11,9 @@ public static class StaffRoles
 {
     public const string Admin = "admin";
     public const string Member = "member";
+    public const string Pn = "pn";
 
-    public static readonly IReadOnlyList<string> All = [Admin, Member];
+    public static readonly IReadOnlyList<string> All = [Admin, Member, Pn];
 
     public static bool IsKnown(string role) => All.Contains(role, StringComparer.Ordinal);
 }

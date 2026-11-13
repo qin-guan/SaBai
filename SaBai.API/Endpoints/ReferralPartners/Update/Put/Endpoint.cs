@@ -9,7 +9,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
     public override void Configure()
     {
         Put("/referral-partners/{Id}");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.Admin, StaffRoles.Member, StaffRoles.Pn);
         Summary(s => s.Summary = "Update a referral partner");
     }
 

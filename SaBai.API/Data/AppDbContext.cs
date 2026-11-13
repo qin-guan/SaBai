@@ -40,10 +40,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<ReferralPartner> ReferralPartners => Set<ReferralPartner>();
 
-    public DbSet<Tag> Tags => Set<Tag>();
-
-    public DbSet<StaffUserTag> StaffUserTags => Set<StaffUserTag>();
-
     public DbSet<MedicationActiveIngredient> MedicationActiveIngredients =>
         Set<MedicationActiveIngredient>();
 
@@ -111,10 +107,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
                         if (partner.CreatedAt == default)
                             partner.CreatedAt = now;
                         partner.UpdatedAt = now;
-                        break;
-                    case Tag tag:
-                        if (tag.CreatedAt == default)
-                            tag.CreatedAt = now;
                         break;
                 }
             }
@@ -287,27 +279,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
                 .HasOne(x => x.Consult)
                 .WithMany(x => x.Diagnoses)
                 .HasForeignKey(x => x.ConsultId)
-                .OnDelete(DeleteBehavior.Cascade);
-        });
-
-        modelBuilder.Entity<Tag>(entity =>
-        {
-            entity.Property(x => x.Name).HasMaxLength(64);
-            entity.HasIndex(x => x.Name).IsUnique();
-        });
-
-        modelBuilder.Entity<StaffUserTag>(entity =>
-        {
-            entity.HasKey(x => new { x.StaffUserId, x.TagId });
-            entity
-                .HasOne(x => x.StaffUser)
-                .WithMany(x => x.UserTags)
-                .HasForeignKey(x => x.StaffUserId)
-                .OnDelete(DeleteBehavior.Cascade);
-            entity
-                .HasOne(x => x.Tag)
-                .WithMany(x => x.UserTags)
-                .HasForeignKey(x => x.TagId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 

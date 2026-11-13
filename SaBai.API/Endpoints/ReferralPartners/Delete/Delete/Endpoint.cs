@@ -11,7 +11,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request>
     public override void Configure()
     {
         Delete("/referral-partners/{Id}");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.Admin, StaffRoles.Member, StaffRoles.Pn);
         Summary(s => s.Summary = "Delete a referral partner");
     }
 

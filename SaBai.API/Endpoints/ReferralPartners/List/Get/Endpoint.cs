@@ -10,7 +10,7 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
     public override void Configure()
     {
         Get("/referral-partners");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.Admin, StaffRoles.Member, StaffRoles.Pn);
         Summary(s => s.Summary = "List referral partners, ordered by name");
     }
 

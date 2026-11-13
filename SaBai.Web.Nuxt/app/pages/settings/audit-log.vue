@@ -139,7 +139,7 @@ function filterByEntity(entry: AuditLogEntry) {
     />
 
     <AppPanel title="Filters" class="mb-4">
-      <div class="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
         <FormField v-slot="{ id }" label="Action">
           <NativeSelect :id="id" v-model="action" class="w-full">
             <NativeSelectOption value="">
@@ -174,7 +174,7 @@ function filterByEntity(entry: AuditLogEntry) {
         </FormField>
       </div>
       <div v-if="hasFilters" class="mt-3 flex justify-end">
-        <Button size="sm" variant="outline" @click="clearFilters">
+        <Button size="sm" variant="outline" class="max-sm:w-full" @click="clearFilters">
           <PhX aria-hidden="true" /> Clear filters
         </Button>
       </div>
@@ -199,22 +199,53 @@ function filterByEntity(entry: AuditLogEntry) {
         </TableHeader>
         <TableBody>
           <template v-for="entry in entries" :key="entry.id">
-            <TableRow class="cursor-pointer" @click="toggle(entry.id)">
-              <TableCell data-stack="actions">
+            <TableRow
+              class="cursor-pointer"
+              :class="expanded.has(entry.id) && 'border-b-0 md:border-b bg-muted/20'"
+              @click="toggle(entry.id)"
+            >
+              <TableCell data-stack="title" class="md:w-8">
+                <!-- Desktop caret toggle button -->
                 <Button
                   size="icon-sm"
                   variant="ghost"
                   :aria-expanded="expanded.has(entry.id)"
                   :aria-label="`${expanded.has(entry.id) ? 'Hide' : 'Show'} details for entry ${entry.id}`"
+                  class="hidden md:inline-flex"
                   @click.stop="toggle(entry.id)"
                 >
                   <PhCaretDown v-if="expanded.has(entry.id)" aria-hidden="true" />
                   <PhCaretRight v-else aria-hidden="true" />
                 </Button>
+
+                <!-- Mobile card header: Action badge + Record/Subject title + Caret -->
+                <div class="flex items-center justify-between gap-2 md:hidden">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <Badge variant="outline" :class="actionClass[entry.action]">
+                      {{ AUDIT_ACTION_LABELS[entry.action] }}
+                    </Badge>
+                    <span class="truncate font-semibold text-foreground text-sm touch:text-base">
+                      {{ subject(entry) }}
+                    </span>
+                  </div>
+                  <Button
+                    size="icon-sm"
+                    variant="ghost"
+                    :aria-expanded="expanded.has(entry.id)"
+                    :aria-label="`${expanded.has(entry.id) ? 'Hide' : 'Show'} details for entry ${entry.id}`"
+                    class="shrink-0 text-muted-foreground"
+                    @click.stop="toggle(entry.id)"
+                  >
+                    <PhCaretDown v-if="expanded.has(entry.id)" class="size-4" aria-hidden="true" />
+                    <PhCaretRight v-else class="size-4" aria-hidden="true" />
+                  </Button>
+                </div>
               </TableCell>
+
               <TableCell data-label="When" class="whitespace-nowrap tabular-nums">
                 {{ formatTime(entry.occurredAt) }}
               </TableCell>
+
               <TableCell data-label="Who">
                 <button
                   v-if="entry.userName && entry.userId"
@@ -228,12 +259,17 @@ function filterByEntity(entry: AuditLogEntry) {
                 <span v-else-if="entry.userName" class="font-mono">{{ entry.userName }}</span>
                 <span v-else class="text-muted-foreground">System</span>
               </TableCell>
-              <TableCell data-label="Action">
+
+              <TableCell data-label="Action" class="hidden md:table-cell">
                 <Badge variant="outline" :class="actionClass[entry.action]">
                   {{ AUDIT_ACTION_LABELS[entry.action] }}
                 </Badge>
               </TableCell>
-              <TableCell data-label="Record" class="max-w-80 break-all">
+
+              <TableCell
+                data-label="Record"
+                :class="[!entry.entityType && !recordLink(entry) && 'hidden md:table-cell', 'max-w-80 break-all']"
+              >
                 <button
                   v-if="entry.entityType"
                   type="button"
@@ -253,12 +289,21 @@ function filterByEntity(entry: AuditLogEntry) {
                   Open record →
                 </NuxtLink>
               </TableCell>
-              <TableCell data-label="Changed" class="text-muted-foreground">
+
+              <TableCell
+                data-label="Changed"
+                :class="[!summary(entry) && 'hidden md:table-cell', 'text-muted-foreground']"
+              >
                 {{ summary(entry) }}
               </TableCell>
             </TableRow>
-            <TableRow v-if="expanded.has(entry.id)" class="bg-muted/40 hover:bg-muted/40">
-              <TableCell colspan="6" class="p-3">
+
+            <TableRow
+              v-if="expanded.has(entry.id)"
+              data-stack="detail-row"
+              class="bg-muted/40 hover:bg-muted/40 border-t-0"
+            >
+              <TableCell colspan="6" data-stack="detail" class="p-3">
                 <dl class="mb-2 grid grid-cols-[auto_1fr] gap-x-4 gap-y-0.5 text-xs touch:text-sm">
                   <dt class="text-muted-foreground">
                     Request
@@ -279,7 +324,33 @@ function filterByEntity(entry: AuditLogEntry) {
                     <dd>{{ entry.details }}</dd>
                   </template>
                 </dl>
-                <table v-if="entry.changes.length" class="w-full border border-border bg-card text-xs touch:text-sm">
+
+                <!-- Mobile change list (< 768px) -->
+                <div v-if="entry.changes.length" class="space-y-1.5 md:hidden">
+                  <div class="text-xs font-bold text-chrome uppercase tracking-wide">
+                    Changes
+                  </div>
+                  <div class="divide-y divide-border border border-border bg-card">
+                    <div v-for="change in entry.changes" :key="change.field" class="p-2 text-xs">
+                      <div class="font-semibold text-foreground">
+                        {{ humanizeName(change.field) }}
+                      </div>
+                      <div v-if="entry.action !== 'Created'" class="mt-0.5 break-all text-muted-foreground">
+                        <span class="font-medium text-muted-foreground/75">Before:</span>
+                        <span v-if="change.old === null" class="italic"> empty</span>
+                        <span v-else> {{ change.old }}</span>
+                      </div>
+                      <div v-if="entry.action !== 'Deleted'" class="mt-0.5 break-all text-foreground">
+                        <span class="font-medium text-muted-foreground">After:</span>
+                        <span v-if="change.new === null" class="text-muted-foreground italic"> empty</span>
+                        <span v-else> {{ change.new }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Desktop change table (>= 768px) -->
+                <table v-if="entry.changes.length" class="hidden md:table w-full border border-border bg-card text-xs touch:text-sm">
                   <thead class="bg-band text-left text-chrome">
                     <tr>
                       <th class="px-2 py-1 font-bold">

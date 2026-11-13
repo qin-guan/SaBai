@@ -40,6 +40,7 @@ export const queryKeys = {
   medicationBrands: () => ["medication-brands"] as const,
   medicationBrandsWithIngredient: () => ["medication-brands", "with-ingredient"] as const,
   medicationIngredients: () => ["medication-ingredients"] as const,
+  broadcasts: () => ["broadcasts"] as const,
 };
 
 /** Converts a captured data URL (e.g. from the webcam) into a `File` for multipart upload. */

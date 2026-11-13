@@ -31,6 +31,7 @@ describe('logicalBackTarget', () => {
 
   it('goes from settings sub-pages to settings', () => {
     expect(logicalBackTarget(route('/settings/village-codes'))).toBe('/settings')
+    expect(logicalBackTarget(route('/settings/notifications'))).toBe('/settings')
     expect(logicalBackTarget(route('/settings/users'))).toBe('/settings')
     expect(logicalBackTarget(route('/settings/audit-log', { entityType: 'Patient', entityId: '42' }))).toBe('/settings')
   })

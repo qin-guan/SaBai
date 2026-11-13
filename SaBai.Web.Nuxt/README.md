@@ -177,12 +177,17 @@ that notifications can reach phones and desktops.
   permission, an unsupported browser, or a server without keys. Notifications
   are per device and belong to whoever is signed in: signing out turns them
   off on that device.
-- **API** (`SaBai.API/Endpoints/Push`, `SaBai.API/Push`): `GET /push/config`
-  (public key, whether push is on), `PUT /push/subscriptions`,
-  `POST /push/subscriptions/unsubscribe` and `POST /push/test`. These are
-  called through `app/utils/pushApi.ts`, not the generated SDK. Other features
-  send with `PushNotifier.NotifyUserAsync` / `NotifyEveryoneAsync`; nothing
-  does yet apart from the test.
+- **Sending them** (Settings → Notifications, `pages/settings/notifications.vue`,
+  `useBroadcasts`): a screen to compose clinic announcements with title, severity
+  (info, warning, critical) and message, which publishes the broadcast and triggers
+  `PushNotifier.NotifyEveryoneAsync` to deliver Web Push notifications to all
+  registered staff devices, alongside a history table of past broadcasts.
+- **API** (`SaBai.API/Endpoints/Push`, `SaBai.API/Endpoints/Broadcasts`, `SaBai.API/Push`):
+  `GET /push/config` (public key, whether push is on), `PUT /push/subscriptions`,
+  `POST /push/subscriptions/unsubscribe`, `POST /push/test`, `GET /broadcasts`,
+  `POST /broadcasts`, and `POST /broadcasts/{id}/publish`. Push subscriptions are
+  called through `app/utils/pushApi.ts`, while broadcasts use `@sabai/sdk`. Publishing
+  a broadcast pushes it to all staff devices via `PushNotifier.NotifyEveryoneAsync`.
 
 Notifications stay off until the API has a VAPID key pair. Generate one with
 `npx web-push generate-vapid-keys` and set `Push__PublicKey`, `Push__PrivateKey`

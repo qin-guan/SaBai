@@ -33,6 +33,7 @@ export const queryKeys = {
   vitals: (visitId: number) => ["vitals", visitId] as const,
   eyesight: (visitId: number) => ["eyesight", visitId] as const,
   consults: (visitId: number) => ["consults", visitId] as const,
+  consult: (id: number) => ["consult", id] as const,
   dental: (visitId: number) => ["dental", visitId] as const,
   villageCodes: () => ["village-codes"] as const,
   villageCodesList: (includeHidden: boolean) => ["village-codes", includeHidden] as const,

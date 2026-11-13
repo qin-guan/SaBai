@@ -36,10 +36,12 @@ public sealed class DentalConsult
 
     public SugarConsumption? SugarConsumption { get; set; }
 
+    [PhiData]
     public string? OtherDentalHistory { get; set; }
 
     // 2. Chief complaint
 
+    [PhiData]
     public string? ChiefComplaint { get; set; }
 
     // 3A. Extraoral examination

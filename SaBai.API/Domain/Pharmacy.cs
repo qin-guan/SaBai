@@ -94,8 +94,10 @@ public sealed class Order
 
     public MedicationBrand MedicationBrand { get; set; } = null!;
 
+    [PhiData]
     public required string DosageInstructions { get; set; }
 
+    [PhiData]
     public string? Remarks { get; set; }
 
     public OrderStatus Status { get; set; } = OrderStatus.Pending;

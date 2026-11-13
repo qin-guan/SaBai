@@ -8,16 +8,21 @@ public sealed class Consult
 
     public DateTimeOffset Date { get; set; }
 
+    [PhiData]
     public string? PastMedicalHistory { get; set; }
 
+    [PhiData]
     public string? Consultation { get; set; }
 
+    [PhiData]
     public string? TreatmentPlan { get; set; }
 
     public string? ReferredFor { get; set; }
 
+    [PhiData]
     public string? ReferralNotes { get; set; }
 
+    [PhiData]
     public string? Remarks { get; set; }
 
     public Guid DoctorId { get; set; }
@@ -41,6 +46,7 @@ public sealed class Diagnosis
 {
     public int Id { get; set; }
 
+    [PhiData]
     public required string Details { get; set; }
 
     public DiagnosisCategory? Category { get; set; }
@@ -65,10 +71,12 @@ public sealed class Referral
 
     public required string ReferredFor { get; set; }
 
+    [PhiData]
     public string? ReferralNotes { get; set; }
 
     public ReferralState ReferralState { get; set; } = ReferralState.New;
 
+    [PhiData]
     public string? ReferralOutcome { get; set; }
 
     public int ConsultId { get; set; }

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Globalization;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Text.Json;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Compliance.Classification;
 using SaBai.API.Domain;
 
 namespace SaBai.API.Data;
@@ -52,37 +54,6 @@ public sealed class AuditInterceptor(IHttpContextAccessor http, TimeProvider clo
         nameof(StaffPushSubscription.Endpoint),
         nameof(StaffPushSubscription.P256dhKey),
         nameof(StaffPushSubscription.AuthSecret),
-    ];
-
-    /// <summary>
-    /// PHI columns whose changes are recorded in the audit log without duplicating raw
-    /// patient data into <see cref="AuditFieldChange"/>.
-    /// </summary>
-    private static readonly HashSet<(Type Entity, string Property)> PhiProperties =
-    [
-        (typeof(Patient), nameof(Patient.Name)),
-        (typeof(Patient), nameof(Patient.IdentificationNumber)),
-        (typeof(Patient), nameof(Patient.ContactNo)),
-        (typeof(Patient), nameof(Patient.DateOfBirth)),
-        (typeof(Patient), nameof(Patient.DrugAllergy)),
-        (typeof(Patient), nameof(Patient.PhotoStoredFileName)),
-        (typeof(Patient), nameof(Patient.LatestFaceId)),
-        (typeof(Consult), nameof(Consult.PastMedicalHistory)),
-        (typeof(Consult), nameof(Consult.Consultation)),
-        (typeof(Consult), nameof(Consult.TreatmentPlan)),
-        (typeof(Consult), nameof(Consult.ReferralNotes)),
-        (typeof(Consult), nameof(Consult.Remarks)),
-        (typeof(Diagnosis), nameof(Diagnosis.Details)),
-        (typeof(Referral), nameof(Referral.ReferralNotes)),
-        (typeof(Referral), nameof(Referral.ReferralOutcome)),
-        (typeof(Order), nameof(Order.DosageInstructions)),
-        (typeof(Order), nameof(Order.Remarks)),
-        (typeof(DentalConsult), nameof(DentalConsult.ChiefComplaint)),
-        (typeof(DentalConsult), nameof(DentalConsult.OtherDentalHistory)),
-        (typeof(DentalConsult), nameof(DentalConsult.Remarks)),
-        (typeof(Eyesight), nameof(Eyesight.Comments)),
-        (typeof(PubertyAssessment), nameof(PubertyAssessment.AdditionalNotes)),
-        (typeof(Vitals), nameof(Vitals.Others)),
     ];
 
     private readonly ConditionalWeakTable<DbContext, List<Pending>> _pending = new();
@@ -238,7 +209,7 @@ public sealed class AuditInterceptor(IHttpContextAccessor http, TimeProvider clo
             }
 
             var secret = SecretProperties.Contains(name) || (redactAll && !property.Metadata.IsKey());
-            var phi = !secret && PhiProperties.Contains((entry.Metadata.ClrType, name));
+            var phi = !secret && IsPhi(property);
             switch (action)
             {
                 case AuditAction.Created when property.CurrentValue is not null:
@@ -299,6 +270,10 @@ public sealed class AuditInterceptor(IHttpContextAccessor http, TimeProvider clo
             New = mask is not null ? (next is null ? null : mask) : Format(next),
         };
     }
+
+    private static bool IsPhi(PropertyEntry property) =>
+        property.Metadata.PropertyInfo?.GetCustomAttributes<DataClassificationAttribute>(inherit: true)
+            .Any(attr => attr.Classification == HipaaDataTaxonomy.Phi) == true;
 
     /// <summary>Authenticator keys and recovery codes live in the user token table.</summary>
     private static bool IsTokenStore(Type type) =>

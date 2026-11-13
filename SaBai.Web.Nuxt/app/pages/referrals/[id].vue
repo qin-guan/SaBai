@@ -108,9 +108,9 @@ function saveOutcome() {
             </Button>
 
             <Button as-child variant="outline" size="sm" class="touch:h-10">
-              <NuxtLink :to="paths.consultsDetail(referral.patientId)">
+              <NuxtLink :to="paths.consultsDetail(referral.patientId, undefined, referral.consultId)">
                 <PhStethoscope class="size-4" aria-hidden="true" />
-                <span>Consults</span>
+                <span>Consult</span>
               </NuxtLink>
             </Button>
 
@@ -244,13 +244,22 @@ function saveOutcome() {
                 </template>
               </span>
 
-              <ConsultPdfLink
-                :consult-id="referral.consultId"
-                variant="outline"
-                size="sm"
-                label="View Consult PDF"
-                class="max-sm:w-full touch:h-10"
-              />
+              <div class="flex flex-wrap items-center gap-2 max-sm:w-full max-sm:[&>*]:flex-1">
+                <Button as-child variant="outline" size="sm" class="touch:h-10">
+                  <NuxtLink :to="paths.consultsDetail(referral.patientId, undefined, referral.consultId)">
+                    <PhStethoscope class="size-3.5" aria-hidden="true" />
+                    <span>View Consult</span>
+                  </NuxtLink>
+                </Button>
+
+                <ConsultPdfLink
+                  :consult-id="referral.consultId"
+                  variant="outline"
+                  size="sm"
+                  label="View Consult PDF"
+                  class="touch:h-10"
+                />
+              </div>
             </dd>
           </div>
         </dl>

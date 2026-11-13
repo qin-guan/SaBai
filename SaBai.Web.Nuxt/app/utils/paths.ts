@@ -18,7 +18,13 @@ export const paths = {
   dental: () => "/dental",
   dentalDetail: (patientId: number, visitId?: number) => withVisit(`/dental/${patientId}`, visitId),
   consults: () => "/consults",
-  consultsDetail: (patientId: number, visitId?: number) => withVisit(`/consults/${patientId}`, visitId),
+  consultsDetail: (patientId: number, visitId?: number, consultId?: number) => {
+    const query = new URLSearchParams();
+    if (visitId !== undefined) query.set("visit", String(visitId));
+    if (consultId !== undefined) query.set("consult", String(consultId));
+    const qs = query.toString();
+    return qs ? `/consults/${patientId}?${qs}` : `/consults/${patientId}`;
+  },
   consultPdf: (consultId: number) => `/api/consults/${consultId}/pdf`,
   referrals: () => "/referrals",
   referralsDetail: (referralId: number) => `/referrals/${referralId}`,

@@ -64,3 +64,13 @@ describe('currentStation and patientTargetFor', () => {
     expect(patientTargetFor(route('/patient', { station: 'vision' }))).toBe('vision')
   })
 })
+
+describe('paths.consultsDetail', () => {
+  it('builds consults detail URLs with optional visit and consult query params', async () => {
+    const { paths } = await import('~/utils/paths')
+    expect(paths.consultsDetail(42)).toBe('/consults/42')
+    expect(paths.consultsDetail(42, 7)).toBe('/consults/42?visit=7')
+    expect(paths.consultsDetail(42, undefined, 15)).toBe('/consults/42?consult=15')
+    expect(paths.consultsDetail(42, 7, 15)).toBe('/consults/42?visit=7&consult=15')
+  })
+})

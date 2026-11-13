@@ -213,9 +213,9 @@ function clearFilters() {
             </Button>
 
             <Button as-child variant="outline" size="sm" class="h-9 text-xs touch:h-10">
-              <NuxtLink :to="paths.consultsDetail(referral.patientId)">
+              <NuxtLink :to="paths.consultsDetail(referral.patientId, undefined, referral.consultId)">
                 <PhStethoscope class="size-3.5" aria-hidden="true" />
-                <span>Consults</span>
+                <span>Consult</span>
               </NuxtLink>
             </Button>
 
@@ -324,9 +324,9 @@ function clearFilters() {
                   </Button>
 
                   <Button as-child variant="outline" size="sm" class="h-7 text-xs">
-                    <NuxtLink :to="paths.consultsDetail(referral.patientId)">
+                    <NuxtLink :to="paths.consultsDetail(referral.patientId, undefined, referral.consultId)">
                       <PhStethoscope class="size-3.5" aria-hidden="true" />
-                      <span>Consults</span>
+                      <span>Consult</span>
                     </NuxtLink>
                   </Button>
 

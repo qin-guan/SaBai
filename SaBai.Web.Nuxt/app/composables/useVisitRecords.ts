@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/vue-query'
 import type { MaybeRefOrGetter } from 'vue'
 import {
+  saBaiAPIEndpointsConsultsGetEndpoint,
   saBaiAPIEndpointsConsultsListByVisitGetEndpoint,
   saBaiAPIEndpointsDentalGetByVisitGetEndpoint,
   saBaiAPIEndpointsEyesightGetByVisitGetEndpoint,
@@ -42,6 +43,19 @@ export function useVisitConsults(visitId: MaybeRefOrGetter<number>) {
     enabled: enabledFor(visitId),
     queryFn: ({ signal }) =>
       saBaiAPIEndpointsConsultsListByVisitGetEndpoint({ ...apiConfig, path: { visitId: toValue(visitId) }, signal }).unwrap(),
+  })
+}
+
+export function useConsult(consultId: MaybeRefOrGetter<number | null | undefined>) {
+  return useQuery({
+    queryKey: computed(() => queryKeys.consult(toValue(consultId) ?? 0)),
+    enabled: computed(() => {
+      const id = toValue(consultId)
+      return typeof id === 'number' && Number.isFinite(id) && id > 0
+    }),
+    retry: false,
+    queryFn: ({ signal }) =>
+      saBaiAPIEndpointsConsultsGetEndpoint({ ...apiConfig, path: { id: toValue(consultId)! }, signal }).unwrap(),
   })
 }
 

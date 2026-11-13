@@ -22,11 +22,13 @@ const props = withDefaults(defineProps<{
   collapsible?: boolean
   /** Whether a collapsible panel starts open. */
   defaultOpen?: boolean
+  /** Force the panel open (e.g. when deep-linking to an item inside it), overriding stored preference without overwriting it. */
+  forceOpen?: boolean
   /** Remember the open/closed choice on this device under this key. */
   collapseKey?: string
   /** Enable two-tier header layout (row 1: title + headerActions, row 2: description). */
   twoTier?: boolean
-}>(), { defaultOpen: false })
+}>(), { defaultOpen: false, forceOpen: false })
 
 const autoId = useId()
 const headingId = computed(() => `${props.id ?? `panel-${autoId}`}-title`)
@@ -44,11 +46,16 @@ function readStored(): boolean | null {
     return null
   }
 }
-const open = ref(!props.collapsible || (readStored() ?? props.defaultOpen))
+const open = ref(!props.collapsible || props.forceOpen || (readStored() ?? props.defaultOpen))
 
 // Content that arrives later (e.g. saved remarks) can ask a closed panel to open.
 watch(() => props.defaultOpen, (value) => {
   if (value && props.collapsible && readStored() === null)
+    open.value = true
+})
+
+watch(() => props.forceOpen, (value) => {
+  if (value && props.collapsible)
     open.value = true
 })
 

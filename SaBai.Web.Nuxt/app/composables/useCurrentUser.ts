@@ -57,6 +57,9 @@ export function useCurrentUser() {
 export function useSignOut() {
   const queryClient = useQueryClient();
   return async () => {
+    // Notifications belong to the person signed in: stop them on this device
+    // (while the session can still say so) before it is handed to someone else.
+    await stopPushOnThisDevice().catch(console.error);
     try {
       await saBaiAPIEndpointsAuthLogoutPostEndpoint({ ...apiConfig, throwOnError: true });
     } catch (error) {

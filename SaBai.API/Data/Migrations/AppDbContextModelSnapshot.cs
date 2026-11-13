@@ -947,6 +947,45 @@ namespace SaBai.API.Data.Migrations
                     b.ToTable("Referrals");
                 });
 
+            modelBuilder.Entity("SaBai.API.Domain.StaffPushSubscription", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AuthSecret")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Endpoint")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.Property<string>("P256dhKey")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<Guid>("StaffUserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Endpoint")
+                        .IsUnique();
+
+                    b.HasIndex("StaffUserId");
+
+                    b.ToTable("PushSubscriptions", (string)null);
+                });
+
             modelBuilder.Entity("SaBai.API.Domain.StaffUser", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1491,6 +1530,17 @@ namespace SaBai.API.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Consult");
+                });
+
+            modelBuilder.Entity("SaBai.API.Domain.StaffPushSubscription", b =>
+                {
+                    b.HasOne("SaBai.API.Domain.StaffUser", "StaffUser")
+                        .WithMany()
+                        .HasForeignKey("StaffUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("StaffUser");
                 });
 
             modelBuilder.Entity("SaBai.API.Domain.StockChange", b =>

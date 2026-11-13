@@ -28,6 +28,7 @@ pnpm dev
 | `app/components/app` | Building blocks: `AppPanel`, `PageHeader`, `FormField`, `ChoiceGroup`, `AppDialog`, `SaveBar`… |
 | `app/components/patient` | Patient banner, journey tracker, visit selector, station page frame, inline details form and edit dialog. |
 | `app/composables` | Vue Query data hooks over `@sabai/sdk/clients`, village selection, shortcuts. |
+| `app/service-worker` | Service worker of the installed app: push notifications. |
 | `app/utils` | Framework-free logic ported from SaBai.Web (formatting, vitals, splits, eyesight, dental mapping). |
 
 Auth is an HttpOnly session cookie (`sabai.auth`) set by the API's
@@ -150,6 +151,48 @@ reload or closed tab does not lose work. A restored draft is announced with a
 "Discard draft" button; drafts clear on a successful save, expire after 24h,
 and — together with recent patients — are wiped on sign-out because they hold
 patient data.
+
+## Installable app and notifications
+
+The app is an installable PWA (`@vite-pwa/nuxt`, `pwa` in `nuxt.config.ts`) so
+that notifications can reach phones and desktops.
+
+- **Manifest and icons** (`/manifest.webmanifest`, `public/pwa-*.png`,
+  `apple-touch-icon.png`): the app installs from Chrome/Edge (desktop and
+  Android) and from Safari's *Add to Home Screen* / *Add to Dock*. iOS and
+  iPadOS deliver Web Push only to the Home Screen copy (16.4+).
+- **Service worker** (`app/service-worker/sw.ts`): shows a notification for
+  every push message and opens the app at the message's `url` when it is
+  tapped. It has no `fetch` handler and caches nothing, so there is no offline
+  mode and the `/api` proxy and session cookie are untouched. It also runs
+  under `pnpm dev`.
+- **Message format** (`app/utils/pushPayload.ts`, `PushNotification` in the
+  API): a JSON body `{ title, body?, url?, tag?, requireInteraction? }`. `url`
+  must be a path in this app; anything else opens the home page.
+- **Turning them on** (My Account → Notifications,
+  `components/account/NotificationSettings.vue`, `usePushNotifications`): a
+  button asks the browser for permission and subscribes the device, with a
+  test notification and a way to turn them off. It says why when they cannot
+  work: an iPhone/iPad tab that is not on the Home Screen, a blocked
+  permission, an unsupported browser, or a server without keys. Notifications
+  are per device and belong to whoever is signed in: signing out turns them
+  off on that device.
+- **API** (`SaBai.API/Endpoints/Push`, `SaBai.API/Push`): `GET /push/config`
+  (public key, whether push is on), `PUT /push/subscriptions`,
+  `POST /push/subscriptions/unsubscribe` and `POST /push/test`. These are
+  called through `app/utils/pushApi.ts`, not the generated SDK. Other features
+  send with `PushNotifier.NotifyUserAsync` / `NotifyEveryoneAsync`; nothing
+  does yet apart from the test.
+
+Notifications stay off until the API has a VAPID key pair. Generate one with
+`npx web-push generate-vapid-keys` and set `Push__PublicKey`, `Push__PrivateKey`
+(a secret) and `Push__Subject` (a `mailto:` address or `https://` URL) on the
+API; in the Aspire deployment these are the `pushPublicKey`, `pushPrivateKey`
+and `pushSubject` parameters. Changing the keys later means every device has to
+turn notifications on again. Push needs HTTPS (or `localhost`), and the API
+needs outbound HTTPS to the browsers' push services. Devices may only subscribe
+through the push services listed in `PushSettings` (Google, Mozilla, Microsoft,
+Apple); override with `Push__AllowedHosts__0`, `__1`, … if a browser uses another.
 
 ## Screen sizes
 

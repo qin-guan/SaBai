@@ -38,6 +38,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<Referral> Referrals => Set<Referral>();
 
+    public DbSet<ReferralPartner> ReferralPartners => Set<ReferralPartner>();
+
+    public DbSet<Tag> Tags => Set<Tag>();
+
+    public DbSet<StaffUserTag> StaffUserTags => Set<StaffUserTag>();
+
     public DbSet<MedicationActiveIngredient> MedicationActiveIngredients =>
         Set<MedicationActiveIngredient>();
 
@@ -81,19 +87,48 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     private void StampRecordedAt()
     {
         var now = DateTimeOffset.UtcNow;
-        foreach (var entry in ChangeTracker.Entries().Where(x => x.State == EntityState.Added))
+        foreach (var entry in ChangeTracker.Entries())
         {
-            switch (entry.Entity)
+            if (entry.State == EntityState.Added)
             {
-                case Vitals { RecordedAt: null } vitals:
-                    vitals.RecordedAt = now;
-                    break;
-                case Eyesight { RecordedAt: null } eyesight:
-                    eyesight.RecordedAt = now;
-                    break;
-                case DentalConsult { RecordedAt: null } dental:
-                    dental.RecordedAt = now;
-                    break;
+                switch (entry.Entity)
+                {
+                    case Vitals { RecordedAt: null } vitals:
+                        vitals.RecordedAt = now;
+                        break;
+                    case Eyesight { RecordedAt: null } eyesight:
+                        eyesight.RecordedAt = now;
+                        break;
+                    case DentalConsult { RecordedAt: null } dental:
+                        dental.RecordedAt = now;
+                        break;
+                    case Referral referral:
+                        if (referral.CreatedAt == default)
+                            referral.CreatedAt = now;
+                        referral.UpdatedAt = now;
+                        break;
+                    case ReferralPartner partner:
+                        if (partner.CreatedAt == default)
+                            partner.CreatedAt = now;
+                        partner.UpdatedAt = now;
+                        break;
+                    case Tag tag:
+                        if (tag.CreatedAt == default)
+                            tag.CreatedAt = now;
+                        break;
+                }
+            }
+            else if (entry.State == EntityState.Modified)
+            {
+                switch (entry.Entity)
+                {
+                    case Referral referral:
+                        referral.UpdatedAt = now;
+                        break;
+                    case ReferralPartner partner:
+                        partner.UpdatedAt = now;
+                        break;
+                }
             }
         }
     }
@@ -255,13 +290,62 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
+        modelBuilder.Entity<Tag>(entity =>
+        {
+            entity.Property(x => x.Name).HasMaxLength(64);
+            entity.HasIndex(x => x.Name).IsUnique();
+        });
+
+        modelBuilder.Entity<StaffUserTag>(entity =>
+        {
+            entity.HasKey(x => new { x.StaffUserId, x.TagId });
+            entity
+                .HasOne(x => x.StaffUser)
+                .WithMany(x => x.UserTags)
+                .HasForeignKey(x => x.StaffUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity
+                .HasOne(x => x.Tag)
+                .WithMany(x => x.UserTags)
+                .HasForeignKey(x => x.TagId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ReferralPartner>(entity =>
+        {
+            entity.Property(x => x.Name).HasMaxLength(255);
+        });
+
         modelBuilder.Entity<Referral>(entity =>
         {
             entity.Property(x => x.ReferralState).HasConversion<string>().HasMaxLength(32);
+            entity.Property(x => x.GuardiansContacted).HasConversion<string>().HasMaxLength(32);
+            entity.Property(x => x.ClassOfService).HasConversion<string>().HasMaxLength(32);
+            entity.Property(x => x.AmountPaidUsd).HasPrecision(10, 2);
             entity
                 .HasOne(x => x.Consult)
                 .WithMany(x => x.Referrals)
                 .HasForeignKey(x => x.ConsultId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity
+                .HasOne(x => x.ReferredTo)
+                .WithMany(x => x.Referrals)
+                .HasForeignKey(x => x.ReferredToId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity
+                .HasOne(x => x.MemberInCharge)
+                .WithMany()
+                .HasForeignKey(x => x.MemberInChargeId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity
+                .HasOne(x => x.MemberOnRun)
+                .WithMany()
+                .HasForeignKey(x => x.MemberOnRunId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity
+                .HasOne(x => x.MemberWhoPaid)
+                .WithMany()
+                .HasForeignKey(x => x.MemberWhoPaidId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 

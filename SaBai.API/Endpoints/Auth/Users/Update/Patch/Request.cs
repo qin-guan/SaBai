@@ -14,4 +14,7 @@ public sealed record Request
 
     /// <summary>The full set of roles the user should have.</summary>
     public IReadOnlyList<string>? Roles { get; init; }
+
+    /// <summary>The full set of tags the user should have.</summary>
+    public IReadOnlyList<string>? Tags { get; init; }
 }

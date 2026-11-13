@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { PhBell, PhCaretRight, PhClockCounterClockwise, PhMapPin, PhUserCircle, PhUserGear } from '@phosphor-icons/vue'
+import { PhBell, PhCaretRight, PhClockCounterClockwise, PhHospital, PhMapPin, PhUserCircle, PhUserGear } from '@phosphor-icons/vue'
 
 useHead({ title: "Settings · Sa'Bai" })
 
 const { isAdmin } = useCurrentUser()
 const settingsItems = computed(() => [
   { name: 'Village Codes', href: paths.settingsVillageCodes(), icon: PhMapPin, description: 'Manage village codes.' },
+  { name: 'Referral Partners', href: paths.settingsReferralPartners(), icon: PhHospital, description: 'Manage partner clinics and hospitals for patient referrals.' },
   { name: 'Notifications', href: paths.settingsNotifications(), icon: PhBell, description: 'Send clinic-wide broadcasts and push notifications to staff devices.' },
   ...(isAdmin.value
     ? [

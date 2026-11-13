@@ -26,9 +26,24 @@ const form = ref({
   email: props.user?.email ?? '',
   password: '',
   roles: [...(props.user?.roles ?? ['member'])],
+  tagsText: (props.user?.tags ?? []).join(', '),
 })
 const errors = ref<Partial<Record<'userName' | 'email' | 'password' | 'roles', string>>>({})
 const formEl = ref<HTMLFormElement>()
+
+function parsedTags(): string[] {
+  const seen = new Set<string>()
+  const result: string[] = []
+  for (const raw of form.value.tagsText.split(',')) {
+    const tag = raw.trim()
+    const key = tag.toUpperCase()
+    if (tag && !seen.has(key)) {
+      seen.add(key)
+      result.push(tag)
+    }
+  }
+  return result
+}
 
 function toggleRole(role: string, on: boolean) {
   form.value.roles = on ? [...new Set([...form.value.roles, role])] : form.value.roles.filter(x => x !== role)
@@ -46,23 +61,25 @@ function done(message: string) {
 
 const save = useMutation({
   mutationFn: () => {
+    const tags = parsedTags()
     const body = {
       userName: form.value.userName.trim(),
       nickname: form.value.nickname.trim() || undefined,
       email: form.value.email.trim(),
       roles: form.value.roles,
+      tags,
     }
     if (isEditing.value) {
       return saBaiAPIEndpointsAuthUsersUpdatePatchEndpoint({
         ...apiConfig,
         path: { id: props.user!.id },
-        body: { ...body, nickname: body.nickname ?? body.userName },
+        body: { ...body, nickname: body.nickname ?? body.userName } as never,
         throwOnError: true,
       }).unwrap()
     }
     return saBaiAPIEndpointsAuthUsersCreatePostEndpoint({
       ...apiConfig,
-      body: { ...body, email: body.email || undefined, password: form.value.password },
+      body: { ...body, email: body.email || undefined, password: form.value.password } as never,
       throwOnError: true,
     }).unwrap()
   },
@@ -147,6 +164,15 @@ useSaveShortcut(submit)
           {{ errors.roles }}
         </p>
       </fieldset>
+      <FormField v-slot="{ id, describedby }" label="Tags" hint="Comma-separated team/function tags (e.g. PN, PL).">
+        <Input
+          :id="id"
+          v-model="form.tagsText"
+          placeholder="e.g. PN, PL"
+          autocomplete="off"
+          :aria-describedby="describedby"
+        />
+      </FormField>
     </form>
     <template #footer>
       <Button variant="outline" @click="emit('close')">

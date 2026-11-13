@@ -125,8 +125,24 @@ function saveOutcome() {
         </div>
       </section>
 
+      <!-- Referral Workflow Accordion -->
+      <div class="divide-y divide-border overflow-hidden border border-border bg-card">
+        <ReferralAccordionSection title="Patient Details" default-open>
+          <ReferralOverviewSection :referral="referral" />
+        </ReferralAccordionSection>
+        <ReferralAccordionSection title="Referral Booth">
+          <ReferralBoothSection :key="referral.id" :referral="referral" />
+        </ReferralAccordionSection>
+        <ReferralAccordionSection title="Referral Party">
+          <ReferralPartySection :key="referral.id" :referral="referral" />
+        </ReferralAccordionSection>
+        <ReferralAccordionSection title="Money">
+          <ReferralMoneySection :key="referral.id" :referral="referral" />
+        </ReferralAccordionSection>
+      </div>
+
       <!-- Referral Details Card -->
-      <AppPanel title="Referral Information" description="Care tracking and follow-up details" flush>
+      <AppPanel title="Referral Status & Outcome" description="Care tracking and final outcome" flush>
         <dl class="divide-y divide-border text-xs touch:text-sm">
           <!-- Status -->
           <div class="grid grid-cols-1 gap-1 px-3 py-3 sm:grid-cols-[12rem_1fr] sm:items-center">
@@ -148,26 +164,6 @@ function saveOutcome() {
             </dt>
             <dd class="text-foreground">
               {{ formatVisitDate(referral.createdAt) }}
-            </dd>
-          </div>
-
-          <!-- Referred For -->
-          <div class="grid grid-cols-1 gap-1 px-3 py-3 sm:grid-cols-[12rem_1fr]">
-            <dt class="font-semibold text-muted-foreground">
-              Referred For
-            </dt>
-            <dd class="font-bold text-chrome">
-              {{ referral.referredFor }}
-            </dd>
-          </div>
-
-          <!-- Notes -->
-          <div class="grid grid-cols-1 gap-1 px-3 py-3 sm:grid-cols-[12rem_1fr]">
-            <dt class="font-semibold text-muted-foreground">
-              Referral Notes
-            </dt>
-            <dd class="text-foreground whitespace-pre-wrap">
-              {{ referral.referralNotes || 'No notes entered' }}
             </dd>
           </div>
 

@@ -50,6 +50,23 @@ public sealed class Diagnosis
     public Consult Consult { get; set; } = null!;
 }
 
+public sealed class ReferralPartner
+{
+    public Guid Id { get; set; }
+
+    public required string Name { get; set; }
+
+    public string? Remarks { get; set; }
+
+    public bool IsActive { get; set; } = true;
+
+    public DateTimeOffset CreatedAt { get; set; }
+
+    public DateTimeOffset UpdatedAt { get; set; }
+
+    public ICollection<Referral> Referrals { get; set; } = [];
+}
+
 public sealed class Referral
 {
     public int Id { get; set; }
@@ -67,4 +84,47 @@ public sealed class Referral
     public Consult Consult { get; set; } = null!;
 
     public DateTimeOffset CreatedAt { get; set; }
+
+    public DateTimeOffset UpdatedAt { get; set; }
+
+    // Referral booth section
+    public Guid? ReferredToId { get; set; }
+
+    public ReferralPartner? ReferredTo { get; set; }
+
+    public Guid? MemberInChargeId { get; set; }
+
+    public StaffUser? MemberInCharge { get; set; }
+
+    public GuardiansContacted? GuardiansContacted { get; set; }
+
+    public ReferralServiceClass? ClassOfService { get; set; }
+
+    public string? DescriptionOfService { get; set; }
+
+    public string? PatientSummaryFromScreening { get; set; }
+
+    public string? RemarksAtBooth { get; set; }
+
+    // Referral party section
+    public Guid? MemberOnRunId { get; set; }
+
+    public StaffUser? MemberOnRun { get; set; }
+
+    public bool PresentAtReferralParty { get; set; }
+
+    public string? ReferralPartyResults { get; set; }
+
+    public bool FollowUp { get; set; }
+
+    public bool DoctorsUpdated { get; set; }
+
+    // Money section
+    public decimal? AmountPaidUsd { get; set; }
+
+    public int? AmountPaidRiels { get; set; }
+
+    public Guid? MemberWhoPaidId { get; set; }
+
+    public StaffUser? MemberWhoPaid { get; set; }
 }

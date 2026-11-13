@@ -51,7 +51,7 @@ function clearFilters() {
           <Input
             v-model="search"
             type="search"
-            placeholder="Search by patient name, ID (e.g. SB0012), reason, notes…"
+            placeholder="Search name, ID, reason, notes…"
             class="h-8 pl-8 text-xs border-input touch:h-11 touch:text-base"
             aria-label="Search referrals"
           />
@@ -134,7 +134,6 @@ function clearFilters() {
     <AppPanel
       v-else
       :title="`Referrals (${filteredReferrals.length}${filteredReferrals.length !== referrals.length ? ` of ${referrals.length}` : ''})`"
-      description="Active and completed patient referrals"
       flush
     >
       <!-- Mobile card list (< md) -->
@@ -144,49 +143,47 @@ function clearFilters() {
           :key="referral.id"
           class="flex flex-col gap-2.5 p-3 hover:bg-accent/30 transition-colors"
         >
-          <!-- Top row: Photo, Patient Info, Status -->
-          <div class="flex items-start justify-between gap-2">
-            <div class="flex items-center gap-2.5 min-w-0">
-              <PatientPhoto
-                :patient-id="referral.patientId"
-                :has-photo="referral.hasPhoto"
-                :name="referral.patientName"
-                :size="44"
-                zoomable
-              />
-              <div class="min-w-0">
-                <div class="flex items-center gap-1.5">
-                  <span
-                    class="size-2.5 shrink-0 border border-border/40"
-                    :style="{ backgroundColor: referral.villageColorHex }"
-                    :title="referral.villageCode"
-                    aria-hidden="true"
-                  />
-                  <NuxtLink
-                    :to="paths.patientDetail(referral.patientId)"
-                    class="font-mono text-xs font-bold text-chrome hover:underline"
-                  >
-                    {{ formatPatientCode(referral.villageCode, referral.patientId) }}
-                  </NuxtLink>
-                  <span class="text-xs text-muted-foreground">· {{ referral.villageCode }}</span>
-                </div>
-                <p class="truncate text-sm font-bold text-foreground">
+          <!-- Top row: Photo + full-width Patient Name & Code -->
+          <div class="flex items-center gap-2.5 min-w-0">
+            <PatientPhoto
+              :patient-id="referral.patientId"
+              :has-photo="referral.hasPhoto"
+              :name="referral.patientName"
+              :size="40"
+              zoomable
+            />
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-2">
+                <NuxtLink
+                  :to="paths.patientDetail(referral.patientId)"
+                  class="truncate text-sm font-bold text-foreground hover:text-primary hover:underline touch:text-base"
+                >
                   {{ referral.patientName }}
-                </p>
+                </NuxtLink>
               </div>
-            </div>
-
-            <div class="shrink-0">
-              <ReferralStateDropdown
-                :referral-id="referral.id"
-                v-model="referral.referralState"
-              />
+              <div class="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <PatientCode
+                  :village-code="referral.villageCode"
+                  :village-color-hex="referral.villageColorHex"
+                  :id="referral.patientId"
+                />
+              </div>
             </div>
           </div>
 
+          <!-- Status row -->
+          <div class="flex items-center justify-between gap-3">
+            <span class="text-xs font-semibold text-muted-foreground shrink-0">Status</span>
+            <ReferralStateDropdown
+              :referral-id="referral.id"
+              v-model="referral.referralState"
+              class="max-w-[220px]"
+            />
+          </div>
+
           <!-- Referral detail box -->
-          <div class="flex flex-col gap-1.5 border-l-2 border-band-border bg-stripe px-2.5 py-1.5 text-xs">
-            <div class="flex items-baseline gap-1.5">
+          <div class="flex flex-col gap-1.5 border-l-2 border-band-border bg-stripe px-2.5 py-2 text-xs">
+            <div class="flex flex-wrap items-baseline gap-x-1.5">
               <span class="font-semibold text-muted-foreground">Referred for:</span>
               <span class="font-bold text-chrome">{{ referral.referredFor }}</span>
             </div>
@@ -200,14 +197,14 @@ function clearFilters() {
               <span class="font-semibold text-success">Outcome: </span>
               <span>{{ referral.referralOutcome }}</span>
             </div>
-            <div class="flex flex-wrap items-center gap-x-3 text-[0.75rem] text-muted-foreground pt-0.5">
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[0.75rem] text-muted-foreground pt-0.5">
               <span>Visited: {{ formatVisitDate(referral.consultDate) }}</span>
               <span>Referred: {{ formatVisitDate(referral.createdAt) }}</span>
             </div>
           </div>
 
           <!-- Bottom Action Buttons: 3 equal touch targets -->
-          <div class="grid grid-cols-3 gap-1.5 pt-0.5">
+          <div class="grid grid-cols-3 gap-1.5">
             <Button as-child variant="outline" size="sm" class="h-9 text-xs touch:h-10">
               <NuxtLink :to="paths.referralsDetail(referral.id)">
                 <PhPencilSimple class="size-3.5" aria-hidden="true" />
@@ -216,9 +213,9 @@ function clearFilters() {
             </Button>
 
             <Button as-child variant="outline" size="sm" class="h-9 text-xs touch:h-10">
-              <NuxtLink :to="paths.consultsDetail(referral.patientId)">
+              <NuxtLink :to="paths.consultsDetail(referral.patientId, undefined, referral.consultId)">
                 <PhStethoscope class="size-3.5" aria-hidden="true" />
-                <span>Consults</span>
+                <span>Consult</span>
               </NuxtLink>
             </Button>
 
@@ -241,7 +238,7 @@ function clearFilters() {
               <th scope="col" class="py-2 pr-2 pl-3 w-12">Photo</th>
               <th scope="col" class="px-2 py-2 min-w-[140px]">Patient</th>
               <th scope="col" class="px-2 py-2 min-w-[200px]">Referral summary</th>
-              <th scope="col" class="px-2 py-2 min-w-[140px]">Status</th>
+              <th scope="col" class="px-2 py-2 min-w-[180px]">Status</th>
               <th scope="col" class="py-2 pr-3 pl-2 text-right min-w-[180px]">Actions</th>
             </tr>
           </thead>
@@ -327,9 +324,9 @@ function clearFilters() {
                   </Button>
 
                   <Button as-child variant="outline" size="sm" class="h-7 text-xs">
-                    <NuxtLink :to="paths.consultsDetail(referral.patientId)">
+                    <NuxtLink :to="paths.consultsDetail(referral.patientId, undefined, referral.consultId)">
                       <PhStethoscope class="size-3.5" aria-hidden="true" />
-                      <span>Consults</span>
+                      <span>Consult</span>
                     </NuxtLink>
                   </Button>
 

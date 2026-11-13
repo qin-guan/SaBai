@@ -108,9 +108,9 @@ function saveOutcome() {
             </Button>
 
             <Button as-child variant="outline" size="sm" class="touch:h-10">
-              <NuxtLink :to="paths.consultsDetail(referral.patientId)">
+              <NuxtLink :to="paths.consultsDetail(referral.patientId, undefined, referral.consultId)">
                 <PhStethoscope class="size-4" aria-hidden="true" />
-                <span>Consults</span>
+                <span>Consult</span>
               </NuxtLink>
             </Button>
 
@@ -145,11 +145,11 @@ function saveOutcome() {
       <AppPanel title="Referral Status & Outcome" description="Care tracking and final outcome" flush>
         <dl class="divide-y divide-border text-xs touch:text-sm">
           <!-- Status -->
-          <div class="grid grid-cols-1 gap-1 px-3 py-3 sm:grid-cols-[12rem_1fr] sm:items-center">
+          <div class="grid grid-cols-1 gap-1.5 px-3 py-3 sm:grid-cols-[12rem_1fr] sm:items-center">
             <dt class="font-semibold text-muted-foreground">
               Referral Status
             </dt>
-            <dd class="max-w-xs">
+            <dd class="w-full sm:max-w-xs">
               <ReferralStateDropdown
                 :referral-id="referral.id"
                 v-model="referral.referralState"
@@ -168,7 +168,7 @@ function saveOutcome() {
           </div>
 
           <!-- Outcome -->
-          <div class="grid grid-cols-1 gap-1 px-3 py-3 sm:grid-cols-[12rem_1fr]">
+          <div class="grid grid-cols-1 gap-1.5 px-3 py-3 sm:grid-cols-[12rem_1fr]">
             <dt class="font-semibold text-muted-foreground">
               Referral Outcome
             </dt>
@@ -228,11 +228,11 @@ function saveOutcome() {
           </div>
 
           <!-- Consultation Origin & PDF -->
-          <div class="grid grid-cols-1 gap-1 px-3 py-3 sm:grid-cols-[12rem_1fr] sm:items-center">
+          <div class="grid grid-cols-1 gap-1.5 px-3 py-3 sm:grid-cols-[12rem_1fr] sm:items-center">
             <dt class="font-semibold text-muted-foreground">
               Consultation Origin
             </dt>
-            <dd class="flex flex-wrap items-center gap-3">
+            <dd class="flex flex-col items-start gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
               <span class="text-foreground">
                 Visited: {{ formatVisitDate(referral.consultDate) }}
                 <template v-if="referral.doctorNickname">
@@ -240,12 +240,22 @@ function saveOutcome() {
                 </template>
               </span>
 
-              <ConsultPdfLink
-                :consult-id="referral.consultId"
-                variant="outline"
-                size="sm"
-                label="View Consult PDF"
-              />
+              <div class="flex flex-wrap items-center gap-2 max-sm:w-full max-sm:[&>*]:flex-1">
+                <Button as-child variant="outline" size="sm" class="touch:h-10">
+                  <NuxtLink :to="paths.consultsDetail(referral.patientId, undefined, referral.consultId)">
+                    <PhStethoscope class="size-3.5" aria-hidden="true" />
+                    <span>View Consult</span>
+                  </NuxtLink>
+                </Button>
+
+                <ConsultPdfLink
+                  :consult-id="referral.consultId"
+                  variant="outline"
+                  size="sm"
+                  label="View Consult PDF"
+                  class="touch:h-10"
+                />
+              </div>
             </dd>
           </div>
         </dl>

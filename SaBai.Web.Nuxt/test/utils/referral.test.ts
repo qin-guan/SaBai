@@ -62,12 +62,19 @@ describe('referral constants & options', () => {
     expect(advancedVisionOpt?.label).toBe('AdvancedVision [Within clinic]')
   })
 
-  it('returns valid badge classes for each state', () => {
+  it('returns valid badge classes for each state using clinical tokens', () => {
     for (const state of REFERRAL_STATES) {
       const cls = referralStateBadgeClass(state)
       expect(cls).toBeTypeOf('string')
       expect(cls.length).toBeGreaterThan(0)
     }
+    expect(referralStateBadgeClass('New')).toContain('text-warning')
+    expect(referralStateBadgeClass('Seen')).toContain('bg-accent')
+    expect(referralStateBadgeClass('Outgoing')).toContain('text-chrome')
+    expect(referralStateBadgeClass('Completed')).toContain('text-success')
+    expect(referralStateBadgeClass('CompletedSuccess')).toContain('text-success')
+    expect(referralStateBadgeClass('CompletedFailure')).toContain('text-destructive')
+    expect(referralStateBadgeClass('None')).toContain('text-muted-foreground')
   })
 })
 

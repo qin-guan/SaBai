@@ -58,8 +58,8 @@ const trailing = [
           </li>
         </ul>
       </div>
-      <div v-if="consult.referredFor" class="rounded border border-purple-200 bg-purple-50/60 p-2 dark:border-purple-900/50 dark:bg-purple-950/20">
-        <p class="text-xs font-semibold text-purple-900 dark:text-purple-300">
+      <div v-if="consult.referredFor" class="border border-band-border bg-accent/30 p-2 text-foreground">
+        <p class="text-xs font-semibold text-chrome">
           Referred for: {{ consult.referredFor }}
         </p>
         <p v-if="consult.referralNotes" class="mt-0.5 text-xs text-muted-foreground whitespace-pre-wrap break-words">

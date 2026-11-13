@@ -40,17 +40,21 @@ public sealed class PnRoleTests(AppFixture fixture)
         var pnClient = fixture.CreateApiClient();
         var loginRes = await pnClient.PostAsJsonAsync(
             "/auth/login",
-            new { identifier = userName, password },
+            new { userName, password },
             ApiJson.Options
         );
         loginRes.EnsureSuccessStatusCode();
 
+        var whoAmIRes = await pnClient.GetAsync("/auth/whoami");
         var referralsRes = await pnClient.GetAsync("/referrals");
         var partnersRes = await pnClient.GetAsync("/referral-partners");
         var usersRes = await pnClient.GetAsync("/auth/users");
+        var patientsRes = await pnClient.GetAsync("/patients");
 
+        await Assert.That(whoAmIRes.StatusCode).IsEqualTo(HttpStatusCode.OK);
         await Assert.That(referralsRes.StatusCode).IsEqualTo(HttpStatusCode.OK);
         await Assert.That(partnersRes.StatusCode).IsEqualTo(HttpStatusCode.OK);
         await Assert.That(usersRes.StatusCode).IsEqualTo(HttpStatusCode.OK);
+        await Assert.That(patientsRes.StatusCode).IsEqualTo(HttpStatusCode.OK);
     }
 }

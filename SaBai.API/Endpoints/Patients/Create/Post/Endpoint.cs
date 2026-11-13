@@ -63,8 +63,18 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
         }
 
         patient.Visits.Add(visit);
+        if (req.Tags is not null)
+        {
+            await TagSync.SyncPatientTagsAsync(db, patient, req.Tags, ct);
+        }
+
         db.Patients.Add(patient);
         await db.SaveChangesAsync(ct);
+
+        var tags = patient
+            .PatientTags.Select(x => x.Tag.Name)
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToList();
 
         return new Response(
             patient.Id,
@@ -87,7 +97,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             visit.Id,
             visit.Vitals?.Id,
             false,
-            false
+            false,
+            tags
         );
     }
 

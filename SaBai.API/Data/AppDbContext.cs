@@ -61,6 +61,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<AuditLogEntry> AuditLogs => Set<AuditLogEntry>();
 
+    public DbSet<Tag> Tags => Set<Tag>();
+
+    public DbSet<StaffUserTag> StaffUserTags => Set<StaffUserTag>();
+
+    public DbSet<PatientTag> PatientTags => Set<PatientTag>();
+
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
         StampRecordedAt();
@@ -107,6 +113,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
                         if (partner.CreatedAt == default)
                             partner.CreatedAt = now;
                         partner.UpdatedAt = now;
+                        break;
+                    case Tag tag:
+                        if (tag.CreatedAt == default)
+                            tag.CreatedAt = now;
                         break;
                 }
             }
@@ -452,6 +462,43 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             entity.HasIndex(x => x.OccurredAt);
             entity.HasIndex(x => new { x.EntityType, x.EntityId });
             entity.HasIndex(x => x.UserId);
+        });
+
+        modelBuilder.Entity<Tag>(entity =>
+        {
+            entity.Property(x => x.Name).HasMaxLength(TagSync.MaxTagLength);
+            entity.Property(x => x.NormalizedName).HasMaxLength(TagSync.MaxTagLength);
+            entity.HasIndex(x => x.NormalizedName).IsUnique();
+        });
+
+        modelBuilder.Entity<StaffUserTag>(entity =>
+        {
+            entity.HasKey(x => new { x.StaffUserId, x.TagId });
+            entity
+                .HasOne(x => x.StaffUser)
+                .WithMany(x => x.UserTags)
+                .HasForeignKey(x => x.StaffUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity
+                .HasOne(x => x.Tag)
+                .WithMany(x => x.StaffUsers)
+                .HasForeignKey(x => x.TagId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<PatientTag>(entity =>
+        {
+            entity.HasKey(x => new { x.PatientId, x.TagId });
+            entity
+                .HasOne(x => x.Patient)
+                .WithMany(x => x.PatientTags)
+                .HasForeignKey(x => x.PatientId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity
+                .HasOne(x => x.Tag)
+                .WithMany(x => x.Patients)
+                .HasForeignKey(x => x.TagId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

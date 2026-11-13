@@ -45,6 +45,7 @@ export const queryKeys = {
   referral: (id: number) => ["referrals", id] as const,
   referralsByConsult: (consultId: number) => ["referrals", "consult", consultId] as const,
   referralPartners: () => ["referral-partners"] as const,
+  tags: () => ["tags"] as const,
 };
 
 /** Converts a captured data URL (e.g. from the webcam) into a `File` for multipart upload. */

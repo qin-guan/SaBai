@@ -13,6 +13,8 @@ public sealed class StaffUser : IdentityUser<Guid>
 
     public DateTimeOffset CreatedAt { get; set; }
 
+    public ICollection<StaffUserTag> UserTags { get; set; } = [];
+
     /// <summary>
     /// True while Identity considers the account locked out, whether an admin locked
     /// it or too many failed sign-ins locked it temporarily.

@@ -42,6 +42,16 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                 : query.Where(x => !x.LockoutEnabled || x.LockoutEnd == null || x.LockoutEnd <= now);
         }
 
+        if (!string.IsNullOrWhiteSpace(req.Tag))
+        {
+            var tag = req.Tag.Trim().ToUpperInvariant();
+            query = query.Where(user =>
+                db.StaffUserTags.Any(ut =>
+                    ut.StaffUserId == user.Id && ut.Tag.NormalizedName == tag
+                )
+            );
+        }
+
         var users = await UserResponse.ListAsync(
             db,
             query.OrderBy(x => x.Nickname).ThenBy(x => x.UserName),

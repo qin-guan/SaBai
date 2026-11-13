@@ -43,6 +43,8 @@ public sealed class Patient
 
     public ICollection<StoredFile> Files { get; set; } = [];
 
+    public ICollection<PatientTag> PatientTags { get; set; } = [];
+
     public static string FormatDisplayId(string? villageCode, int id) =>
         string.IsNullOrWhiteSpace(villageCode) ? id.ToString("D4") : $"{villageCode}{id:0000}";
 

@@ -15,7 +15,7 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<Response>
         {
             options.WithOrder(-1);
         });
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.Admin, StaffRoles.Member, StaffRoles.Pn);
         Summary(s => s.Summary = "List patients with their latest visit");
     }
 
@@ -43,12 +43,14 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<Response>
                 x.LatestFaceId,
             })
             .ToListAsync(ct);
-        var latest = await LatestVisitsAsync([.. rows.Select(x => x.Id)], ct);
+        var patientIds = rows.Select(x => x.Id).ToArray();
+        var latest = await LatestVisitsAsync(patientIds, ct);
         var journeys = await VisitJourney.ForVisitsAsync(
             db.Visits,
             [.. latest.Values.Select(x => x.Id)],
             ct
         );
+        var tagsByPatient = await TagSync.LoadPatientTagsBulkAsync(db, patientIds, ct);
 
         var patients = rows.Select(x =>
             {
@@ -84,7 +86,8 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<Response>
                 x.Last?.Id,
                 x.Row.PhotoStoredFileName != null,
                 x.Row.LatestFaceId != null,
-                x.Last is not null ? journeys.GetValueOrDefault(x.Last.Id) : null
+                x.Last is not null ? journeys.GetValueOrDefault(x.Last.Id) : null,
+                tagsByPatient[x.Row.Id].ToList()
             ))
             .ToList();
 

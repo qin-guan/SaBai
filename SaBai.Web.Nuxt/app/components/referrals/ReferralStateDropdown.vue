@@ -43,12 +43,12 @@ function onChange(event: Event) {
 </script>
 
 <template>
-  <div class="relative min-w-[125px] inline-flex">
+  <div class="relative inline-flex w-full sm:w-auto sm:min-w-[172px]">
     <select
       :value="props.modelValue"
       :disabled="props.disabled || updateState.isPending.value"
       aria-label="Referral status"
-      class="h-7 w-full appearance-none rounded-none border px-2 py-0.5 pr-6 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 touch:h-10 touch:text-sm"
+      class="h-7 w-full appearance-none rounded-none border px-2 py-0.5 pr-7 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 touch:h-10 touch:text-sm"
       :class="referralStateBadgeClass(props.modelValue)"
       @change="onChange"
     >

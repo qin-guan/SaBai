@@ -34,7 +34,11 @@ const props = withDefaults(
       :title="`Open consult #${props.consultId} PDF report`"
       :aria-label="`Open consult #${props.consultId} PDF report`"
     >
-      <PhFilePdf class="size-4 shrink-0 text-destructive" aria-hidden="true" />
+      <PhFilePdf
+        class="size-4 shrink-0"
+        :class="props.variant !== 'default' && 'text-destructive'"
+        aria-hidden="true"
+      />
       <span v-if="props.showLabel">{{ props.label }}</span>
     </a>
   </Button>

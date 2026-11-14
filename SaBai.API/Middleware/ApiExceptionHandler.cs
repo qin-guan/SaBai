@@ -27,6 +27,11 @@ internal sealed class ApiExceptionHandler(ILogger<ApiExceptionHandler> logger) :
                 "Not Found",
                 notFound.Message
             ),
+            DuplicateKeyException duplicate => (
+                StatusCodes.Status409Conflict,
+                "Conflict",
+                duplicate.Message
+            ),
             ConflictException conflict => (
                 StatusCodes.Status409Conflict,
                 "Conflict",

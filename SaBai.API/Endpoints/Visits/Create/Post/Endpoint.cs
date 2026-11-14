@@ -38,12 +38,14 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
         }
         else
         {
+            var now = DateTimeOffset.UtcNow;
             visit = new Visit
             {
                 Id = req.Id ?? Guid.CreateVersion7(),
                 PatientId = patient.Id,
                 VillageCodeId = village.Id,
-                Date = req.Date ?? DateTimeOffset.UtcNow,
+                // A device sends the time it opened the visit offline; never later than now.
+                Date = req.Date is { } date && date < now ? date : now,
                 Status = string.IsNullOrWhiteSpace(req.Status)
                     ? Visit.StartedStatus
                     : req.Status.Trim(),

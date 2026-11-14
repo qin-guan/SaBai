@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata;
 using SaBai.API.Domain;
@@ -84,18 +85,45 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     {
         StampRecordedAt();
         StampTrackedEntities();
-        return base.SaveChanges(acceptAllChangesOnSuccess);
+        try
+        {
+            return base.SaveChanges(acceptAllChangesOnSuccess);
+        }
+        catch (DbUpdateException ex) when (IsPrimaryKeyViolation(ex))
+        {
+            throw new DuplicateKeyException(ex);
+        }
     }
 
-    public override Task<int> SaveChangesAsync(
+    public override async Task<int> SaveChangesAsync(
         bool acceptAllChangesOnSuccess,
         CancellationToken cancellationToken = default
     )
     {
         StampRecordedAt();
         StampTrackedEntities();
-        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        try
+        {
+            return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        }
+        catch (DbUpdateException ex) when (IsPrimaryKeyViolation(ex))
+        {
+            throw new DuplicateKeyException(ex);
+        }
     }
+
+    /// <summary>
+    /// An insert collided with an existing primary key. Postgres names primary-key constraints
+    /// <c>PK_*</c> (EF Core's convention); other unique indexes stay ordinary unique violations
+    /// that endpoints turn into their own messages.
+    /// </summary>
+    private static bool IsPrimaryKeyViolation(DbUpdateException ex) =>
+        ex.InnerException is PostgresException
+        {
+            SqlState: PostgresErrorCodes.UniqueViolation,
+            ConstraintName: { } constraint,
+        }
+        && constraint.StartsWith("PK_", StringComparison.Ordinal);
 
     /// <summary>
     /// Stamps when a station record (vitals, eyesight, dental) was first saved,
@@ -196,7 +224,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             var changedAt = entry.Property(x => x.UpdatedAt).OriginalValue;
             var changedBy = entry.Property(x => x.UpdatedByUserId).OriginalValue;
             // HTTP dates have whole-second precision; compare at that precision.
-            if (changedAt.ToUnixTimeSeconds() > sinceSeconds && changedBy is { } by && by != userId)
+            if (changedAt.ToUnixTimeSeconds() >= sinceSeconds && changedBy is { } by && by != userId)
             {
                 var key = entry.Metadata.FindPrimaryKey()!.Properties.Select(p =>
                     entry.Property(p.Name).OriginalValue?.ToString()

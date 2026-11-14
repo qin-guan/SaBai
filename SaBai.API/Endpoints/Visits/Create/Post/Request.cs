@@ -10,6 +10,7 @@ public sealed record Request
 
     public Guid VillageCodeId { get; init; }
 
+    /// <summary>When the visit was opened; a time in the future is taken as now.</summary>
     public DateTimeOffset? Date { get; init; }
 
     public string? Status { get; init; }

@@ -207,6 +207,7 @@ app.UseCors(webCorsPolicy);
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<PhiAccessAuditMiddleware>();
+app.UseMiddleware<ClientIdRetryMiddleware>();
 app.UseFastEndpoints(config =>
 {
     config.Errors.UseProblemDetails();

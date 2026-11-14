@@ -12,7 +12,7 @@ import { createEyesight, updateEyesight, type EyesightFields } from '~/offline/m
  * glasses, comments). Acuity/pinhole fields validate after first blur and then
  * live, so errors show before Save and clear once the input is valid.
  */
-const props = defineProps<{ visitId: string, patientName?: string }>()
+const props = defineProps<{ visitId: string, patientId?: string, patientName?: string }>()
 
 type Key = keyof EyesightFormValues
 
@@ -126,6 +126,7 @@ async function submit() {
   const vars = {
     id: existingId ?? uuidv7(),
     visitId: props.visitId,
+    patientId: props.patientId,
     patientName: props.patientName,
     recordedAt: new Date().toISOString(),
     fields,

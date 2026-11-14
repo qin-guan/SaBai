@@ -18,7 +18,7 @@ const { patient, visits, selectedVisitId, selectedVisit, isLoading } = usePatien
   >
     <template #default="{ visit, patient: p }">
       <!-- Edits the full eyesight record, so it uses the eyesight endpoints. -->
-      <EyesightForm :key="visit.id" :visit-id="visit.id" :patient-name="p.name" />
+      <EyesightForm :key="visit.id" :visit-id="visit.id" :patient-id="p.id" :patient-name="p.name" />
     </template>
   </StationPage>
 </template>

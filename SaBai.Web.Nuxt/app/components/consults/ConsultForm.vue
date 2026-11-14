@@ -6,10 +6,21 @@ import { Button } from '@/components/ui/button'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { Textarea } from '@/components/ui/textarea'
 import { createConsult } from '~/offline/mutations/visitRecords'
+import type { CreateReferralContext } from '~/offline/mutations/referrals'
+import type { SaBaiAPIEndpointsPatientsGetResponse, SaBaiAPIEndpointsPatientsVisitsGetItem } from '@sabai/sdk/types'
 import { REFERRAL_CATEGORY_OPTIONS } from '@/utils/referral'
 
-/** The doctor's consultation form for one visit (each save appends a consult). */
-const props = defineProps<{ visitId: string, patientName?: string }>()
+/**
+ * The doctor's consultation form for one visit (each save appends a consult).
+ * `patient` and `visit` let a referral made offline show in the referral list
+ * before it reaches the server.
+ */
+const props = defineProps<{
+  visitId: string
+  patientName?: string
+  patient?: SaBaiAPIEndpointsPatientsGetResponse
+  visit?: SaBaiAPIEndpointsPatientsVisitsGetItem
+}>()
 
 const consultFormSchema = z.object({
   pastMedicalHistory: z.string().trim().optional(),
@@ -67,6 +78,25 @@ const consultMutation = useOfflineMutation(createConsult)
 const createReferral = useCreateReferral()
 const isSaving = consultMutation.isPending
 
+function referralContext(consultDate: string): CreateReferralContext | undefined {
+  const { patient, visit } = props
+  if (!patient || !visit)
+    return undefined
+  return {
+    patientId: patient.id,
+    patientName: patient.name,
+    hasPhoto: patient.hasPhoto,
+    villageCodeId: visit.villageCodeId,
+    villageCode: visit.villageCode,
+    villageColorHex: visit.villageColorHex,
+    doctorId: user.value?.id ?? '',
+    doctorNickname: user.value?.nickname ?? '',
+    consultDate,
+    patientDateOfBirth: patient.dateOfBirth,
+    patientContactNo: patient.contactNo,
+  }
+}
+
 async function submit() {
   if (isSaving.value)
     return
@@ -81,16 +111,18 @@ async function submit() {
   const data: ConsultFormValues = parsed.data
   const hasReferral = Boolean(data.referredFor && data.referredFor !== 'Not Referred')
   const consultId = uuidv7()
+  const consultDate = new Date().toISOString()
 
   let outcome
   try {
     outcome = await consultMutation.mutateAsync({
       id: consultId,
       visitId: props.visitId,
+      patientId: props.patient?.id,
       patientName: props.patientName,
       doctorId: user.value?.id ?? '',
       doctorNickname: user.value?.nickname ?? '',
-      date: new Date().toISOString(),
+      date: consultDate,
       pastMedicalHistory: data.pastMedicalHistory || null,
       consultation: data.consultation || null,
       treatmentPlan: data.treatmentPlan || null,
@@ -115,6 +147,7 @@ async function submit() {
         consultId,
         referredFor: data.referredFor!,
         referralNotes: data.referralNotes || undefined,
+        context: referralContext(consultDate),
       })
       if (!outcome.queued) toast.success('Referral submitted!')
     }

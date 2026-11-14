@@ -67,12 +67,17 @@ function drawLabel(ctx: CanvasRenderingContext2D, cx: number, cy: number, text: 
   ctx.fillText(text, x + 5, cy - crossSize)
 }
 
+// The chart is always drawn, with the marks only when both values are in
+// range, so the panel keeps the same size while a value is being typed (it
+// used to swap a one-line hint for an 800px image as height passed 80 cm,
+// pushing the rest of the form down mid-entry).
 watchEffect((onCleanup) => {
   const el = canvas.value
   const ctx = el?.getContext('2d')
-  if (!el || !ctx || !inRange.value)
+  if (!el || !ctx)
     return
   const { age, height, weight, gender } = props
+  const plot = inRange.value
   const config = CHART_CONFIG[gender]
   // age axis starts at 2, weight axis at 10 kg, height axis at 80 cm
   const xPixel = config.xOrigin + (age - 2) * config.xStep
@@ -85,6 +90,8 @@ watchEffect((onCleanup) => {
   image.onload = () => {
     ctx.clearRect(0, 0, el.width, el.height)
     ctx.drawImage(image, 0, 0)
+    if (!plot)
+      return
     drawCross(ctx, xPixel, weightPixel, 'red')
     drawLabel(ctx, xPixel, weightPixel, `${weight} kg`, 'red')
     drawCross(ctx, xPixel, heightPixel, 'blue')
@@ -95,20 +102,26 @@ watchEffect((onCleanup) => {
 </script>
 
 <template>
-  <p v-if="!hasValues" class="text-xs text-muted-foreground touch:text-sm">
-    Enter height and weight to plot the growth chart.
+  <p class="mb-2 text-xs text-muted-foreground touch:text-sm" aria-live="polite">
+    <template v-if="!hasValues">
+      Enter height and weight to plot them.
+    </template>
+    <template v-else-if="!inRange">
+      The chart starts at {{ MIN_HEIGHT_CM }} cm and {{ MIN_WEIGHT_KG }} kg, so these values are not plotted.
+    </template>
+    <template v-else>
+      Plotted {{ props.height }} cm and {{ props.weight }} kg at age {{ props.age }}.
+    </template>
   </p>
-  <p v-else-if="!inRange" class="text-xs text-muted-foreground touch:text-sm">
-    Growth chart only plots heights from {{ MIN_HEIGHT_CM }} cm and weights from {{ MIN_WEIGHT_KG }} kg.
-  </p>
-  <!-- Dimensions match the PNG so drawImage fills the canvas exactly. -->
+  <!-- Dimensions match the PNG so drawImage fills the canvas exactly; the aspect ratio reserves the space before it draws. -->
   <canvas
-    v-else
     ref="canvas"
     width="600"
     height="800"
-    class="h-auto w-full"
+    class="aspect-[3/4] h-auto w-full"
     role="img"
-    :aria-label="`Growth chart: height ${props.height} cm and weight ${props.weight} kg at age ${props.age}`"
+    :aria-label="inRange
+      ? `Growth chart: height ${props.height} cm and weight ${props.weight} kg at age ${props.age}`
+      : 'Growth chart with no values plotted'"
   />
 </template>

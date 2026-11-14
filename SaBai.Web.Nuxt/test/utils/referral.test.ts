@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import {
+  changedReferralParts,
+  inReferralStatusGroup,
+  isAdultAt,
+  isReferralStepStarted,
   matchesReferral,
+  referralFormValues,
+  referralStepPayload,
+  referralStepSummary,
+  validateReferralMoney,
   REFERRAL_CATEGORIES,
   REFERRAL_CATEGORY_OPTIONS,
   REFERRAL_STATE_LABELS,
@@ -166,5 +174,71 @@ describe('referrals overhaul helpers', () => {
     expect(REFERRAL_SERVICE_CLASS_LABELS.ImagingDiagnostics).toBe('Imaging/Diagnostics')
     expect(GUARDIANS_CONTACTED_LABELS.NotApplicable).toBe('Not Applicable')
     expect(MAX_RIELS).toBe(2_147_483_647)
+  })
+})
+
+describe('referral workflow form', () => {
+  const blank = referralFormValues({ referralState: 'New' })
+  const names = { partner: (id: string) => (id === 'p1' ? 'Kantha Bopha' : undefined), member: (id: string) => (id === 'u1' ? 'Sokha' : undefined) }
+
+  it('fills blanks for anything not recorded', () => {
+    expect(blank.status.referralState).toBe('New')
+    expect(blank.booth.referredToId).toBe('')
+    expect(blank.money.amountPaidUsd).toBe('')
+    expect(blank.party.followUp).toBe(false)
+    expect(referralFormValues({ amountPaidUsd: 12.5, amountPaidRiels: 4000 }).money).toMatchObject({ amountPaidUsd: '12.5', amountPaidRiels: '4000' })
+  })
+
+  it('lists only the parts that changed, in page order', () => {
+    const edited = structuredClone(blank)
+    edited.outcome.referralOutcome = 'Seen'
+    edited.status.referralState = 'Seen'
+    expect(changedReferralParts(edited, blank)).toEqual(['status', 'outcome'])
+    expect(changedReferralParts(blank, structuredClone(blank))).toEqual([])
+  })
+
+  it('trims text, sends blanks as null and converts amounts', () => {
+    const values = structuredClone(blank)
+    values.booth.remarksAtBooth = '  call first  '
+    values.booth.descriptionOfService = '   '
+    values.money.amountPaidUsd = '12.50'
+    expect(referralStepPayload('booth', values, { isAdult: false })).toMatchObject({
+      remarksAtBooth: 'call first',
+      descriptionOfService: null,
+      referredToId: null,
+      guardiansContacted: 'No',
+    })
+    expect(referralStepPayload('booth', values, { isAdult: true }).guardiansContacted).toBe('NotApplicable')
+    expect(referralStepPayload('money', values, { isAdult: false })).toEqual({ amountPaidUsd: 12.5, amountPaidRiels: null, memberWhoPaidId: null })
+  })
+
+  it('validates payment amounts but allows blanks', () => {
+    expect(validateReferralMoney(blank.money)).toEqual({})
+    expect(validateReferralMoney({ ...blank.money, amountPaidUsd: '12.555' }).amountPaidUsd).toBeTruthy()
+    expect(validateReferralMoney({ ...blank.money, amountPaidRiels: '12.5' }).amountPaidRiels).toBeTruthy()
+    expect(validateReferralMoney({ ...blank.money, amountPaidUsd: '12.55', amountPaidRiels: '40000' })).toEqual({})
+  })
+
+  it('summarises each step', () => {
+    const values = structuredClone(blank)
+    expect(isReferralStepStarted('booth', values)).toBe(false)
+    expect(referralStepSummary('booth', values, names)).toBe('Not recorded yet')
+    values.booth.referredToId = 'p1'
+    values.booth.classOfService = 'ChronicManagement'
+    values.money.amountPaidRiels = '40000'
+    values.party.presentAtReferralParty = true
+    values.party.memberOnRunId = 'u1'
+    expect(referralStepSummary('booth', values, names)).toBe('Kantha Bopha, Chronic Management')
+    expect(referralStepSummary('money', values, names)).toBe('40,000 riels')
+    expect(referralStepSummary('party', values, names)).toBe('Attended, Run by Sokha')
+  })
+
+  it('knows adults and status groups', () => {
+    expect(isAdultAt('2000-01-01', '2026-01-01')).toBe(true)
+    expect(isAdultAt('2015-01-01', '2026-01-01')).toBe(false)
+    expect(isAdultAt(undefined, '2026-01-01')).toBe(false)
+    expect(inReferralStatusGroup('CompletedFailure', 'Completed')).toBe(true)
+    expect(inReferralStatusGroup('New', 'Completed')).toBe(false)
+    expect(inReferralStatusGroup('None', null)).toBe(true)
   })
 })

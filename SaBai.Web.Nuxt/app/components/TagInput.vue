@@ -1,12 +1,17 @@
 <script setup lang="ts">
-import { PhPlus, PhX } from '@phosphor-icons/vue'
+import { PhPlus, PhTag, PhX } from '@phosphor-icons/vue'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import {
+  buildTagDropdownOptions,
+  hasTagSelected,
+  MAX_TAG_LENGTH,
+  type TagDropdownOption,
+} from '~/utils/patient'
 
 /**
- * Freeform multi-tag editor with case-insensitive deduplication and autocomplete
- * from existing clinic tags.
+ * Inline multi-tag combobox: searches existing clinic tags directly in the text
+ * field and offers a "Create tag …" option in the dropdown when no exact match exists.
  */
 const model = defineModel<string[]>({ default: () => [] })
 const props = withDefaults(
@@ -17,31 +22,47 @@ const props = withDefaults(
   }>(),
   {
     id: undefined,
-    placeholder: 'Add a tag and press Enter…',
+    placeholder: 'Search or create a tag…',
     describedby: undefined,
   },
 )
 
-const MAX_TAG_LENGTH = 64
 const draft = ref('')
+const isOpen = ref(false)
+const activeIndex = ref(0)
 const listId = useId()
+const optionId = (index: number) => `${listId}-opt-${index}`
 const { data: knownTags } = useTags()
 
-const availableSuggestions = computed(() => {
-  const current = new Set(model.value.map(t => t.toLowerCase()))
-  return (knownTags.value ?? []).filter(t => !current.has(t.toLowerCase()))
+const dropdownOptions = computed(() =>
+  buildTagDropdownOptions(knownTags.value, model.value, draft.value, MAX_TAG_LENGTH),
+)
+
+const alreadySelectedMatch = computed(() => {
+  const trimmed = draft.value.trim()
+  return !!trimmed && hasTagSelected(model.value, trimmed) && dropdownOptions.value.length === 0
 })
 
-const browseFilter = ref('')
-const showBrowse = ref(false)
-const browseMatches = computed(() => {
-  const q = browseFilter.value.trim().toLowerCase()
-  return availableSuggestions.value.filter(t => !q || t.toLowerCase().includes(q))
+const dropdownVisible = computed(
+  () => isOpen.value && (dropdownOptions.value.length > 0 || alreadySelectedMatch.value),
+)
+
+watch(draft, () => {
+  activeIndex.value = 0
+  if (draft.value)
+    isOpen.value = true
 })
 
-function pickTag(tag: string) {
-  addTag(tag)
-}
+watch(dropdownOptions, (options) => {
+  if (activeIndex.value >= options.length)
+    activeIndex.value = Math.max(0, options.length - 1)
+})
+
+watch(activeIndex, (index) => {
+  if (!dropdownVisible.value)
+    return
+  nextTick(() => document.getElementById(optionId(index))?.scrollIntoView({ block: 'nearest' }))
+})
 
 function addTag(raw?: string) {
   const parts = (raw ?? draft.value)
@@ -61,6 +82,11 @@ function addTag(raw?: string) {
   }
   model.value = next
   draft.value = ''
+  activeIndex.value = 0
+}
+
+function selectOption(option: TagDropdownOption) {
+  addTag(option.tag)
 }
 
 function removeTag(tag: string) {
@@ -68,10 +94,46 @@ function removeTag(tag: string) {
 }
 
 function onKeydown(event: KeyboardEvent) {
-  if (event.key === 'Enter' || event.key === ',') {
+  const count = dropdownOptions.value.length
+  if (event.key === 'ArrowDown') {
+    event.preventDefault()
+    if (!isOpen.value) {
+      isOpen.value = true
+      activeIndex.value = 0
+    }
+    else if (count > 0) {
+      activeIndex.value = (activeIndex.value + 1) % count
+    }
+  }
+  else if (event.key === 'ArrowUp') {
+    event.preventDefault()
+    if (!isOpen.value) {
+      isOpen.value = true
+      activeIndex.value = Math.max(0, count - 1)
+    }
+    else if (count > 0) {
+      activeIndex.value = (activeIndex.value - 1 + count) % count
+    }
+  }
+  else if (event.key === 'Enter') {
     event.preventDefault()
     event.stopPropagation()
-    addTag()
+    const activeOption = dropdownVisible.value ? dropdownOptions.value[activeIndex.value] : undefined
+    if (activeOption && !draft.value.includes(','))
+      selectOption(activeOption)
+    else if (draft.value.trim())
+      addTag()
+  }
+  else if (event.key === ',') {
+    event.preventDefault()
+    event.stopPropagation()
+    if (draft.value.trim())
+      addTag()
+  }
+  else if (event.key === 'Escape' && isOpen.value) {
+    event.preventDefault()
+    event.stopPropagation()
+    isOpen.value = false
   }
   else if (event.key === 'Backspace' && !draft.value && model.value.length > 0) {
     model.value = model.value.slice(0, -1)
@@ -99,70 +161,65 @@ function onKeydown(event: KeyboardEvent) {
         </button>
       </Badge>
     </div>
-    <div class="flex gap-2">
+
+    <div class="relative">
       <Input
         :id="props.id"
         v-model="draft"
         type="text"
-        :list="availableSuggestions.length > 0 ? listId : undefined"
+        role="combobox"
+        aria-autocomplete="list"
+        :aria-expanded="dropdownVisible"
+        :aria-controls="listId"
+        :aria-activedescendant="dropdownVisible && dropdownOptions.length > 0 ? optionId(activeIndex) : undefined"
         :placeholder="props.placeholder"
         :maxlength="MAX_TAG_LENGTH"
         :aria-describedby="props.describedby"
         autocomplete="off"
+        @focus="isOpen = true"
+        @click="isOpen = true"
+        @blur="isOpen = false"
         @keydown="onKeydown"
-        @blur="addTag()"
       />
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        class="shrink-0"
-        :disabled="!draft.trim()"
-        @click="addTag()"
+
+      <ul
+        v-if="dropdownVisible"
+        :id="listId"
+        role="listbox"
+        aria-label="Tag suggestions"
+        class="absolute inset-x-0 top-full z-50 mt-1 max-h-48 divide-y divide-border/40 overflow-y-auto border border-border bg-popover text-popover-foreground shadow-md"
       >
-        <PhPlus aria-hidden="true" /> Add
-      </Button>
+        <li
+          v-for="(option, idx) in dropdownOptions"
+          :id="optionId(idx)"
+          :key="`${option.type}-${option.tag}`"
+          role="option"
+          :aria-selected="idx === activeIndex"
+          class="flex w-full cursor-pointer items-center gap-2 px-2.5 py-1.5 text-left text-xs touch:py-2"
+          :class="idx === activeIndex ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/60'"
+          @mousedown.prevent
+          @mousemove="activeIndex = idx"
+          @click="selectOption(option)"
+        >
+          <template v-if="option.type === 'existing'">
+            <PhTag class="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+            <span class="truncate">{{ option.tag }}</span>
+          </template>
+          <template v-else>
+            <PhPlus class="size-3.5 shrink-0 text-primary" aria-hidden="true" />
+            <span class="truncate">
+              Create tag <span class="font-semibold">"{{ option.tag }}"</span>
+            </span>
+          </template>
+        </li>
+        <li
+          v-if="alreadySelectedMatch"
+          class="px-2.5 py-2 text-xs text-muted-foreground"
+        >
+          Tag "{{ draft.trim() }}" is already added.
+        </li>
+      </ul>
     </div>
-    <div v-if="availableSuggestions.length > 0" class="flex flex-col gap-1.5">
-      <button
-        type="button"
-        class="self-start text-xs text-primary hover:underline focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-        :aria-expanded="showBrowse"
-        @click="showBrowse = !showBrowse"
-      >
-        {{ showBrowse ? 'Hide existing tags' : `Browse existing tags (${availableSuggestions.length})` }}
-      </button>
-      <div v-if="showBrowse" class="flex flex-col gap-1.5 border border-border p-2">
-        <Input
-          v-model="browseFilter"
-          type="search"
-          class="h-7 text-xs"
-          placeholder="Filter existing tags…"
-          aria-label="Filter existing tags"
-          autocomplete="off"
-          @keydown.enter.prevent.stop
-        />
-        <ul class="flex max-h-32 flex-wrap gap-1.5 overflow-y-auto" aria-label="Existing tags">
-          <li v-for="tag in browseMatches" :key="tag">
-            <button
-              type="button"
-              class="inline-flex"
-              :aria-label="`Add tag ${tag}`"
-              @click="pickTag(tag)"
-            >
-              <Badge variant="outline" class="cursor-pointer gap-1 hover:bg-accent">
-                <PhPlus class="size-3" aria-hidden="true" />{{ tag }}
-              </Badge>
-            </button>
-          </li>
-          <li v-if="browseMatches.length === 0" class="text-xs text-muted-foreground">
-            No matching tags.
-          </li>
-        </ul>
-      </div>
-    </div>
-    <datalist v-if="availableSuggestions.length > 0" :id="listId">
-      <option v-for="tag in availableSuggestions" :key="tag" :value="tag" />
-    </datalist>
   </div>
 </template>
+

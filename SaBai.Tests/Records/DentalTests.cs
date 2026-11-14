@@ -171,7 +171,7 @@ public sealed class DentalTests(AppFixture fixture)
 
         // Assert
         await Assert.That(linked.StatusCode).IsEqualTo(HttpStatusCode.OK);
-        await Assert.That(linkedBody.GetProperty("imageFileId").GetInt32()).IsEqualTo(fileId);
+        await Assert.That(linkedBody.GetProperty("imageFileId").GetGuid()).IsEqualTo(fileId);
         await Assert.That(content.StatusCode).IsEqualTo(HttpStatusCode.OK);
         await Assert.That(cleared.StatusCode).IsEqualTo(HttpStatusCode.OK);
         await Assert.That(IsNullOrMissing(clearedBody, "imageFileId")).IsTrue();

@@ -260,7 +260,7 @@ public sealed class VitalsEndpointTests(AppFixture fixture)
         await Assert.That(body.Patient.Name).IsEqualTo(seed.PatientName);
         await Assert
             .That(body.Patient.DisplayId)
-            .IsEqualTo($"{seed.VillageCode}{seed.PatientId:0000}");
+            .IsEqualTo($"{seed.VillageCode}0001");
         await Assert.That(body.Patient.Gender).IsEqualTo(Gender.Male);
         await Assert.That(body.Vision).IsNotNull();
         await Assert.That(body.Vision!.VisitId).IsEqualTo(seed.VisitId);

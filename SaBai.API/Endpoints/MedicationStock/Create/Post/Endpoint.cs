@@ -22,18 +22,29 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             ct
         );
 
-        var stock = new SaBai.API.Domain.MedicationStock
+        var stock = await db.MedicationStocks.FindExistingAsync(
+            req.Id,
+            x => x.MedicationBrandId == req.MedicationBrandId,
+            ct
+        );
+        if (stock is null)
         {
-            MedicationBrandId = req.MedicationBrandId,
-            Quantity = req.Quantity,
-            Expiry = req.Expiry,
-            Location = req.Location.Trim(),
-            StockStatus = req.StockStatus,
-            Remarks = string.IsNullOrWhiteSpace(req.Remarks) ? null : req.Remarks.Trim(),
-        };
-        db.MedicationStocks.Add(stock);
-        db.StockChanges.AddRange(StockChangeLog.ForCreate(stock, User.Id(), DateTimeOffset.UtcNow));
-        await db.SaveChangesAsync(ct);
+            stock = new SaBai.API.Domain.MedicationStock
+            {
+                Id = req.Id ?? Guid.CreateVersion7(),
+                MedicationBrandId = req.MedicationBrandId,
+                Quantity = req.Quantity,
+                Expiry = req.Expiry,
+                Location = req.Location.Trim(),
+                StockStatus = req.StockStatus,
+                Remarks = string.IsNullOrWhiteSpace(req.Remarks) ? null : req.Remarks.Trim(),
+            };
+            db.MedicationStocks.Add(stock);
+            db.StockChanges.AddRange(
+                StockChangeLog.ForCreate(stock, User.Id(), DateTimeOffset.UtcNow)
+            );
+            await db.SaveChangesAsync(ct);
+        }
 
         await Send.CreatedAtAsync<List.Get.Endpoint>(
             new { },

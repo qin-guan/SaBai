@@ -28,14 +28,9 @@ public sealed class StaffUserTag
     public Tag Tag { get; set; } = null!;
 }
 
-/// <summary>
-/// Patient ↔ tag link. Carries its own UUIDv7 key (unique on PatientId + TagId) so it can be
-/// replicated to offline clients by PowerSync, which requires a single <c>id</c> column.
-/// </summary>
+/// <summary>Patient ↔ tag link, keyed by (PatientId, TagId).</summary>
 public sealed class PatientTag
 {
-    public Guid Id { get; set; } = Guid.CreateVersion7();
-
     public Guid PatientId { get; set; }
 
     public Patient Patient { get; set; } = null!;

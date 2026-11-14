@@ -16,19 +16,23 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var now = DateTimeOffset.UtcNow;
-        var partner = new ReferralPartner
+        var partner = await db.ReferralPartners.FindExistingAsync(req.Id, ct);
+        if (partner is null)
         {
-            Id = Guid.CreateVersion7(),
-            Name = req.Name.Trim(),
-            Remarks = string.IsNullOrWhiteSpace(req.Remarks) ? null : req.Remarks.Trim(),
-            IsActive = req.IsActive,
-            CreatedAt = now,
-            UpdatedAt = now,
-        };
+            var now = DateTimeOffset.UtcNow;
+            partner = new ReferralPartner
+            {
+                Id = req.Id ?? Guid.CreateVersion7(),
+                Name = req.Name.Trim(),
+                Remarks = string.IsNullOrWhiteSpace(req.Remarks) ? null : req.Remarks.Trim(),
+                IsActive = req.IsActive,
+                CreatedAt = now,
+                UpdatedAt = now,
+            };
 
-        db.ReferralPartners.Add(partner);
-        await db.SaveChangesAsync(ct);
+            db.ReferralPartners.Add(partner);
+            await db.SaveChangesAsync(ct);
+        }
 
         await Send.CreatedAtAsync<Get.Endpoint>(
             new { partner.Id },

@@ -8,6 +8,9 @@ public sealed class Validator : Validator<Request>
 {
     public Validator()
     {
+        RuleFor(x => x.Id).ClientId();
+        RuleFor(x => x.VisitId).ClientId();
+        RuleFor(x => x.VitalsId).ClientId();
         RuleFor(x => x.Name).NotEmpty().MaximumLength(255);
         RuleFor(x => x.IdentificationNumber).MaximumLength(255);
         RuleFor(x => x.ContactNo).MaximumLength(255);

@@ -5,6 +5,9 @@ namespace SaBai.API.Endpoints.Patients.Create.Post;
 /// <summary>Registration payload. A visit is opened for the patient in the same transaction.</summary>
 public sealed record Request
 {
+    /// <summary>Id for the new patient, chosen by the client; generated when omitted. Resending a registration with the same id returns the existing patient.</summary>
+    public Guid? Id { get; init; }
+
     public required string Name { get; init; }
 
     public string? IdentificationNumber { get; init; }
@@ -30,6 +33,12 @@ public sealed record Request
     public IReadOnlyList<string>? Tags { get; init; }
 
     public VitalsRequest? Vitals { get; init; }
+
+    /// <summary>Id for the visit opened with the registration, chosen by the client; generated when omitted.</summary>
+    public Guid? VisitId { get; init; }
+
+    /// <summary>Id for the vitals recorded with the registration, chosen by the client; generated when omitted. Ignored without <see cref="Vitals"/>.</summary>
+    public Guid? VitalsId { get; init; }
 }
 
 /// <summary>Optional vitals captured during registration.</summary>

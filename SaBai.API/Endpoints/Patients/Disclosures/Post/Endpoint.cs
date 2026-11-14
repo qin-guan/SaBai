@@ -22,8 +22,16 @@ public sealed class Endpoint(AppDbContext db, AuditTrail audit, TimeProvider clo
             .Patients.AsNoTracking()
             .FirstOrNotFoundAsync(x => x.Id == req.PatientId, "Patient was not found.", ct);
 
+        if (await db.DisclosureLogs.FindExistingAsync(req.Id, x => x.PatientId == req.PatientId, ct)
+            is { } existing)
+        {
+            await SendAsync(existing, ct);
+            return;
+        }
+
         var disclosure = new DisclosureLog
         {
+            Id = req.Id ?? Guid.CreateVersion7(),
             PatientId = req.PatientId,
             Recipient = req.Recipient,
             Purpose = req.Purpose,
@@ -42,9 +50,13 @@ public sealed class Endpoint(AppDbContext db, AuditTrail audit, TimeProvider clo
             entityId: req.PatientId.ToString(),
             ct: ct
         );
+        await SendAsync(disclosure, ct);
+    }
 
+    private async Task SendAsync(DisclosureLog disclosure, CancellationToken ct)
+    {
         await Send.CreatedAtAsync<Get.Endpoint>(
-            new { PatientId = req.PatientId },
+            new { disclosure.PatientId },
             new Response(
                 disclosure.Id,
                 disclosure.PatientId,

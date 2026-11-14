@@ -27,20 +27,29 @@ public sealed class Endpoint(AppDbContext db, TimeProvider clock) : Endpoint<Req
             .Patients.AsNoTracking()
             .FirstOrNotFoundAsync(x => x.Id == req.PatientId, "Patient was not found.", ct);
 
-        var now = clock.GetUtcNow();
-        var consent = new PatientConsent
+        var consent = await db.PatientConsents.FindExistingAsync(
+            req.Id,
+            x => x.PatientId == req.PatientId,
+            ct
+        );
+        if (consent is null)
         {
-            PatientId = req.PatientId,
-            ConsentType = req.ConsentType,
-            Granted = req.Granted,
-            RecordedAt = now,
-            RevokedAt = req.Granted ? null : now,
-            RecordedByUserId = User.Id(),
-            Notes = req.Notes,
-        };
+            var now = clock.GetUtcNow();
+            consent = new PatientConsent
+            {
+                Id = req.Id ?? Guid.CreateVersion7(),
+                PatientId = req.PatientId,
+                ConsentType = req.ConsentType,
+                Granted = req.Granted,
+                RecordedAt = now,
+                RevokedAt = req.Granted ? null : now,
+                RecordedByUserId = User.Id(),
+                Notes = req.Notes,
+            };
 
-        db.PatientConsents.Add(consent);
-        await db.SaveChangesAsync(ct);
+            db.PatientConsents.Add(consent);
+            await db.SaveChangesAsync(ct);
+        }
 
         await Send.CreatedAtAsync<Get.Endpoint>(
             new { PatientId = req.PatientId },

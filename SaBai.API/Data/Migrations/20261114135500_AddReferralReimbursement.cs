@@ -57,10 +57,10 @@ namespace SaBai.API.Data.Migrations
                 column: "ReimbursedByUserId");
 
             migrationBuilder.AddForeignKey(
-                name: "FK_Referrals_AspNetUsers_ReimbursedByUserId",
+                name: "FK_Referrals_StaffUsers_ReimbursedByUserId",
                 table: "Referrals",
                 column: "ReimbursedByUserId",
-                principalTable: "AspNetUsers",
+                principalTable: "StaffUsers",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Restrict);
         }
@@ -69,7 +69,7 @@ namespace SaBai.API.Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_Referrals_AspNetUsers_ReimbursedByUserId",
+                name: "FK_Referrals_StaffUsers_ReimbursedByUserId",
                 table: "Referrals");
 
             migrationBuilder.DropIndex(

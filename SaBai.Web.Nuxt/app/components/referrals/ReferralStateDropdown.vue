@@ -4,11 +4,15 @@ import { toast } from 'vue-sonner'
 import type { SaBaiAPIDomainReferralStateKey } from '@sabai/sdk/types'
 import { REFERRAL_STATE_OPTIONS, referralStateBadgeClass } from '@/utils/referral'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   referralId: string
   modelValue: SaBaiAPIDomainReferralStateKey
   disabled?: boolean
-}>()
+  /** Accessible name; name the patient when several appear on one screen. */
+  label?: string
+  /** Save as soon as a status is picked (lists). Off on the referral page, which saves it with the rest of the form. */
+  saveOnChange?: boolean
+}>(), { saveOnChange: true })
 
 const emit = defineEmits<{
   'update:modelValue': [value: SaBaiAPIDomainReferralStateKey]
@@ -21,6 +25,10 @@ function onChange(event: Event) {
   const newState = target.value as SaBaiAPIDomainReferralStateKey
   if (newState === props.modelValue)
     return
+  if (!props.saveOnChange) {
+    emit('update:modelValue', newState)
+    return
+  }
 
   updateState.mutate(
     {
@@ -47,7 +55,7 @@ function onChange(event: Event) {
     <select
       :value="props.modelValue"
       :disabled="props.disabled || updateState.isPending.value"
-      aria-label="Referral status"
+      :aria-label="props.label ?? 'Referral status'"
       class="h-7 w-full appearance-none rounded-none border px-2 py-0.5 pr-7 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 touch:h-10 touch:text-sm"
       :class="referralStateBadgeClass(props.modelValue)"
       @change="onChange"

@@ -14,7 +14,7 @@ import { formatPatientCode, formatPatientId } from './patient'
  *
  * Patients are matched on name (including Khmer names with or without spaces
  * or zero-width spaces), every form of their ID ("12", "0012", "PC0012"),
- * identification number, phone and village; sections on their name plus
+ * identification number, phone, village and tags; sections on their name plus
  * clinical keywords ("bp" → Vitals, "glasses" → Vision).
  * Prefix matching makes partial input work; light fuzziness forgives typos.
  */
@@ -27,6 +27,7 @@ export interface SearchablePatient {
   contactNo?: string | null
   villageCode?: string | null
   displayId?: string | null
+  tags?: string[] | null
 }
 
 export interface SearchablePage {
@@ -51,8 +52,8 @@ const SEARCH_OPTIONS = {
 }
 
 export function buildPatientIndex(patients: SearchablePatient[]) {
-  const index = new MiniSearch<SearchablePatient & { ids: string, digits: string }>({
-    fields: ['name', 'ids', 'identificationNumber', 'digits', 'villageCode'],
+  const index = new MiniSearch<Omit<SearchablePatient, 'tags'> & { ids: string, digits: string, tags: string }>({
+    fields: ['name', 'ids', 'identificationNumber', 'digits', 'villageCode', 'tags'],
     storeFields: ['id'],
     tokenize: tokenizeSearchText,
     searchOptions: { ...SEARCH_OPTIONS, tokenize: tokenizeSearchText, boost: { ids: 3, name: 2 } },
@@ -63,7 +64,14 @@ export function buildPatientIndex(patients: SearchablePatient[]) {
       name: expandKhmerSearchTerms(p.name),
       identificationNumber: normalizeKhmerDigits(cleanKhmerText(p.identificationNumber)),
       villageCode: normalizeKhmerDigits(cleanKhmerText(p.villageCode)),
-      ids: [String(p.id), formatPatientId(p.id), formatPatientCode(p.villageCode, p.id), p.displayId ?? ''].join(' '),
+      tags: (p.tags ?? []).join(' '),
+      ids: [
+        String(p.id),
+        formatPatientId(p.id),
+        formatPatientCode(p.villageCode, p.id),
+        ...(p.number !== undefined ? [String(p.number), formatPatientId(p.number), formatPatientCode(p.villageCode, p.number)] : []),
+        p.displayId ?? '',
+      ].join(' '),
       // Phone numbers are typed without spaces/dashes (and may use Khmer numerals).
       digits: normalizeKhmerDigits(p.contactNo ?? '').replace(/\D/g, ''),
     })),

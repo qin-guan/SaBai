@@ -7,6 +7,10 @@ import {
   formatPatientId,
   toDateInputValue,
   calculateAge,
+  matchesTags,
+  toggleTagSelection,
+  hasTagSelected,
+  collectUniqueTags,
 } from "~/utils/patient";
 
 describe("formatPatientId", () => {
@@ -146,3 +150,38 @@ describe("isRecentVisit", () => {
     expect(isRecentVisit(null, afterMidnight)).toBe(false);
   });
 });
+
+describe("tag filtering utilities", () => {
+  it("matches all rows when no tags are selected", () => {
+    expect(matchesTags([], [])).toBe(true);
+    expect(matchesTags(null, [])).toBe(true);
+    expect(matchesTags(["Diabetic"], [])).toBe(true);
+  });
+
+  it("matches any selected tag (OR) case-insensitively", () => {
+    expect(matchesTags(["Diabetic", "Elderly"], ["diabetic", "Pediatric"], "any")).toBe(true);
+    expect(matchesTags(["Diabetic"], ["Pediatric", "Follow-Up"], "any")).toBe(false);
+    expect(matchesTags([], ["Diabetic"], "any")).toBe(false);
+  });
+
+  it("matches all selected tags (AND) case-insensitively", () => {
+    expect(matchesTags(["Diabetic", "Elderly", "Follow-Up"], ["diabetic", "ELDERLY"], "all")).toBe(true);
+    expect(matchesTags(["Diabetic"], ["Diabetic", "Elderly"], "all")).toBe(false);
+  });
+
+  it("toggles tag selection case-insensitively", () => {
+    expect(toggleTagSelection(["Diabetic"], "Elderly")).toEqual(["Diabetic", "Elderly"]);
+    expect(toggleTagSelection(["Diabetic", "Elderly"], "diabetic")).toEqual(["Elderly"]);
+    expect(hasTagSelected(["Diabetic"], "DIABETIC")).toBe(true);
+    expect(hasTagSelected(["Diabetic"], "Elderly")).toBe(false);
+  });
+
+  it("collects unique tags preserving first-seen casing and sorts alphabetically", () => {
+    expect(collectUniqueTags([["Follow-Up", "Diabetic"], ["diabetic", "Pediatric"], null])).toEqual([
+      "Diabetic",
+      "Follow-Up",
+      "Pediatric",
+    ]);
+  });
+});
+

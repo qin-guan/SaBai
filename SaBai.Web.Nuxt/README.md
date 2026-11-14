@@ -63,6 +63,12 @@ stored under the same `localStorage` key (`villageCodeState`).
 | `?` | Shortcut help. |
 | `←`/`→` | Change the answer in a choice group (selecting the active answer again clears it). |
 | `Esc` | Close a dialog, cancel an inline table edit (Enter saves it), or go back to the parent page. |
+| `↑`/`↓` | Referrals list: move between referrals (↓ from the search box enters the list); Enter opens one, and Esc on it returns to the same row. |
+| `1`–`4` | Referral: go to the booth, party, payment or outcome step. |
+
+The referral page is one form like the station forms: status, booth, party,
+payment and outcome are always editable and `Ctrl/⌘+S` saves every part that
+changed (each through its own endpoint, so only changed parts are sent).
 
 ## Patient journey and station backlog
 

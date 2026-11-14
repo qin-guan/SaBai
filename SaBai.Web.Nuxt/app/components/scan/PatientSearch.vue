@@ -34,7 +34,7 @@ const lastVisit = (date: string) => `Last visit ${formatVisitDate(date)}`
           v-model="query"
           type="search"
           class="pl-8"
-          placeholder="Name, patient ID, ID number or phone"
+          placeholder="Name, patient ID, ID number, phone or tag"
           aria-label="Search patients to start a visit"
         />
       </div>
@@ -54,9 +54,13 @@ const lastVisit = (date: string) => `Last visit ${formatVisitDate(date)}`
                 {{ p!.name }}
               </NuxtLink>
               <p class="flex flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground touch:text-sm">
-                <PatientCode :id="p!.id" :village-code="p!.villageCode" :village-color-hex="p!.villageColorHex" />
+                <PatientCode :id="p!.number ?? p!.id" :village-code="p!.villageCode" :village-color-hex="p!.villageColorHex" />
                 <span aria-hidden="true">·</span>
                 <span>{{ calculateAge(p!.dateOfBirth) }} y <span class="capitalize">{{ p!.gender }}</span></span>
+                <template v-if="p!.tags?.length">
+                  <span aria-hidden="true">·</span>
+                  <span>{{ p!.tags.map(t => `#${t}`).join(' ') }}</span>
+                </template>
                 <template v-if="p!.lastVisitDate">
                   <span aria-hidden="true">·</span>
                   <span>{{ lastVisit(p!.lastVisitDate) }}</span>

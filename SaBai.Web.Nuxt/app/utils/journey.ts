@@ -113,3 +113,55 @@ export function isWaitingFor(journey: Journey, station: StationKey) {
     return state !== 'done' && (journey.dentalReferred || journey.consult)
   return state === 'todo'
 }
+
+export type PatientJourneyStatus =
+  | 'in-progress'
+  | 'waiting:vitals'
+  | 'waiting:vision'
+  | 'waiting:consults'
+  | 'waiting:dental'
+  | 'waiting:pharmacy'
+  | 'complete'
+  | 'no-visit'
+
+export const PATIENT_JOURNEY_STATUS_OPTIONS: { value: PatientJourneyStatus, label: string }[] = [
+  { value: 'in-progress', label: 'In progress' },
+  { value: 'waiting:vitals', label: 'Waiting: Vitals' },
+  { value: 'waiting:vision', label: 'Waiting: Vision' },
+  { value: 'waiting:consults', label: 'Waiting: Consult' },
+  { value: 'waiting:dental', label: 'Waiting: Dental' },
+  { value: 'waiting:pharmacy', label: 'Waiting: Pharmacy' },
+  { value: 'complete', label: 'Visit complete' },
+  { value: 'no-visit', label: 'No visit yet' },
+]
+
+export function matchesSinglePatientStatus(journey: Journey | null | undefined, status: PatientJourneyStatus): boolean {
+  switch (status) {
+    case 'no-visit':
+      return !journey
+    case 'complete':
+      return !!journey && nextStep(journey) === null
+    case 'in-progress':
+      return !!journey && nextStep(journey) !== null
+    case 'waiting:vitals':
+      return !!journey && isWaitingFor(journey, 'vitals')
+    case 'waiting:vision':
+      return !!journey && isWaitingFor(journey, 'vision')
+    case 'waiting:consults':
+      return !!journey && isWaitingFor(journey, 'consults')
+    case 'waiting:dental':
+      return !!journey && isWaitingFor(journey, 'dental')
+    case 'waiting:pharmacy':
+      return !!journey && isWaitingFor(journey, 'pharmacy')
+  }
+}
+
+export function matchesPatientStatus(
+  journey: Journey | null | undefined,
+  selectedStatuses: readonly PatientJourneyStatus[] | null | undefined,
+): boolean {
+  if (!selectedStatuses || selectedStatuses.length === 0)
+    return true
+  return selectedStatuses.some(status => matchesSinglePatientStatus(journey, status))
+}
+

@@ -197,7 +197,7 @@ const resultSummary = computed(() => {
             aria-expanded="true"
             :aria-controls="listId"
             :aria-activedescendant="flat.length ? optionId(activeIndex) : undefined"
-            placeholder="Patient name, ID, phone, or a section…"
+            placeholder="Patient name, ID, phone, tag, or a section…"
             class="h-12 min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground touch:text-base"
             @keydown="onKeydown"
           >
@@ -245,10 +245,13 @@ const resultSummary = computed(() => {
                       {{ item.patient.name }}
                     </p>
                     <p class="truncate text-xs text-muted-foreground touch:text-sm">
-                      <span class="font-mono">{{ formatPatientCode(item.patient.villageCode, item.patient.id) }}</span>
+                      <span class="font-mono">{{ item.patient.displayId || formatPatientCode(item.patient.villageCode, item.patient.number ?? item.patient.id) }}</span>
                       · {{ calculateAge(item.patient.dateOfBirth) }} y · <span class="capitalize">{{ item.patient.gender }}</span>
                       <template v-if="item.patient.identificationNumber">
                         · {{ item.patient.identificationNumber }}
+                      </template>
+                      <template v-if="item.patient.tags?.length">
+                        · {{ item.patient.tags.map(t => `#${t}`).join(' ') }}
                       </template>
                     </p>
                   </div>

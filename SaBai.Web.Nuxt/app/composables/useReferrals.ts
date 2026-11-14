@@ -90,6 +90,7 @@ export interface LocalReferralItem {
   amountPaidUsd: number | null
   amountPaidRiels: number | null
   memberWhoPaidId: string | null
+  tags?: string[]
 }
 
 interface RawReferralRow {
@@ -134,7 +135,7 @@ interface RawReferralRow {
   member_who_paid_id: string | null
 }
 
-function mapReferralRow(r: RawReferralRow): LocalReferralItem {
+function mapReferralRow(r: RawReferralRow, tags: string[] = []): LocalReferralItem {
   const num = Number(r.patient_number ?? 0)
   const displayId = num > 0
     ? `${r.village_code ?? ''}${String(num).padStart(4, '0')}`
@@ -181,6 +182,7 @@ function mapReferralRow(r: RawReferralRow): LocalReferralItem {
     amountPaidUsd: r.amount_paid_usd === null || r.amount_paid_usd === undefined ? null : Number(r.amount_paid_usd),
     amountPaidRiels: r.amount_paid_riels === null || r.amount_paid_riels === undefined ? null : Number(r.amount_paid_riels),
     memberWhoPaidId: r.member_who_paid_id,
+    tags,
   }
 }
 
@@ -235,13 +237,26 @@ const REFERRAL_SELECT = `
 
 export function useReferralsList() {
   return useLocalQuery<LocalReferralItem[]>(
-    ['referrals', 'consults', 'visits', 'patients', 'village_codes', 'staff_users'],
+    ['referrals', 'consults', 'visits', 'patients', 'village_codes', 'staff_users', 'patient_tags', 'tags'],
     async () => {
       const db = getPowerSyncInstance()
-      const rows = await db.getAll<RawReferralRow>(
-        `${REFERRAL_SELECT} ORDER BY r.created_at DESC`,
-      )
-      return rows.map(mapReferralRow)
+      const [rows, tagRows] = await Promise.all([
+        db.getAll<RawReferralRow>(`${REFERRAL_SELECT} ORDER BY r.created_at DESC`),
+        db.getAll<{ patient_id: string, name: string | null }>(
+          `SELECT pt.patient_id, COALESCE(t.name, pt.tag_name) AS name
+           FROM patient_tags pt
+           LEFT JOIN tags t ON t.id = pt.tag_id
+           ORDER BY name ASC`,
+        ),
+      ])
+      const tagsByPatient = new Map<string, string[]>()
+      for (const tr of tagRows) {
+        if (!tr.name) continue
+        const list = tagsByPatient.get(tr.patient_id) ?? []
+        if (!list.includes(tr.name)) list.push(tr.name)
+        tagsByPatient.set(tr.patient_id, list)
+      }
+      return rows.map(r => mapReferralRow(r, tagsByPatient.get(r.patient_id) ?? []))
     },
   )
 }
@@ -277,7 +292,7 @@ export function useConsultReferrals(consultId: MaybeRefOrGetter<string | null | 
         `${REFERRAL_SELECT} WHERE r.consult_id = ? ORDER BY r.created_at DESC`,
         [cid],
       )
-      return rows.map(mapReferralRow)
+      return rows.map(r => mapReferralRow(r))
     },
     {
       enabled: computed(() => Boolean(toValue(consultId))),

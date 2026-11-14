@@ -10,11 +10,11 @@ using SaBai.API.Data;
 
 #nullable disable
 
-namespace SaBai.API.Data.Migrations
+namespace SaBai.API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261114101306_RemovePowerSync")]
-    partial class RemovePowerSync
+    [Migration("20261114160856_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1081,6 +1081,9 @@ namespace SaBai.API.Data.Migrations
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)");
 
+                    b.Property<bool>("IsReimbursed")
+                        .HasColumnType("boolean");
+
                     b.Property<Guid?>("MemberInChargeId")
                         .HasColumnType("uuid");
 
@@ -1117,6 +1120,23 @@ namespace SaBai.API.Data.Migrations
                     b.Property<Guid?>("ReferredToId")
                         .HasColumnType("uuid");
 
+                    b.Property<DateTimeOffset?>("ReimbursedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ReimbursedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("ReimbursedRiels")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal?>("ReimbursedUsd")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<string>("ReimbursementNotes")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
                     b.Property<string>("RemarksAtBooth")
                         .HasColumnType("text");
 
@@ -1137,6 +1157,8 @@ namespace SaBai.API.Data.Migrations
                     b.HasIndex("MemberWhoPaidId");
 
                     b.HasIndex("ReferredToId");
+
+                    b.HasIndex("ReimbursedByUserId");
 
                     b.ToTable("Referrals");
                 });
@@ -1864,6 +1886,11 @@ namespace SaBai.API.Data.Migrations
                         .HasForeignKey("ReferredToId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("SaBai.API.Domain.StaffUser", "ReimbursedByUser")
+                        .WithMany()
+                        .HasForeignKey("ReimbursedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Consult");
 
                     b.Navigation("MemberInCharge");
@@ -1873,6 +1900,8 @@ namespace SaBai.API.Data.Migrations
                     b.Navigation("MemberWhoPaid");
 
                     b.Navigation("ReferredTo");
+
+                    b.Navigation("ReimbursedByUser");
                 });
 
             modelBuilder.Entity("SaBai.API.Domain.StaffPushSubscription", b =>

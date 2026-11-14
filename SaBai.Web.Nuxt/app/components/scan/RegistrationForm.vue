@@ -138,7 +138,9 @@ useKeyShortcut('Escape', () => emit('match'))
           >
             {{ lastCreated.name }} ({{ lastCreated.displayId }})
           </NuxtLink>
-          and opened a visit.
+          and opened a visit.<template v-if="lastCreated.pendingCardNumber">
+            The card number is assigned when the registration reaches the server.
+          </template>
         </p>
         <NuxtLink
           :to="paths.patientDetail(lastCreated.id)"

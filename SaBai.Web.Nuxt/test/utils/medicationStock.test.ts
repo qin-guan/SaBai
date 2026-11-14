@@ -83,3 +83,25 @@ describe("validateSplits", () => {
     });
   });
 });
+
+import { validateAdjustment } from "~/utils/medicationStock";
+
+describe("validateAdjustment", () => {
+  it("rejects an empty or non-integer change", () => {
+    expect(validateAdjustment("", 5)).toEqual({ success: false, message: "Missing quantity change!" });
+    expect(validateAdjustment("1.5", 5)).toEqual({ success: false, message: "Please input a whole number." });
+  });
+
+  it("rejects a zero change", () => {
+    expect(validateAdjustment("0", 5).success).toBe(false);
+  });
+
+  it("rejects a change that would leave a negative quantity", () => {
+    expect(validateAdjustment("-6", 5)).toEqual({ success: false, message: "Stock quantity cannot be negative." });
+  });
+
+  it("returns the quantity the lot holds afterwards", () => {
+    expect(validateAdjustment("-5", 5)).toEqual({ success: true, quantityChange: -5, resultingQuantity: 0 });
+    expect(validateAdjustment("7", 5)).toEqual({ success: true, quantityChange: 7, resultingQuantity: 12 });
+  });
+});

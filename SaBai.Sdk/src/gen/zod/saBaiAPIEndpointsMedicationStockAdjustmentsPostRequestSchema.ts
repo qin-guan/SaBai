@@ -6,6 +6,7 @@
 import * as z from 'zod'
 
 export const saBaiAPIEndpointsMedicationStockAdjustmentsPostRequestSchema = z.object({
+  adjustmentId: z.uuid().nullish(),
   quantityChange: z.int32().optional(),
   remarks: z.string().nullish(),
 })

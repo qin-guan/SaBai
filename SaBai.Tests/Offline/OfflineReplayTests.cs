@@ -204,6 +204,107 @@ public sealed class OfflineReplayTests(AppFixture fixture)
         await Assert.That(current.GetProperty("temperature").GetDecimal()).IsEqualTo(38.0m);
     }
 
+    [Test]
+    public async Task AdjustStock_Resent_AppliesOnce()
+    {
+        // Arrange
+        var client = fixture.CreateApiClient();
+        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        var stockId = await CreateStockAsync(client, quantity: 5);
+        var request = new { adjustmentId = Guid.CreateVersion7(), quantityChange = 2 };
+        var first = await client.PostAsJsonAsync(
+            $"/medication-stock/{stockId}/adjustments",
+            request,
+            ApiJson.Options
+        );
+
+        // Act
+        var second = await client.PostAsJsonAsync(
+            $"/medication-stock/{stockId}/adjustments",
+            request,
+            ApiJson.Options
+        );
+        var firstBody = await first.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
+        var secondBody = await second.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
+
+        // Assert
+        await Assert.That(first.StatusCode).IsEqualTo(HttpStatusCode.OK);
+        await Assert.That(second.StatusCode).IsEqualTo(HttpStatusCode.OK);
+        await Assert.That(firstBody.GetProperty("quantity").GetInt32()).IsEqualTo(7);
+        await Assert.That(secondBody.GetProperty("quantity").GetInt32()).IsEqualTo(7);
+    }
+
+    [Test]
+    public async Task AdjustStock_IdUsedOnAnotherLot_ReturnsConflict()
+    {
+        // Arrange
+        var client = fixture.CreateApiClient();
+        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        var firstStockId = await CreateStockAsync(client, quantity: 5);
+        var secondStockId = await CreateStockAsync(client, quantity: 5);
+        var adjustmentId = Guid.CreateVersion7();
+        (await client.PostAsJsonAsync(
+            $"/medication-stock/{firstStockId}/adjustments",
+            new { adjustmentId, quantityChange = 1 },
+            ApiJson.Options
+        )).EnsureSuccessStatusCode();
+
+        // Act
+        var response = await client.PostAsJsonAsync(
+            $"/medication-stock/{secondStockId}/adjustments",
+            new { adjustmentId, quantityChange = 1 },
+            ApiJson.Options
+        );
+
+        // Assert
+        await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.Conflict);
+    }
+
+    private static async Task<Guid> CreateStockAsync(HttpClient client, int quantity)
+    {
+        var suffix = ClinicSetup.Suffix();
+        var ingredient = await client.PostAsJsonAsync(
+            "/medication-ingredients",
+            new { name = $"Ingredient {suffix}", unitOfMeasurement = "mg", fallBelow = 1 },
+            ApiJson.Options
+        );
+        ingredient.EnsureSuccessStatusCode();
+        var brand = await client.PostAsJsonAsync(
+            "/medication-brands",
+            new
+            {
+                name = $"Brand {suffix}",
+                activeIngredientId = ClinicSetup.ReadGuid(
+                    await ingredient.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
+                    "id"
+                ),
+                remarks = "",
+            },
+            ApiJson.Options
+        );
+        brand.EnsureSuccessStatusCode();
+        var stock = await client.PostAsJsonAsync(
+            "/medication-stock",
+            new
+            {
+                medicationBrandId = ClinicSetup.ReadGuid(
+                    await brand.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
+                    "id"
+                ),
+                quantity,
+                expiry = DateTimeOffset.UtcNow.AddYears(1),
+                location = $"shelf-{suffix}",
+                stockStatus = "active",
+            },
+            ApiJson.Options
+        );
+        stock.EnsureSuccessStatusCode();
+        return ClinicSetup.ReadGuid(
+            await stock.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
+            "id"
+        );
+    }
+
     private static object Registration(Guid villageId, Guid id, Guid visitId, Guid vitalsId) =>
         new
         {

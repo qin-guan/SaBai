@@ -43,22 +43,35 @@ function headersToRecord(headers: HeadersInit | undefined): Record<string, strin
   return Object.fromEntries(new Headers(headers).entries())
 }
 
-function detectResponseType(contentType: string | null): string | undefined {
-  if (!contentType) return undefined
-  if (contentType.includes('text/event-stream')) return 'stream'
-  if (contentType.includes('application/json') || contentType.includes('text/json')) return 'json'
-  if (contentType.includes('text/')) return 'text'
-  if (contentType.includes('image/') || contentType.includes('application/octet-stream')) return 'blob'
+type ResponseTypeOption = ResolvedRequest['responseType']
+
+function isJsonMediaType(base: string | undefined): boolean {
+  return !!base && (base === 'application/json' || base === 'text/json' || base.endsWith('+json'))
+}
+
+// Picks the parser as the SDK's default transport does: a string wins, a map is
+// matched on the media type (exact, `type/*`, `*/*`), otherwise guessed from it.
+function resolveResponseType(responseType: ResponseTypeOption, contentType: string | null): string | undefined {
+  if (typeof responseType === 'string') return responseType
+  const base = contentType?.split(';')[0]?.trim().toLowerCase() || undefined
+  if (!base) return undefined
+  const mapped = responseType?.[base] ?? responseType?.[`${base.split('/')[0]}/*`] ?? responseType?.['*/*']
+  if (mapped) return mapped
+  if (base === 'text/event-stream') return 'stream'
+  if (isJsonMediaType(base)) return 'json'
+  if (base.startsWith('text/')) return 'text'
+  if (base === 'application/octet-stream' || base === 'application/pdf' || /^(image|audio|video)\//.test(base)) return 'blob'
   return undefined
 }
 
 // Same decoding as the SDK's default transport.
-async function parseResponse(response: Response, responseType?: string): Promise<unknown> {
+async function parseResponse(response: Response, responseType: ResponseTypeOption): Promise<unknown> {
   if (response.status === 204 || response.status === 205 || response.status === 304 || !response.body) return undefined
   const contentType = response.headers.get('Content-Type')
-  const isJson = !!contentType && /[/+]json\b/i.test(contentType)
-  const detected = responseType === 'stream' && (!response.ok || isJson) ? undefined : responseType
-  switch (detected ?? detectResponseType(contentType)) {
+  const resolved = resolveResponseType(responseType, contentType)
+  const isJson = isJsonMediaType(contentType?.split(';')[0]?.trim().toLowerCase())
+  const detected = resolved === 'stream' && (!response.ok || isJson) ? resolveResponseType(undefined, contentType) : resolved
+  switch (detected) {
     case 'text':
     case 'document':
       return response.text()
@@ -145,14 +158,16 @@ export const apiTransport: SdkTransport = async (request: ResolvedRequest): Prom
       throw error
     }
 
+    const contentType = response.headers.get('Content-Type')?.split(';')[0]?.trim().toLowerCase() || undefined
     return {
       data,
       status: response.status,
       statusText: response.statusText,
       headers: response.headers,
+      contentType,
       request: nativeRequest,
       response,
-    } as TransportResult
+    }
   }
   finally {
     clearTimeout(timeout)

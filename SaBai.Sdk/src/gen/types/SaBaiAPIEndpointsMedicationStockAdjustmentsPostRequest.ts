@@ -6,6 +6,12 @@
 export type SaBaiAPIEndpointsMedicationStockAdjustmentsPostRequest = {
   /**
    * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  adjustmentId?: string | null;
+  /**
+   * @description
    * Format: `int32`
    * @type integer | undefined
    */

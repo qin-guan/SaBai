@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { PhCaretRight, PhMagnifyingGlass, PhScan } from '@phosphor-icons/vue'
+import { PhCaretRight, PhScan } from '@phosphor-icons/vue'
 import { useIntervalFn } from '@vueuse/core'
 import type { StationKey } from '~/utils/journey'
 import type { StationThroughput } from '~/utils/waitTime'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 
 /**
  * The patient list — one page for every station.
@@ -29,19 +28,10 @@ const station = computed<StationKey | undefined>(() =>
 
 useHead({ title: () => `${station.value ? stationLabel(station.value) : 'Patients'} · Sa'Bai` })
 
-const filter = ref('')
 const { data, isLoading, isError } = usePatientsWithLatestVisit()
 type Row = NonNullable<typeof data.value>['patients'][number]
 
 const allPatients = computed(() => data.value?.patients ?? [])
-
-const matchesFilter = (p: Row) => {
-  const needle = cleanKhmerText(filter.value)
-  if (!needle)
-    return true
-  return [p.name, p.displayId, p.filterString, p.identificationNumber ?? '', p.contactNo ?? '', ...(p.tags ?? [])]
-    .some(v => matchesSearchText(v, needle))
-}
 
 /** How many patients each station still has to see. */
 const waitingCounts = computed(() => {
@@ -72,15 +62,13 @@ const basisNote = (t: StationThroughput) =>
       ? `About ${formatRate(t.perMinute)}, from ${t.samples} patients seen ${t.basis === 'last hour' ? 'in the last hour' : 'recently'}`
       : 'Not enough patients seen yet to estimate a wait'
 
-const filteredAll = computed(() => allPatients.value.filter(matchesFilter))
-
 /** Patients currently in the selected station's queue, earliest visit first. */
 const waitingRows = computed(() => {
   const s = station.value
   if (!s)
     return []
   return allPatients.value
-    .filter(p => p.lastVisitJourney && isWaitingFor(p.lastVisitJourney, s) && matchesFilter(p))
+    .filter(p => p.lastVisitJourney && isWaitingFor(p.lastVisitJourney, s))
     .sort((a, b) => new Date(a.lastVisitDate!).getTime() - new Date(b.lastVisitDate!).getTime())
 })
 
@@ -93,7 +81,7 @@ const otherRows = computed(() => {
   if (!s)
     return []
   return allPatients.value
-    .filter(p => !(p.lastVisitJourney && isWaitingFor(p.lastVisitJourney, s)) && matchesFilter(p))
+    .filter(p => !(p.lastVisitJourney && isWaitingFor(p.lastVisitJourney, s)))
     .sort((a, b) => Number(isDoneAtStation(b, s)) - Number(isDoneAtStation(a, s)))
 })
 
@@ -120,23 +108,19 @@ const stationCards = computed(() => [
 ])
 
 const sections = computed(() => {
-  const trimmed = filter.value.trim()
   const s = station.value
   if (!s) {
     return [
       {
         key: 'all',
         title: 'All patients',
-        description: isLoading.value ? undefined : `${filteredAll.value.length}`,
+        description: isLoading.value ? undefined : `${allPatients.value.length}`,
         collapsible: false,
         defaultOpen: true,
         arrivedLabel: 'Last visit',
-        rows: filteredAll.value,
-        emptyMessage: trimmed
-          ? `No patients match “${trimmed}”.`
-          : 'No patients found. Register a patient from Scan Face.',
-        showSearch: true,
-        showScanFaceEmptyAction: !trimmed,
+        rows: allPatients.value,
+        emptyMessage: 'No patients found. Register a patient from Scan Face.',
+        showScanFaceEmptyAction: true,
       },
     ]
   }
@@ -166,10 +150,7 @@ const sections = computed(() => {
       defaultOpen: true,
       arrivedLabel: 'Arrived',
       rows: waitingRows.value,
-      emptyMessage: trimmed
-        ? `No patients waiting for ${label} match “${trimmed}”.`
-        : `Nobody is waiting for ${label}.`,
-      showSearch: true,
+      emptyMessage: `Nobody is waiting for ${label}.`,
       showScanFaceEmptyAction: false,
     },
   ]
@@ -180,13 +161,10 @@ const sections = computed(() => {
       title: 'Completed & other patients',
       description: otherDescription,
       collapsible: true,
-      defaultOpen: waitingCount === 0 || !!trimmed,
+      defaultOpen: waitingCount === 0,
       arrivedLabel: 'Last visit',
       rows: otherRows.value,
-      emptyMessage: trimmed
-        ? `No other patients match “${trimmed}”.`
-        : 'No other patients.',
-      showSearch: false,
+      emptyMessage: 'No other patients.',
       showScanFaceEmptyAction: false,
     })
   }
@@ -277,13 +255,6 @@ const gridCols = 'md:grid-cols-[2rem_minmax(0,1fr)_minmax(15rem,22rem)_1rem] lg:
       :default-open="section.defaultOpen"
       flush
     >
-      <template v-if="section.showSearch" #actions>
-        <div class="relative w-full sm:w-56">
-          <PhMagnifyingGlass class="pointer-events-none absolute top-1/2 left-2 size-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-          <Input v-model="filter" type="search" class="h-7 bg-card pl-7 text-xs touch:h-11" placeholder="Name, ID or phone" aria-label="Filter patients" />
-        </div>
-      </template>
-
       <StateMessage v-if="isError" kind="error" message="Patients could not be loaded. Check the connection and reload." />
       <StateMessage v-else-if="isLoading" kind="loading" message="Loading patients..." />
       <div v-else-if="section.rows.length === 0" class="flex flex-col items-center gap-2 px-3 py-10 text-center">

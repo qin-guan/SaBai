@@ -134,7 +134,8 @@ describe('applyOptimistic', () => {
     expect(qc.getQueryCache().find({ queryKey: ['c'] })).toBeUndefined()
     expect(qc.getQueryCache().find({ queryKey: ['b'] })!.state).toBe(untouched)
     expect(invalidate).toHaveBeenCalledTimes(1)
-    const predicate = invalidate.mock.calls[0]![0]!.predicate!
+    const filters = invalidate.mock.calls[0]![0] as { predicate: (query: unknown) => boolean }
+    const predicate = filters.predicate
     const queries = qc.getQueryCache().getAll()
     expect(queries.filter(predicate).map(q => q.queryKey)).toEqual([['a']])
   })

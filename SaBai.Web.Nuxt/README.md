@@ -27,18 +27,54 @@ pnpm dev
 | `app/components/ui` | shadcn-vue components (Lyra). Imported explicitly. |
 | `app/components/app` | Building blocks: `AppPanel`, `PageHeader`, `FormField`, `ChoiceGroup`, `AppDialog`, `SaveBar`… |
 | `app/components/patient` | Patient banner, journey tracker, visit selector, station page frame, inline details form and edit dialog. |
-| `app/composables` | PowerSync local SQLite reactive queries (`useLocalQuery`), online-only API hooks, village selection, shortcuts. |
-| `app/db` | PowerSync local SQLite schema (`schema.ts`), upload connector (`connector.ts`), and local clinical types (`types.ts`). |
+| `app/composables` | Vue Query hooks over `@sabai/sdk`, `useOfflineMutation`, `useSyncState`, village selection, shortcuts. |
+| `app/offline` | Offline core: outbox, replay, connectivity, server time, query-cache persistence, prefetch, the SDK transport. `mutations/` holds each domain's offline writes. |
 | `app/service-worker` | Service worker of the installed PWA: Workbox app-shell precaching, SPA offline navigation, runtime asset caching, and Web Push. |
 | `app/utils` | Framework-free logic ported from SaBai.Web (UUIDv7 generator, formatting, vitals, splits, eyesight, dental mapping). |
 
-## Offline-first sync (PowerSync + PWA)
+## Offline
 
-`SaBai.Web.Nuxt` keeps a full local SQLite copy of all clinical tables on the device via **PowerSync** (`@powersync/web` + `@journeyapps/wa-sqlite`) and precaches the app shell (`sw.ts` with Workbox `injectManifest`).
+The REST API is the only read and write path; offline support is in the client
+(`app/offline`, unit-tested in `test/offline`).
 
-- **Reads & writes**: Patient registration, visits, vitals, vision, consults, referrals, village codes, and medication stock read from and write to local SQLite immediately with client-generated **UUIDv7** IDs (`app/utils/uuid.ts`), even when offline.
-- **Sync & conflict resolution**: Pending local mutations (`ps_crud`) are uploaded to `POST /api/sync/upload` when online. The backend (`SyncUploadProcessor`) enforces idempotency, natural-key upserts for 1:1 station records, optimistic concurrency conflict logging (`SyncConflict`), and business-rule rejection logging (`SyncRejection`). Staff can inspect sync status, pending writes, conflicts, rejections, and duplicate patient merges at `/settings/sync`.
-- **Proxy**: Nitro proxies `/api/*` to `NUXT_API_URL` (`SaBai.API`) and `/powersync/*` to `NUXT_POWERSYNC_URL` (self-hosted `powersync-service`).
+- **Reads**: the Vue Query cache is saved to IndexedDB and restored before the
+  app renders (`queryPersistence.ts`), kept for 7 days and dropped when the
+  build changes. A failed refetch keeps showing the cached data. Queries with
+  `meta: { persist: false }` are not saved. Each domain registers what to
+  download for offline use (`registerOfflinePrefetch`); it runs after sign-in
+  (at most every 30 minutes) and from *Download for offline use*.
+- **Writes**: a write that cannot reach the server goes into the **outbox**
+  (IndexedDB) and is replayed in order when the connection is back. The UI is
+  updated at once by editing the query cache. Replayed writes carry
+  `If-Unmodified-Since` (the server's `Date` from this device's last successful
+  response before the write was made); a `412` puts the item in *conflict*,
+  another `4xx` *rejects* it, and later writes for the same record wait behind
+  it. `/settings/sync` lists pending items and offers *Overwrite* (resend
+  without the header), *Retry* and *Discard*.
+- **Connection**: decided by real request outcomes (fetch failure, timeout,
+  `502/503/504` from the proxy), not `navigator.onLine`, plus a probe of
+  `/api/healthcheck` while offline or while writes are waiting.
+- **Sign-out** warns about unsent writes, then deletes the outbox and the saved
+  cache (they hold patient data).
+
+To make a write work offline:
+
+1. Define it once at module top level in `app/offline/mutations/<domain>.ts`
+   with `defineOfflineMutation({ key, describe, send, optimistic, onSuccess, recordIds })`,
+   and import that file from `app/offline/mutations/index.ts`.
+2. Put everything `send` needs in `vars` (they are stored as JSON). For a create,
+   generate the id on the client with `uuidv7()` and send it in the body (the
+   API's create endpoints accept it and are idempotent on it).
+3. In `send`, spread `...requestOptions(ctx)` into the SDK call so replays carry
+   `If-Unmodified-Since`.
+4. Write `optimistic` as idempotent, immutable cache edits by id (upsert/remove)
+   into every query a following screen reads.
+5. In the component: `const { mutateAsync } = useOfflineMutation(def)`, then
+   `notifySaved(await mutateAsync(vars), '… saved')`. Server errors are thrown
+   as before. `app/offline/mutations/villageCodes.ts` is the worked example.
+
+The service worker precaches the app shell, so the app opens offline. Nitro
+proxies `/api/*` to `NUXT_API_URL` (`SaBai.API`).
 
 Auth is an HttpOnly session cookie (`sabai.auth`) set by the API's
 `POST /auth/login` (ASP.NET Core Identity) and passed through the `/api` proxy,
@@ -178,9 +214,9 @@ that notifications can reach phones and desktops.
   iPadOS deliver Web Push only to the Home Screen copy (16.4+).
 - **Service worker** (`app/service-worker/sw.ts`): shows a notification for
   every push message and opens the app at the message's `url` when it is
-  tapped. It has no `fetch` handler and caches nothing, so there is no offline
-  mode and the `/api` proxy and session cookie are untouched. It also runs
-  under `pnpm dev`.
+  tapped. It also precaches the app shell and caches patient photos (see
+  Offline); other `/api` requests pass through untouched. It also runs under
+  `pnpm dev`.
 - **Message format** (`app/utils/pushPayload.ts`, `PushNotification` in the
   API): a JSON body `{ title, body?, url?, tag?, requireInteraction? }`. `url`
   must be a path in this app; anything else opens the home page.

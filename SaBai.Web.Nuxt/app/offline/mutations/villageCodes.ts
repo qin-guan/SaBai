@@ -129,10 +129,9 @@ export const createVillageCode = defineOfflineMutation({
   describe: (vars: SaveVillageCodeVars) => `New village code ${vars.code} (${vars.name})`,
   recordIds: vars => [vars.id],
   send: (vars, ctx) => {
-    // `id` is the client-chosen id the create endpoint accepts (idempotent on
-    // replay). Typed as an intersection so it compiles with an SDK generated
-    // before the API gained the field; drop the `& { id }` once it has it.
-    const body: SaBaiAPIEndpointsVillageCodesCreatePostRequest & { id: string } = {
+    // The client-chosen id: the create endpoint is idempotent on it, so a replay
+    // of a create whose response was lost returns the same record.
+    const body: SaBaiAPIEndpointsVillageCodesCreatePostRequest = {
       id: vars.id,
       code: vars.code,
       name: vars.name,

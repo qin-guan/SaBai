@@ -12,6 +12,13 @@ describe("computeBmi", () => {
     expect(computeBmi("១៧៥", "៧០")).toBe("22.86");
   });
 
+  it("accepts numbers as well as text, and handles partly typed values", () => {
+    expect(computeBmi(175, 70)).toBe("22.86");
+    expect(computeBmi("1", "20")).toBe("200000.00");
+    expect(computeBmi("100", "20")).toBe("20.00");
+    expect(computeBmi("100.", "20")).toBe("20.00");
+  });
+
   it("returns a placeholder when height is missing", () => {
     expect(computeBmi(null, "70")).toBe("Invalid/Missing Height or Weight");
   });

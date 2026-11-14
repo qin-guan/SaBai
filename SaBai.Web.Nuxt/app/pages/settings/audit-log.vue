@@ -74,6 +74,9 @@ const actionClass: Record<AuditAction, string> = {
   SignedIn: '',
   SignInFailed: 'border-warning-border bg-warning-subtle text-warning',
   SignedOut: '',
+  Read: 'border-chrome/40 bg-band text-chrome',
+  Exported: 'border-warning-border bg-warning-subtle text-warning',
+  Disclosed: 'border-warning-border bg-warning-subtle text-warning',
 }
 
 const timeFormat = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'medium' })
@@ -84,11 +87,15 @@ function formatTime(iso: string) {
 function subject(entry: AuditLogEntry) {
   if (!entry.entityType)
     return entry.details ?? ''
-  return `${humanizeName(entry.entityType)} #${entry.entityId ?? '?'}`
+  return entry.entityId
+    ? `${humanizeName(entry.entityType)} #${entry.entityId}`
+    : humanizeName(entry.entityType)
 }
 
 /** Short "Name, Status" list of what changed, for the collapsed row. */
 function summary(entry: AuditLogEntry) {
+  if (PHI_ACCESS_ACTIONS.includes(entry.action))
+    return entry.request ?? ''
   if (entry.action !== 'Updated')
     return ''
   const fields = entry.changes.map(c => humanizeName(c.field))
@@ -134,7 +141,7 @@ function filterByEntity(entry: AuditLogEntry) {
   <div>
     <PageHeader
       title="Audit Log"
-      description="Every record created, changed or deleted, and staff sign-ins. Newest first."
+      description="Every record created, changed or deleted, staff sign-ins, and who viewed, exported or disclosed patient data (HIPAA access log). Newest first."
       :breadcrumbs="[{ label: 'Home', to: '/' }, { label: 'Settings', to: paths.settings() }, { label: 'Audit Log' }]"
     />
 
@@ -194,7 +201,7 @@ function filterByEntity(entry: AuditLogEntry) {
             <TableHead>Who</TableHead>
             <TableHead>Action</TableHead>
             <TableHead>Record</TableHead>
-            <TableHead>Changed</TableHead>
+            <TableHead>Changed / accessed</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -291,7 +298,7 @@ function filterByEntity(entry: AuditLogEntry) {
               </TableCell>
 
               <TableCell
-                data-label="Changed"
+                data-label="Changed / accessed"
                 :class="[!summary(entry) && 'hidden md:table-cell', 'text-muted-foreground']"
               >
                 {{ summary(entry) }}

@@ -5,4 +5,4 @@
 
 import * as z from 'zod'
 
-export const saBaiAPIDomainAuditActionSchema = z.enum(['Created', 'Updated', 'Deleted', 'SignedIn', 'SignInFailed', 'SignedOut'])
+export const saBaiAPIDomainAuditActionSchema = z.enum(['Created', 'Updated', 'Deleted', 'SignedIn', 'SignInFailed', 'SignedOut', 'Read', 'Exported', 'Disclosed'])

@@ -424,6 +424,7 @@ const gridCols = 'md:grid-cols-[2rem_minmax(0,1fr)_minmax(15rem,22rem)_1rem] lg:
                   <PatientTagBadges
                     v-model:selected-tags="selectedTags"
                     :tags="patient.tags"
+                    :max-visible="3"
                   />
                 </div>
               </div>
@@ -432,6 +433,8 @@ const gridCols = 'md:grid-cols-[2rem_minmax(0,1fr)_minmax(15rem,22rem)_1rem] lg:
                 <PatientTagBadges
                   v-model:selected-tags="selectedTags"
                   :tags="patient.tags"
+                  :max-visible="1"
+                  single-line
                   show-empty
                 />
               </span>

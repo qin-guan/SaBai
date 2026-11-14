@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PhArrowsSplit, PhFloppyDisk, PhPencilSimple, PhPlusMinus, PhX } from '@phosphor-icons/vue'
+import { PhArrowsSplit, PhFloppyDisk, PhPencilSimple, PhX } from '@phosphor-icons/vue'
 import { toast } from 'vue-sonner'
 import { updateMedicationStock } from '~/offline/mutations/medication'
 import { Badge } from '@/components/ui/badge'
@@ -13,7 +13,7 @@ import { TableCell, TableRow } from '@/components/ui/table'
  * other fields are locked. Esc cancels, Enter / Ctrl+S saves while editing.
  */
 const props = defineProps<{ item: MedicationStockRow }>()
-const emit = defineEmits<{ split: [item: MedicationStockRow], adjust: [item: MedicationStockRow] }>()
+const emit = defineEmits<{ split: [item: MedicationStockRow] }>()
 
 const isEditing = ref(false)
 const update = useOfflineMutation(updateMedicationStock)
@@ -152,9 +152,6 @@ function onKeydown(event: KeyboardEvent) {
         <template v-else>
           <Button ref="editButton" size="sm" variant="outline" :aria-label="`Edit ${item.brandName} at ${item.location}`" @click="startEditing">
             <PhPencilSimple aria-hidden="true" /> Edit
-          </Button>
-          <Button size="sm" variant="outline" :aria-label="`Adjust ${item.brandName} at ${item.location}`" @click="emit('adjust', item)">
-            <PhPlusMinus aria-hidden="true" /> Adjust
           </Button>
           <Button size="sm" variant="outline" :aria-label="`Split ${item.brandName} at ${item.location}`" @click="emit('split', item)">
             <PhArrowsSplit aria-hidden="true" /> Split

@@ -9,7 +9,6 @@ import {
   saBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpoint,
   saBaiAPIEndpointsMedicationIngredientsListGetEndpoint,
   saBaiAPIEndpointsMedicationIngredientsUpdatePutEndpoint,
-  saBaiAPIEndpointsMedicationStockAdjustmentsPostEndpoint,
   saBaiAPIEndpointsMedicationStockCreatePostEndpoint,
   saBaiAPIEndpointsMedicationStockSplitsPostEndpoint,
   saBaiAPIEndpointsMedicationStockUpdatePatchEndpoint,
@@ -354,19 +353,6 @@ export interface UpdateStockVars {
   brandName: string
 }
 
-export interface AdjustStockVars {
-  /** Generated when the user makes the adjustment; the API applies a given id only once. */
-  adjustmentId: string
-  stockId: string
-  quantityChange: number
-  /** The quantity the user saw plus the change: what the lot holds once this adjustment is applied. */
-  resultingQuantity: number
-  /** Replaces the lot's remarks when set; null leaves them. */
-  remarks: string | null
-  brandName: string
-  location: string
-}
-
 export interface SplitStockVars {
   stockId: string
   /** The line as it was when the user split it; the optimistic result is built from this, not from the cache. */
@@ -432,44 +418,6 @@ export const updateMedicationStock = defineOfflineMutation({
       remarks: vars.remarks,
     })),
   onSuccess: (_saved, _vars, queryClient) => invalidateStock(queryClient),
-})
-
-/**
- * Adjusts a lot's quantity. The optimistic edit SETS the quantity to
- * `vars.resultingQuantity` (worked out once, from what the user saw, when the
- * adjustment was made) instead of adding the change to whatever the cache holds:
- * the offline layer applies the edit again after every refetch while the write
- * is queued, and "cache + change" would count it once per refetch. Setting an
- * absolute value gives the same result however often it runs. Two queued
- * adjustments of one lot stay correct because the second was made against the
- * first's result, and edits are re-applied in queue order. The server is the
- * one that adds `quantityChange` to the real quantity, once per `adjustmentId`.
- */
-export const adjustMedicationStock = defineOfflineMutation({
-  key: 'medication.stock.adjust',
-  describe: (vars: AdjustStockVars) =>
-    `Adjust stock ${vars.brandName} at ${vars.location} by ${vars.quantityChange > 0 ? '+' : ''}${vars.quantityChange}`,
-  recordIds: vars => [vars.stockId, vars.adjustmentId],
-  send: (vars, ctx) =>
-    saBaiAPIEndpointsMedicationStockAdjustmentsPostEndpoint({
-      ...apiConfig,
-      ...requestOptions(ctx),
-      path: { id: vars.stockId },
-      body: {
-        adjustmentId: vars.adjustmentId,
-        quantityChange: vars.quantityChange,
-        remarks: vars.remarks,
-      },
-    }).unwrap(),
-  optimistic: (vars, queryClient) =>
-    editStock(queryClient, list => patchStock(list, vars.stockId, {
-      quantity: vars.resultingQuantity,
-      ...(vars.remarks === null ? {} : { remarks: vars.remarks || null }),
-    })),
-  onSuccess: async (saved, _vars, queryClient) => {
-    editStock(queryClient, list => patchStock(list, saved.id, { quantity: saved.quantity, remarks: saved.remarks }))
-    await invalidateStock(queryClient)
-  },
 })
 
 /**

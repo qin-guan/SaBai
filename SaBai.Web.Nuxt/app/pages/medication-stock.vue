@@ -9,7 +9,6 @@ useHead({ title: "Medication Stock · Sa'Bai" })
 const { data: stock, isPending, isError, error } = useMedicationStock()
 const creating = ref(false)
 const splitting = ref<MedicationStockRow | null>(null)
-const adjusting = ref<MedicationStockRow | null>(null)
 </script>
 
 <template>
@@ -58,13 +57,12 @@ const adjusting = ref<MedicationStockRow | null>(null)
           </TableRow>
         </TableHeader>
         <TableBody>
-          <StockRow v-for="item in stock" :key="item.id" :item="item" @split="splitting = $event" @adjust="adjusting = $event" />
+          <StockRow v-for="item in stock" :key="item.id" :item="item" @split="splitting = $event" />
         </TableBody>
       </Table>
     </AppPanel>
 
     <CreateStockDialog v-if="creating" @close="creating = false" />
     <SplitStockDialog v-if="splitting" :stock="splitting" @close="splitting = null" />
-    <AdjustStockDialog v-if="adjusting" :stock="adjusting" @close="adjusting = null" />
   </div>
 </template>

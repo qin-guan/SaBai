@@ -67,26 +67,3 @@ export function validateSplits(splits: SplitPayload[], parentQty: number) {
 
   return { success: true, message: "Splits are valid!" };
 }
-
-/**
- * Checks a stock adjustment typed as text against the quantity the user sees.
- * On success `resultingQuantity` is what the lot holds after the change.
- */
-export function validateAdjustment(
-  change: string,
-  currentQuantity: number,
-):
-  | { success: true; quantityChange: number; resultingQuantity: number }
-  | { success: false; message: string } {
-  if (change.trim() === "") return { success: false, message: "Missing quantity change!" };
-  const quantityChange = Number(change);
-  if (!Number.isInteger(quantityChange)) {
-    return { success: false, message: "Please input a whole number." };
-  }
-  if (quantityChange === 0) return { success: false, message: "The change cannot be zero." };
-  const resultingQuantity = currentQuantity + quantityChange;
-  if (resultingQuantity < 0) {
-    return { success: false, message: "Stock quantity cannot be negative." };
-  }
-  return { success: true, quantityChange, resultingQuantity };
-}

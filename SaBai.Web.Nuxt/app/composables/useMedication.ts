@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/vue-query'
-import { saBaiAPIEndpointsPharmacyOrdersGetEndpoint } from '@sabai/sdk/clients'
 import {
   fetchMedicationBrands,
   fetchMedicationBrandsWithIngredient,
@@ -38,13 +37,5 @@ export function useMedicationIngredients() {
   return useQuery({
     queryKey: queryKeys.medicationIngredients(),
     queryFn: ({ signal }) => fetchMedicationIngredients(signal),
-  })
-}
-
-/** Pending pharmacy orders grouped by patient and visit. */
-export function usePharmacyOrders() {
-  return useQuery({
-    queryKey: queryKeys.pharmacyOrders(),
-    queryFn: ({ signal }) => saBaiAPIEndpointsPharmacyOrdersGetEndpoint({ ...apiConfig, signal }).unwrap(),
   })
 }

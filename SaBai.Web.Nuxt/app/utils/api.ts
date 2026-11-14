@@ -48,7 +48,6 @@ export const queryKeys = {
   medicationBrands: () => ["medication-brands"] as const,
   medicationBrandsWithIngredient: () => ["medication-brands", "with-ingredient"] as const,
   medicationIngredients: () => ["medication-ingredients"] as const,
-  pharmacyOrders: () => ["pharmacy-orders"] as const,
   broadcasts: () => ["broadcasts"] as const,
   referrals: () => ["referrals"] as const,
   referral: (id: string | number) => ["referrals", id] as const,

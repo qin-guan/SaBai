@@ -2,7 +2,6 @@ import { QueryClient } from '@tanstack/vue-query'
 import { describe, expect, it } from 'vitest'
 import { getOfflineMutation } from '~/offline/defineOfflineMutation'
 import {
-  adjustMedicationStock,
   createMedicationBrand,
   createMedicationStock,
   splitMedicationStock,
@@ -48,41 +47,10 @@ describe('medication offline writes', () => {
     for (const key of [
       'medication.ingredient.create', 'medication.ingredient.update', 'medication.ingredient.delete',
       'medication.brand.create', 'medication.brand.update', 'medication.brand.delete',
-      'medication.stock.create', 'medication.stock.update', 'medication.stock.adjust', 'medication.stock.split',
+      'medication.stock.create', 'medication.stock.update', 'medication.stock.split',
     ]) {
       expect(getOfflineMutation(key), key).toBeDefined()
     }
-  })
-
-  it('adjusting sets the resulting quantity, however many times the edit is re-applied', () => {
-    const qc = seeded()
-    const vars = {
-      adjustmentId: 'adj-1', stockId: 'stock-1', quantityChange: -3, resultingQuantity: 7,
-      remarks: null, brandName: 'Brand', location: 'Shelf A',
-    }
-    adjustMedicationStock.optimistic!(vars, qc)
-    adjustMedicationStock.optimistic!(vars, qc)
-    adjustMedicationStock.optimistic!(vars, qc)
-    expect(stock(qc)[0]!.quantity).toBe(7)
-  })
-
-  it('two queued adjustments end at the last one, re-applied in order any number of times', () => {
-    const qc = seeded()
-    const first = { adjustmentId: 'a1', stockId: 'stock-1', quantityChange: -3, resultingQuantity: 7, remarks: null, brandName: 'Brand', location: 'Shelf A' }
-    const second = { adjustmentId: 'a2', stockId: 'stock-1', quantityChange: -2, resultingQuantity: 5, remarks: null, brandName: 'Brand', location: 'Shelf A' }
-    for (let i = 0; i < 3; i++) {
-      adjustMedicationStock.optimistic!(first, qc)
-      adjustMedicationStock.optimistic!(second, qc)
-    }
-    expect(stock(qc)[0]!.quantity).toBe(5)
-  })
-
-  it('an adjustment to zero removes the line and does not reappear', () => {
-    const qc = seeded()
-    const vars = { adjustmentId: 'a', stockId: 'stock-1', quantityChange: -10, resultingQuantity: 0, remarks: null, brandName: 'Brand', location: 'Shelf A' }
-    adjustMedicationStock.optimistic!(vars, qc)
-    adjustMedicationStock.optimistic!(vars, qc)
-    expect(stock(qc)).toEqual([])
   })
 
   it('splitting is idempotent and builds the children from the snapshot', () => {
@@ -135,7 +103,7 @@ describe('medication offline writes', () => {
   it('edits are safe when no query is cached', () => {
     const qc = new QueryClient()
     expect(() => {
-      adjustMedicationStock.optimistic!({ adjustmentId: 'a', stockId: 's', quantityChange: 1, resultingQuantity: 2, remarks: null, brandName: 'B', location: 'L' }, qc)
+      splitMedicationStock.optimistic!({ stockId: 's', parent: stockLine, splits: [] }, qc)
       updateMedicationIngredient.optimistic!({ id: 'i', name: 'n', unitOfMeasurement: 'u', fallBelow: 1, remarks: null }, qc)
     }).not.toThrow()
   })

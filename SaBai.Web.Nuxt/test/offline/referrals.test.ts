@@ -53,6 +53,7 @@ describe('referral optimistic edits', () => {
 
   it('a status change reaches the detail, the list and the consult list without touching the old objects', () => {
     const qc = new QueryClient()
+    qc.setQueryData<ReferralListEntry[]>(queryKeys.referrals(), [])
     createReferral.optimistic!(createVars, qc)
     const before = qc.getQueryData<ReferralListEntry[]>(queryKeys.referrals())!
     updateReferralState.optimistic!({ id: referralId, referralState: 'Seen' }, qc)

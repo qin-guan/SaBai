@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PhArrowLeft, PhCheck, PhFilePdf, PhFloppyDisk, PhPencilSimple, PhStethoscope, PhUser, PhX } from '@phosphor-icons/vue'
+import { PhFloppyDisk, PhPencilSimple, PhStethoscope, PhUser, PhX } from '@phosphor-icons/vue'
 import { toast } from 'vue-sonner'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -31,6 +31,9 @@ function cancelEditingOutcome() {
   isEditingOutcome.value = false
   outcomeDraft.value = ''
 }
+
+useSaveShortcut(saveOutcome, { enabled: () => isEditingOutcome.value })
+useKeyShortcut('e', startEditingOutcome, { enabled: () => !!referral.value && !isEditingOutcome.value })
 
 function saveOutcome() {
   if (!referral.value || updateOutcome.isPending.value) return
@@ -180,6 +183,7 @@ function saveOutcome() {
                   placeholder="Enter referral outcome from hospital / external clinic..."
                   aria-label="Referral outcome"
                   class="text-xs touch:text-base border-input"
+                  @keydown.esc.stop="cancelEditingOutcome"
                 />
                 <div class="flex items-center gap-2 max-sm:[&>*]:flex-1">
                   <Button
@@ -202,6 +206,9 @@ function saveOutcome() {
                     <PhX class="size-3.5" aria-hidden="true" />
                     <span>Cancel</span>
                   </Button>
+                  <span class="ml-auto hidden text-xs text-muted-foreground kb:inline">
+                    <ShortcutHint keys="Ctrl+S" /> save · <ShortcutHint keys="Esc" /> cancel
+                  </span>
                 </div>
               </div>
 
@@ -222,6 +229,7 @@ function saveOutcome() {
                 >
                   <PhPencilSimple class="size-3.5" aria-hidden="true" />
                   <span>Edit outcome</span>
+                  <ShortcutHint class="hidden kb:inline-flex" keys="E" />
                 </Button>
               </div>
             </dd>
@@ -260,16 +268,6 @@ function saveOutcome() {
           </div>
         </dl>
       </AppPanel>
-
-      <!-- Back link -->
-      <div class="mt-2">
-        <Button as-child variant="ghost" size="sm" class="touch:h-10">
-          <NuxtLink :to="paths.referrals()">
-            <PhArrowLeft class="size-4" aria-hidden="true" />
-            <span>Back to Referrals</span>
-          </NuxtLink>
-        </Button>
-      </div>
     </template>
   </div>
 </template>

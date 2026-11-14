@@ -32,6 +32,14 @@ const groups = [
     ],
   },
   {
+    title: 'Referral',
+    items: [
+      { keys: 'E', label: 'Edit the referral outcome' },
+      { keys: 'Ctrl+S', label: 'Save the section or outcome you are editing' },
+      { keys: 'Esc', label: 'Cancel editing / clear search; again to go back' },
+    ],
+  },
+  {
     title: 'Forms',
     items: [
       { keys: 'Ctrl+S', label: 'Save the current form' },

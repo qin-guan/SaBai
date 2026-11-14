@@ -17,7 +17,7 @@ const vitalRows = computed(() => {
     { label: 'Height', value: v.height },
     { label: 'Weight', value: v.weight },
     { label: 'BMI', value: computeBmi(v.height != null ? String(v.height) : null, v.weight != null ? String(v.weight) : null) },
-    { label: 'Blood Pressure (Systolic / Diastolic) / mmHg', value: formatBloodPressure(v.systolic as number | null | undefined, v.diastolic as number | null | undefined) },
+    { label: 'Blood Pressure (Systolic / Diastolic) / mmHg', value: formatBloodPressure(v.systolic, v.diastolic) },
     { label: 'Heart Rate', value: v.heartRate },
     { label: 'Temperature', value: v.temperature },
     { label: 'Urine Dip Test', value: v.urineTest },
@@ -25,7 +25,7 @@ const vitalRows = computed(() => {
     { label: 'Non-Fasting Blood Glucose', value: v.bloodGlucoseNonFasting },
     { label: 'Fasting Blood Glucose', value: v.bloodGlucoseFasting },
     { label: 'HbA1c', value: v.hba1c },
-    { label: 'Diabetes Mellitus?', value: formatDiabetes((v.diabetesMellitus as boolean | null | undefined) ?? null) },
+    { label: 'Diabetes Mellitus?', value: formatDiabetes(v.diabetesMellitus ?? null) },
   ]
 })
 

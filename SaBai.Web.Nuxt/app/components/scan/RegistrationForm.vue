@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { PhMagnifyingGlass, PhUserPlus } from '@phosphor-icons/vue'
+import { useQueryClient } from '@tanstack/vue-query'
 import { toast } from 'vue-sonner'
+import { newRegisterPatientVars, pendingDisplayId, registerPatient } from '~/offline/mutations/patients'
 import { Button } from '@/components/ui/button'
 
 /** Registers a new patient with the captured photo, in the selected village. */
@@ -14,8 +16,10 @@ form.value = draft.resume(blankPatientForm())
 const errors = ref<Partial<Record<keyof PatientFormValues, string>>>({})
 const formEl = ref<HTMLFormElement>()
 const { selectedVillageCodeId, selectedVillage } = useVillageCode()
+const queryClient = useQueryClient()
+const { mutateAsync, isPending: isSaving } = useOfflineMutation(registerPatient)
 const { remember } = useRecentPatients()
-const lastCreated = ref<{ id: string, name: string, displayId: string, visitId: string } | null>(null)
+const lastCreated = ref<{ id: string, name: string, displayId: string, visitId: string, pendingCardNumber: boolean } | null>(null)
 const blankJourney: Journey = {
   vitals: false,
   vision: false,
@@ -25,8 +29,6 @@ const blankJourney: Journey = {
   pharmacyOrders: 0,
   pharmacyPending: 0,
 }
-
-const isSaving = ref(false)
 
 async function submit() {
   if (isSaving.value)
@@ -45,69 +47,49 @@ async function submit() {
     return
   }
 
-  const patientId = uuidv7()
-  const visitId = uuidv7()
-  const now = new Date().toISOString()
   const values = form.value
-  const villageCodeId = selectedVillageCodeId.value
-  const dob = new Date(values.dateOfBirth).toISOString()
-  const filterString = `${values.name} ${values.identificationNumber} ${values.contactNo}`.trim()
+  const village = selectedVillage.value
+  if (!village) {
+    toast.error('Please select a village code before submitting.')
+    return
+  }
+  const vars = newRegisterPatientVars(
+    {
+      name: values.name,
+      identificationNumber: values.identificationNumber,
+      contactNo: values.contactNo,
+      gender: values.gender as 'male' | 'female',
+      dateOfBirth: new Date(values.dateOfBirth).toISOString(),
+      drugAllergy: values.drugAllergy,
+      hasPoorCard: values.hasPoorCard,
+      hasBS2Card: values.hasBS2Card,
+      hasSabaiCard: values.hasSabaiCard,
+      tags: values.tags,
+    },
+    { villageCodeId: village.id, code: village.code, name: village.name, colorHex: village.colorHex },
+  )
 
-  isSaving.value = true
+  let outcome
   try {
-    const db = getPowerSyncInstance()
-    await db.writeTransaction(async (tx) => {
-      await tx.execute(
-        `INSERT INTO patients (
-          id, number, name, identification_number, contact_no, gender, date_of_birth,
-          drug_allergy, has_poor_card, has_bs2_card, has_sabai_card, to_get_report,
-          village_code_id, filter_string, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          patientId,
-          0,
-          values.name.trim(),
-          values.identificationNumber.trim() || null,
-          values.contactNo.trim() || null,
-          values.gender,
-          dob,
-          values.drugAllergy.trim() || 'None',
-          values.hasPoorCard ? 1 : 0,
-          values.hasBS2Card ? 1 : 0,
-          values.hasSabaiCard ? 1 : 0,
-          0,
-          villageCodeId,
-          filterString,
-          now,
-        ],
-      )
-      await tx.execute(
-        `INSERT INTO visits (id, patient_id, village_code_id, date, status)
-         VALUES (?, ?, ?, ?, ?)`,
-        [visitId, patientId, villageCodeId, now, 'Started'],
-      )
-    })
-    await syncLocalPatientTags(patientId, values.tags)
-    await refreshPendingCrudCount()
+    outcome = await mutateAsync(vars)
   }
   catch (error) {
     console.error('Error creating patient:', error)
-    toast.error('Failed to create patient. Please try again.')
+    toast.error(getApiErrorMessage(error, 'Failed to create patient. Please try again.'))
     return
   }
-  finally {
-    isSaving.value = false
-  }
 
-  remember(patientId)
+  remember(vars.id)
 
   // Best-effort: the patient already exists, so a failure here must not discard the registration.
-  if (typeof navigator !== 'undefined' && !navigator.onLine) {
-    toast.warning('Patient created locally. Photo and face enrollment can be retried from the patient page once online.')
+  // The photo and face enrolment need the server, which does not know a queued patient yet.
+  if (outcome.queued) {
+    toast.warning('The photo and face enrolment need a connection. Add the photo from the patient page once the registration has been sent.')
   }
   else {
     try {
-      await setPatientPhotoAndFace(patientId, image.value)
+      await setPatientPhotoAndFace(vars.id, image.value)
+      queryClient.invalidateQueries({ queryKey: queryKeys.patients() })
     }
     catch (error) {
       console.error('Error saving patient photo/face:', error)
@@ -115,12 +97,13 @@ async function submit() {
     }
   }
 
-  toast.success('Patient created!')
+  notifySaved(outcome, 'Patient created successfully!')
   lastCreated.value = {
-    id: patientId,
-    name: values.name.trim(),
-    displayId: `${selectedVillage.value?.code ?? ''}NEW`,
-    visitId,
+    id: vars.id,
+    name: vars.name.trim(),
+    displayId: outcome.queued ? pendingDisplayId(village.code) : outcome.result.displayId,
+    visitId: vars.visitId,
+    pendingCardNumber: outcome.queued,
   }
   image.value = null
   form.value = blankPatientForm()

@@ -1,14 +1,16 @@
 import { z } from "zod";
 import type { Option } from "./options";
-import type { SaBaiAPIDomainStockStatusKey } from "@sabai/sdk/types";
+import type {
+  SaBaiAPIDomainStockStatusKey,
+  SaBaiAPIEndpointsMedicationStockWithBrandGetResponse,
+} from "@sabai/sdk/types";
 import { saBaiAPIDomainStockStatus } from "@sabai/sdk/types";
-import type { LocalMedicationStock } from "~/composables/useMedication";
 
 export const MAX_SPLITS = 10;
 export const MIN_SPLITS = 2;
 
 export type StockStatus = SaBaiAPIDomainStockStatusKey;
-export type MedicationStockRow = LocalMedicationStock;
+export type MedicationStockRow = SaBaiAPIEndpointsMedicationStockWithBrandGetResponse;
 
 export const STOCK_STATUSES = Object.values(saBaiAPIDomainStockStatus) as StockStatus[];
 
@@ -64,4 +66,27 @@ export function validateSplits(splits: SplitPayload[], parentQty: number) {
   }
 
   return { success: true, message: "Splits are valid!" };
+}
+
+/**
+ * Checks a stock adjustment typed as text against the quantity the user sees.
+ * On success `resultingQuantity` is what the lot holds after the change.
+ */
+export function validateAdjustment(
+  change: string,
+  currentQuantity: number,
+):
+  | { success: true; quantityChange: number; resultingQuantity: number }
+  | { success: false; message: string } {
+  if (change.trim() === "") return { success: false, message: "Missing quantity change!" };
+  const quantityChange = Number(change);
+  if (!Number.isInteger(quantityChange)) {
+    return { success: false, message: "Please input a whole number." };
+  }
+  if (quantityChange === 0) return { success: false, message: "The change cannot be zero." };
+  const resultingQuantity = currentQuantity + quantityChange;
+  if (resultingQuantity < 0) {
+    return { success: false, message: "Stock quantity cannot be negative." };
+  }
+  return { success: true, quantityChange, resultingQuantity };
 }

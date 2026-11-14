@@ -1,20 +1,21 @@
 <script setup lang="ts">
 import { PhFloppyDisk } from '@phosphor-icons/vue'
 import { toast } from 'vue-sonner'
-import type { LocalMedicationIngredient } from '~/composables/useMedication'
+import { createMedicationBrand } from '~/offline/mutations/medication'
+import type { MedicationIngredient } from '~/offline/mutations/medication'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 
-defineProps<{ ingredients: LocalMedicationIngredient[] }>()
+const props = defineProps<{ ingredients: MedicationIngredient[] }>()
 const emit = defineEmits<{ close: [] }>()
 const form = ref({ name: '', activeIngredientId: '', remarks: '' })
 const errors = ref<{ name?: string, activeIngredientId?: string }>({})
 const formEl = ref<HTMLFormElement>()
-const isSaving = ref(false)
+const create = useOfflineMutation(createMedicationBrand)
 
 async function submit() {
-  if (isSaving.value)
+  if (create.isPending.value)
     return
   errors.value = {
     name: form.value.name.trim() ? undefined : 'Missing name!',
@@ -25,29 +26,27 @@ async function submit() {
     return
   }
 
-  isSaving.value = true
+  const ingredient = props.ingredients.find(i => i.id === form.value.activeIngredientId)
+  if (!ingredient) {
+    errors.value = { activeIngredientId: 'Select an active ingredient.' }
+    return
+  }
   try {
-    const db = getPowerSyncInstance()
-    await db.execute(
-      `INSERT INTO medication_brands (id, name, active_ingredient_id, remarks, version)
-       VALUES (?, ?, ?, ?, 1)`,
-      [
-        uuidv7(),
-        form.value.name.trim(),
-        form.value.activeIngredientId,
-        form.value.remarks.trim() || null,
-      ],
-    )
-    await refreshPendingCrudCount()
-    toast.success('Successfully created!')
+    // The id is chosen here so a create queued offline can be referenced right away.
+    const outcome = await create.mutateAsync({
+      id: uuidv7(),
+      name: form.value.name.trim(),
+      activeIngredientId: ingredient.id,
+      remarks: form.value.remarks.trim(),
+      ingredientName: ingredient.name,
+      ingredientFallBelow: ingredient.fallBelow,
+    })
     emit('close')
+    notifySaved(outcome, 'Successfully created!')
   }
   catch (err) {
     console.error(err)
-    toast.error('An error has occurred.')
-  }
-  finally {
-    isSaving.value = false
+    toast.error(getApiErrorMessage(err, 'An error has occurred.'))
   }
 }
 
@@ -65,7 +64,7 @@ useSaveShortcut(submit)
           <NativeSelectOption value="">
             Select an option
           </NativeSelectOption>
-          <NativeSelectOption v-for="i in ingredients" :key="i.id" :value="String(i.id)">
+          <NativeSelectOption v-for="i in ingredients" :key="i.id" :value="i.id">
             {{ i.name }} ({{ i.unitOfMeasurement }})
           </NativeSelectOption>
         </NativeSelect>
@@ -78,8 +77,8 @@ useSaveShortcut(submit)
       <Button variant="outline" @click="emit('close')">
         Cancel
       </Button>
-      <Button type="submit" form="add-brand-form" variant="success" :disabled="isSaving">
-        <PhFloppyDisk aria-hidden="true" /> {{ isSaving ? 'Saving...' : 'Save' }}
+      <Button type="submit" form="add-brand-form" variant="success" :disabled="create.isPending.value">
+        <PhFloppyDisk aria-hidden="true" /> {{ create.isPending.value ? 'Saving...' : 'Save' }}
       </Button>
     </template>
   </AppDialog>

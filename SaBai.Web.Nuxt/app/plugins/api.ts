@@ -75,7 +75,13 @@ export default defineNuxtPlugin({
     await persistence.restore();
     persistence.start();
 
-    await initOfflineRuntime({ queryClient, clearPersistedQueries: persistence.clear });
+    await initOfflineRuntime({
+      queryClient,
+      clearPersistedQueries: persistence.clear,
+      // A replayed write got 401: the session ended. Whoever signs in next gets
+      // their own writes sent; anyone else's stay parked on the device.
+      onUnauthorized: redirectToLogin,
+    });
 
     nuxtApp.vueApp.use(VueQueryPlugin, { queryClient });
 

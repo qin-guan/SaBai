@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { PhArrowsSplit, PhFloppyDisk, PhPencilSimple, PhX } from '@phosphor-icons/vue'
+import { PhArrowsSplit, PhFloppyDisk, PhPencilSimple, PhPlusMinus, PhX } from '@phosphor-icons/vue'
 import { toast } from 'vue-sonner'
+import { updateMedicationStock } from '~/offline/mutations/medication'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,10 +13,10 @@ import { TableCell, TableRow } from '@/components/ui/table'
  * other fields are locked. Esc cancels, Enter / Ctrl+S saves while editing.
  */
 const props = defineProps<{ item: MedicationStockRow }>()
-const emit = defineEmits<{ split: [item: MedicationStockRow] }>()
+const emit = defineEmits<{ split: [item: MedicationStockRow], adjust: [item: MedicationStockRow] }>()
 
 const isEditing = ref(false)
-const isSaving = ref(false)
+const update = useOfflineMutation(updateMedicationStock)
 const initial = () => ({
   location: props.item.location,
   stockStatus: props.item.stockStatus as string,
@@ -41,7 +42,7 @@ function cancel() {
 }
 
 async function save() {
-  if (isSaving.value)
+  if (update.isPending.value)
     return
   locationError.value = form.value.location.trim() ? null : 'Missing Location!'
   if (locationError.value)
@@ -51,31 +52,20 @@ async function save() {
     return
   }
 
-  isSaving.value = true
   try {
-    const db = getPowerSyncInstance()
-    await db.execute(
-      `UPDATE medication_stocks
-       SET location = ?, stock_status = ?, remarks = ?, updated_at = ?
-       WHERE id = ?`,
-      [
-        form.value.location.trim(),
-        form.value.stockStatus,
-        form.value.remarks.trim() || null,
-        new Date().toISOString(),
-        props.item.id,
-      ],
-    )
-    await refreshPendingCrudCount()
-    toast.success('Successfully updated!')
+    const outcome = await update.mutateAsync({
+      id: props.item.id,
+      location: form.value.location.trim(),
+      stockStatus: form.value.stockStatus as StockStatus,
+      remarks: form.value.remarks.trim() || null,
+      brandName: props.item.brandName,
+    })
     isEditing.value = false
+    notifySaved(outcome, 'Successfully updated!')
   }
   catch (err) {
     console.error(err)
-    toast.error('An error has occurred while updating the stock. Refresh and try again.')
-  }
-  finally {
-    isSaving.value = false
+    toast.error(getApiErrorMessage(err, 'An error has occurred while updating the stock. Refresh and try again.'))
   }
 }
 
@@ -152,8 +142,8 @@ function onKeydown(event: KeyboardEvent) {
     <TableCell data-stack="actions">
       <div class="flex justify-end gap-1">
         <template v-if="isEditing">
-          <Button size="sm" variant="success" :disabled="isSaving" @click="save">
-            <PhFloppyDisk aria-hidden="true" /> {{ isSaving ? 'Saving…' : 'Save' }}
+          <Button size="sm" variant="success" :disabled="update.isPending.value" @click="save">
+            <PhFloppyDisk aria-hidden="true" /> {{ update.isPending.value ? 'Saving…' : 'Save' }}
           </Button>
           <Button size="sm" variant="outline" @click="cancel">
             <PhX aria-hidden="true" /> Cancel
@@ -162,6 +152,9 @@ function onKeydown(event: KeyboardEvent) {
         <template v-else>
           <Button ref="editButton" size="sm" variant="outline" :aria-label="`Edit ${item.brandName} at ${item.location}`" @click="startEditing">
             <PhPencilSimple aria-hidden="true" /> Edit
+          </Button>
+          <Button size="sm" variant="outline" :aria-label="`Adjust ${item.brandName} at ${item.location}`" @click="emit('adjust', item)">
+            <PhPlusMinus aria-hidden="true" /> Adjust
           </Button>
           <Button size="sm" variant="outline" :aria-label="`Split ${item.brandName} at ${item.location}`" @click="emit('split', item)">
             <PhArrowsSplit aria-hidden="true" /> Split

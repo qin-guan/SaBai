@@ -22,7 +22,8 @@ const {
   pendingCount,
   attentionCount,
   lastSyncedAt,
-  items,
+  ownItems,
+  parkedItems,
   statusLabel,
   prefetch,
   syncNow,
@@ -32,8 +33,24 @@ const {
   discard,
 } = useSyncState()
 
-const pendingItems = computed(() => items.value.filter(item => item.status === 'queued'))
-const attentionItems = computed(() => items.value.filter(item => item.status !== 'queued'))
+const { isAdmin } = useCurrentUser()
+const discarding = ref<OutboxItem | null>(null)
+
+const pendingItems = computed(() => ownItems.value.filter(item => item.status === 'queued'))
+const attentionItems = computed(() => ownItems.value.filter(item => item.status !== 'queued'))
+
+/** Other users' writes, grouped by who made them. */
+const parkedGroups = computed(() => {
+  const groups = new Map<string, { name: string, items: OutboxItem[] }>()
+  for (const item of parkedItems.value) {
+    const key = item.userId ?? ''
+    const group = groups.get(key) ?? { name: item.userName || 'another user', items: [] }
+    group.items.push(item)
+    groups.set(key, group)
+  }
+  return [...groups.values()]
+})
+const discardingParked = computed(() => !!discarding.value && parkedItems.value.some(item => item.id === discarding.value!.id))
 
 const syncing = ref(false)
 async function onSyncNow() {
@@ -69,7 +86,6 @@ async function act(item: OutboxItem, action: (id: string) => Promise<unknown>) {
   }
 }
 
-const discarding = ref<OutboxItem | null>(null)
 async function confirmDiscard() {
   const item = discarding.value
   if (!item) return
@@ -165,6 +181,39 @@ const prefetchPercent = computed(() =>
       </ul>
     </AppPanel>
 
+    <!-- Other users' changes -->
+    <AppPanel
+      v-for="group in parkedGroups"
+      :key="group.name"
+      :title="`Changes made by ${group.name} waiting for them to sign in again (${group.items.length})`"
+      flush
+    >
+      <p class="border-b border-border px-3 py-2 text-xs text-muted-foreground touch:text-sm">
+        These were saved on this device by {{ group.name }} and are sent only when {{ group.name }} signs in here again.
+        <template v-if="!isAdmin">An admin can discard them.</template>
+      </p>
+      <ol class="divide-y divide-border">
+        <li
+          v-for="item in group.items"
+          :key="item.id"
+          class="flex items-center gap-3 px-3 py-2"
+          data-testid="parked-item"
+        >
+          <span class="min-w-0 flex-1 truncate">{{ item.label }}</span>
+          <span class="shrink-0 text-xs text-muted-foreground touch:text-sm">{{ formatTime(item.queuedAt) }}</span>
+          <Button
+            v-if="isAdmin"
+            size="sm"
+            variant="destructive"
+            :disabled="busyId === item.id"
+            @click="discarding = item"
+          >
+            <PhTrash aria-hidden="true" /> Discard
+          </Button>
+        </li>
+      </ol>
+    </AppPanel>
+
     <!-- Pending changes -->
     <AppPanel :title="`Waiting to be sent (${pendingItems.length})`" flush>
       <StateMessage
@@ -219,7 +268,8 @@ const prefetchPercent = computed(() =>
         <li>Saving patient records, visits and station forms works offline. The change shows straight away and is sent when the server can be reached.</li>
         <li>If someone else changed the same record in the meantime, the change is held here so you can decide what to keep.</li>
         <li>Face search, photos and files, PDFs, the audit log, staff accounts and notifications need a connection.</li>
-        <li>Signing out deletes changes that have not been sent yet, so sync first.</li>
+        <li>Signing out deletes your changes that have not been sent yet, so sync first.</li>
+        <li>If your session ends before your changes are sent and someone else signs in on this device, your changes wait here, unsent, until you sign in again.</li>
       </ul>
     </AppPanel>
 
@@ -229,6 +279,9 @@ const prefetchPercent = computed(() =>
       </p>
       <p class="mt-2">
         The change is deleted from this device and will never reach the server. This cannot be undone.
+      </p>
+      <p v-if="discardingParked" class="mt-2">
+        It was made by {{ discarding.userName || 'another user' }}, who has not signed in again since.
       </p>
       <template #footer>
         <Button variant="outline" @click="discarding = null">

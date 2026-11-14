@@ -10,7 +10,9 @@ import { Input } from '@/components/ui/input'
 const query = ref('')
 const debounced = useDebouncedRef(query, 120)
 
-const { data, isLoading, isError } = usePatientsWithLatestVisit()
+const { data, isLoading, isError: queryFailed, error } = usePatientsWithLatestVisit()
+// Cached patients are still searchable when a refresh fails (e.g. offline).
+const isError = computed(() => queryFailed.value && !data.value)
 const patients = computed(() => data.value?.patients ?? [])
 const byId = computed(() => new Map(patients.value.map(p => [p.id, p])))
 const index = computed(() => buildPatientIndex(patients.value))
@@ -39,7 +41,7 @@ const lastVisit = (date: string) => `Last visit ${formatVisitDate(date)}`
         />
       </div>
     </div>
-    <StateMessage v-if="isError" kind="error" message="Patients could not be loaded. Check the connection and reload." />
+    <StateMessage v-if="isError" kind="error" :message="describeLoadError(error, 'Patients could not be loaded.')" />
     <StateMessage v-else-if="isLoading && query.trim()" kind="loading" message="Loading patients…" />
     <template v-else-if="debounced.trim()">
       <p v-if="hits.length === 0" class="px-3 py-6 text-center text-xs text-muted-foreground touch:text-sm" role="status">
@@ -54,7 +56,7 @@ const lastVisit = (date: string) => `Last visit ${formatVisitDate(date)}`
                 {{ p!.name }}
               </NuxtLink>
               <p class="flex flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground touch:text-sm">
-                <PatientCode :id="p!.number ?? p!.id" :village-code="p!.villageCode" :village-color-hex="p!.villageColorHex" />
+                <PatientCode :id="p!.id" :display-id="p!.displayId" :village-code="p!.villageCode" :village-color-hex="p!.villageColorHex" />
                 <span aria-hidden="true">·</span>
                 <span>{{ calculateAge(p!.dateOfBirth) }} y <span class="capitalize">{{ p!.gender }}</span></span>
                 <template v-if="p!.tags?.length">

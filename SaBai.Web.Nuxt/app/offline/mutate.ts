@@ -1,7 +1,7 @@
 import type { QueryClient } from '@tanstack/vue-query'
 import type { OfflineMutationDef } from './defineOfflineMutation'
 import { isNetworkError } from './network'
-import { applyOptimistic } from './optimistic'
+import { runOptimistic, type OptimisticEdit } from './optimistic'
 import type { Outbox } from './outbox'
 
 export type OfflineMutationOutcome<TResult> =
@@ -36,13 +36,15 @@ export async function runOfflineMutation<TVars, TResult>(
 ): Promise<OfflineMutationOutcome<TResult>> {
   const { queryClient, outbox } = runtime
   const optimistic = def.optimistic
-  const rollback = optimistic
-    ? applyOptimistic(queryClient, () => optimistic(vars, queryClient))
-    : () => {}
+  const edit: OptimisticEdit = optimistic
+    ? runOptimistic(queryClient, () => optimistic(vars, queryClient))
+    : { rollback: () => {}, undo: [] }
+  const rollback = edit.rollback
 
   const queue = async (): Promise<OfflineMutationOutcome<TResult>> => {
     try {
-      await outbox.enqueue(def, vars)
+      // The undo record lets a later discard take the edit back offline.
+      await outbox.enqueue(def, vars, { undo: edit.undo })
     }
     catch (error) {
       // Could not even save it on this device (storage full or blocked).

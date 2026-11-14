@@ -8,7 +8,7 @@ import type { Ref } from 'vue'
  * each to its own endpoint, so a save never overwrites someone else's edit to
  * another step. Unsaved input is kept as a draft like every clinical form.
  */
-export function useReferralForm(referral: Ref<ReferralDetail | null | undefined>, formEl: Ref<HTMLElement | undefined>) {
+export function useReferralForm(referral: Ref<ReferralDetail | undefined>, formEl: Ref<HTMLElement | undefined>) {
   const form = ref<ReferralFormValues>()
   /** What the server holds, per step; a step is changed when the form differs from it. */
   const saved = ref<ReferralFormValues>()
@@ -54,12 +54,13 @@ export function useReferralForm(referral: Ref<ReferralDetail | null | undefined>
 
   function send(step: ReferralFormPart, id: string, values: ReferralFormValues) {
     const opts = { isAdult: isAdult.value }
+    const patientName = referral.value?.patientName
     switch (step) {
-      case 'status': return status.mutateAsync({ id, ...referralStepPayload('status', values, opts) })
-      case 'booth': return booth.mutateAsync({ id, ...referralStepPayload('booth', values, opts) })
-      case 'party': return party.mutateAsync({ id, ...referralStepPayload('party', values, opts) })
-      case 'money': return money.mutateAsync({ id, ...referralStepPayload('money', values, opts) })
-      case 'outcome': return outcome.mutateAsync({ id, ...referralStepPayload('outcome', values, opts) })
+      case 'status': return status.mutateAsync({ id, patientName, ...referralStepPayload('status', values, opts) })
+      case 'booth': return booth.mutateAsync({ id, patientName, ...referralStepPayload('booth', values, opts) })
+      case 'party': return party.mutateAsync({ id, patientName, ...referralStepPayload('party', values, opts) })
+      case 'money': return money.mutateAsync({ id, patientName, ...referralStepPayload('money', values, opts) })
+      case 'outcome': return outcome.mutateAsync({ id, patientName, ...referralStepPayload('outcome', values, opts) })
     }
   }
 
@@ -87,12 +88,15 @@ export function useReferralForm(referral: Ref<ReferralDetail | null | undefined>
     isSaving.value = false
 
     const failed: { step: ReferralFormPart, error: unknown }[] = []
+    let queued = false
     results.forEach((result, i) => {
       const step = steps[i]!
       if (result.status === 'rejected') {
         failed.push({ step, error: result.reason })
         return
       }
+      if (result.value.queued)
+        queued = true
       // Store what was sent as the server would echo it (trimmed, blanks → empty),
       // and tidy the field the same way unless it was edited while saving.
       const stored = referralFormValues({ ...referral.value!, ...referralStepPayload(step, sent, { isAdult: isAdult.value }) })[step]
@@ -104,6 +108,10 @@ export function useReferralForm(referral: Ref<ReferralDetail | null | undefined>
     draft.clear(saved.value)
 
     if (failed.length === 0) {
+      if (queued) {
+        toast.info(SAVED_ON_DEVICE_MESSAGE)
+        return
+      }
       toast.success(steps.length === 1 ? `${REFERRAL_PART_LABELS[steps[0]!]} saved` : 'Referral saved')
       return
     }

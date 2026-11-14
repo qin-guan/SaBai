@@ -5,7 +5,7 @@ import {
   saBaiAPIEndpointsAuthWhoAmIGetEndpoint,
 } from "@sabai/sdk/clients";
 import type { SaBaiAPIEndpointsAuthUserResponse } from "@sabai/sdk/types";
-import { clearOfflineData, getOfflineRuntime, startOfflineSync } from "~/offline/runtime";
+import { clearOfflineData, ownOutboxItems, startOfflineSync } from "~/offline/runtime";
 
 export type StaffUser = SaBaiAPIEndpointsAuthUserResponse & { tags?: string[] };
 
@@ -75,8 +75,10 @@ export function currentUserQueryOptions() {
 export async function loadCurrentUser(queryClient: QueryClient): Promise<StaffUser | null> {
   try {
     const user = await queryClient.ensureQueryData(currentUserQueryOptions());
-    // Signed in: send queued writes and download the offline working set when due.
-    if (user && import.meta.client) startOfflineSync();
+    // Signed in: tell the offline layer who it is (only their queued writes are
+    // sent; another user's cached data is dropped), send queued writes and
+    // download the offline working set when due.
+    if (user && import.meta.client) startOfflineSync({ id: user.id, name: user.nickname || user.userName });
     return user;
   } catch (error) {
     if (isUnauthorizedError(error)) return null;
@@ -108,7 +110,8 @@ export function useCurrentUser() {
 export function useSignOut() {
   const queryClient = useQueryClient();
   const signOut = async (options?: { force?: boolean }) => {
-    const unsent = import.meta.client ? getOfflineRuntime().outbox.getItems().length : 0;
+    // Only this user's own writes; other users' parked writes stay on the device.
+    const unsent = import.meta.client ? ownOutboxItems().length : 0;
     if (unsent > 0 && options?.force !== true) {
       toast.warning(
         `${unsent} change${unsent === 1 ? " has" : "s have"} not been sent to the server yet. Signing out deletes ${unsent === 1 ? "it" : "them"} from this device.`,

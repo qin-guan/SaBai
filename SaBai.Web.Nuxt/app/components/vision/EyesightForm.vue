@@ -5,13 +5,14 @@ import type { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { createEyesight, updateEyesight, type EyesightFields } from '~/offline/mutations/visitRecords'
 
 /**
  * Full eyesight record for a visit (acuity, pinhole, astigmatism, prescribed
  * glasses, comments). Acuity/pinhole fields validate after first blur and then
  * live, so errors show before Save and clear once the input is valid.
  */
-const props = defineProps<{ visitId: string }>()
+const props = defineProps<{ visitId: string, patientName?: string }>()
 
 type Key = keyof EyesightFormValues
 
@@ -92,7 +93,9 @@ const errors = computed(() => {
   return result
 })
 
-const saving = ref(false)
+const createEyesightMutation = useOfflineMutation(createEyesight)
+const updateEyesightMutation = useOfflineMutation(updateEyesight)
+const saving = computed(() => createEyesightMutation.isPending.value || updateEyesightMutation.isPending.value)
 
 async function submit() {
   if (saving.value || isLoading.value)
@@ -108,72 +111,36 @@ async function submit() {
   }
 
   const data = { ...form.value }
-  const now = new Date().toISOString()
-  saving.value = true
+  const fields: EyesightFields = {
+    leftEyeDegree: data.leftEyeDegree || undefined,
+    rightEyeDegree: data.rightEyeDegree || undefined,
+    leftEyePinhole: data.leftEyePinhole || undefined,
+    rightEyePinhole: data.rightEyePinhole || undefined,
+    leftAstigmatism: data.leftAstigmatism || undefined,
+    rightAstigmatism: data.rightAstigmatism || undefined,
+    leftPrescribedGlassesDegree: data.leftPrescribedGlassesDegree || undefined,
+    rightPrescribedGlassesDegree: data.rightPrescribedGlassesDegree || undefined,
+    comments: data.comments || undefined,
+  }
+  const existingId = eyesight.value?.id
+  const vars = {
+    id: existingId ?? uuidv7(),
+    visitId: props.visitId,
+    patientName: props.patientName,
+    recordedAt: new Date().toISOString(),
+    fields,
+  }
   try {
-    const db = getPowerSyncInstance()
-    const existingId = eyesight.value?.id ? String(eyesight.value.id) : null
-    if (!existingId) {
-      await db.execute(
-        `INSERT INTO eyesights (
-          id, visit_id, recorded_at, left_eye_degree, right_eye_degree,
-          left_eye_pinhole, right_eye_pinhole, left_astigmatism, right_astigmatism,
-          left_prescribed_glasses_degree, right_prescribed_glasses_degree, comments,
-          version, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)`,
-        [
-          uuidv7(),
-          props.visitId,
-          now,
-          data.leftEyeDegree || null,
-          data.rightEyeDegree || null,
-          data.leftEyePinhole || null,
-          data.rightEyePinhole || null,
-          data.leftAstigmatism || null,
-          data.rightAstigmatism || null,
-          data.leftPrescribedGlassesDegree || null,
-          data.rightPrescribedGlassesDegree || null,
-          data.comments || null,
-          now,
-        ],
-      )
-    }
-    else {
-      await db.execute(
-        `UPDATE eyesights
-         SET left_eye_degree = ?, right_eye_degree = ?,
-             left_eye_pinhole = ?, right_eye_pinhole = ?,
-             left_astigmatism = ?, right_astigmatism = ?,
-             left_prescribed_glasses_degree = ?, right_prescribed_glasses_degree = ?,
-             comments = ?, updated_at = ?
-         WHERE id = ?`,
-        [
-          data.leftEyeDegree || null,
-          data.rightEyeDegree || null,
-          data.leftEyePinhole || null,
-          data.rightEyePinhole || null,
-          data.leftAstigmatism || null,
-          data.rightAstigmatism || null,
-          data.leftPrescribedGlassesDegree || null,
-          data.rightPrescribedGlassesDegree || null,
-          data.comments || null,
-          now,
-          existingId,
-        ],
-      )
-    }
-    await refreshPendingCrudCount()
+    const outcome = existingId
+      ? await updateEyesightMutation.mutateAsync(vars)
+      : await createEyesightMutation.mutateAsync(vars)
     serviceTimer.saved()
-    toast.success('Vision record saved!')
     load(data)
     draft.clear(data)
+    notifySaved(outcome, 'Vision record saved successfully!')
   }
   catch (error) {
-    console.error('Error saving vision record:', error)
-    toast.error('Failed to save vision record.')
-  }
-  finally {
-    saving.value = false
+    toast.error(getApiErrorMessage(error, 'Failed to save vision record.'))
   }
 }
 

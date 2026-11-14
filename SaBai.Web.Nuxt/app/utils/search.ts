@@ -21,7 +21,6 @@ import { formatPatientCode, formatPatientId } from './patient'
 
 export interface SearchablePatient {
   id: string | number
-  number?: number
   name: string
   identificationNumber?: string | null
   contactNo?: string | null
@@ -51,6 +50,24 @@ const SEARCH_OPTIONS = {
   combineWith: 'AND' as const,
 }
 
+/**
+ * Every form a patient's ID is typed in: the card code ("PC0012"), the number
+ * with and without padding and zeros ("0012", "12") and the village prefix on
+ * its own number ("PC12"). A numeric id (legacy) is matched as is.
+ */
+function patientCodes(p: SearchablePatient): string[] {
+  const codes = [p.displayId ?? '']
+  if (typeof p.id === 'number') {
+    codes.push(String(p.id), formatPatientId(p.id), formatPatientCode(p.villageCode, p.id))
+  }
+  const tail = /(\d+)$/.exec(p.displayId ?? '')?.[1]
+  if (tail) {
+    const n = String(Number(tail))
+    codes.push(tail, n, `${p.villageCode ?? ''}${n}`)
+  }
+  return codes
+}
+
 export function buildPatientIndex(patients: SearchablePatient[]) {
   const index = new MiniSearch<Omit<SearchablePatient, 'tags'> & { ids: string, digits: string, tags: string }>({
     fields: ['name', 'ids', 'identificationNumber', 'digits', 'villageCode', 'tags'],
@@ -65,13 +82,7 @@ export function buildPatientIndex(patients: SearchablePatient[]) {
       identificationNumber: normalizeKhmerDigits(cleanKhmerText(p.identificationNumber)),
       villageCode: normalizeKhmerDigits(cleanKhmerText(p.villageCode)),
       tags: (p.tags ?? []).join(' '),
-      ids: [
-        String(p.id),
-        formatPatientId(p.id),
-        formatPatientCode(p.villageCode, p.id),
-        ...(p.number !== undefined ? [String(p.number), formatPatientId(p.number), formatPatientCode(p.villageCode, p.number)] : []),
-        p.displayId ?? '',
-      ].join(' '),
+      ids: patientCodes(p).join(' '),
       // Phone numbers are typed without spaces/dashes (and may use Khmer numerals).
       digits: normalizeKhmerDigits(p.contactNo ?? '').replace(/\D/g, ''),
     })),

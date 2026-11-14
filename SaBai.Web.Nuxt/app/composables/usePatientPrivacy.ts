@@ -1,5 +1,16 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
+import { useQuery } from '@tanstack/vue-query'
 import type { MaybeRefOrGetter } from 'vue'
+import {
+  consentsKey,
+  disclosuresKey,
+  recordConsent,
+  recordDisclosure,
+} from '~/offline/mutations/patients'
+import {
+  saBaiAPIEndpointsPatientsConsentsGetEndpoint,
+  saBaiAPIEndpointsPatientsDisclosuresGetEndpoint,
+} from '@sabai/sdk/clients'
+import { uuidv7 } from '~/utils/uuid'
 
 export type ConsentType = 'NoticeOfPrivacyPractices' | 'BiometricFaceRecognition' | 'ClinicalDataSharing'
 
@@ -10,7 +21,7 @@ export const CONSENT_LABELS: Record<ConsentType, string> = {
 }
 
 export interface PatientConsent {
-  id: string | number
+  id: string
   consentType: ConsentType
   granted: boolean
   recordedAt: string
@@ -20,7 +31,7 @@ export interface PatientConsent {
 }
 
 export interface PatientDisclosure {
-  id: string | number
+  id: string
   recipient: string
   purpose: string
   description: string | null
@@ -49,7 +60,7 @@ export function currentConsents(consents: readonly PatientConsent[]) {
   for (const c of consents) {
     const prev = latest.get(c.consentType)
     const newer = !prev || new Date(c.recordedAt) > new Date(prev.recordedAt)
-      || (c.recordedAt === prev.recordedAt && String(c.id) > String(prev.id))
+      || (c.recordedAt === prev.recordedAt && c.id > prev.id)
     if (newer)
       latest.set(c.consentType, c)
   }
@@ -58,60 +69,60 @@ export function currentConsents(consents: readonly PatientConsent[]) {
 
 export function usePatientConsents(patientId: MaybeRefOrGetter<string | null>) {
   return useQuery({
-    queryKey: computed(() => ['patients', 'consents', toValue(patientId) ?? ''] as const),
+    queryKey: computed(() => consentsKey(toValue(patientId) ?? '')),
     enabled: computed(() => !!toValue(patientId)),
     queryFn: ({ signal }) =>
-      $fetch<{ consents: PatientConsent[] }>(`/api/patients/${toValue(patientId)}/consents`, {
-        credentials: 'same-origin',
-        signal,
-      }).then(x => x.consents),
+      saBaiAPIEndpointsPatientsConsentsGetEndpoint({ ...apiConfig, path: { patientId: toValue(patientId)! }, signal })
+        .unwrap()
+        .then(x => x.consents as PatientConsent[]),
   })
 }
 
+/** Records a consent decision; saved on this device when offline. */
 export function useRecordConsent(patientId: MaybeRefOrGetter<string | null>) {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: (input: { consentType: ConsentType, granted: boolean, notes?: string }) =>
-      $fetch(`/api/patients/${toValue(patientId)}/consents`, {
-        method: 'POST',
-        body: {
-          patientId: toValue(patientId),
-          consentType: input.consentType,
-          granted: input.granted,
-          notes: input.notes?.trim() || null,
-        },
-        credentials: 'same-origin',
+  const { user } = useCurrentUser()
+  const { mutateAsync, isPending } = useOfflineMutation(recordConsent)
+  return {
+    isPending,
+    mutateAsync: (input: { consentType: ConsentType, granted: boolean, notes?: string }) =>
+      mutateAsync({
+        id: uuidv7(),
+        patientId: toValue(patientId)!,
+        consentType: input.consentType,
+        granted: input.granted,
+        notes: input.notes?.trim() || null,
+        recordedByUserId: user.value?.id ?? '',
+        recordedAt: new Date().toISOString(),
       }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['patients', 'consents', toValue(patientId) ?? ''] }),
-  })
+  }
 }
 
 export function usePatientDisclosures(patientId: MaybeRefOrGetter<string | null>, enabled: MaybeRefOrGetter<boolean>) {
   return useQuery({
-    queryKey: computed(() => ['patients', 'disclosures', toValue(patientId) ?? ''] as const),
+    queryKey: computed(() => disclosuresKey(toValue(patientId) ?? '')),
     enabled: computed(() => !!toValue(patientId) && toValue(enabled)),
     queryFn: ({ signal }) =>
-      $fetch<{ disclosures: PatientDisclosure[] }>(`/api/patients/${toValue(patientId)}/disclosures`, {
-        credentials: 'same-origin',
-        signal,
-      }).then(x => x.disclosures),
+      saBaiAPIEndpointsPatientsDisclosuresGetEndpoint({ ...apiConfig, path: { patientId: toValue(patientId)! }, signal })
+        .unwrap()
+        .then(x => x.disclosures as PatientDisclosure[]),
   })
 }
 
+/** Records a disclosure; saved on this device when offline. */
 export function useRecordDisclosure(patientId: MaybeRefOrGetter<string | null>) {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: (input: { recipient: string, purpose: string, description?: string }) =>
-      $fetch(`/api/patients/${toValue(patientId)}/disclosures`, {
-        method: 'POST',
-        body: {
-          patientId: toValue(patientId),
-          recipient: input.recipient.trim(),
-          purpose: input.purpose.trim(),
-          description: input.description?.trim() || null,
-        },
-        credentials: 'same-origin',
+  const { user } = useCurrentUser()
+  const { mutateAsync, isPending } = useOfflineMutation(recordDisclosure)
+  return {
+    isPending,
+    mutateAsync: (input: { recipient: string, purpose: string, description?: string }) =>
+      mutateAsync({
+        id: uuidv7(),
+        patientId: toValue(patientId)!,
+        recipient: input.recipient.trim(),
+        purpose: input.purpose.trim(),
+        description: input.description?.trim() || null,
+        disclosedByUserId: user.value?.id ?? '',
+        disclosedAt: new Date().toISOString(),
       }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['patients', 'disclosures', toValue(patientId) ?? 0] }),
-  })
+  }
 }

@@ -7,3 +7,7 @@
  * `app/offline/mutations/<domain>.ts` and adds one import line here.
  */
 import './villageCodes'
+import './visitRecords'
+import './medication'
+import './referrals'
+import './patients'

@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { PhFloppyDisk, PhPencilSimple, PhTrash, PhX } from '@phosphor-icons/vue'
 import { toast } from 'vue-sonner'
-import type { LocalMedicationBrand, LocalMedicationIngredient } from '~/composables/useMedication'
+import { deleteMedicationBrand, updateMedicationBrand } from '~/offline/mutations/medication'
+import type { MedicationBrand, MedicationIngredient } from '~/offline/mutations/medication'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
@@ -9,22 +10,22 @@ import { TableCell, TableRow } from '@/components/ui/table'
 
 /** One medication brand; inline edit (Esc cancels, Enter saves) and delete with confirmation. */
 const props = defineProps<{
-  brand: LocalMedicationBrand
-  ingredients: LocalMedicationIngredient[]
+  brand: MedicationBrand
+  ingredients: MedicationIngredient[]
 }>()
 
 const ingredientName = computed(() => {
   const i = props.ingredients.find(x => x.id === props.brand.activeIngredientId)
-  return i ? `${i.name} (${i.unitOfMeasurement})` : `#${props.brand.activeIngredientId}`
+  return i ? `${i.name} (${i.unitOfMeasurement})` : 'Unknown ingredient'
 })
 
 const isEditing = ref(false)
 const isDeleting = ref(false)
-const isSaving = ref(false)
-const isRemoving = ref(false)
+const updateMutation = useOfflineMutation(updateMedicationBrand)
+const removeMutation = useOfflineMutation(deleteMedicationBrand)
 const initial = () => ({
   name: props.brand.name,
-  activeIngredientId: String(props.brand.activeIngredientId),
+  activeIngredientId: props.brand.activeIngredientId,
   remarks: props.brand.remarks ?? '',
 })
 const form = ref(initial())
@@ -43,39 +44,23 @@ function cancel() {
 }
 
 async function remove() {
-  if (isRemoving.value)
+  if (removeMutation.isPending.value)
     return
-  isRemoving.value = true
   try {
-    const db = getPowerSyncInstance()
-    const stockCount = await db.getOptional<{ c: number }>(
-      'SELECT COUNT(*) AS c FROM medication_stocks WHERE medication_brand_id = ?',
-      [props.brand.id],
-    )
-    const orderCount = await db.getOptional<{ c: number }>(
-      'SELECT COUNT(*) AS c FROM orders WHERE medication_brand_id = ?',
-      [props.brand.id],
-    )
-    if (Number(stockCount?.c ?? 0) > 0 || Number(orderCount?.c ?? 0) > 0) {
-      toast.error('Error! Check that no stock or orders use this brand.')
-      return
-    }
-    await db.execute('DELETE FROM medication_brands WHERE id = ?', [props.brand.id])
-    await refreshPendingCrudCount()
-    toast.success('Successfully deleted.')
+    // Whether stock or orders still use the brand is checked by the API.
+    const outcome = await removeMutation.mutateAsync({ id: props.brand.id, name: props.brand.name })
     isDeleting.value = false
+    notifySaved(outcome, 'Successfully deleted.')
   }
   catch (err) {
     console.error(err)
-    toast.error('Error! Check that no stock or orders use this brand.')
-  }
-  finally {
-    isRemoving.value = false
+    toast.error(getApiErrorMessage(err, 'Error! Check that no stock or orders use this brand.'))
+    isDeleting.value = false
   }
 }
 
 async function save() {
-  if (isSaving.value)
+  if (updateMutation.isPending.value)
     return
   nameError.value = form.value.name.trim() ? null : 'Missing name!'
   if (nameError.value)
@@ -89,31 +74,27 @@ async function save() {
     return
   }
 
-  isSaving.value = true
+  const ingredient = props.ingredients.find(x => x.id === form.value.activeIngredientId)
+  if (!ingredient) {
+    toast.error('Select an active ingredient.')
+    return
+  }
   try {
-    const db = getPowerSyncInstance()
-    await db.execute(
-      `UPDATE medication_brands
-       SET name = ?, active_ingredient_id = ?, remarks = ?
-       WHERE id = ?`,
-      [
-        form.value.name.trim(),
-        form.value.activeIngredientId,
-        form.value.remarks.trim() || null,
-        props.brand.id,
-      ],
-    )
-    await refreshPendingCrudCount()
-    toast.success('Successfully updated!')
+    const outcome = await updateMutation.mutateAsync({
+      id: b.id,
+      name: form.value.name.trim(),
+      activeIngredientId: ingredient.id,
+      remarks: form.value.remarks.trim(),
+      ingredientName: ingredient.name,
+      ingredientFallBelow: ingredient.fallBelow,
+    })
     isEditing.value = false
+    notifySaved(outcome, 'Successfully updated!')
   }
   catch (err) {
     console.error(err)
-    toast.error('An error has occurred.')
+    toast.error(getApiErrorMessage(err, 'An error has occurred.'))
     form.value = initial()
-  }
-  finally {
-    isSaving.value = false
   }
 }
 
@@ -149,7 +130,7 @@ function onKeydown(event: KeyboardEvent) {
     </TableCell>
     <TableCell data-label="Active Ingredient" class="min-w-44">
       <NativeSelect v-if="isEditing" v-model="form.activeIngredientId" aria-label="Active ingredient">
-        <NativeSelectOption v-for="i in ingredients" :key="i.id" :value="String(i.id)">
+        <NativeSelectOption v-for="i in ingredients" :key="i.id" :value="i.id">
           {{ i.name }} ({{ i.unitOfMeasurement }})
         </NativeSelectOption>
       </NativeSelect>
@@ -166,8 +147,8 @@ function onKeydown(event: KeyboardEvent) {
     <TableCell data-stack="actions">
       <div class="flex justify-end gap-1">
         <template v-if="isEditing">
-          <Button size="sm" variant="success" :disabled="isSaving" @click="save">
-            <PhFloppyDisk aria-hidden="true" /> {{ isSaving ? 'Saving...' : 'Save' }}
+          <Button size="sm" variant="success" :disabled="updateMutation.isPending.value" @click="save">
+            <PhFloppyDisk aria-hidden="true" /> {{ updateMutation.isPending.value ? 'Saving...' : 'Save' }}
           </Button>
           <Button size="sm" variant="outline" @click="cancel">
             <PhX aria-hidden="true" /> Cancel
@@ -200,7 +181,7 @@ function onKeydown(event: KeyboardEvent) {
           <Button variant="outline" @click="isDeleting = false">
             Cancel
           </Button>
-          <Button variant="destructive" :disabled="isRemoving" @click="remove()">
+          <Button variant="destructive" :disabled="removeMutation.isPending.value" @click="remove()">
             <PhTrash aria-hidden="true" /> Confirm
           </Button>
         </template>

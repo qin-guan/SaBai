@@ -29,7 +29,9 @@ const station = computed<StationKey | undefined>(() =>
 
 useHead({ title: () => `${station.value ? stationLabel(station.value) : 'Patients'} · Sa'Bai` })
 
-const { data, isLoading, isError } = usePatientsWithLatestVisit()
+const { data, isLoading, isError: queryFailed, error } = usePatientsWithLatestVisit()
+// Cached patients are still shown when a refresh fails (e.g. offline).
+const isError = computed(() => queryFailed.value && !data.value)
 type Row = NonNullable<typeof data.value>['patients'][number]
 
 const allPatients = computed(() => data.value?.patients ?? [])
@@ -318,7 +320,7 @@ const gridCols = 'md:grid-cols-[2rem_minmax(0,1fr)_minmax(15rem,22rem)_1rem] lg:
       :default-open="section.defaultOpen"
       flush
     >
-      <StateMessage v-if="isError" kind="error" message="Patients could not be loaded. Check the connection and reload." />
+      <StateMessage v-if="isError" kind="error" :message="describeLoadError(error, 'Patients could not be loaded.')" />
       <StateMessage v-else-if="isLoading" kind="loading" message="Loading patients..." />
       <template v-else>
         <!-- Column headings (tablet and up) with in-table tag & status filter dropdowns -->
@@ -410,7 +412,7 @@ const gridCols = 'md:grid-cols-[2rem_minmax(0,1fr)_minmax(15rem,22rem)_1rem] lg:
                 </p>
                 <!-- Below laptop width the columns fold into one meta line. -->
                 <p class="flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground lg:hidden touch:text-[0.8125rem]">
-                  <PatientCode :village-code="patient.villageCode" :village-color-hex="patient.villageColorHex" :id="patient.number ?? patient.id" />
+                  <PatientCode :village-code="patient.villageCode" :village-color-hex="patient.villageColorHex" :id="patient.id" :display-id="patient.displayId" />
                   <span>{{ calculateAge(patient.dateOfBirth) }} y <span class="capitalize">{{ patient.gender }}</span></span>
                   <span v-if="patient.lastVisitDate" class="tabular-nums">
                     {{ dateOf(patient.lastVisitDate) }}<template v-if="waited(patient.lastVisitDate)">
@@ -438,9 +440,9 @@ const gridCols = 'md:grid-cols-[2rem_minmax(0,1fr)_minmax(15rem,22rem)_1rem] lg:
               </span>
               <span
                 class="hidden min-w-0 truncate text-xs text-muted-foreground lg:block"
-                :title="formatPatientCode(patient.villageCode, patient.number ?? patient.id)"
+                :title="patient.displayId"
               >
-                <PatientCode :village-code="patient.villageCode" :village-color-hex="patient.villageColorHex" :id="patient.number ?? patient.id" />
+                <PatientCode :village-code="patient.villageCode" :village-color-hex="patient.villageColorHex" :id="patient.id" :display-id="patient.displayId" />
               </span>
               <span class="hidden truncate text-xs whitespace-nowrap lg:block">
                 {{ calculateAge(patient.dateOfBirth) }} y <span class="text-muted-foreground">{{ patient.gender === 'female' ? 'F' : 'M' }}</span>

@@ -1,6 +1,8 @@
 import type { QueryClient } from '@tanstack/vue-query'
 import type { AnyOfflineMutationDef, OfflineMutationDef } from './defineOfflineMutation'
 import { classifyReplayError, describeWriteError } from './network'
+import type { UndoEntry } from './optimistic'
+import { getApiErrorStatus } from '~/utils/apiErrors'
 import type { KeyValueStore } from './storage'
 
 /**
@@ -19,6 +21,11 @@ import type { KeyValueStore } from './storage'
  * `recordIds`): those stay queued behind it until it is retried, overwritten
  * or discarded. After a run that sent anything and was not stopped, all
  * queries are invalidated so the cache matches the server.
+ *
+ * Every item belongs to the staff user who made it (`userId`). Only the
+ * signed-in user's items are sent; nothing is sent while nobody is signed in.
+ * Another user's items are "parked": kept, not sent, and they hold back the
+ * current user's items only for the same records.
  */
 
 export type OutboxStatus = 'queued' | 'conflict' | 'rejected'
@@ -41,6 +48,17 @@ export interface OutboxItem {
   /** Server message for a conflict or rejection. */
   error?: string
   recordIds?: string[]
+  /** The staff user who made the change; only sent while they are signed in. */
+  userId?: string
+  /** Their display name, for the sync page. */
+  userName?: string
+  /** How to take the optimistic edit back if the item is discarded (see `undoQueuedEdit`). */
+  undo?: UndoEntry[]
+}
+
+export interface OutboxUser {
+  id: string
+  name: string
 }
 
 export interface ReplayResult {
@@ -48,8 +66,12 @@ export interface ReplayResult {
   sent: number
   /** Items newly marked conflict or rejected in this run. */
   failed: number
-  /** Why the run ended early: a network failure, or another run (this or another tab) is in progress. */
-  stopped?: 'network' | 'busy'
+  /**
+   * Why the run ended early: a network failure; the server answered 401 (the
+   * session ended); nobody is signed in; or another run (this or another tab)
+   * is in progress.
+   */
+  stopped?: 'network' | 'unauthorized' | 'signed-out' | 'busy'
 }
 
 export interface OutboxOptions {
@@ -59,6 +81,12 @@ export interface OutboxOptions {
   /** Server time to stamp on newly queued items (see serverTime.ts). */
   getBaseTime: () => string | undefined
   newId: () => string
+  /**
+   * The signed-in staff user, stamped on new items and used to choose which
+   * items to send. Without this option ownership is not tracked (every item is
+   * sent); with it, nothing is sent while it returns undefined.
+   */
+  getCurrentUser?: () => OutboxUser | undefined
   /**
    * Runs `fn` while holding an exclusive lock shared by all tabs, or resolves
    * `undefined` without running it when another holder has the lock.
@@ -73,19 +101,26 @@ export interface OutboxOptions {
 export interface Outbox {
   /** Reads the outbox from storage (at start-up and when another tab changed it). */
   load: () => Promise<void>
-  /** Items in order. The array is replaced on every change. */
+  /** All items in order, every user's. The array is replaced on every change. */
   getItems: () => readonly OutboxItem[]
+  /** Whether an item belongs to the signed-in user (and so may be sent, retried, re-applied). */
+  isOwn: (item: OutboxItem) => boolean
   subscribe: (listener: () => void) => () => void
   /** Whether a replay run is in progress in this tab. */
   isReplaying: () => boolean
   /**
    * Whether a new write must be queued rather than sent now to keep order:
-   * any item is still queued, or an item for one of `recordIds` is waiting.
+   * any of the user's items is still queued, or any item (anyone's) for one of
+   * `recordIds` is waiting.
    */
   mustQueue: (recordIds?: string[]) => boolean
-  /** Items still queued that are not blocked behind a conflict/rejected item of the same record. */
+  /** The user's queued items that are not blocked behind a conflict/rejected/parked item of the same record. */
   sendableCount: () => number
-  enqueue: <TVars, TResult>(def: OfflineMutationDef<TVars, TResult>, vars: TVars) => Promise<OutboxItem>
+  enqueue: <TVars, TResult>(
+    def: OfflineMutationDef<TVars, TResult>,
+    vars: TVars,
+    extra?: { undo?: UndoEntry[] },
+  ) => Promise<OutboxItem>
   replay: () => Promise<ReplayResult>
   /** Queue a conflict/rejected item again as it was (still sends `If-Unmodified-Since`). */
   retry: (id: string) => Promise<void>
@@ -93,8 +128,11 @@ export interface Outbox {
   overwrite: (id: string) => Promise<void>
   /** Drop an item: the change is lost. */
   discard: (id: string) => Promise<void>
-  /** Drop everything (sign-out) and abort a running replay. */
-  clear: () => Promise<void>
+  /**
+   * Drop items (sign-out: the signed-in user's own; no filter: all) and abort
+   * a running replay.
+   */
+  clear: (filter?: (item: OutboxItem) => boolean) => Promise<void>
 }
 
 function intersects(ids: readonly string[] | undefined, blocked: ReadonlySet<string>): boolean {
@@ -107,14 +145,24 @@ function sortItems(items: OutboxItem[]): OutboxItem[] {
 
 /**
  * Which queued items may be sent now: walks the outbox in order, collecting
- * the record ids of conflict/rejected items; a queued item sharing one of them
- * is blocked, and blocks later items for its own records in turn.
+ * the record ids of conflict/rejected items and of other users' (parked)
+ * items; a queued item sharing one of them is blocked, and blocks later items
+ * for its own records in turn.
  */
-export function partitionSendable(items: readonly OutboxItem[]): { sendable: OutboxItem[], blocked: OutboxItem[] } {
+export function partitionSendable(
+  items: readonly OutboxItem[],
+  isOwn: (item: OutboxItem) => boolean = () => true,
+): { sendable: OutboxItem[], blocked: OutboxItem[], parked: OutboxItem[] } {
   const blockedIds = new Set<string>()
   const sendable: OutboxItem[] = []
   const blocked: OutboxItem[] = []
+  const parked: OutboxItem[] = []
   for (const item of items) {
+    if (!isOwn(item)) {
+      parked.push(item)
+      for (const id of item.recordIds ?? []) blockedIds.add(id)
+      continue
+    }
     if (item.status !== 'queued' || intersects(item.recordIds, blockedIds)) {
       if (item.status === 'queued') blocked.push(item)
       for (const id of item.recordIds ?? []) blockedIds.add(id)
@@ -122,7 +170,7 @@ export function partitionSendable(items: readonly OutboxItem[]): { sendable: Out
     }
     sendable.push(item)
   }
-  return { sendable, blocked }
+  return { sendable, blocked, parked }
 }
 
 export function createOutbox(options: OutboxOptions): Outbox {
@@ -135,6 +183,13 @@ export function createOutbox(options: OutboxOptions): Outbox {
   let runAgain = false
   let controller: AbortController | undefined
   let lastSeq = 0
+  const tracksUsers = !!options.getCurrentUser
+
+  /** Items made before ownership was recorded have no `userId` and count as the current user's. */
+  function isOwn(item: OutboxItem): boolean {
+    if (!tracksUsers || item.userId === undefined) return true
+    return item.userId === options.getCurrentUser?.()?.id
+  }
 
   function emit() {
     for (const listener of listeners) listener()
@@ -171,7 +226,11 @@ export function createOutbox(options: OutboxOptions): Outbox {
     await changed()
   }
 
-  async function enqueue<TVars, TResult>(def: OfflineMutationDef<TVars, TResult>, vars: TVars): Promise<OutboxItem> {
+  async function enqueue<TVars, TResult>(
+    def: OfflineMutationDef<TVars, TResult>,
+    vars: TVars,
+    extra: { undo?: UndoEntry[] } = {},
+  ): Promise<OutboxItem> {
     // JSON round-trip: what is stored must be re-runnable from plain data, and
     // reactive proxies cannot be stored in IndexedDB.
     const plainVars = JSON.parse(JSON.stringify(vars ?? null)) as TVars
@@ -192,6 +251,19 @@ export function createOutbox(options: OutboxOptions): Outbox {
     if (baseTime) item.baseTime = baseTime
     const recordIds = def.recordIds?.(plainVars)
     if (recordIds?.length) item.recordIds = [...recordIds]
+    const user = options.getCurrentUser?.()
+    if (user) {
+      item.userId = user.id
+      item.userName = user.name
+    }
+    if (extra.undo?.length) {
+      try {
+        item.undo = JSON.parse(JSON.stringify(extra.undo)) as UndoEntry[]
+      }
+      catch {
+        // Not plain data: discarding this item falls back to refetching.
+      }
+    }
     await store.set(item.id, item)
     setItems([...items, item])
     await changed()
@@ -200,6 +272,7 @@ export function createOutbox(options: OutboxOptions): Outbox {
 
   async function runOnce(): Promise<ReplayResult> {
     const result: ReplayResult = { sent: 0, failed: 0 }
+    if (tracksUsers && !options.getCurrentUser?.()) return { ...result, stopped: 'signed-out' }
     controller = new AbortController()
     const { signal } = controller
     // Another tab may have changed the outbox since this tab last read it.
@@ -211,7 +284,7 @@ export function createOutbox(options: OutboxOptions): Outbox {
       // Re-read: another tab may have sent, retried or discarded it meanwhile.
       const item = await store.get(listed.id)
       if (!item) continue
-      if (item.status !== 'queued' || intersects(item.recordIds, blockedIds)) {
+      if (!isOwn(item) || item.status !== 'queued' || intersects(item.recordIds, blockedIds)) {
         for (const id of item.recordIds ?? []) blockedIds.add(id)
         continue
       }
@@ -233,7 +306,7 @@ export function createOutbox(options: OutboxOptions): Outbox {
       catch (error) {
         const failure = classifyReplayError(error)
         if (failure === 'stop') {
-          result.stopped = 'network'
+          result.stopped = getApiErrorStatus(error) === 401 ? 'unauthorized' : 'network'
           return result
         }
         await update(item.id, { status: failure, error: describeWriteError(error) })
@@ -288,7 +361,7 @@ export function createOutbox(options: OutboxOptions): Outbox {
   }
 
   function mustQueue(recordIds?: string[]): boolean {
-    if (items.some(item => item.status === 'queued')) return true
+    if (items.some(item => item.status === 'queued' && isOwn(item))) return true
     if (!recordIds?.length) return false
     const waiting = new Set(items.flatMap(item => item.recordIds ?? []))
     return recordIds.some(id => waiting.has(id))
@@ -297,22 +370,31 @@ export function createOutbox(options: OutboxOptions): Outbox {
   return {
     load,
     getItems: () => items,
+    isOwn,
     subscribe(listener) {
       listeners.add(listener)
       return () => listeners.delete(listener)
     },
     isReplaying: () => !!running,
     mustQueue,
-    sendableCount: () => partitionSendable(items).sendable.length,
+    sendableCount: () => (tracksUsers && !options.getCurrentUser?.() ? 0 : partitionSendable(items, isOwn).sendable.length),
     enqueue,
     replay,
     retry: id => update(id, { status: 'queued' }, ['error']),
     overwrite: id => update(id, { status: 'queued' }, ['error', 'baseTime']),
     discard: id => removeItem(id),
-    async clear() {
+    async clear(filter) {
       controller?.abort()
-      await store.clear()
-      setItems([])
+      if (!filter) {
+        await store.clear()
+        setItems([])
+      }
+      else {
+        const stored = (await store.entries()).map(([, item]) => item)
+        const dropped = stored.filter(filter)
+        for (const item of dropped) await store.del(item.id)
+        setItems(stored.filter(item => !filter(item)))
+      }
       await changed()
     },
   }

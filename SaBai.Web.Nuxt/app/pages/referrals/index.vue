@@ -23,7 +23,7 @@ import {
  */
 useHead({ title: "Referrals · Sa'Bai" })
 
-const { data: referrals, isLoading, isError } = useReferralsList()
+const { data: referrals, isLoading, isError, error } = useReferralsList()
 const { data: patientsData } = usePatientsList()
 const { villageCodes } = useVillageCode()
 
@@ -38,20 +38,14 @@ const filters = useState('referrals:filters', () => ({
 }))
 const lastOpened = useState<string | null>('referrals:last-opened', () => null)
 
-const patientTagsById = computed(() => {
-  const map = new Map<string, string[]>()
-  for (const p of patientsData.value?.patients ?? []) {
-    if (p.tags?.length)
-      map.set(p.id, p.tags)
-  }
-  return map
-})
+// The referral list has no patient card numbers; the patient list does.
+const patientsById = computed(() => new Map((patientsData.value?.patients ?? []).map(p => [p.id, p])))
 
 const enrichedReferrals = computed<ReferralListItem[]>(() =>
   (referrals.value ?? []).map((item) => {
-    const raw = item as ReferralListItem
-    const tags = raw.tags?.length ? raw.tags : (patientTagsById.value.get(raw.patientId) ?? [])
-    return { ...raw, tags }
+    const patient = patientsById.value.get(item.patientId)
+    const tags = item.tags?.length ? item.tags : (patient?.tags ?? [])
+    return { ...item, tags, patientDisplayId: patient?.displayId }
   }),
 )
 
@@ -252,7 +246,7 @@ const gridCols = 'md:grid-cols-[2rem_minmax(9rem,1fr)_minmax(0,2fr)_5.5rem_11rem
             <NativeSelectOption value="">
               All villages
             </NativeSelectOption>
-            <NativeSelectOption v-for="v in villageCodes" :key="v.id" :value="String(v.id)">
+            <NativeSelectOption v-for="v in villageCodes" :key="v.id" :value="v.id">
               {{ v.name }} ({{ v.code }})
             </NativeSelectOption>
           </NativeSelect>
@@ -279,7 +273,7 @@ const gridCols = 'md:grid-cols-[2rem_minmax(9rem,1fr)_minmax(0,2fr)_5.5rem_11rem
       </template>
 
       <StateMessage v-if="isLoading" kind="loading" message="Loading referrals…" />
-      <StateMessage v-else-if="isError" kind="error" message="Referrals could not be loaded. Check the connection and reload." />
+      <StateMessage v-else-if="isError && !referrals" kind="error" :message="describeLoadError(error, 'Referrals could not be loaded. Check the connection and reload.')" />
       <div v-else-if="!enrichedReferrals.length" class="flex flex-col items-center gap-1 px-3 py-10 text-center" role="status">
         <p class="font-semibold">
           No referrals yet
@@ -359,7 +353,7 @@ const gridCols = 'md:grid-cols-[2rem_minmax(9rem,1fr)_minmax(0,2fr)_5.5rem_11rem
                   {{ r.patientName }}
                 </NuxtLink>
                 <p class="flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground touch:text-[0.8125rem]">
-                  <PatientCode :village-code="r.villageCode" :village-color-hex="r.villageColorHex" :id="r.patientNumber" />
+                  <PatientCode :village-code="r.villageCode" :village-color-hex="r.villageColorHex" :id="r.patientId" :display-id="r.patientDisplayId ?? r.villageCode" />
                   <span class="tabular-nums md:hidden">{{ shortDate(r.createdAt) }}</span>
                 </p>
                 <div v-if="r.tags?.length" class="mt-1 lg:hidden">
@@ -393,7 +387,7 @@ const gridCols = 'md:grid-cols-[2rem_minmax(9rem,1fr)_minmax(0,2fr)_5.5rem_11rem
               <span class="hidden text-xs text-muted-foreground tabular-nums md:block">{{ shortDate(r.createdAt) }}</span>
 
               <div class="relative z-[1] col-start-2 md:col-start-auto">
-                <ReferralStateDropdown v-model="r.referralState" :referral-id="r.id" :label="`Status for ${r.patientName}`" class="w-full! min-w-0!" />
+                <ReferralStateDropdown v-model="r.referralState" :referral-id="r.id" :patient-name="r.patientName" :label="`Status for ${r.patientName}`" class="w-full! min-w-0!" />
               </div>
             </div>
           </li>

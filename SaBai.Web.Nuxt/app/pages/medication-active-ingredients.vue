@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 useHead({ title: "Medication Active Ingredients · Sa'Bai" })
-const { data: ingredients, isLoading, isError } = useMedicationIngredients()
+const { data: ingredients, isPending, isError, error } = useMedicationIngredients()
 const adding = ref(false)
 </script>
 
@@ -31,8 +31,8 @@ const adding = ref(false)
       </template>
     </PageHeader>
     <AppPanel title="Active ingredients" flush>
-      <StateMessage v-if="isError" kind="error" message="An error has occurred!" />
-      <StateMessage v-else-if="isLoading" kind="loading" message="Loading active ingredients..." />
+      <StateMessage v-if="!ingredients && isError" kind="error" :message="describeLoadError(error, 'An error has occurred!')" />
+      <StateMessage v-else-if="!ingredients && isPending" kind="loading" message="Loading active ingredients..." />
       <StateMessage v-else-if="!ingredients || ingredients.length === 0" message="No active ingredient found. Seed the database or add a new record." />
       <Table v-else class="grid-table stack-table">
         <TableHeader>

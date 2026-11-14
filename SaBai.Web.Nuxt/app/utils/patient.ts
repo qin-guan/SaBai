@@ -43,12 +43,12 @@ export function toDateInputValue(dateOfBirth: Date | string) {
 
 /** Matches a patient against free-text search on id, name or identification number (including Khmer script and numerals). */
 export function patientMatches(
-  patient: { id: string | number; number?: number; displayId?: string | null; name: string; identificationNumber?: string | null },
+  patient: { id: string | number; displayId?: string | null; name: string; identificationNumber?: string | null },
   search: string,
 ) {
   if (!cleanKhmerText(search)) return false;
   return (
-    matchesSearchText(patient.displayId ?? patient.number?.toString() ?? patient.id.toString(), search) ||
+    matchesSearchText(patient.displayId ?? patient.id.toString(), search) ||
     matchesSearchText(patient.name, search) ||
     matchesSearchText(patient.identificationNumber, search)
   );

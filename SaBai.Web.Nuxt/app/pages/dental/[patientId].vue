@@ -17,8 +17,8 @@ const { patient, visits, selectedVisitId, selectedVisit, isLoading } = usePatien
     empty-message="No visits found for this patient. Please create a visit first to record a dental consultation."
     choose-message="Please choose a visit to record a dental consultation."
   >
-    <template #default="{ visit }">
-      <DentalForm :key="visit.id" :visit-id="visit.id" />
+    <template #default="{ visit, patient: p }">
+      <DentalForm :key="visit.id" :visit-id="visit.id" :patient-name="p.name" />
     </template>
   </StationPage>
 </template>

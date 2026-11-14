@@ -43,7 +43,7 @@ watch(
           <VisitSummaryPanel :patient-id="p.id" :visit-id="visit.id" />
           <PreviousConsults :visit-id="visit.id" :highlight-consult-id="requestedConsultId" />
         </aside>
-        <ConsultForm :key="visit.id" :visit-id="visit.id" />
+        <ConsultForm :key="visit.id" :visit-id="visit.id" :patient-name="p.name" />
       </div>
     </template>
   </StationPage>

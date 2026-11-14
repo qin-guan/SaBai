@@ -111,19 +111,19 @@ describe('outbox', () => {
   })
 
   it.each([
-    [401, 'stop'],
-    [408, 'stop'],
-    [429, 'stop'],
-    [502, 'stop'],
-    [503, 'stop'],
-    [504, 'stop'],
-  ])('treats HTTP %i as "try again later"', async (status) => {
+    [401, 'unauthorized'],
+    [408, 'network'],
+    [429, 'network'],
+    [502, 'network'],
+    [503, 'network'],
+    [504, 'network'],
+  ])('treats HTTP %i as "try again later"', async (status, stopped) => {
     const { def } = recordingDef()
     const { outbox } = makeOutbox([def])
     await outbox.enqueue(def, { recordId: 'a', n: 1 })
     def.send = async () => { throw httpError(status) }
     const result = await outbox.replay()
-    expect(result.stopped).toBe('network')
+    expect(result.stopped).toBe(stopped)
     expect(outbox.getItems()[0]?.status).toBe('queued')
   })
 

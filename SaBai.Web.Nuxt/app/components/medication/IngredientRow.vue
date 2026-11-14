@@ -1,18 +1,20 @@
 <script setup lang="ts">
 import { PhFloppyDisk, PhPencilSimple, PhTrash, PhX } from '@phosphor-icons/vue'
 import { toast } from 'vue-sonner'
-import type { LocalMedicationIngredient } from '~/composables/useMedication'
+import { deleteMedicationIngredient, updateMedicationIngredient } from '~/offline/mutations/medication'
+import type { MedicationIngredient } from '~/offline/mutations/medication'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { TableCell, TableRow } from '@/components/ui/table'
 
 /** One active ingredient; inline edit (Esc cancels, Enter saves) and delete with confirmation. */
-const props = defineProps<{ ingredient: LocalMedicationIngredient }>()
+const props = defineProps<{ ingredient: MedicationIngredient }>()
 
 const isEditing = ref(false)
 const isDeleting = ref(false)
-const isSaving = ref(false)
-const isRemoving = ref(false)
+const updateMutation = useOfflineMutation(updateMedicationIngredient)
+const removeMutation = useOfflineMutation(deleteMedicationIngredient)
+const brands = useMedicationBrands()
 const initial = () => ({
   name: props.ingredient.name,
   unitOfMeasurement: props.ingredient.unitOfMeasurement,
@@ -35,35 +37,26 @@ function cancel() {
 }
 
 async function remove() {
-  if (isRemoving.value)
+  if (removeMutation.isPending.value)
     return
-  isRemoving.value = true
+  // The API refuses this too; checking the cached brands also covers working offline.
+  if (brands.data.value?.some(b => b.activeIngredientId === props.ingredient.id)) {
+    toast.error('Error! Check that there are no brands that depend on this active ingredient.')
+    return
+  }
   try {
-    const db = getPowerSyncInstance()
-    const brandCount = await db.getOptional<{ c: number }>(
-      'SELECT COUNT(*) AS c FROM medication_brands WHERE active_ingredient_id = ?',
-      [props.ingredient.id],
-    )
-    if (Number(brandCount?.c ?? 0) > 0) {
-      toast.error('Error! Check that there are no brands that depend on this active ingredient.')
-      return
-    }
-    await db.execute('DELETE FROM medication_active_ingredients WHERE id = ?', [props.ingredient.id])
-    await refreshPendingCrudCount()
-    toast.success('Successfully deleted.')
+    const outcome = await removeMutation.mutateAsync({ id: props.ingredient.id, name: props.ingredient.name })
     isDeleting.value = false
+    notifySaved(outcome, 'Successfully deleted.')
   }
   catch (err) {
     console.error(err)
-    toast.error('Error! Check that there are no brands that depend on this active ingredient.')
-  }
-  finally {
-    isRemoving.value = false
+    toast.error(getApiErrorMessage(err, 'Error! Check that there are no brands that depend on this active ingredient.'))
   }
 }
 
 async function save() {
-  if (isSaving.value)
+  if (updateMutation.isPending.value)
     return
   const n = Number(form.value.fallBelow)
   fallBelowError.value = form.value.fallBelow === '' ? 'Missing Fall below!' : n < 1 ? 'Please input only positive values.' : null
@@ -79,32 +72,21 @@ async function save() {
     return
   }
 
-  isSaving.value = true
   try {
-    const db = getPowerSyncInstance()
-    await db.execute(
-      `UPDATE medication_active_ingredients
-       SET name = ?, unit_of_measurement = ?, fall_below = ?, remarks = ?
-       WHERE id = ?`,
-      [
-        form.value.name.trim(),
-        form.value.unitOfMeasurement.trim(),
-        n,
-        form.value.remarks.trim() || null,
-        props.ingredient.id,
-      ],
-    )
-    await refreshPendingCrudCount()
-    toast.success('Successfully updated!')
+    const outcome = await updateMutation.mutateAsync({
+      id: i.id,
+      name: form.value.name.trim(),
+      unitOfMeasurement: form.value.unitOfMeasurement.trim(),
+      fallBelow: n,
+      remarks: form.value.remarks.trim() || null,
+    })
     isEditing.value = false
+    notifySaved(outcome, 'Successfully updated!')
   }
   catch (err) {
     console.error(err)
-    toast.error('An error has occurred.')
+    toast.error(getApiErrorMessage(err, 'An error has occurred.'))
     form.value = initial()
-  }
-  finally {
-    isSaving.value = false
   }
 }
 
@@ -159,8 +141,8 @@ function onKeydown(event: KeyboardEvent) {
     <TableCell data-stack="actions">
       <div class="flex justify-end gap-1">
         <template v-if="isEditing">
-          <Button size="sm" variant="success" :disabled="isSaving" @click="save">
-            <PhFloppyDisk aria-hidden="true" /> {{ isSaving ? 'Saving...' : 'Save' }}
+          <Button size="sm" variant="success" :disabled="updateMutation.isPending.value" @click="save">
+            <PhFloppyDisk aria-hidden="true" /> {{ updateMutation.isPending.value ? 'Saving...' : 'Save' }}
           </Button>
           <Button size="sm" variant="outline" @click="cancel">
             <PhX aria-hidden="true" /> Cancel
@@ -196,7 +178,7 @@ function onKeydown(event: KeyboardEvent) {
           <Button variant="outline" @click="isDeleting = false">
             Cancel
           </Button>
-          <Button variant="destructive" :disabled="isRemoving" @click="remove()">
+          <Button variant="destructive" :disabled="removeMutation.isPending.value" @click="remove()">
             <PhTrash aria-hidden="true" /> Confirm
           </Button>
         </template>

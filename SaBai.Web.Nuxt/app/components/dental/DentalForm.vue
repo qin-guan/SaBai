@@ -5,12 +5,13 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { Textarea } from '@/components/ui/textarea'
+import { saveDental } from '~/offline/mutations/visitRecords'
 
 /**
  * The dental station's consultation for one visit. Loads any saved
- * consultation and saves the whole form back to local SQLite.
+ * consultation and saves the whole form back with a single PUT.
  */
-const props = defineProps<{ visitId: string }>()
+const props = defineProps<{ visitId: string, patientName?: string }>()
 
 const SECTIONS = [
   { id: 'dental-history', title: 'Dental History', tab: 'Dental History' },
@@ -52,131 +53,29 @@ function addDiagnosis() {
   })
 }
 
-const saving = ref(false)
-const toSqliteBool = (v: boolean | null | undefined) => (v === true ? 1 : v === false ? 0 : null)
+const saveMutation = useOfflineMutation(saveDental)
+const saving = saveMutation.isPending
 
 async function submit() {
   if (saving.value || isLoading.value)
     return
 
   const values = { ...form.value }
-  const body = toDentalRequest(values)
-  const now = new Date().toISOString()
-  const diagnosesJson = JSON.stringify(body.diagnoses ?? [])
-
-  saving.value = true
   try {
-    const db = getPowerSyncInstance()
-    const existingId = data.value?.id ? String(data.value.id) : null
-    const params = [
-      body.previousDentalVisit ?? null,
-      body.previousDentalTreatment ?? null,
-      toSqliteBool(body.toothache),
-      toSqliteBool(body.extraction),
-      toSqliteBool(body.dentalTrauma),
-      toSqliteBool(body.currentToothache),
-      toSqliteBool(body.toothSensitivity),
-      toSqliteBool(body.bleedingGums),
-      body.brushingFrequency ?? null,
-      body.fluorideToothpaste ?? null,
-      body.sugarConsumption ?? null,
-      body.otherDentalHistory ?? null,
-      body.chiefComplaint ?? null,
-      body.facialSymmetry ?? null,
-      body.facialSwelling ?? null,
-      body.lymphadenopathy ?? null,
-      body.mouthOpening ?? null,
-      body.oralHygiene ?? null,
-      body.plaque ?? null,
-      body.calculus ?? null,
-      body.gingivalCondition ?? null,
-      body.caries ?? null,
-      body.missingTeeth ?? null,
-      body.fracturedTeeth ?? null,
-      body.mucosalLesions ?? null,
-      body.malocclusion ?? null,
-      diagnosesJson,
-      toSqliteBool(body.fluorideDone),
-      body.fluorideDate ?? null,
-      body.fluorideOperator ?? null,
-      body.fluorideToothNumbers ?? null,
-      toSqliteBool(body.sealantDone),
-      body.sealantDate ?? null,
-      body.sealantOperator ?? null,
-      body.sealantToothNumbers ?? null,
-      toSqliteBool(body.sdfDone),
-      body.sdfDate ?? null,
-      body.sdfOperator ?? null,
-      body.sdfToothNumbers ?? null,
-      toSqliteBool(body.scalingDone),
-      body.scalingDate ?? null,
-      body.scalingOperator ?? null,
-      body.scalingToothNumbers ?? null,
-      body.referredFor ?? null,
-      body.referralPriority ?? null,
-      body.referralNotes ?? null,
-      body.recommendedFacility ?? null,
-      body.remarks ?? null,
-      now,
-    ]
-
-    if (!existingId) {
-      await db.execute(
-        `INSERT INTO dental_consults (
-          id, visit_id, recorded_at,
-          previous_dental_visit, previous_dental_treatment,
-          toothache, extraction, dental_trauma, current_toothache, tooth_sensitivity, bleeding_gums,
-          brushing_frequency, fluoride_toothpaste, sugar_consumption, other_dental_history,
-          chief_complaint, facial_symmetry, facial_swelling, lymphadenopathy, mouth_opening,
-          oral_hygiene, plaque, calculus, gingival_condition, caries,
-          missing_teeth, fractured_teeth, mucosal_lesions, malocclusion, diagnoses,
-          fluoride_done, fluoride_date, fluoride_operator, fluoride_tooth_numbers,
-          sealant_done, sealant_date, sealant_operator, sealant_tooth_numbers,
-          sdf_done, sdf_date, sdf_operator, sdf_tooth_numbers,
-          scaling_done, scaling_date, scaling_operator, scaling_tooth_numbers,
-          referred_for, referral_priority, referral_notes, recommended_facility, remarks,
-          updated_at, version
-        ) VALUES (
-          ?, ?, ?,
-          ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-          ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-          ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-          ?, ?, ?, ?, ?, ?, 1
-        )`,
-        [uuidv7(), props.visitId, now, ...params],
-      )
-    }
-    else {
-      await db.execute(
-        `UPDATE dental_consults SET
-          previous_dental_visit = ?, previous_dental_treatment = ?,
-          toothache = ?, extraction = ?, dental_trauma = ?, current_toothache = ?, tooth_sensitivity = ?, bleeding_gums = ?,
-          brushing_frequency = ?, fluoride_toothpaste = ?, sugar_consumption = ?, other_dental_history = ?,
-          chief_complaint = ?, facial_symmetry = ?, facial_swelling = ?, lymphadenopathy = ?, mouth_opening = ?,
-          oral_hygiene = ?, plaque = ?, calculus = ?, gingival_condition = ?, caries = ?,
-          missing_teeth = ?, fractured_teeth = ?, mucosal_lesions = ?, malocclusion = ?, diagnoses = ?,
-          fluoride_done = ?, fluoride_date = ?, fluoride_operator = ?, fluoride_tooth_numbers = ?,
-          sealant_done = ?, sealant_date = ?, sealant_operator = ?, sealant_tooth_numbers = ?,
-          sdf_done = ?, sdf_date = ?, sdf_operator = ?, sdf_tooth_numbers = ?,
-          scaling_done = ?, scaling_date = ?, scaling_operator = ?, scaling_tooth_numbers = ?,
-          referred_for = ?, referral_priority = ?, referral_notes = ?, recommended_facility = ?, remarks = ?,
-          updated_at = ?
-        WHERE id = ?`,
-        [...params, existingId],
-      )
-    }
-    await refreshPendingCrudCount()
+    const outcome = await saveMutation.mutateAsync({
+      id: data.value?.id ?? uuidv7(),
+      visitId: props.visitId,
+      patientName: props.patientName,
+      recordedAt: new Date().toISOString(),
+      fields: toDentalRequest(values),
+    })
     serviceTimer.saved()
     load(values)
     draft.clear(values)
-    toast.success('Dental consultation saved.')
+    notifySaved(outcome, 'Dental consultation saved.')
   }
   catch (error) {
-    console.error('Error saving dental consultation:', error)
-    toast.error('Failed to save dental consultation.')
-  }
-  finally {
-    saving.value = false
+    toast.error(getApiErrorMessage(error, 'Failed to save dental consultation.'))
   }
 }
 

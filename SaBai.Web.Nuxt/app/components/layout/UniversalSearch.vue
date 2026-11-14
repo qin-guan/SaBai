@@ -245,7 +245,7 @@ const resultSummary = computed(() => {
                       {{ item.patient.name }}
                     </p>
                     <p class="truncate text-xs text-muted-foreground touch:text-sm">
-                      <span class="font-mono">{{ item.patient.displayId || formatPatientCode(item.patient.villageCode, item.patient.number ?? item.patient.id) }}</span>
+                      <span class="font-mono">{{ item.patient.displayId }}</span>
                       · {{ calculateAge(item.patient.dateOfBirth) }} y · <span class="capitalize">{{ item.patient.gender }}</span>
                       <template v-if="item.patient.identificationNumber">
                         · {{ item.patient.identificationNumber }}

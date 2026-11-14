@@ -11,10 +11,12 @@ export function usePatientPhoto(
   enabled: MaybeRefOrGetter<boolean> = true,
 ) {
   const { data } = useQuery({
-    queryKey: computed(() => ["patientPhoto", String(toValue(patientId))]),
+    queryKey: computed(() => queryKeys.patientPhoto(String(toValue(patientId)))),
     enabled: computed(() => Boolean(toValue(enabled)) && Boolean(toValue(patientId))),
     staleTime: 5 * 60 * 1000,
     retry: false,
+    // A Blob is not JSON; the offline copy of the photo lives in the Service Worker cache.
+    meta: { persist: false },
     queryFn: async () => {
       const id = String(toValue(patientId));
       const res = await fetch(`/api/patients/${id}/photo`, { credentials: "include" });

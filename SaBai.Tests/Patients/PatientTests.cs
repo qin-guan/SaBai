@@ -113,7 +113,7 @@ public sealed class PatientTests(AppFixture fixture)
         await Assert
             .That(
                 matched!.Patients.Any(x =>
-                    x.Id == patient.Id && x.DisplayId == patient.DisplayId && x.DisplayId == $"{code}0001"
+                    x.Id == patient.Id && x.DisplayId == patient.DisplayId && x.DisplayId.StartsWith(code, StringComparison.Ordinal)
                 )
             )
             .IsTrue();

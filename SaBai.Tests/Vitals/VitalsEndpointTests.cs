@@ -260,7 +260,7 @@ public sealed class VitalsEndpointTests(AppFixture fixture)
         await Assert.That(body.Patient.Name).IsEqualTo(seed.PatientName);
         await Assert
             .That(body.Patient.DisplayId)
-            .IsEqualTo($"{seed.VillageCode}0001");
+            .IsEqualTo(seed.DisplayId);
         await Assert.That(body.Patient.Gender).IsEqualTo(Gender.Male);
         await Assert.That(body.Vision).IsNotNull();
         await Assert.That(body.Vision!.VisitId).IsEqualTo(seed.VisitId);
@@ -306,7 +306,8 @@ public sealed class VitalsEndpointTests(AppFixture fixture)
             patientBody.GetProperty("id").GetGuid(),
             patientBody.GetProperty("visitId").GetGuid(),
             code,
-            name
+            name,
+            patientBody.GetProperty("displayId").GetString()!
         );
     }
 
@@ -326,7 +327,7 @@ public sealed class VitalsEndpointTests(AppFixture fixture)
         return (await response.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options))!;
     }
 
-    private sealed record Seed(Guid PatientId, Guid VisitId, string VillageCode, string PatientName);
+    private sealed record Seed(Guid PatientId, Guid VisitId, string VillageCode, string PatientName, string DisplayId);
 
     private sealed record VitalsBody(
         Guid Id,

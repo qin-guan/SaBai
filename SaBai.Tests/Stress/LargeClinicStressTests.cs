@@ -354,7 +354,7 @@ public sealed class LargeClinicStressTests(AppFixture fixture)
                 await w.WriteAsync(Guid.CreateVersion7(), NpgsqlDbType.Uuid, ct);
                 await w.WriteAsync(1, NpgsqlDbType.Integer, ct);
                 await w.WriteAsync(now.AddYears(-3), NpgsqlDbType.TimestampTz, ct);
-                await w.WriteAsync(i + 1, NpgsqlDbType.Integer, ct);
+                await w.WriteAsync(1_000_000 + i + 1, NpgsqlDbType.Integer, ct);
                 await w.WriteAsync(NameOf(i), NpgsqlDbType.Text, ct);
                 await w.WriteAsync(villageId, NpgsqlDbType.Uuid, ct);
                 await WriteEnumAsync(w, model, i % 2 == 0 ? Gender.Female : Gender.Male, ct);

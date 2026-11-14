@@ -22,14 +22,23 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             ct
         );
 
-        var brand = new MedicationBrand
+        var brand = await db.MedicationBrands.FindExistingAsync(
+            req.Id,
+            x => x.ActiveIngredientId == req.ActiveIngredientId,
+            ct
+        );
+        if (brand is null)
         {
-            Name = req.Name.Trim(),
-            ActiveIngredientId = req.ActiveIngredientId,
-            Remarks = req.Remarks.Trim(),
-        };
-        db.MedicationBrands.Add(brand);
-        await db.SaveChangesAsync(ct);
+            brand = new MedicationBrand
+            {
+                Id = req.Id ?? Guid.CreateVersion7(),
+                Name = req.Name.Trim(),
+                ActiveIngredientId = req.ActiveIngredientId,
+                Remarks = req.Remarks.Trim(),
+            };
+            db.MedicationBrands.Add(brand);
+            await db.SaveChangesAsync(ct);
+        }
 
         await Send.CreatedAtAsync<List.Get.Endpoint>(
             new { },

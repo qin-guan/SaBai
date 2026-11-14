@@ -1,13 +1,13 @@
 namespace SaBai.API.Domain;
 
-public sealed class Patient : ISyncEntity
+public sealed class Patient : ITrackedEntity
 {
     /// <summary>UUIDv7 key. Created by the client (possibly offline) or by the server.</summary>
     public Guid Id { get; set; } = Guid.CreateVersion7();
 
-    public int Version { get; set; } = 1;
-
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+
+    public Guid? UpdatedByUserId { get; set; }
 
     /// <summary>
     /// Human-readable patient number printed on cards (shown as <c>VillageCode + Number:0000</c>).

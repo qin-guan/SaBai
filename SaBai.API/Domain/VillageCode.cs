@@ -1,10 +1,8 @@
 namespace SaBai.API.Domain;
 
-public sealed class VillageCode : ISyncEntity
+public sealed class VillageCode : ITrackedEntity
 {
     public Guid Id { get; set; } = Guid.CreateVersion7();
-
-    public int Version { get; set; } = 1;
 
     public required string Code { get; set; }
 
@@ -17,6 +15,8 @@ public sealed class VillageCode : ISyncEntity
     public DateTimeOffset CreatedAt { get; set; }
 
     public DateTimeOffset UpdatedAt { get; set; }
+
+    public Guid? UpdatedByUserId { get; set; }
 
     public ICollection<Patient> Patients { get; set; } = [];
 

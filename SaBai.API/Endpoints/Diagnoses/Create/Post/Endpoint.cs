@@ -21,14 +21,23 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             "Consult was not found.",
             ct
         );
-        var diagnosis = new Diagnosis
+        var diagnosis = await db.Diagnoses.FindExistingAsync(
+            req.Id,
+            x => x.ConsultId == req.ConsultId,
+            ct
+        );
+        if (diagnosis is null)
         {
-            ConsultId = req.ConsultId,
-            Details = req.Details.Trim(),
-            Category = req.Category,
-        };
-        db.Diagnoses.Add(diagnosis);
-        await db.SaveChangesAsync(ct);
+            diagnosis = new Diagnosis
+            {
+                Id = req.Id ?? Guid.CreateVersion7(),
+                ConsultId = req.ConsultId,
+                Details = req.Details.Trim(),
+                Category = req.Category,
+            };
+            db.Diagnoses.Add(diagnosis);
+            await db.SaveChangesAsync(ct);
+        }
 
         var response = new Response(
             diagnosis.Id,

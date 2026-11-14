@@ -296,8 +296,8 @@ public sealed class LargeClinicStressTests(AppFixture fixture)
             """
             WITH found AS (SELECT "Id" FROM "VillageCodes" WHERE "Code" = @code),
             created AS (
-              INSERT INTO "VillageCodes" ("Id", "Version", "Code", "Name", "ColorHex", "IsVisible", "CreatedAt", "UpdatedAt")
-              SELECT @id, 1, @code, 'Stress test village', '#999999', false, now(), now()
+              INSERT INTO "VillageCodes" ("Id", "Code", "Name", "ColorHex", "IsVisible", "CreatedAt", "UpdatedAt")
+              SELECT @id, @code, 'Stress test village', '#999999', false, now(), now()
               WHERE NOT EXISTS (SELECT 1 FROM found)
               RETURNING "Id"
             )
@@ -333,7 +333,6 @@ public sealed class LargeClinicStressTests(AppFixture fixture)
             typeof(Patient),
             [
                 nameof(Patient.Id),
-                nameof(Patient.Version),
                 nameof(Patient.UpdatedAt),
                 nameof(Patient.Number),
                 nameof(Patient.Name),
@@ -352,7 +351,6 @@ public sealed class LargeClinicStressTests(AppFixture fixture)
             async (w, i) =>
             {
                 await w.WriteAsync(Guid.CreateVersion7(), NpgsqlDbType.Uuid, ct);
-                await w.WriteAsync(1, NpgsqlDbType.Integer, ct);
                 await w.WriteAsync(now.AddYears(-3), NpgsqlDbType.TimestampTz, ct);
                 await w.WriteAsync(1_000_000 + i + 1, NpgsqlDbType.Integer, ct);
                 await w.WriteAsync(NameOf(i), NpgsqlDbType.Text, ct);
@@ -388,12 +386,11 @@ public sealed class LargeClinicStressTests(AppFixture fixture)
             db,
             model,
             typeof(Visit),
-            [nameof(Visit.Id), nameof(Visit.Version), nameof(Visit.UpdatedAt), nameof(Visit.PatientId), nameof(Visit.VillageCodeId), nameof(Visit.Date), nameof(Visit.Status)],
+            [nameof(Visit.Id), nameof(Visit.UpdatedAt), nameof(Visit.PatientId), nameof(Visit.VillageCodeId), nameof(Visit.Date), nameof(Visit.Status)],
             visits,
             async (w, v) =>
             {
                 await w.WriteAsync(Guid.CreateVersion7(), NpgsqlDbType.Uuid, ct);
-                await w.WriteAsync(1, NpgsqlDbType.Integer, ct);
                 await w.WriteAsync(v.Date, NpgsqlDbType.TimestampTz, ct);
                 await w.WriteAsync(v.PatientId, NpgsqlDbType.Uuid, ct);
                 await w.WriteAsync(villageId, NpgsqlDbType.Uuid, ct);
@@ -425,12 +422,11 @@ public sealed class LargeClinicStressTests(AppFixture fixture)
             db,
             model,
             typeof(Consult),
-            [nameof(Consult.Id), nameof(Consult.Version), nameof(Consult.UpdatedAt), nameof(Consult.VisitId), nameof(Consult.Date), nameof(Consult.DoctorId), nameof(Consult.Consultation), nameof(Consult.TreatmentPlan)],
+            [nameof(Consult.Id), nameof(Consult.UpdatedAt), nameof(Consult.VisitId), nameof(Consult.Date), nameof(Consult.DoctorId), nameof(Consult.Consultation), nameof(Consult.TreatmentPlan)],
             visitRows,
             async (w, v) =>
             {
                 await w.WriteAsync(Guid.CreateVersion7(), NpgsqlDbType.Uuid, ct);
-                await w.WriteAsync(1, NpgsqlDbType.Integer, ct);
                 await w.WriteAsync(v.Date.AddMinutes(40), NpgsqlDbType.TimestampTz, ct);
                 await w.WriteAsync(v.Id, NpgsqlDbType.Uuid, ct);
                 await w.WriteAsync(v.Date.AddMinutes(40), NpgsqlDbType.TimestampTz, ct);
@@ -450,12 +446,11 @@ public sealed class LargeClinicStressTests(AppFixture fixture)
             db,
             model,
             typeof(Diagnosis),
-            [nameof(Diagnosis.Id), nameof(Diagnosis.Version), nameof(Diagnosis.UpdatedAt), nameof(Diagnosis.ConsultId), nameof(Diagnosis.Details), nameof(Diagnosis.Category)],
+            [nameof(Diagnosis.Id), nameof(Diagnosis.UpdatedAt), nameof(Diagnosis.ConsultId), nameof(Diagnosis.Details), nameof(Diagnosis.Category)],
             consultIds,
             async (w, id) =>
             {
                 await w.WriteAsync(Guid.CreateVersion7(), NpgsqlDbType.Uuid, ct);
-                await w.WriteAsync(1, NpgsqlDbType.Integer, ct);
                 await w.WriteAsync(now, NpgsqlDbType.TimestampTz, ct);
                 await w.WriteAsync(id, NpgsqlDbType.Uuid, ct);
                 await w.WriteAsync("Upper respiratory tract infection", NpgsqlDbType.Text, ct);
@@ -467,12 +462,11 @@ public sealed class LargeClinicStressTests(AppFixture fixture)
             db,
             model,
             typeof(Eyesight),
-            [nameof(Eyesight.Id), nameof(Eyesight.Version), nameof(Eyesight.UpdatedAt), nameof(Eyesight.VisitId), nameof(Eyesight.RecordedAt), nameof(Eyesight.LeftEyeDegree), nameof(Eyesight.RightEyeDegree), nameof(Eyesight.Comments)],
+            [nameof(Eyesight.Id), nameof(Eyesight.UpdatedAt), nameof(Eyesight.VisitId), nameof(Eyesight.RecordedAt), nameof(Eyesight.LeftEyeDegree), nameof(Eyesight.RightEyeDegree), nameof(Eyesight.Comments)],
             visitRows,
             async (w, v) =>
             {
                 await w.WriteAsync(Guid.CreateVersion7(), NpgsqlDbType.Uuid, ct);
-                await w.WriteAsync(1, NpgsqlDbType.Integer, ct);
                 await w.WriteAsync(v.Date.AddMinutes(20), NpgsqlDbType.TimestampTz, ct);
                 await w.WriteAsync(v.Id, NpgsqlDbType.Uuid, ct);
                 await w.WriteAsync(v.Date.AddMinutes(20), NpgsqlDbType.TimestampTz, ct);
@@ -486,12 +480,11 @@ public sealed class LargeClinicStressTests(AppFixture fixture)
             db,
             model,
             typeof(DentalConsult),
-            [nameof(DentalConsult.Id), nameof(DentalConsult.Version), nameof(DentalConsult.VisitId), nameof(DentalConsult.RecordedAt), nameof(DentalConsult.UpdatedAt), nameof(DentalConsult.Diagnoses), nameof(DentalConsult.ChiefComplaint), nameof(DentalConsult.Toothache)],
+            [nameof(DentalConsult.Id), nameof(DentalConsult.VisitId), nameof(DentalConsult.RecordedAt), nameof(DentalConsult.UpdatedAt), nameof(DentalConsult.Diagnoses), nameof(DentalConsult.ChiefComplaint), nameof(DentalConsult.Toothache)],
             visitRows,
             async (w, v) =>
             {
                 await w.WriteAsync(Guid.CreateVersion7(), NpgsqlDbType.Uuid, ct);
-                await w.WriteAsync(1, NpgsqlDbType.Integer, ct);
                 await w.WriteAsync(v.Id, NpgsqlDbType.Uuid, ct);
                 await w.WriteAsync(v.Date.AddMinutes(60), NpgsqlDbType.TimestampTz, ct);
                 await w.WriteAsync(v.Date.AddMinutes(60), NpgsqlDbType.TimestampTz, ct);

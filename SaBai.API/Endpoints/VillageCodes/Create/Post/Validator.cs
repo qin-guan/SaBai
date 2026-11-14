@@ -1,5 +1,6 @@
 using FastEndpoints;
 using FluentValidation;
+using SaBai.API.Data;
 
 namespace SaBai.API.Endpoints.VillageCodes.Create.Post;
 
@@ -9,6 +10,7 @@ public sealed class Validator : Validator<Request>
 
     public Validator()
     {
+        RuleFor(x => x.Id).ClientId();
         RuleFor(x => x.Code).NotEmpty().MaximumLength(255);
         RuleFor(x => x.Name).NotEmpty().MaximumLength(255);
         RuleFor(x => x.ColorHex).NotEmpty().Matches(ColorHexPattern);

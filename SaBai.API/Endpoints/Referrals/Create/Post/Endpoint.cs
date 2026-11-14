@@ -22,17 +22,26 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             "Consult was not found.",
             ct
         );
-        var referral = new Referral
+        var referral = await db.Referrals.FindExistingAsync(
+            req.Id,
+            x => x.ConsultId == req.ConsultId,
+            ct
+        );
+        if (referral is null)
         {
-            ReferredFor = req.ReferredFor.Trim(),
-            ReferralNotes = req.ReferralNotes,
-            ReferralState = ReferralState.New,
-            ReferralOutcome = null,
-            ConsultId = req.ConsultId,
-            CreatedAt = DateTimeOffset.UtcNow,
-        };
-        db.Referrals.Add(referral);
-        await db.SaveChangesAsync(ct);
+            referral = new Referral
+            {
+                Id = req.Id ?? Guid.CreateVersion7(),
+                ReferredFor = req.ReferredFor.Trim(),
+                ReferralNotes = req.ReferralNotes,
+                ReferralState = ReferralState.New,
+                ReferralOutcome = null,
+                ConsultId = req.ConsultId,
+                CreatedAt = DateTimeOffset.UtcNow,
+            };
+            db.Referrals.Add(referral);
+            await db.SaveChangesAsync(ct);
+        }
 
         var created = await db
             .Referrals.AsNoTracking()

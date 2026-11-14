@@ -40,18 +40,18 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, DentalConsultR
             }
         }
 
+        _ = await db.DentalConsults.FindExistingAsync(req.Id, x => x.VisitId == req.VisitId, ct);
         var entity = await db.DentalConsults.FirstOrDefaultAsync(
             x => x.VisitId == req.VisitId,
             ct
         );
         if (entity is null)
         {
-            entity = new DentalConsult { VisitId = req.VisitId };
+            entity = new DentalConsult { Id = req.Id ?? Guid.CreateVersion7(), VisitId = req.VisitId };
             db.DentalConsults.Add(entity);
         }
 
         Apply.To(entity, req);
-        entity.UpdatedAt = DateTimeOffset.UtcNow;
 
         try
         {

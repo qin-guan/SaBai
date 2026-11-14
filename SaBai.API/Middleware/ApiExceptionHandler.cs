@@ -14,6 +14,12 @@ internal sealed class ApiExceptionHandler(ILogger<ApiExceptionHandler> logger) :
         CancellationToken cancellationToken
     )
     {
+        if (exception is PreconditionFailedException precondition)
+        {
+            await WritePreconditionFailedAsync(httpContext, precondition, cancellationToken);
+            return true;
+        }
+
         var (status, title, detail) = exception switch
         {
             NotFoundException notFound => (
@@ -88,5 +94,40 @@ internal sealed class ApiExceptionHandler(ILogger<ApiExceptionHandler> logger) :
         );
 
         return true;
+    }
+
+    /// <summary>
+    /// 412 for an <c>If-Unmodified-Since</c> request that would overwrite another user's later
+    /// change. Names the record (type and id) and when it changed, never its contents.
+    /// </summary>
+    private async Task WritePreconditionFailedAsync(
+        HttpContext httpContext,
+        PreconditionFailedException exception,
+        CancellationToken cancellationToken
+    )
+    {
+        logger.LogInformation(
+            "Precondition failed: {RecordType} {RecordId} changed at {ChangedAt}",
+            exception.RecordType,
+            exception.RecordId,
+            exception.ChangedAt
+        );
+        httpContext.Response.StatusCode = StatusCodes.Status412PreconditionFailed;
+        await httpContext.Response.WriteAsJsonAsync(
+            new ProblemDetails
+            {
+                Status = StatusCodes.Status412PreconditionFailed,
+                Title = "Precondition Failed",
+                Detail = "The record was changed by another user after this change was made.",
+                Instance = httpContext.Request.Path,
+                Extensions =
+                {
+                    ["recordType"] = exception.RecordType,
+                    ["recordId"] = exception.RecordId,
+                    ["changedAt"] = exception.ChangedAt,
+                },
+            },
+            cancellationToken
+        );
     }
 }

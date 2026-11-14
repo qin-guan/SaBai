@@ -16,15 +16,20 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var ingredient = new MedicationActiveIngredient
+        var ingredient = await db.MedicationActiveIngredients.FindExistingAsync(req.Id, ct);
+        if (ingredient is null)
         {
-            Name = req.Name.Trim(),
-            UnitOfMeasurement = req.UnitOfMeasurement.Trim(),
-            FallBelow = req.FallBelow,
-            Remarks = string.IsNullOrWhiteSpace(req.Remarks) ? null : req.Remarks.Trim(),
-        };
-        db.MedicationActiveIngredients.Add(ingredient);
-        await db.SaveChangesAsync(ct);
+            ingredient = new MedicationActiveIngredient
+            {
+                Id = req.Id ?? Guid.CreateVersion7(),
+                Name = req.Name.Trim(),
+                UnitOfMeasurement = req.UnitOfMeasurement.Trim(),
+                FallBelow = req.FallBelow,
+                Remarks = string.IsNullOrWhiteSpace(req.Remarks) ? null : req.Remarks.Trim(),
+            };
+            db.MedicationActiveIngredients.Add(ingredient);
+            await db.SaveChangesAsync(ct);
+        }
 
         var response = new Response(
             ingredient.Id,

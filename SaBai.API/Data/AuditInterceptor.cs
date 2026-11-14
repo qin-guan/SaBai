@@ -337,11 +337,7 @@ public sealed record AuditActor(Guid? UserId, string? UserName, string? IpAddres
         }
 
         var principal = context.User;
-        Guid? userId =
-            principal.Identity?.IsAuthenticated == true
-            && Guid.TryParse(principal.FindFirstValue(ClaimTypes.NameIdentifier), out var id)
-                ? id
-                : null;
+        var userId = UserIdOf(context);
         var userName = userId is null ? null : principal.FindFirstValue(ClaimTypes.Name);
         var request = $"{context.Request.Method} {context.Request.Path}";
         return new AuditActor(
@@ -350,5 +346,15 @@ public sealed record AuditActor(Guid? UserId, string? UserName, string? IpAddres
             context.Connection.RemoteIpAddress?.ToString(),
             request.Length > 500 ? request[..500] : request
         );
+    }
+
+    /// <summary>The signed-in staff user of the request, or null when there is none.</summary>
+    public static Guid? UserIdOf(HttpContext? context)
+    {
+        var principal = context?.User;
+        return principal?.Identity?.IsAuthenticated == true
+            && Guid.TryParse(principal.FindFirstValue(ClaimTypes.NameIdentifier), out var id)
+            ? id
+            : null;
     }
 }

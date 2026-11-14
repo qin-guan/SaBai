@@ -3,6 +3,9 @@ namespace SaBai.API.Endpoints.Puberty.Create.Post;
 /// <summary>Puberty assessment to record against vitals.</summary>
 public sealed record Request
 {
+    /// <summary>Id for the new record, chosen by the client; generated when omitted. Resending a create with the same id returns the existing record.</summary>
+    public Guid? Id { get; init; }
+
     public Guid VitalsId { get; init; }
 
     public bool? Pubarche { get; init; }

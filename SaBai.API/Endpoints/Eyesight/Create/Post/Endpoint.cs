@@ -27,6 +27,16 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             .Visits.AsNoTracking()
             .FirstOrNotFoundAsync(x => x.Id == req.VisitId, "Visit was not found.", ct);
 
+        if (await db.Eyesights.FindExistingAsync(req.Id, x => x.VisitId == req.VisitId, ct) is { } existing)
+        {
+            await Send.CreatedAtAsync<Get.Endpoint>(
+                new { existing.Id },
+                Response.From(existing),
+                cancellation: ct
+            );
+            return;
+        }
+
         if (await db.Eyesights.AnyAsync(x => x.VisitId == req.VisitId, ct))
         {
             throw new ConflictException("Eyesight already exists for this visit.");
@@ -34,6 +44,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
         var eyesight = new global::SaBai.API.Domain.Eyesight
         {
+            Id = req.Id ?? Guid.CreateVersion7(),
             VisitId = req.VisitId,
             LeftEyeDegree = leftEyeDegree,
             RightEyeDegree = rightEyeDegree,

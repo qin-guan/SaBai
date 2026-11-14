@@ -17,6 +17,12 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
+        if (await db.VillageCodes.FindExistingAsync(req.Id, ct) is { } existing)
+        {
+            await SendAsync(existing, ct);
+            return;
+        }
+
         var code = req.Code.Trim();
         if (await db.VillageCodes.AnyAsync(x => x.Code == code, ct))
         {
@@ -26,6 +32,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
         var now = DateTimeOffset.UtcNow;
         var village = new VillageCode
         {
+            Id = req.Id ?? Guid.CreateVersion7(),
             Code = code,
             Name = req.Name.Trim(),
             ColorHex = req.ColorHex.Trim(),
@@ -35,7 +42,11 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
         };
         db.VillageCodes.Add(village);
         await db.SaveChangesAsync(ct);
+        await SendAsync(village, ct);
+    }
 
+    private async Task SendAsync(VillageCode village, CancellationToken ct)
+    {
         await Send.CreatedAtAsync<Get.Endpoint>(
             new { village.Id },
             new Response(

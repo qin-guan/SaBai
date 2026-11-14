@@ -189,7 +189,7 @@ function filterByEntity(entry: AuditLogEntry) {
 
     <AppPanel title="Entries" flush>
       <StateMessage v-if="isLoading" kind="loading" message="Loading audit log..." />
-      <StateMessage v-else-if="isError" kind="error" :message="getApiErrorMessage(error, 'Unable to load the audit log.')" />
+      <StateMessage v-else-if="isError" kind="error" :message="describeLoadError(error, 'Unable to load the audit log.')" />
       <StateMessage v-else-if="entries.length === 0" :message="hasFilters ? 'No entries match these filters.' : 'Nothing has been recorded yet.'" />
       <Table v-else class="grid-table stack-table">
         <TableHeader>

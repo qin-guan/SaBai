@@ -160,3 +160,53 @@ export function collectUniqueTags(lists: readonly (readonly string[] | null | un
   return [...seen.values()].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
 }
 
+export const MAX_TAG_LENGTH = 64;
+
+export interface TagDropdownOption {
+  type: "existing" | "create";
+  tag: string;
+}
+
+/**
+ * Builds the inline autocomplete dropdown options for a tag input field:
+ * - Matching existing tags (excluding tags already selected on the record), case-insensitively filtered by `query`.
+ * - A `"create"` option for the trimmed query when it is non-empty and does not case-insensitively match any existing or already-selected tag.
+ */
+export function buildTagDropdownOptions(
+  knownTags: readonly string[] | null | undefined,
+  selectedTags: readonly string[] | null | undefined,
+  query: string,
+  maxLength = MAX_TAG_LENGTH,
+): TagDropdownOption[] {
+  const selectedSet = new Set(
+    (selectedTags ?? []).map(t => t.trim().toLowerCase()).filter(Boolean),
+  );
+  const available = collectUniqueTags([knownTags]).filter(
+    t => !selectedSet.has(t.toLowerCase()),
+  );
+
+  const trimmed = query.trim().slice(0, maxLength);
+  const needle = trimmed.toLowerCase();
+
+  const matching = needle
+    ? available.filter(t => t.toLowerCase().includes(needle))
+    : available;
+
+  const options: TagDropdownOption[] = matching.map(tag => ({
+    type: "existing",
+    tag,
+  }));
+
+  if (
+    trimmed &&
+    !selectedSet.has(needle) &&
+    !available.some(t => t.toLowerCase() === needle)
+  ) {
+    options.push({
+      type: "create",
+      tag: trimmed,
+    });
+  }
+
+  return options;
+}

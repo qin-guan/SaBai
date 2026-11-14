@@ -23,5 +23,8 @@ describe('AUDIT_ACTION_LABELS', () => {
     expect(AUDIT_ACTION_LABELS.SignedIn).toBe('Signed in')
     expect(AUDIT_ACTION_LABELS.SignInFailed).toBe('Sign-in failed')
     expect(AUDIT_ACTION_LABELS.SignedOut).toBe('Signed out')
+    expect(AUDIT_ACTION_LABELS.Read).toBe('Viewed')
+    expect(AUDIT_ACTION_LABELS.Exported).toBe('Exported')
+    expect(AUDIT_ACTION_LABELS.Disclosed).toBe('Disclosed')
   })
 })

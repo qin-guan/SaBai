@@ -7,5 +7,5 @@ import type { SaBaiAPIDomainAuditActionKey } from '../types/SaBaiAPIDomainAuditA
 import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIDomainAuditAction(data?: SaBaiAPIDomainAuditActionKey): SaBaiAPIDomainAuditActionKey {
-  return data ?? faker.helpers.arrayElement<SaBaiAPIDomainAuditActionKey>(['Created', 'Updated', 'Deleted', 'SignedIn', 'SignInFailed', 'SignedOut'])
+  return data ?? faker.helpers.arrayElement<SaBaiAPIDomainAuditActionKey>(['Created', 'Updated', 'Deleted', 'SignedIn', 'SignInFailed', 'SignedOut', 'Read', 'Exported', 'Disclosed'])
 }

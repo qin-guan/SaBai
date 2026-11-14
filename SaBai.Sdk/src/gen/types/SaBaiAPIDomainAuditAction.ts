@@ -10,6 +10,9 @@ export const saBaiAPIDomainAuditAction = {
   SignedIn: 'SignedIn',
   SignInFailed: 'SignInFailed',
   SignedOut: 'SignedOut',
+  Read: 'Read',
+  Exported: 'Exported',
+  Disclosed: 'Disclosed',
 } as const;
 
 export type SaBaiAPIDomainAuditActionKey = (typeof saBaiAPIDomainAuditAction)[keyof typeof saBaiAPIDomainAuditAction];

@@ -60,3 +60,38 @@ export function usePnMemberOptions(savedMemberId: MaybeRefOrGetter<string | null
       }));
   });
 }
+
+export type StaffUserStatus = "active" | "locked" | "needs-password" | "2fa";
+
+export const STAFF_USER_STATUS_OPTIONS: { value: StaffUserStatus; label: string }[] = [
+  { value: "active", label: "Active" },
+  { value: "locked", label: "Locked" },
+  { value: "needs-password", label: "Needs password" },
+  { value: "2fa", label: "2FA enabled" },
+];
+
+export function matchesSingleStaffUserStatus(
+  user: Pick<StaffUser, "isLocked" | "hasPassword" | "twoFactorEnabled">,
+  status: StaffUserStatus,
+): boolean {
+  switch (status) {
+    case "active":
+      return !user.isLocked && user.hasPassword;
+    case "locked":
+      return user.isLocked;
+    case "needs-password":
+      return !user.isLocked && !user.hasPassword;
+    case "2fa":
+      return user.twoFactorEnabled;
+  }
+}
+
+export function matchesStaffUserStatus(
+  user: Pick<StaffUser, "isLocked" | "hasPassword" | "twoFactorEnabled">,
+  selectedStatuses: readonly StaffUserStatus[] | null | undefined,
+): boolean {
+  if (!selectedStatuses || selectedStatuses.length === 0)
+    return true;
+  return selectedStatuses.some(s => matchesSingleStaffUserStatus(user, s));
+}
+

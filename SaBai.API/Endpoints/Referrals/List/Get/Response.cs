@@ -20,5 +20,6 @@ public sealed record Response(
     bool HasPhoto,
     int VillageCodeId,
     string VillageCode,
-    string VillageColorHex
+    string VillageColorHex,
+    IReadOnlyList<string> Tags
 );

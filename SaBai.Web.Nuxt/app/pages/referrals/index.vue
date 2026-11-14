@@ -4,29 +4,61 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import type { SaBaiAPIDomainReferralStateKey } from '@sabai/sdk/types'
-import { matchesReferral, REFERRAL_STATE_OPTIONS } from '@/utils/referral'
+import { collectUniqueTags, type TagMatchMode } from '@/utils/patient'
+import { matchesReferral, REFERRAL_STATE_OPTIONS, type ReferralListItem } from '@/utils/referral'
 
 useHead({ title: "Referrals · Sa'Bai" })
 
 const { data: referrals, isLoading, isError } = useReferralsList()
+const { data: patientsData } = usePatientsList()
 const { villageCodes } = useVillageCode()
 
 const search = ref('')
 const selectedVillageId = ref<string>('')
-const selectedStatus = ref<string>('')
+const selectedStatuses = ref<SaBaiAPIDomainReferralStateKey[]>([])
+const selectedTags = ref<string[]>([])
+const tagMatchMode = ref<TagMatchMode>('any')
+
+const patientTagsById = computed(() => {
+  const map = new Map<number, string[]>()
+  for (const p of patientsData.value?.patients ?? []) {
+    if (p.tags?.length)
+      map.set(p.id, p.tags)
+  }
+  return map
+})
+
+const enrichedReferrals = computed<ReferralListItem[]>(() =>
+  (referrals.value ?? []).map((item) => {
+    const raw = item as ReferralListItem
+    const tags = raw.tags?.length ? raw.tags : (patientTagsById.value.get(raw.patientId) ?? [])
+    return { ...raw, tags }
+  }),
+)
+
+const availableReferralTags = computed(() =>
+  collectUniqueTags(enrichedReferrals.value.map(r => r.tags)),
+)
 
 const filterOptions = computed(() => ({
   search: search.value,
   villageCodeId: selectedVillageId.value ? Number(selectedVillageId.value) : null,
-  referralState: selectedStatus.value ? (selectedStatus.value as SaBaiAPIDomainReferralStateKey) : null,
+  referralStates: selectedStatuses.value,
+  tags: selectedTags.value,
+  tagMatchMode: tagMatchMode.value,
 }))
 
-const filteredReferrals = computed(() => {
-  const list = referrals.value ?? []
-  return list.filter(item => matchesReferral(item, filterOptions.value))
-})
+const filteredReferrals = computed(() =>
+  enrichedReferrals.value.filter(item => matchesReferral(item, filterOptions.value)),
+)
 
-const hasActiveFilters = computed(() => !!search.value || !!selectedVillageId.value || !!selectedStatus.value)
+const hasActiveFilters = computed(
+  () =>
+    !!search.value ||
+    !!selectedVillageId.value ||
+    selectedStatuses.value.length > 0 ||
+    selectedTags.value.length > 0,
+)
 
 /** Esc in the search box clears it first; a second Esc leaves the field, a third goes back. */
 function onSearchEsc(event: KeyboardEvent) {
@@ -38,7 +70,8 @@ function onSearchEsc(event: KeyboardEvent) {
 function clearFilters() {
   search.value = ''
   selectedVillageId.value = ''
-  selectedStatus.value = ''
+  selectedStatuses.value = []
+  selectedTags.value = []
 }
 </script>
 
@@ -53,13 +86,13 @@ function clearFilters() {
 
     <!-- Filter & search bar -->
     <div class="border border-border bg-card p-2">
-      <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-        <div class="relative flex-1">
+      <div class="flex flex-col gap-2 md:flex-row md:flex-wrap md:items-center md:justify-between">
+        <div class="relative min-w-[200px] flex-1">
           <PhMagnifyingGlass class="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2" aria-hidden="true" />
           <Input
             v-model="search"
             type="search"
-            placeholder="Search name, ID, reason, notes…"
+            placeholder="Search name, ID, tag, reason, notes…"
             class="h-8 pl-8 text-xs border-input touch:h-11 touch:text-base"
             aria-label="Search referrals"
             @keydown.esc="onSearchEsc"
@@ -75,8 +108,8 @@ function clearFilters() {
           </button>
         </div>
 
-        <div class="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-2">
-          <div class="w-full sm:w-40">
+        <div class="flex flex-wrap items-center gap-2">
+          <div class="w-40">
             <NativeSelect v-model="selectedVillageId" aria-label="Filter by village" class="text-xs touch:h-11">
               <NativeSelectOption value="">
                 All villages
@@ -91,26 +124,23 @@ function clearFilters() {
             </NativeSelect>
           </div>
 
-          <div class="w-full sm:w-44">
-            <NativeSelect v-model="selectedStatus" aria-label="Filter by status" class="text-xs touch:h-11">
-              <NativeSelectOption value="">
-                All statuses
-              </NativeSelectOption>
-              <NativeSelectOption
-                v-for="opt in REFERRAL_STATE_OPTIONS"
-                :key="opt.value"
-                :value="opt.value"
-              >
-                {{ opt.label }}
-              </NativeSelectOption>
-            </NativeSelect>
-          </div>
+          <TagFilter
+            v-model="selectedTags"
+            v-model:match-mode="tagMatchMode"
+            :available-tags="availableReferralTags"
+          />
+
+          <StatusFilter
+            v-model="selectedStatuses"
+            :options="REFERRAL_STATE_OPTIONS"
+            label="Status"
+          />
 
           <Button
             v-if="hasActiveFilters"
             variant="ghost"
             size="sm"
-            class="col-span-2 text-xs sm:col-span-1 touch:h-10"
+            class="text-xs touch:h-10"
             @click="clearFilters"
           >
             Reset
@@ -122,37 +152,28 @@ function clearFilters() {
     <!-- State messages -->
     <StateMessage v-if="isLoading" kind="loading" message="Loading referrals…" />
     <StateMessage v-else-if="isError" kind="error" message="Failed to load referrals. Please refresh to try again." />
-    <AppPanel v-else-if="!referrals || referrals.length === 0" title="Referrals">
+    <AppPanel v-else-if="enrichedReferrals.length === 0" title="Referrals">
       <div class="flex flex-col items-center gap-1 px-3 py-10 text-center text-muted-foreground" role="status">
         <PhArrowUpRight class="mb-1 size-8 text-muted-foreground/60" aria-hidden="true" />
         <p class="font-medium text-foreground">No referrals recorded yet</p>
         <p class="text-xs touch:text-sm">Referrals opened during doctor consultations will appear here.</p>
       </div>
     </AppPanel>
-    <AppPanel v-else-if="filteredReferrals.length === 0" title="Referrals">
-      <div class="flex flex-col items-center gap-1 px-3 py-10 text-center text-muted-foreground" role="status">
-        <p class="font-medium text-foreground">No referrals match your search</p>
-        <p class="text-xs touch:text-sm">Try adjusting the search query or filters.</p>
-        <Button variant="outline" size="sm" class="mt-2" @click="clearFilters">
-          Clear filters
-        </Button>
-      </div>
-    </AppPanel>
 
     <!-- Referrals List / Table -->
     <AppPanel
       v-else
-      :title="`Referrals (${filteredReferrals.length}${filteredReferrals.length !== referrals.length ? ` of ${referrals.length}` : ''})`"
+      :title="`Referrals (${filteredReferrals.length}${filteredReferrals.length !== enrichedReferrals.length ? ` of ${enrichedReferrals.length}` : ''})`"
       flush
     >
       <!-- Mobile card list (< md) -->
-      <div class="divide-y divide-border md:hidden">
+      <div v-if="filteredReferrals.length > 0" class="divide-y divide-border md:hidden">
         <article
           v-for="referral in filteredReferrals"
           :key="referral.id"
           class="flex flex-col gap-2.5 p-3 hover:bg-accent/30 transition-colors"
         >
-          <!-- Top row: Photo + full-width Patient Name & Code -->
+          <!-- Top row: Photo + full-width Patient Name, Code & Tags -->
           <div class="flex items-center gap-2.5 min-w-0">
             <PatientPhoto
               :patient-id="referral.patientId"
@@ -175,6 +196,12 @@ function clearFilters() {
                   :village-code="referral.villageCode"
                   :village-color-hex="referral.villageColorHex"
                   :id="referral.patientId"
+                />
+              </div>
+              <div v-if="referral.tags?.length" class="mt-1">
+                <PatientTagBadges
+                  v-model:selected-tags="selectedTags"
+                  :tags="referral.tags"
                 />
               </div>
             </div>
@@ -246,12 +273,28 @@ function clearFilters() {
             <tr>
               <th scope="col" class="py-2 pr-2 pl-3 w-12"><span class="sr-only">Photo</span></th>
               <th scope="col" class="px-2 py-2 min-w-[140px]">Patient</th>
+              <th scope="col" class="px-2 py-2 min-w-[140px]">
+                <TagFilter
+                  v-model="selectedTags"
+                  v-model:match-mode="tagMatchMode"
+                  :available-tags="availableReferralTags"
+                  variant="header"
+                  label="Tags"
+                />
+              </th>
               <th scope="col" class="px-2 py-2 min-w-[200px]">Referral summary</th>
-              <th scope="col" class="px-2 py-2 min-w-[180px]">Status</th>
+              <th scope="col" class="px-2 py-2 min-w-[180px]">
+                <StatusFilter
+                  v-model="selectedStatuses"
+                  :options="REFERRAL_STATE_OPTIONS"
+                  variant="header"
+                  label="Status"
+                />
+              </th>
               <th scope="col" class="py-2 pr-3 pl-2 text-right min-w-[180px]">Actions</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-border">
+          <tbody v-if="filteredReferrals.length > 0" class="divide-y divide-border">
             <tr
               v-for="referral in filteredReferrals"
               :key="referral.id"
@@ -292,6 +335,15 @@ function clearFilters() {
                     Village: {{ referral.villageCode }}
                   </p>
                 </div>
+              </td>
+
+              <!-- Patient tags -->
+              <td class="px-2 py-2 align-top">
+                <PatientTagBadges
+                  v-model:selected-tags="selectedTags"
+                  :tags="referral.tags"
+                  show-empty
+                />
               </td>
 
               <!-- Referral details -->
@@ -350,6 +402,19 @@ function clearFilters() {
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Empty state when filters match 0 rows -->
+      <div
+        v-if="filteredReferrals.length === 0"
+        class="flex flex-col items-center gap-1 px-3 py-10 text-center text-muted-foreground"
+        role="status"
+      >
+        <p class="font-medium text-foreground">No referrals match your search</p>
+        <p class="text-xs touch:text-sm">Try adjusting the search query or filters.</p>
+        <Button variant="outline" size="sm" class="mt-2" @click="clearFilters">
+          Clear filters
+        </Button>
       </div>
     </AppPanel>
   </div>

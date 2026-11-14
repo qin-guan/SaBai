@@ -6,7 +6,8 @@
 import * as z from 'zod'
 
 export const saBaiAPIEndpointsVitalsCreatePostRequestSchema = z.object({
-  visitId: z.int32().gt(0).optional(),
+  id: z.uuid().nullish(),
+  visitId: z.uuid().min(1),
   height: z.number().nullish(),
   weight: z.number().nullish(),
   temperature: z.number().nullish(),

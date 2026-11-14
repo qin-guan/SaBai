@@ -8,7 +8,7 @@ import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsPatientConsultGetConsultItem<TData extends Partial<SaBaiAPIEndpointsPatientConsultGetConsultItem> = object>(data?: TData) {
   const defaultFakeData = {
-    id: faker.number.int(),
+    id: faker.string.uuid(),
     date: faker.date.anytime().toISOString(),
     doctorNickname: faker.string.alpha(),
     referredFor: faker.string.alpha(),

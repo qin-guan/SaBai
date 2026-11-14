@@ -9,6 +9,7 @@ import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsMedicationStockSplitsPostSplitItem<TData extends Partial<SaBaiAPIEndpointsMedicationStockSplitsPostSplitItem> = object>(data?: TData) {
   const defaultFakeData = {
+    id: faker.string.uuid(),
     quantity: faker.number.int(),
     location: faker.string.alpha(),
     stockStatus: createSaBaiAPIDomainStockStatus(),

@@ -6,6 +6,6 @@
 import * as z from 'zod'
 
 export const saBaiAPIEndpointsPatientsPhotoPutResponseSchema = z.object({
-  id: z.int32(),
+  id: z.uuid(),
   hasPhoto: z.boolean(),
 })

@@ -6,11 +6,11 @@
 import * as z from 'zod'
 
 export const saBaiAPIEndpointsVisitsListGetItemSchema = z.object({
-  id: z.int32(),
+  id: z.uuid(),
   date: z.iso.datetime(),
-  patientId: z.int32(),
+  patientId: z.uuid(),
   patientName: z.string(),
-  villageCodeId: z.int32(),
+  villageCodeId: z.uuid(),
   villageCode: z.string(),
   villageName: z.string(),
   villageColorHex: z.string(),

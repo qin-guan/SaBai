@@ -1,9 +1,11 @@
 import { useQuery, useQueryClient, type QueryClient } from "@tanstack/vue-query";
+import { toast } from "vue-sonner";
 import {
   saBaiAPIEndpointsAuthLogoutPostEndpoint,
   saBaiAPIEndpointsAuthWhoAmIGetEndpoint,
 } from "@sabai/sdk/clients";
 import type { SaBaiAPIEndpointsAuthUserResponse } from "@sabai/sdk/types";
+import { clearOfflineData, getOfflineRuntime, startOfflineSync } from "~/offline/runtime";
 
 export type StaffUser = SaBaiAPIEndpointsAuthUserResponse & { tags?: string[] };
 
@@ -60,7 +62,9 @@ export function currentUserQueryOptions() {
     // Roles change rarely; the API re-checks the session on every request anyway.
     staleTime: 5 * 60 * 1000,
     retry: false,
-    meta: { skipAuthRedirect: true },
+    // Not saved with the offline cache: on start-up the session is asked for
+    // afresh (falling back to the cached user above when offline).
+    meta: { skipAuthRedirect: true, persist: false },
   };
 }
 
@@ -71,10 +75,8 @@ export function currentUserQueryOptions() {
 export async function loadCurrentUser(queryClient: QueryClient): Promise<StaffUser | null> {
   try {
     const user = await queryClient.ensureQueryData(currentUserQueryOptions());
-    if (user && import.meta.client) {
-      const nuxtApp = useNuxtApp();
-      (nuxtApp.$connectPowerSync as (() => void) | undefined)?.();
-    }
+    // Signed in: send queued writes and download the offline working set when due.
+    if (user && import.meta.client) startOfflineSync();
     return user;
   } catch (error) {
     if (isUnauthorizedError(error)) return null;
@@ -98,17 +100,23 @@ export function useCurrentUser() {
 }
 
 /**
- * Ends the session on the API (clears the HttpOnly cookie), drops all cached
- * data and local patient data, then goes to the login page.
+ * Ends the session on the API (clears the HttpOnly cookie), then removes
+ * everything this device keeps for the user — cached data, queued writes,
+ * drafts — and goes to the login page. Writes that have not been sent yet
+ * would be lost, so it asks first.
  */
 export function useSignOut() {
   const queryClient = useQueryClient();
-  return async (options?: { force?: boolean }) => {
-    const pending = await refreshPendingCrudCount();
-    if (pending > 0 && !options?.force) {
-      const { toast } = await import("vue-sonner");
-      toast.error(
-        `You have ${pending} unsynced offline change(s). Connect to sync before signing out.`,
+  const signOut = async (options?: { force?: boolean }) => {
+    const unsent = import.meta.client ? getOfflineRuntime().outbox.getItems().length : 0;
+    if (unsent > 0 && options?.force !== true) {
+      toast.warning(
+        `${unsent} change${unsent === 1 ? " has" : "s have"} not been sent to the server yet. Signing out deletes ${unsent === 1 ? "it" : "them"} from this device.`,
+        {
+          description: "Connect and open Sync to send them first.",
+          duration: 15_000,
+          action: { label: "Delete and sign out", onClick: () => void signOut({ force: true }) },
+        },
       );
       return;
     }
@@ -122,16 +130,13 @@ export function useSignOut() {
       console.error(error);
     }
     writeCachedUser(null);
-    try {
-      const db = getPowerSyncInstance();
-      await db.disconnectAndClear();
-    } catch {
-      // ignore if PowerSync is not initialized
-    }
-    // Drafts and recent patients hold patient data; don't leave them on a shared device.
+    // Cached and queued patient data must not stay on a shared device.
+    await clearOfflineData().catch(console.error);
+    // Drafts and recent patients hold patient data too.
     clearAllFormDrafts();
     clearRecentPatients();
     queryClient.clear();
     await navigateTo(paths.login());
   };
+  return signOut;
 }

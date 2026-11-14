@@ -6,8 +6,9 @@
 import * as z from 'zod'
 
 export const saBaiAPIEndpointsVisitsCreatePostRequestSchema = z.object({
-  patientId: z.int32().gt(0).optional(),
-  villageCodeId: z.int32().gt(0).optional(),
+  id: z.uuid().nullish(),
+  patientId: z.uuid().min(1),
+  villageCodeId: z.uuid().min(1),
   date: z.iso.datetime().nullish(),
   status: z.string().min(0).max(100).nullish(),
 })

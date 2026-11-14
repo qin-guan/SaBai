@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { PhFloppyDisk } from '@phosphor-icons/vue'
 import { toast } from 'vue-sonner'
-import type { LocalVillageCode } from '~/db/types'
+import { createVillageCode, updateVillageCode } from '~/offline/mutations/villageCodes'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
@@ -9,9 +9,11 @@ import { Label } from '@/components/ui/label'
 
 /**
  * Create or edit a village code. A new-code draft is kept in localStorage
- * (same key as SaBai.Web) so an interrupted entry is not lost.
+ * (same key as SaBai.Web) so an interrupted entry is not lost. Saving works
+ * offline: the change is kept on this device and sent when the connection
+ * is back (see app/offline/mutations/villageCodes.ts).
  */
-const props = defineProps<{ village: LocalVillageCode | null }>()
+const props = defineProps<{ village: VillageCode | null }>()
 const emit = defineEmits<{ close: [] }>()
 
 const DRAFT_KEY = 'village-codes-form'
@@ -53,7 +55,9 @@ watch(form, (value) => {
 }, { deep: true })
 onBeforeUnmount(() => window.clearTimeout(draftTimer))
 
-const saving = ref(false)
+const create = useOfflineMutation(createVillageCode)
+const update = useOfflineMutation(updateVillageCode)
+const saving = computed(() => create.isPending.value || update.isPending.value)
 
 async function submit() {
   if (saving.value)
@@ -72,47 +76,33 @@ async function submit() {
     return
   }
 
-  saving.value = true
+  const fields = {
+    code: form.value.code.trim(),
+    name: form.value.name.trim(),
+    colorHex: form.value.colorHex,
+    isVisible: form.value.isVisible,
+  }
   try {
-    const db = getPowerSyncInstance()
-    const code = form.value.code.trim()
-    const name = form.value.name.trim()
-    const colorHex = form.value.colorHex
-    const isVisible = form.value.isVisible ? 1 : 0
-
-    if (isEditing.value) {
-      await db.execute(
-        `UPDATE village_codes
-         SET code = ?, name = ?, color_hex = ?, is_visible = ?, version = COALESCE(version, 0) + 1
-         WHERE id = ?`,
-        [code, name, colorHex, isVisible, props.village!.id],
-      )
-      await refreshPendingCrudCount()
+    if (props.village) {
+      const outcome = await update.mutateAsync({ id: props.village.id, ...fields })
       emit('close')
-      toast.success('Village code updated!')
+      notifySaved(outcome, 'Village code updated!')
     }
     else {
-      await db.execute(
-        `INSERT INTO village_codes (id, version, code, name, color_hex, is_visible, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [uuidv7(), 1, code, name, colorHex, isVisible, new Date().toISOString()],
-      )
-      await refreshPendingCrudCount()
+      // The id is chosen here so a create queued offline can be referenced right away.
+      const outcome = await create.mutateAsync({ id: uuidv7(), ...fields })
       window.clearTimeout(draftTimer)
       try {
         window.localStorage.removeItem(DRAFT_KEY)
       }
       catch {}
       emit('close')
-      toast.success('Village code created!')
+      notifySaved(outcome, 'Village code created!')
     }
   }
   catch (err) {
     console.error(err)
-    toast.error(isEditing.value ? 'Unable to update village code.' : 'Unable to create village code.')
-  }
-  finally {
-    saving.value = false
+    toast.error(getApiErrorMessage(err, isEditing.value ? 'Unable to update village code.' : 'Unable to create village code.'))
   }
 }
 

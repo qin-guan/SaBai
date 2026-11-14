@@ -12,6 +12,7 @@ export const saBaiAPIEndpointsAuthUserResponseSchema = z.object({
   email: z.string().nullable(),
   nickname: z.string(),
   roles: systemCollectionsGenericIReadOnlyListOfSystemStringSchema,
+  tags: systemCollectionsGenericIReadOnlyListOfSystemStringSchema,
   isLocked: z.boolean(),
   lockoutEnd: z.iso.datetime().nullable(),
   twoFactorEnabled: z.boolean(),

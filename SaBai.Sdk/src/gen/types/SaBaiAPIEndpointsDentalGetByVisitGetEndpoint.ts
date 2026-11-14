@@ -9,10 +9,10 @@ import type { SaBaiAPIEndpointsDentalDentalConsultResponse } from './SaBaiAPIEnd
 export type SaBaiAPIEndpointsDentalGetByVisitGetEndpointPath = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  visitId: number;
+  visitId: string;
 };
 
 export type SaBaiAPIEndpointsDentalGetByVisitGetEndpointStatus200 = SaBaiAPIEndpointsDentalDentalConsultResponse;

@@ -1,17 +1,22 @@
 <script setup lang="ts">
 import { PhArrowsClockwise, PhCloudCheck, PhCloudSlash, PhWarning } from '@phosphor-icons/vue'
 
-const { isOnline, uploading, downloading, connecting, connected, statusLabel, attentionCount } = useSyncState()
+/** Header badge: offline / N pending / needs attention / all synced. Opens the sync page. */
+const { isOffline, replaying, pendingCount, attentionCount, statusLabel } = useSyncState()
 
-const toneClass = computed(() => {
-  if (!isOnline.value)
-    return 'bg-amber-500/20 text-amber-100 border-amber-400/40'
-  if (uploading.value || downloading.value || connecting.value)
-    return 'bg-sky-500/20 text-sky-100 border-sky-400/40'
-  if (connected.value)
-    return 'bg-emerald-500/20 text-emerald-100 border-emerald-400/40'
-  return 'bg-white/10 text-chrome-foreground border-white/20'
+const tone = computed(() => {
+  if (attentionCount.value > 0) return 'attention'
+  if (isOffline.value) return 'offline'
+  if (replaying.value || pendingCount.value > 0) return 'pending'
+  return 'synced'
 })
+
+const toneClass = computed(() => ({
+  attention: 'bg-amber-400 text-slate-950 border-amber-300',
+  offline: 'bg-amber-500/20 text-amber-100 border-amber-400/40',
+  pending: 'bg-sky-500/20 text-sky-100 border-sky-400/40',
+  synced: 'bg-emerald-500/20 text-emerald-100 border-emerald-400/40',
+})[tone.value])
 </script>
 
 <template>
@@ -19,23 +24,20 @@ const toneClass = computed(() => {
     :to="paths.settingsSync()"
     class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition hover:opacity-90"
     :class="toneClass"
-    :title="`Sync status: ${statusLabel}`"
+    :title="`Sync: ${statusLabel}`"
+    :aria-label="`Sync: ${statusLabel}. Open sync page.`"
+    data-testid="sync-status"
   >
-    <PhCloudSlash v-if="!isOnline" class="size-3.5 shrink-0" aria-hidden="true" />
+    <PhWarning v-if="tone === 'attention'" class="size-3.5 shrink-0" aria-hidden="true" />
+    <PhCloudSlash v-else-if="tone === 'offline'" class="size-3.5 shrink-0" aria-hidden="true" />
     <PhArrowsClockwise
-      v-else-if="uploading || downloading || connecting"
-      class="size-3.5 shrink-0 animate-spin"
+      v-else-if="tone === 'pending'"
+      class="size-3.5 shrink-0"
+      :class="replaying && 'animate-spin motion-reduce:animate-none'"
       aria-hidden="true"
     />
     <PhCloudCheck v-else class="size-3.5 shrink-0" aria-hidden="true" />
     <span class="hidden sm:inline">{{ statusLabel }}</span>
-    <span
-      v-if="attentionCount > 0"
-      class="ml-0.5 inline-flex items-center gap-0.5 rounded-full bg-amber-400 px-1.5 py-0.2 text-[11px] font-bold text-slate-950"
-      :title="`${attentionCount} sync item(s) need attention`"
-    >
-      <PhWarning class="size-3" aria-hidden="true" />
-      {{ attentionCount }}
-    </span>
+    <span v-if="tone !== 'synced'" class="sm:hidden">{{ attentionCount || pendingCount || '' }}</span>
   </NuxtLink>
 </template>

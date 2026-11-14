@@ -9,7 +9,7 @@ import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsVisionGetPatientResponse<TData extends Partial<SaBaiAPIEndpointsVisionGetPatientResponse> = object>(data?: TData) {
   const defaultFakeData = {
-    id: faker.number.int(),
+    id: faker.string.uuid(),
     name: faker.string.alpha(),
     displayId: faker.string.alpha(),
     gender: createSaBaiAPIDomainGender(),

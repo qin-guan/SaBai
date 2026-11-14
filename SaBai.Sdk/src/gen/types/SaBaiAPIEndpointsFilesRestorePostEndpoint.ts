@@ -8,10 +8,10 @@ import type { SaBaiAPIEndpointsFilesRestorePostResponse } from './SaBaiAPIEndpoi
 export type SaBaiAPIEndpointsFilesRestorePostEndpointPath = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  id: number;
+  id: string;
 };
 
 export type SaBaiAPIEndpointsFilesRestorePostEndpointStatus200 = SaBaiAPIEndpointsFilesRestorePostResponse;

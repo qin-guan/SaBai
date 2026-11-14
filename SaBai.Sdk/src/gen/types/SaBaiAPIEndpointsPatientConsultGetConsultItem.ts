@@ -6,10 +6,10 @@
 export type SaBaiAPIEndpointsPatientConsultGetConsultItem = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  id: number;
+  id: string;
   /**
    * @description
    * Format: `date-time`

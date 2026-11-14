@@ -6,16 +6,24 @@
 export type SaBaiAPIEndpointsVisitsCreatePostRequest = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer | undefined
+   * Format: `uuid`
+   * @type string | undefined
    */
-  patientId?: number;
+  id?: string | null;
   /**
    * @description
-   * Format: `int32`
-   * @type integer | undefined
+   * Format: `uuid`
+   * @minLength 1
+   * @type string
    */
-  villageCodeId?: number;
+  patientId: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @minLength 1
+   * @type string
+   */
+  villageCodeId: string;
   /**
    * @description
    * Format: `date-time`

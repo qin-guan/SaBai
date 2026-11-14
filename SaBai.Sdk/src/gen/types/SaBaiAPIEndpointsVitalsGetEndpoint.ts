@@ -9,10 +9,10 @@ import type { SaBaiAPIEndpointsVitalsGetResponse } from './SaBaiAPIEndpointsVita
 export type SaBaiAPIEndpointsVitalsGetEndpointPath = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  id: number;
+  id: string;
 };
 
 export type SaBaiAPIEndpointsVitalsGetEndpointStatus200 = SaBaiAPIEndpointsVitalsGetResponse;

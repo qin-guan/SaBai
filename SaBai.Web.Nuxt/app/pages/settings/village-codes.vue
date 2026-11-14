@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { PhPencilSimple, PhPlus, PhTrash } from '@phosphor-icons/vue'
 import { toast } from 'vue-sonner'
-import type { LocalVillageCode } from '~/db/types'
+import { deleteVillageCode } from '~/offline/mutations/villageCodes'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -11,17 +11,17 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 useHead({ title: "Village Codes · Sa'Bai" })
 
 const showHidden = ref(false)
-const { data, isLoading } = useVillageCodesList(showHidden)
+const { data, isPending, isError, error } = useVillageCodesList(showHidden)
 const codes = computed(() => data.value?.villageCodes ?? [])
 
 const mode = ref<'editing' | 'deleting' | null>(null)
-const active = ref<LocalVillageCode | null>(null)
+const active = ref<VillageCode | null>(null)
 
-function openEdit(code: LocalVillageCode | null) {
+function openEdit(code: VillageCode | null) {
   active.value = code
   mode.value = 'editing'
 }
-function openDelete(code: LocalVillageCode) {
+function openDelete(code: VillageCode) {
   active.value = code
   mode.value = 'deleting'
 }
@@ -30,32 +30,18 @@ function close() {
   active.value = null
 }
 
-const isDeleting = ref(false)
-async function deleteVillageCode(id: string) {
-  if (isDeleting.value)
+const remove = useOfflineMutation(deleteVillageCode)
+async function confirmDelete(village: VillageCode) {
+  if (remove.isPending.value)
     return
-  isDeleting.value = true
   try {
-    const db = getPowerSyncInstance()
-    const visitRow = await db.getOptional<{ c: number }>(
-      'SELECT COUNT(*) AS c FROM visits WHERE village_code_id = ?',
-      [id],
-    )
-    if (Number(visitRow?.c ?? 0) > 0) {
-      toast.error('Unable to delete village code. There are visits associated with this village code.')
-      return
-    }
-    await db.execute('DELETE FROM village_codes WHERE id = ?', [id])
-    await refreshPendingCrudCount()
-    toast.success('Village code deleted!')
+    const outcome = await remove.mutateAsync({ id: village.id, code: village.code, name: village.name })
     close()
+    notifySaved(outcome, 'Village code deleted!')
   }
   catch (err) {
     console.error(err)
-    toast.error('Unable to delete village code. Check that there are no visits with this village code before deleting.')
-  }
-  finally {
-    isDeleting.value = false
+    toast.error(getApiErrorMessage(err, 'Unable to delete village code. Check that there are no visits with this village code before deleting.'))
   }
 }
 </script>
@@ -78,7 +64,8 @@ async function deleteVillageCode(id: string) {
     </PageHeader>
 
     <AppPanel title="Village codes" flush>
-      <StateMessage v-if="isLoading" kind="loading" message="Loading Village Codes..." />
+      <StateMessage v-if="!data && isError" kind="error" :message="describeLoadError(error, 'Unable to load village codes.')" />
+      <StateMessage v-else-if="!data && isPending" kind="loading" message="Loading Village Codes..." />
       <Table v-else class="grid-table stack-table">
         <TableHeader>
           <TableRow>
@@ -134,8 +121,8 @@ async function deleteVillageCode(id: string) {
         <Button variant="outline" @click="close">
           Cancel
         </Button>
-        <Button variant="destructive" :disabled="isDeleting" @click="deleteVillageCode(active.id)">
-          <PhTrash aria-hidden="true" /> {{ isDeleting ? 'Deleting...' : 'Confirm' }}
+        <Button variant="destructive" :disabled="remove.isPending.value" @click="confirmDelete(active)">
+          <PhTrash aria-hidden="true" /> {{ remove.isPending.value ? 'Deleting...' : 'Confirm' }}
         </Button>
       </template>
     </AppDialog>

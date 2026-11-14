@@ -6,8 +6,8 @@
 import * as z from 'zod'
 
 export const saBaiAPIEndpointsVitalsListByPatientGetResponseSchema = z.object({
-  id: z.int32(),
-  visitId: z.int32(),
+  id: z.uuid(),
+  visitId: z.uuid(),
   height: z.number().nullable(),
   weight: z.number().nullable(),
   temperature: z.number().nullable(),

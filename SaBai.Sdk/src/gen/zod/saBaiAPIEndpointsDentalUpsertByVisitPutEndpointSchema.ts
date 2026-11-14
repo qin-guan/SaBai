@@ -8,7 +8,7 @@ import { fastEndpointsProblemDetailsSchema } from './fastEndpointsProblemDetails
 import { saBaiAPIEndpointsDentalDentalConsultResponseSchema } from './saBaiAPIEndpointsDentalDentalConsultResponseSchema'
 import { saBaiAPIEndpointsDentalUpsertByVisitPutRequestSchema } from './saBaiAPIEndpointsDentalUpsertByVisitPutRequestSchema'
 
-export const saBaiAPIEndpointsDentalUpsertByVisitPutEndpointPathVisitIdSchema = z.int32()
+export const saBaiAPIEndpointsDentalUpsertByVisitPutEndpointPathVisitIdSchema = z.uuid()
 
 export const saBaiAPIEndpointsDentalUpsertByVisitPutEndpointStatus200Schema = saBaiAPIEndpointsDentalDentalConsultResponseSchema
 
@@ -25,5 +25,5 @@ export const saBaiAPIEndpointsDentalUpsertByVisitPutEndpointErrorSchema = z.unio
 export const saBaiAPIEndpointsDentalUpsertByVisitPutEndpointBodySchema = saBaiAPIEndpointsDentalUpsertByVisitPutRequestSchema
 
 export const saBaiAPIEndpointsDentalUpsertByVisitPutEndpointPathSchema = z.object({
-  visitId: z.int32(),
+  visitId: z.uuid(),
 })

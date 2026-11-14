@@ -8,8 +8,8 @@ import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsFilesGetResponse<TData extends Partial<SaBaiAPIEndpointsFilesGetResponse> = object>(data?: TData) {
   const defaultFakeData = {
-    id: faker.number.int(),
-    patientId: faker.number.int(),
+    id: faker.string.uuid(),
+    patientId: faker.string.uuid(),
     fileName: faker.string.alpha(),
     storedFileName: faker.string.alpha(),
     description: faker.string.alpha(),

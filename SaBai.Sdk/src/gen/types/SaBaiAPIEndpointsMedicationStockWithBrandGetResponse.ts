@@ -8,16 +8,16 @@ import type { SaBaiAPIDomainStockStatusKey } from './SaBaiAPIDomainStockStatus'
 export type SaBaiAPIEndpointsMedicationStockWithBrandGetResponse = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  id: number;
+  id: string;
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  medicationBrandId: number;
+  medicationBrandId: string;
   /**
    * @description
    * Format: `int32`
@@ -37,10 +37,10 @@ export type SaBaiAPIEndpointsMedicationStockWithBrandGetResponse = {
   ingredientName: string;
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  ingredientId: number;
+  ingredientId: string;
   /**
    * @description
    * Format: `int32`

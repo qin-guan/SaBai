@@ -3,7 +3,7 @@
 * Do not edit manually.
 */
 
-import type { SaBaiAPIEndpointsBroadcastsListGetEndpointResponse, SaBaiAPIEndpointsBroadcastsListGetEndpointStatus401, SaBaiAPIEndpointsBroadcastsListGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsBroadcastsListGetEndpoint'
+import type { SaBaiAPIEndpointsBroadcastsListGetEndpointResponse, SaBaiAPIEndpointsBroadcastsListGetEndpointStatus400, SaBaiAPIEndpointsBroadcastsListGetEndpointStatus401, SaBaiAPIEndpointsBroadcastsListGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsBroadcastsListGetEndpoint'
 import { http, HttpResponse } from 'msw/http'
 
 export function saBaiAPIEndpointsBroadcastsListGetEndpointHandlerResponse200(data: SaBaiAPIEndpointsBroadcastsListGetEndpointResponse) {
@@ -11,6 +11,15 @@ export function saBaiAPIEndpointsBroadcastsListGetEndpointHandlerResponse200(dat
     status: 200,
     headers: {
       'Content-Type': 'application/json'
+    },
+  })
+}
+
+export function saBaiAPIEndpointsBroadcastsListGetEndpointHandlerResponse400(data: SaBaiAPIEndpointsBroadcastsListGetEndpointStatus400) {
+  return new HttpResponse<string>(JSON.stringify(data), {
+    status: 400,
+    headers: {
+      'Content-Type': 'application/problem+json'
     },
   })
 }

@@ -5,7 +5,7 @@
 
 import * as z from 'zod'
 
-export const saBaiAPIEndpointsVisitsDeleteDeleteEndpointPathIdSchema = z.int32()
+export const saBaiAPIEndpointsVisitsDeleteDeleteEndpointPathIdSchema = z.uuid()
 
 export const saBaiAPIEndpointsVisitsDeleteDeleteEndpointStatus204Schema = z.unknown()
 
@@ -18,5 +18,5 @@ export const saBaiAPIEndpointsVisitsDeleteDeleteEndpointResponseSchema = saBaiAP
 export const saBaiAPIEndpointsVisitsDeleteDeleteEndpointErrorSchema = z.union([saBaiAPIEndpointsVisitsDeleteDeleteEndpointStatus401Schema, saBaiAPIEndpointsVisitsDeleteDeleteEndpointStatus403Schema])
 
 export const saBaiAPIEndpointsVisitsDeleteDeleteEndpointPathSchema = z.object({
-  id: z.int32(),
+  id: z.uuid(),
 })

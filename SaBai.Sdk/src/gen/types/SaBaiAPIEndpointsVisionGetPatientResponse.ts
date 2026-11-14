@@ -8,10 +8,10 @@ import type { SaBaiAPIDomainGenderKey } from './SaBaiAPIDomainGender'
 export type SaBaiAPIEndpointsVisionGetPatientResponse = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  id: number;
+  id: string;
   name: string;
   displayId: string;
   gender: SaBaiAPIDomainGenderKey;

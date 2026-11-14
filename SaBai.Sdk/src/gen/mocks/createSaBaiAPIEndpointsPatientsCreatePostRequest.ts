@@ -10,6 +10,7 @@ import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsPatientsCreatePostRequest<TData extends Partial<SaBaiAPIEndpointsPatientsCreatePostRequest> = object>(data?: TData) {
   const defaultFakeData = {
+    id: faker.string.uuid(),
     name: faker.string.alpha({ length: { min: 0, max: 255 } }),
     identificationNumber: faker.string.alpha({ length: { min: 0, max: 255 } }),
     contactNo: faker.string.alpha({ length: { min: 0, max: 255 } }),
@@ -20,8 +21,11 @@ export function createSaBaiAPIEndpointsPatientsCreatePostRequest<TData extends P
     hasBS2Card: faker.datatype.boolean(),
     hasSabaiCard: faker.datatype.boolean(),
     toGetReport: faker.datatype.boolean(),
-    villageCodeId: faker.number.int(),
+    villageCodeId: faker.string.uuid(),
+    tags: faker.helpers.multiple(() => (faker.string.alpha())),
     vitals: faker.helpers.arrayElement([null, createSaBaiAPIEndpointsPatientsCreatePostVitalsRequest()]),
+    visitId: faker.string.uuid(),
+    vitalsId: faker.string.uuid(),
   }
   return {
     ...defaultFakeData,

@@ -8,10 +8,10 @@ import type { SystemCollectionsGenericListOfSaBaiAPIEndpointsFilesListGetRespons
 export type SaBaiAPIEndpointsFilesListGetEndpointQuery = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer | undefined
+   * Format: `uuid`
+   * @type string | undefined
    */
-  patientId?: number | null;
+  patientId?: string | null;
   deleted?: string | null;
 };
 

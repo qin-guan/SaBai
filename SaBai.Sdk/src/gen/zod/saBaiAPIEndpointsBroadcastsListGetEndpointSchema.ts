@@ -4,9 +4,16 @@
 */
 
 import * as z from 'zod'
+import { fastEndpointsProblemDetailsSchema } from './fastEndpointsProblemDetailsSchema'
 import { systemCollectionsGenericListOfSaBaiAPIEndpointsBroadcastsListGetResponseSchema } from './systemCollectionsGenericListOfSaBaiAPIEndpointsBroadcastsListGetResponseSchema'
 
+export const saBaiAPIEndpointsBroadcastsListGetEndpointQueryLimitSchema = z.int32().nullish()
+
+export const saBaiAPIEndpointsBroadcastsListGetEndpointQuerySinceSchema = z.uuid().nullish()
+
 export const saBaiAPIEndpointsBroadcastsListGetEndpointStatus200Schema = systemCollectionsGenericListOfSaBaiAPIEndpointsBroadcastsListGetResponseSchema
+
+export const saBaiAPIEndpointsBroadcastsListGetEndpointStatus400Schema = fastEndpointsProblemDetailsSchema.describe('RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:\n```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```')
 
 export const saBaiAPIEndpointsBroadcastsListGetEndpointStatus401Schema = z.unknown()
 
@@ -14,4 +21,9 @@ export const saBaiAPIEndpointsBroadcastsListGetEndpointStatus403Schema = z.unkno
 
 export const saBaiAPIEndpointsBroadcastsListGetEndpointResponseSchema = saBaiAPIEndpointsBroadcastsListGetEndpointStatus200Schema
 
-export const saBaiAPIEndpointsBroadcastsListGetEndpointErrorSchema = z.union([saBaiAPIEndpointsBroadcastsListGetEndpointStatus401Schema, saBaiAPIEndpointsBroadcastsListGetEndpointStatus403Schema])
+export const saBaiAPIEndpointsBroadcastsListGetEndpointErrorSchema = z.union([saBaiAPIEndpointsBroadcastsListGetEndpointStatus400Schema, saBaiAPIEndpointsBroadcastsListGetEndpointStatus401Schema, saBaiAPIEndpointsBroadcastsListGetEndpointStatus403Schema])
+
+export const saBaiAPIEndpointsBroadcastsListGetEndpointQuerySchema = z.object({
+  limit: z.int32().nullish(),
+  since: z.uuid().nullish(),
+})

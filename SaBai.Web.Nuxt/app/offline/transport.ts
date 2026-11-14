@@ -15,7 +15,7 @@ import { GATEWAY_STATUSES, NetworkError } from './network'
  *   was reached, and the server's `Date` header of every successful response.
  */
 
-type SdkTransport = NonNullable<Parameters<typeof saBaiAPIEndpointsHealthcheckGetEndpoint>[0]['transport']>
+type SdkTransport = NonNullable<NonNullable<Parameters<typeof saBaiAPIEndpointsHealthcheckGetEndpoint>[0]>['transport']>
 type ResolvedRequest = Parameters<SdkTransport>[0]
 type TransportResult = Awaited<ReturnType<SdkTransport>>
 

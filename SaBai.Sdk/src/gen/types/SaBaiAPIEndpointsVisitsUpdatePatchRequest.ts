@@ -6,16 +6,16 @@
 export type SaBaiAPIEndpointsVisitsUpdatePatchRequest = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer | undefined
+   * Format: `uuid`
+   * @type string | undefined
    */
-  patientId?: number | null;
+  patientId?: string | null;
   /**
    * @description
-   * Format: `int32`
-   * @type integer | undefined
+   * Format: `uuid`
+   * @type string | undefined
    */
-  villageCodeId?: number | null;
+  villageCodeId?: string | null;
   /**
    * @description
    * Format: `date-time`

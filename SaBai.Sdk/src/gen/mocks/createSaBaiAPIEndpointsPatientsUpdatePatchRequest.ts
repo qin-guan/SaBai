@@ -19,7 +19,8 @@ export function createSaBaiAPIEndpointsPatientsUpdatePatchRequest<TData extends 
     hasBS2Card: faker.datatype.boolean(),
     hasSabaiCard: faker.datatype.boolean(),
     toGetReport: faker.datatype.boolean(),
-    villageCodeId: faker.number.int(),
+    villageCodeId: faker.string.uuid(),
+    tags: faker.helpers.multiple(() => (faker.string.alpha())),
   }
   return {
     ...defaultFakeData,

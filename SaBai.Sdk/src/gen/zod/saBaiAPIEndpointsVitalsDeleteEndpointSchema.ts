@@ -6,7 +6,7 @@
 import * as z from 'zod'
 import { fastEndpointsProblemDetailsSchema } from './fastEndpointsProblemDetailsSchema'
 
-export const saBaiAPIEndpointsVitalsDeleteEndpointPathIdSchema = z.int32()
+export const saBaiAPIEndpointsVitalsDeleteEndpointPathIdSchema = z.uuid()
 
 export const saBaiAPIEndpointsVitalsDeleteEndpointStatus204Schema = z.unknown()
 
@@ -21,5 +21,5 @@ export const saBaiAPIEndpointsVitalsDeleteEndpointResponseSchema = saBaiAPIEndpo
 export const saBaiAPIEndpointsVitalsDeleteEndpointErrorSchema = z.union([saBaiAPIEndpointsVitalsDeleteEndpointStatus400Schema, saBaiAPIEndpointsVitalsDeleteEndpointStatus401Schema, saBaiAPIEndpointsVitalsDeleteEndpointStatus403Schema])
 
 export const saBaiAPIEndpointsVitalsDeleteEndpointPathSchema = z.object({
-  id: z.int32(),
+  id: z.uuid(),
 })

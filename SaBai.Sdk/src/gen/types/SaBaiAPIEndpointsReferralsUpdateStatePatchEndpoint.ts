@@ -10,10 +10,10 @@ import type { SaBaiAPIEndpointsReferralsUpdateStatePatchResponse } from './SaBai
 export type SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointPath = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  id: number;
+  id: string;
 };
 
 export type SaBaiAPIEndpointsReferralsUpdateStatePatchEndpointStatus200 = SaBaiAPIEndpointsReferralsUpdateStatePatchResponse;

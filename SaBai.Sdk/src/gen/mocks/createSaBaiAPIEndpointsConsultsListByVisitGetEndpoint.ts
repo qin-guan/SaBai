@@ -9,7 +9,7 @@ import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsConsultsListByVisitGetEndpointPath<TData extends Partial<SaBaiAPIEndpointsConsultsListByVisitGetEndpointPath> = object>(data?: TData) {
   const defaultFakeData = {
-    visitId: faker.number.int(),
+    visitId: faker.string.uuid(),
   }
   return {
     ...defaultFakeData,

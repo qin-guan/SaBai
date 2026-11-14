@@ -12,8 +12,8 @@ public sealed class Patient : ITrackedEntity
     /// <summary>
     /// Human-readable patient number printed on cards (shown as <c>VillageCode + Number:0000</c>).
     /// Assigned by Postgres (identity) when the row is first written on the server, so a patient
-    /// registered offline has no number until it syncs. Patients from before the move to UUID
-    /// keys keep their old integer id here.
+    /// registered offline has no number until its queued registration reaches the server.
+    /// Patients from before the move to UUID keys keep their old integer id here.
     /// </summary>
     public int Number { get; set; }
 

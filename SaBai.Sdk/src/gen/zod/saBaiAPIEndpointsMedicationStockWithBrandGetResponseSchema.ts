@@ -7,8 +7,8 @@ import * as z from 'zod'
 import { saBaiAPIDomainStockStatusSchema } from './saBaiAPIDomainStockStatusSchema'
 
 export const saBaiAPIEndpointsMedicationStockWithBrandGetResponseSchema = z.object({
-  id: z.int32(),
-  medicationBrandId: z.int32(),
+  id: z.uuid(),
+  medicationBrandId: z.uuid(),
   quantity: z.int32(),
   expiry: z.iso.datetime(),
   location: z.string(),
@@ -16,7 +16,7 @@ export const saBaiAPIEndpointsMedicationStockWithBrandGetResponseSchema = z.obje
   remarks: z.string().nullable(),
   brandName: z.string(),
   ingredientName: z.string(),
-  ingredientId: z.int32(),
+  ingredientId: z.uuid(),
   fallBelow: z.int32(),
   isLowStock: z.boolean(),
 })

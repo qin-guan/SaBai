@@ -1,5 +1,9 @@
 import tailwindcss from '@tailwindcss/vite'
 
+// The SPA shell is rendered by the Nitro server, not emitted as a file, so the
+// service worker precaches it from `/` under a revision that changes per build.
+const appShellRevision = Date.now().toString(36)
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   modules: ['@nuxt/a11y', '@nuxt/fonts', '@nuxt/hints', '@nuxt/icon/module', '@nuxt/image', '@nuxt/scripts', 'shadcn-nuxt', '@vite-pwa/nuxt'],
@@ -19,9 +23,6 @@ export default defineNuxtConfig({
     // browser cannot reach. The browser calls this server under /api and
     // server/api/[...path].ts proxies to it. Override with NUXT_API_URL.
     apiUrl: 'http://localhost:5250',
-    // Server-only URL of the PowerSync Service, proxied under /powersync.
-    // Override with NUXT_POWERSYNC_URL.
-    powersyncUrl: 'http://localhost:8089',
   },
   app: {
     head: {
@@ -40,16 +41,17 @@ export default defineNuxtConfig({
       ],
     },
   },
-  // Installable offline-first PWA: precaches the app shell & WASM SQLite runtime,
-  // while PowerSync handles clinical data replication and offline writes.
+  // Installable PWA: the service worker precaches the app shell so the app opens
+  // offline. Data offline is the Vue Query cache persisted in IndexedDB plus the
+  // outbox of queued writes (app/offline).
   pwa: {
     strategies: 'injectManifest',
     srcDir: 'service-worker',
     filename: 'sw.ts',
     registerType: 'prompt',
     injectManifest: {
-      globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,wasm}'],
-      maximumFileSizeToCacheInBytes: 15 * 1024 * 1024,
+      globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+      additionalManifestEntries: [{ url: '/', revision: appShellRevision }],
     },
     manifest: {
       id: '/',
@@ -88,12 +90,6 @@ export default defineNuxtConfig({
     plugins: [
       tailwindcss(),
     ],
-    optimizeDeps: {
-      exclude: ['@journeyapps/wa-sqlite', '@powersync/web'],
-    },
-    worker: {
-      format: 'es',
-    },
   },
   shadcn: {
     /**

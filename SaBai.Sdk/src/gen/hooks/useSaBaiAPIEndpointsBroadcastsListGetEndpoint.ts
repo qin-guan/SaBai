@@ -4,20 +4,20 @@
 */
 
 import type { RequestConfig, ResponseErrorConfig } from '../.kubb/client'
-import type { SaBaiAPIEndpointsBroadcastsListGetEndpointStatus200, SaBaiAPIEndpointsBroadcastsListGetEndpointStatus401, SaBaiAPIEndpointsBroadcastsListGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsBroadcastsListGetEndpoint'
+import type { SaBaiAPIEndpointsBroadcastsListGetEndpointOptions, SaBaiAPIEndpointsBroadcastsListGetEndpointStatus200, SaBaiAPIEndpointsBroadcastsListGetEndpointStatus400, SaBaiAPIEndpointsBroadcastsListGetEndpointStatus401, SaBaiAPIEndpointsBroadcastsListGetEndpointStatus403 } from '../types/SaBaiAPIEndpointsBroadcastsListGetEndpoint'
 import { saBaiAPIEndpointsBroadcastsListGetEndpoint } from '../clients/saBaiAPIEndpointsBroadcastsListGetEndpoint'
 import { queryOptions } from '@tanstack/react-query'
 
-export const saBaiAPIEndpointsBroadcastsListGetEndpointQueryKey = () => [{ url: '/broadcasts' }] as const
+export const saBaiAPIEndpointsBroadcastsListGetEndpointQueryKey = ({ query }: Omit<SaBaiAPIEndpointsBroadcastsListGetEndpointOptions, 'headers'> = {}) => [{ url: '/broadcasts' }, ...(query ? [query] : [])] as const
 
 type SaBaiAPIEndpointsBroadcastsListGetEndpointQueryKey = ReturnType<typeof saBaiAPIEndpointsBroadcastsListGetEndpointQueryKey>
 
-export function saBaiAPIEndpointsBroadcastsListGetEndpointQueryOptions(config: Partial<Omit<RequestConfig, 'path' | 'query' | 'body' | 'headers' | 'url'>> = {}) {
-  const queryKey = saBaiAPIEndpointsBroadcastsListGetEndpointQueryKey()
-  return queryOptions<SaBaiAPIEndpointsBroadcastsListGetEndpointStatus200, ResponseErrorConfig<SaBaiAPIEndpointsBroadcastsListGetEndpointStatus401 | SaBaiAPIEndpointsBroadcastsListGetEndpointStatus403>, SaBaiAPIEndpointsBroadcastsListGetEndpointStatus200, typeof queryKey>({
+export function saBaiAPIEndpointsBroadcastsListGetEndpointQueryOptions({ query }: SaBaiAPIEndpointsBroadcastsListGetEndpointOptions = {}, config: Partial<Omit<RequestConfig, 'path' | 'query' | 'body' | 'headers' | 'url'>> = {}) {
+  const queryKey = saBaiAPIEndpointsBroadcastsListGetEndpointQueryKey({ query })
+  return queryOptions<SaBaiAPIEndpointsBroadcastsListGetEndpointStatus200, ResponseErrorConfig<SaBaiAPIEndpointsBroadcastsListGetEndpointStatus400 | SaBaiAPIEndpointsBroadcastsListGetEndpointStatus401 | SaBaiAPIEndpointsBroadcastsListGetEndpointStatus403>, SaBaiAPIEndpointsBroadcastsListGetEndpointStatus200, typeof queryKey>({
    queryKey,
    queryFn: async ({ signal }) => {
-      return saBaiAPIEndpointsBroadcastsListGetEndpoint({ ...config, signal: config.signal ?? signal, throwOnError: true }).unwrap()
+      return saBaiAPIEndpointsBroadcastsListGetEndpoint({ ...config, query, signal: config.signal ?? signal, throwOnError: true }).unwrap()
    },
   })
 }

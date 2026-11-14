@@ -8,10 +8,10 @@ import type { SaBaiAPIEndpointsBroadcastsPublishPostResponse } from './SaBaiAPIE
 export type SaBaiAPIEndpointsBroadcastsPublishPostEndpointPath = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  id: number;
+  id: string;
 };
 
 export type SaBaiAPIEndpointsBroadcastsPublishPostEndpointStatus200 = SaBaiAPIEndpointsBroadcastsPublishPostResponse;

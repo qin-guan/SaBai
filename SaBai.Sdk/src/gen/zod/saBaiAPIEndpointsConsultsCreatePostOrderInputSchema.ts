@@ -6,7 +6,8 @@
 import * as z from 'zod'
 
 export const saBaiAPIEndpointsConsultsCreatePostOrderInputSchema = z.object({
-  medicationBrandId: z.int32().optional(),
+  id: z.uuid().nullish(),
+  medicationBrandId: z.uuid().optional(),
   quantity: z.int32().optional(),
   dosageInstructions: z.string().nullish(),
   remarks: z.string().nullish(),

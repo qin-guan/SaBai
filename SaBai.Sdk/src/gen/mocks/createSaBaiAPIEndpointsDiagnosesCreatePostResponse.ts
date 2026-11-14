@@ -9,8 +9,8 @@ import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsDiagnosesCreatePostResponse<TData extends Partial<SaBaiAPIEndpointsDiagnosesCreatePostResponse> = object>(data?: TData) {
   const defaultFakeData = {
-    id: faker.number.int(),
-    consultId: faker.number.int(),
+    id: faker.string.uuid(),
+    consultId: faker.string.uuid(),
     details: faker.string.alpha(),
     category: faker.helpers.arrayElement([null, createSaBaiAPIDomainDiagnosisCategory()]),
   }

@@ -3,15 +3,16 @@
 * Do not edit manually.
 */
 
+import type { SaBaiAPIEndpointsBroadcastsListGetEndpointOptions } from '../types/SaBaiAPIEndpointsBroadcastsListGetEndpoint'
 import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import { saBaiAPIEndpointsBroadcastsListGetEndpoint } from '../clients/saBaiAPIEndpointsBroadcastsListGetEndpoint'
 
 /**
- * @summary List broadcasts
+ * @summary List broadcasts, newest first
  * {@link /broadcasts}
  */
-export async function saBaiAPIEndpointsBroadcastsListGetEndpointHandler(ctx: ServerContext): Promise<CallToolResult> {
-  const res = await saBaiAPIEndpointsBroadcastsListGetEndpoint({ signal: ctx.mcpReq.signal, throwOnError: true })
+export async function saBaiAPIEndpointsBroadcastsListGetEndpointHandler({ query }: SaBaiAPIEndpointsBroadcastsListGetEndpointOptions = {}, ctx: ServerContext): Promise<CallToolResult> {
+  const res = await saBaiAPIEndpointsBroadcastsListGetEndpoint({ query, signal: ctx.mcpReq.signal, throwOnError: true })
 
   return {
     content: [

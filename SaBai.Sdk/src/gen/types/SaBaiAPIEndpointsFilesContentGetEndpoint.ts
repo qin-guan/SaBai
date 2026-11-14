@@ -6,10 +6,10 @@
 export type SaBaiAPIEndpointsFilesContentGetEndpointPath = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  id: number;
+  id: string;
 };
 
 export type SaBaiAPIEndpointsFilesContentGetEndpointStatus204 = unknown;

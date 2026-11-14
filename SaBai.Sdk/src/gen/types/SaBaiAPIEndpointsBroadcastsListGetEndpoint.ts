@@ -3,9 +3,32 @@
 * Do not edit manually.
 */
 
+import type { FastEndpointsProblemDetails } from './FastEndpointsProblemDetails'
 import type { SystemCollectionsGenericListOfSaBaiAPIEndpointsBroadcastsListGetResponse } from './SystemCollectionsGenericListOfSaBaiAPIEndpointsBroadcastsListGetResponse'
 
+export type SaBaiAPIEndpointsBroadcastsListGetEndpointQuery = {
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer | undefined
+   */
+  limit?: number | null;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  since?: string | null;
+};
+
 export type SaBaiAPIEndpointsBroadcastsListGetEndpointStatus200 = SystemCollectionsGenericListOfSaBaiAPIEndpointsBroadcastsListGetResponse;
+
+/**
+ * @description RFC9457 compatible problem details/ error response class. this can be used by configuring startup like so:
+ * ```app.UseFastEndpoints(c =&gt; c.Errors.UseProblemDetails())```
+ * @type object
+ */
+export type SaBaiAPIEndpointsBroadcastsListGetEndpointStatus400 = FastEndpointsProblemDetails;
 
 export type SaBaiAPIEndpointsBroadcastsListGetEndpointStatus401 = unknown;
 
@@ -14,12 +37,13 @@ export type SaBaiAPIEndpointsBroadcastsListGetEndpointStatus403 = unknown;
 export type SaBaiAPIEndpointsBroadcastsListGetEndpointOptions = {
   body?: never;
   path?: never;
-  query?: never;
+  query?: SaBaiAPIEndpointsBroadcastsListGetEndpointQuery;
   headers?: never;
 };
 
 export type SaBaiAPIEndpointsBroadcastsListGetEndpointResponses = {
   '200': SaBaiAPIEndpointsBroadcastsListGetEndpointStatus200;
+  '400': SaBaiAPIEndpointsBroadcastsListGetEndpointStatus400;
   '401': SaBaiAPIEndpointsBroadcastsListGetEndpointStatus401;
   '403': SaBaiAPIEndpointsBroadcastsListGetEndpointStatus403;
 };

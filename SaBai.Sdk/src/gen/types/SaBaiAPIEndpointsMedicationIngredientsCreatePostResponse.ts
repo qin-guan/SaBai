@@ -6,10 +6,10 @@
 export type SaBaiAPIEndpointsMedicationIngredientsCreatePostResponse = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  id: number;
+  id: string;
   name: string;
   unitOfMeasurement: string;
   /**

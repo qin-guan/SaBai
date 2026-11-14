@@ -31,10 +31,10 @@ export type SaBaiAPIEndpointsAuditLogsListGetEndpointQuery = {
   to?: string | null;
   /**
    * @description
-   * Format: `int32`
-   * @type integer | undefined
+   * Format: `uuid`
+   * @type string | undefined
    */
-  before?: number | null;
+  before?: string | null;
   /**
    * @description
    * Format: `int32`

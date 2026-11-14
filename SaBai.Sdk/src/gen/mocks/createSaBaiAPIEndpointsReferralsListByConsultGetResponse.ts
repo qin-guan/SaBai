@@ -9,12 +9,12 @@ import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsReferralsListByConsultGetResponse<TData extends Partial<SaBaiAPIEndpointsReferralsListByConsultGetResponse> = object>(data?: TData) {
   const defaultFakeData = {
-    id: faker.number.int(),
+    id: faker.string.uuid(),
     referredFor: faker.string.alpha(),
     referralNotes: faker.string.alpha(),
     referralState: createSaBaiAPIDomainReferralState(),
     referralOutcome: faker.string.alpha(),
-    consultId: faker.number.int(),
+    consultId: faker.string.uuid(),
     createdAt: faker.date.anytime().toISOString(),
   }
   return {

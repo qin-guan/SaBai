@@ -8,10 +8,10 @@ import type { SaBaiAPIEndpointsReferralsGetResponse } from './SaBaiAPIEndpointsR
 export type SaBaiAPIEndpointsReferralsGetEndpointPath = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  id: number;
+  id: string;
 };
 
 export type SaBaiAPIEndpointsReferralsGetEndpointStatus200 = SaBaiAPIEndpointsReferralsGetResponse;

@@ -6,7 +6,7 @@
 import * as z from 'zod'
 
 export const saBaiAPIEndpointsMedicationIngredientsUpdatePutResponseSchema = z.object({
-  id: z.int32(),
+  id: z.uuid(),
   name: z.string(),
   unitOfMeasurement: z.string(),
   fallBelow: z.int32(),

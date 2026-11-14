@@ -8,8 +8,8 @@ import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsChildVitalsGetByVitalsGetResponse<TData extends Partial<SaBaiAPIEndpointsChildVitalsGetByVitalsGetResponse> = object>(data?: TData) {
   const defaultFakeData = {
-    id: faker.number.int(),
-    vitalsId: faker.number.int(),
+    id: faker.string.uuid(),
+    vitalsId: faker.string.uuid(),
     grossMotor: faker.string.alpha(),
     redReflex: faker.string.alpha(),
     scoliosis: faker.string.alpha(),

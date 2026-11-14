@@ -10,7 +10,7 @@ import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsVisionGetEndpointQuery<TData extends Partial<SaBaiAPIEndpointsVisionGetEndpointQuery> = object>(data?: TData) {
   const defaultFakeData = {
-    visitId: faker.number.int(),
+    visitId: faker.string.uuid(),
   }
   return {
     ...defaultFakeData,

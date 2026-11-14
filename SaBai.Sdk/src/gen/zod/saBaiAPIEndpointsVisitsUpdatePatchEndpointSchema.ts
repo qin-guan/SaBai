@@ -8,7 +8,7 @@ import { fastEndpointsProblemDetailsSchema } from './fastEndpointsProblemDetails
 import { saBaiAPIEndpointsVisitsUpdatePatchRequestSchema } from './saBaiAPIEndpointsVisitsUpdatePatchRequestSchema'
 import { saBaiAPIEndpointsVisitsUpdatePatchResponseSchema } from './saBaiAPIEndpointsVisitsUpdatePatchResponseSchema'
 
-export const saBaiAPIEndpointsVisitsUpdatePatchEndpointPathIdSchema = z.int32()
+export const saBaiAPIEndpointsVisitsUpdatePatchEndpointPathIdSchema = z.uuid()
 
 export const saBaiAPIEndpointsVisitsUpdatePatchEndpointStatus200Schema = saBaiAPIEndpointsVisitsUpdatePatchResponseSchema
 
@@ -25,5 +25,5 @@ export const saBaiAPIEndpointsVisitsUpdatePatchEndpointErrorSchema = z.union([sa
 export const saBaiAPIEndpointsVisitsUpdatePatchEndpointBodySchema = saBaiAPIEndpointsVisitsUpdatePatchRequestSchema
 
 export const saBaiAPIEndpointsVisitsUpdatePatchEndpointPathSchema = z.object({
-  id: z.int32(),
+  id: z.uuid(),
 })

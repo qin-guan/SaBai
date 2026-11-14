@@ -20,7 +20,7 @@ export const saBaiAPIEndpointsAuditLogsListGetEndpointQueryFromSchema = z.iso.da
 
 export const saBaiAPIEndpointsAuditLogsListGetEndpointQueryToSchema = z.iso.datetime().nullish()
 
-export const saBaiAPIEndpointsAuditLogsListGetEndpointQueryBeforeSchema = z.int32().nullish()
+export const saBaiAPIEndpointsAuditLogsListGetEndpointQueryBeforeSchema = z.uuid().nullish()
 
 export const saBaiAPIEndpointsAuditLogsListGetEndpointQueryTakeSchema = z.int32().nullish()
 
@@ -43,6 +43,6 @@ export const saBaiAPIEndpointsAuditLogsListGetEndpointQuerySchema = z.object({
   action: saBaiAPIDomainAuditActionSchema.optional(),
   from: z.iso.datetime().nullish(),
   to: z.iso.datetime().nullish(),
-  before: z.int32().nullish(),
+  before: z.uuid().nullish(),
   take: z.int32().nullish(),
 })

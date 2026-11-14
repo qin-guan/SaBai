@@ -8,22 +8,22 @@ import type { SaBaiAPIDomainOrderStatusKey } from './SaBaiAPIDomainOrderStatus'
 export type SaBaiAPIEndpointsOrdersListGetResponse = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  id: number;
+  id: string;
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  consultId: number;
+  consultId: string;
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  medicationBrandId: number;
+  medicationBrandId: string;
   brandName: string;
   /**
    * @description

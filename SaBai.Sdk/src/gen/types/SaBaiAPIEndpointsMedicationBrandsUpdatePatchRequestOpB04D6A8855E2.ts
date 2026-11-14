@@ -6,10 +6,11 @@
 export type SaBaiAPIEndpointsMedicationBrandsUpdatePatchRequestOpB04D6A8855E2 = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer | undefined
+   * Format: `uuid`
+   * @minLength 1
+   * @type string
    */
-  id?: number;
+  id: string;
   /**
    * @minLength 0
    * @maxLength 255
@@ -18,9 +19,10 @@ export type SaBaiAPIEndpointsMedicationBrandsUpdatePatchRequestOpB04D6A8855E2 = 
   name?: string | null;
   /**
    * @description
-   * Format: `int32`
-   * @type integer | undefined
+   * Format: `uuid`
+   * @minLength 1
+   * @type string
    */
-  activeIngredientId?: number;
+  activeIngredientId: string;
   remarks: string;
 };

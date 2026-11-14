@@ -10,4 +10,5 @@ export const saBaiAPIEndpointsAuthUsersUpdatePatchRequestSchema = z.object({
   email: z.email().min(0).max(255).nullish(),
   nickname: z.string().min(0).max(255).nullish(),
   roles: z.array(z.string()).nullish(),
+  tags: z.array(z.string()).nullish(),
 })

@@ -6,10 +6,10 @@
 export type SaBaiAPIEndpointsFilesCreatePostRequest = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer | undefined
+   * Format: `uuid`
+   * @type string | undefined
    */
-  patientId?: number;
+  patientId?: string;
   files?: Blob[] | null;
   descriptions?: string[] | null;
 };

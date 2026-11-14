@@ -22,8 +22,8 @@ import { systemCollectionsGenericIReadOnlyListOfSystemStringSchema } from './sys
 import { systemNullableOfSystemDateOnlySchema } from './systemNullableOfSystemDateOnlySchema'
 
 export const saBaiAPIEndpointsDentalDentalConsultResponseSchema = z.object({
-  id: z.int32(),
-  visitId: z.int32(),
+  id: z.uuid(),
+  visitId: z.uuid(),
   previousDentalVisit: z.union([z.null(), saBaiAPIDomainYesNoUnknownSchema]).optional(),
   previousDentalTreatment: z.union([z.null(), saBaiAPIDomainYesNoUnknownSchema]).optional(),
   toothache: z.boolean().nullish(),
@@ -72,5 +72,6 @@ export const saBaiAPIEndpointsDentalDentalConsultResponseSchema = z.object({
   referralNotes: z.string().nullish(),
   recommendedFacility: z.string().nullish(),
   remarks: z.string().nullish(),
+  imageFileId: z.uuid().nullish(),
   updatedAt: z.iso.datetime(),
 })

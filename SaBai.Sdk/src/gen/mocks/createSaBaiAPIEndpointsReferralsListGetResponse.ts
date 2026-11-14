@@ -5,25 +5,27 @@
 
 import type { SaBaiAPIEndpointsReferralsListGetResponse } from '../types/SaBaiAPIEndpointsReferralsListGetResponse'
 import { createSaBaiAPIDomainReferralState } from './createSaBaiAPIDomainReferralState'
+import { createSystemCollectionsGenericIReadOnlyListOfSystemString } from './createSystemCollectionsGenericIReadOnlyListOfSystemString'
 import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsReferralsListGetResponse<TData extends Partial<SaBaiAPIEndpointsReferralsListGetResponse> = object>(data?: TData) {
   const defaultFakeData = {
-    id: faker.number.int(),
+    id: faker.string.uuid(),
     referredFor: faker.string.alpha(),
     referralNotes: faker.string.alpha(),
     referralState: createSaBaiAPIDomainReferralState(),
     referralOutcome: faker.string.alpha(),
-    consultId: faker.number.int(),
+    consultId: faker.string.uuid(),
     createdAt: faker.date.anytime().toISOString(),
     consultDate: faker.date.anytime().toISOString(),
     doctorId: faker.string.uuid(),
-    patientId: faker.number.int(),
+    patientId: faker.string.uuid(),
     patientName: faker.string.alpha(),
     hasPhoto: faker.datatype.boolean(),
-    villageCodeId: faker.number.int(),
+    villageCodeId: faker.string.uuid(),
     villageCode: faker.string.alpha(),
     villageColorHex: faker.string.alpha(),
+    tags: createSystemCollectionsGenericIReadOnlyListOfSystemString(),
   }
   return {
     ...defaultFakeData,

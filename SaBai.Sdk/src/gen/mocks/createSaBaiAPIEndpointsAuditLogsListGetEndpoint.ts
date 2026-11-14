@@ -17,7 +17,7 @@ export function createSaBaiAPIEndpointsAuditLogsListGetEndpointQuery<TData exten
     action: createSaBaiAPIDomainAuditAction(),
     from: faker.date.anytime().toISOString(),
     to: faker.date.anytime().toISOString(),
-    before: faker.number.int(),
+    before: faker.string.uuid(),
     take: faker.number.int(),
   }
   return {

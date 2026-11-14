@@ -10,10 +10,10 @@ import type { SaBaiAPIEndpointsEyesightUpdateByVisitPatchResponse } from './SaBa
 export type SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointPath = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  visitId: number;
+  visitId: string;
 };
 
 export type SaBaiAPIEndpointsEyesightUpdateByVisitPatchEndpointStatus200 = SaBaiAPIEndpointsEyesightUpdateByVisitPatchResponse;

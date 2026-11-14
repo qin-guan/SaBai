@@ -4,24 +4,25 @@
 */
 
 import type { SaBaiAPIDomainReferralStateKey } from './SaBaiAPIDomainReferralState'
+import type { SystemCollectionsGenericIReadOnlyListOfSystemString } from './SystemCollectionsGenericIReadOnlyListOfSystemString'
 
 export type SaBaiAPIEndpointsReferralsListGetResponse = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  id: number;
+  id: string;
   referredFor: string;
   referralNotes: string | null;
   referralState: SaBaiAPIDomainReferralStateKey;
   referralOutcome: string | null;
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  consultId: number;
+  consultId: string;
   /**
    * @description
    * Format: `date-time`
@@ -42,18 +43,19 @@ export type SaBaiAPIEndpointsReferralsListGetResponse = {
   doctorId: string;
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  patientId: number;
+  patientId: string;
   patientName: string;
   hasPhoto: boolean;
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  villageCodeId: number;
+  villageCodeId: string;
   villageCode: string;
   villageColorHex: string;
+  tags: SystemCollectionsGenericIReadOnlyListOfSystemString;
 };

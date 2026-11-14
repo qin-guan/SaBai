@@ -9,11 +9,11 @@ import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsPatientsVisitsGetItem<TData extends Partial<SaBaiAPIEndpointsPatientsVisitsGetItem> = object>(data?: TData) {
   const defaultFakeData = {
-    id: faker.number.int(),
+    id: faker.string.uuid(),
     date: faker.date.anytime().toISOString(),
-    patientId: faker.number.int(),
+    patientId: faker.string.uuid(),
     patientName: faker.string.alpha(),
-    villageCodeId: faker.number.int(),
+    villageCodeId: faker.string.uuid(),
     villageCode: faker.string.alpha(),
     villageName: faker.string.alpha(),
     villageColorHex: faker.string.alpha(),

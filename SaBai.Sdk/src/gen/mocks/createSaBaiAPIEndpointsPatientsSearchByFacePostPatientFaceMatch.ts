@@ -8,7 +8,7 @@ import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsPatientsSearchByFacePostPatientFaceMatch<TData extends Partial<SaBaiAPIEndpointsPatientsSearchByFacePostPatientFaceMatch> = object>(data?: TData) {
   const defaultFakeData = {
-    id: faker.number.int(),
+    id: faker.string.uuid(),
     name: faker.string.alpha(),
     displayId: faker.string.alpha(),
     villageCode: faker.string.alpha(),

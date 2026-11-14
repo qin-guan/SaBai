@@ -7,7 +7,7 @@ import * as z from 'zod'
 import { saBaiAPIDomainBroadcastSeveritySchema } from './saBaiAPIDomainBroadcastSeveritySchema'
 
 export const saBaiAPIEndpointsBroadcastsCreatePostResponseSchema = z.object({
-  id: z.int32(),
+  id: z.uuid(),
   title: z.string(),
   body: z.string(),
   severity: saBaiAPIDomainBroadcastSeveritySchema,

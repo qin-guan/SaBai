@@ -9,8 +9,8 @@ import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsConsultsUpdatePatchResponse<TData extends Partial<SaBaiAPIEndpointsConsultsUpdatePatchResponse> = object>(data?: TData) {
   const defaultFakeData = {
-    id: faker.number.int(),
-    visitId: faker.number.int(),
+    id: faker.string.uuid(),
+    visitId: faker.string.uuid(),
     date: faker.date.anytime().toISOString(),
     pastMedicalHistory: faker.string.alpha(),
     consultation: faker.string.alpha(),

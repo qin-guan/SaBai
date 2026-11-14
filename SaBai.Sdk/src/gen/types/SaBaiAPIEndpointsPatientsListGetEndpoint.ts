@@ -8,6 +8,7 @@ import type { SaBaiAPIEndpointsPatientsListGetResponse } from './SaBaiAPIEndpoin
 export type SaBaiAPIEndpointsPatientsListGetEndpointQuery = {
   name?: string | null;
   villageCode?: string | null;
+  tag?: string | null;
 };
 
 export type SaBaiAPIEndpointsPatientsListGetEndpointStatus200 = SaBaiAPIEndpointsPatientsListGetResponse;

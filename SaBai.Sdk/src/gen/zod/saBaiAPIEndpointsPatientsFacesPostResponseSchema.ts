@@ -8,7 +8,7 @@ import { saBaiAPIEndpointsFacesFaceDtoSchema } from './saBaiAPIEndpointsFacesFac
 
 export const saBaiAPIEndpointsPatientsFacesPostResponseSchema = z.object({
   faceId: z.uuid(),
-  patientId: z.int32(),
+  patientId: z.uuid(),
   face: saBaiAPIEndpointsFacesFaceDtoSchema,
   facesDetected: z.int32(),
 })

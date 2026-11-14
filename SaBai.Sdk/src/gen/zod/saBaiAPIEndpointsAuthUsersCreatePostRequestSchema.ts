@@ -11,4 +11,5 @@ export const saBaiAPIEndpointsAuthUsersCreatePostRequestSchema = z.object({
   password: z.string().min(1),
   nickname: z.string().min(0).max(255).nullish(),
   roles: z.array(z.string()).nullish(),
+  tags: z.array(z.string()).nullish(),
 })

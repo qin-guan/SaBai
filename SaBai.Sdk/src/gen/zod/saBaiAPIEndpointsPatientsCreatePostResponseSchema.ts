@@ -5,9 +5,10 @@
 
 import * as z from 'zod'
 import { saBaiAPIDomainGenderSchema } from './saBaiAPIDomainGenderSchema'
+import { systemCollectionsGenericIReadOnlyListOfSystemStringSchema } from './systemCollectionsGenericIReadOnlyListOfSystemStringSchema'
 
 export const saBaiAPIEndpointsPatientsCreatePostResponseSchema = z.object({
-  id: z.int32(),
+  id: z.uuid(),
   name: z.string(),
   identificationNumber: z.string().nullable(),
   contactNo: z.string().nullable(),
@@ -18,14 +19,15 @@ export const saBaiAPIEndpointsPatientsCreatePostResponseSchema = z.object({
   hasBS2Card: z.boolean(),
   hasSabaiCard: z.boolean(),
   toGetReport: z.boolean(),
-  villageCodeId: z.int32().nullable(),
+  villageCodeId: z.uuid().nullable(),
   villageCode: z.string().nullable(),
   displayId: z.string(),
   filterString: z.string(),
   lastVisitDate: z.iso.datetime(),
-  lastVisitId: z.int32(),
-  visitId: z.int32(),
-  vitalsId: z.int32().nullable(),
+  lastVisitId: z.uuid(),
+  visitId: z.uuid(),
+  vitalsId: z.uuid().nullable(),
   hasPhoto: z.boolean(),
   hasFace: z.boolean(),
+  tags: systemCollectionsGenericIReadOnlyListOfSystemStringSchema,
 })

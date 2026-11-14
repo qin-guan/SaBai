@@ -9,10 +9,10 @@ import type { SystemCollectionsGenericListOfSaBaiAPIEndpointsEyesightListByPatie
 export type SaBaiAPIEndpointsEyesightListByPatientGetEndpointPath = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  patientId: number;
+  patientId: string;
 };
 
 export type SaBaiAPIEndpointsEyesightListByPatientGetEndpointStatus200 = SystemCollectionsGenericListOfSaBaiAPIEndpointsEyesightListByPatientGetResponse;

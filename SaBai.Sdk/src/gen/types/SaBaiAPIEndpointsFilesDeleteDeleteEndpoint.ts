@@ -8,10 +8,10 @@ import type { SaBaiAPIEndpointsFilesDeleteDeleteResponse } from './SaBaiAPIEndpo
 export type SaBaiAPIEndpointsFilesDeleteDeleteEndpointPath = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  id: number;
+  id: string;
 };
 
 export type SaBaiAPIEndpointsFilesDeleteDeleteEndpointStatus200 = SaBaiAPIEndpointsFilesDeleteDeleteResponse;

@@ -14,5 +14,5 @@ import { client, withUnwrap } from '../.kubb/client'
 export function saBaiAPIEndpointsAuthUsersGetEndpoint<ThrowOnError extends boolean = true>(options: Options<SaBaiAPIEndpointsAuthUsersGetEndpointOptions, ThrowOnError>): Unwrappable<RequestResult<SaBaiAPIEndpointsAuthUsersGetEndpointResponses, ThrowOnError>> {
   const { client: request = client, ...config } = options
 
-  return withUnwrap(request({ method: 'GET', url: '/auth/users/{id}', security: [{ type: 'apiKey', name: 'sabai.auth', in: 'cookie', scopes: ['admin', 'member'] }], ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<SaBaiAPIEndpointsAuthUsersGetEndpointResponses, ThrowOnError>>)
+  return withUnwrap(request({ method: 'GET', url: '/auth/users/{id}', security: [{ type: 'apiKey', name: 'sabai.auth', in: 'cookie', scopes: ['admin', 'member', 'pn'] }], ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<SaBaiAPIEndpointsAuthUsersGetEndpointResponses, ThrowOnError>>)
 }

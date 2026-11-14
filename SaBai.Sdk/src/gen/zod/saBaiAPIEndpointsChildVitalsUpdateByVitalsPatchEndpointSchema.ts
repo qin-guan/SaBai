@@ -8,7 +8,7 @@ import { fastEndpointsProblemDetailsSchema } from './fastEndpointsProblemDetails
 import { saBaiAPIEndpointsChildVitalsUpdateByVitalsPatchRequestSchema } from './saBaiAPIEndpointsChildVitalsUpdateByVitalsPatchRequestSchema'
 import { saBaiAPIEndpointsChildVitalsUpdateByVitalsPatchResponseSchema } from './saBaiAPIEndpointsChildVitalsUpdateByVitalsPatchResponseSchema'
 
-export const saBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointPathVitalsIdSchema = z.int32()
+export const saBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointPathVitalsIdSchema = z.uuid()
 
 export const saBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointStatus200Schema = saBaiAPIEndpointsChildVitalsUpdateByVitalsPatchResponseSchema
 
@@ -25,5 +25,5 @@ export const saBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointErrorSchema 
 export const saBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointBodySchema = saBaiAPIEndpointsChildVitalsUpdateByVitalsPatchRequestSchema
 
 export const saBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointPathSchema = z.object({
-  vitalsId: z.int32(),
+  vitalsId: z.uuid(),
 })

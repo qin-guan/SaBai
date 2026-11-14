@@ -8,16 +8,16 @@ import type { SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsLi
 export type SaBaiAPIEndpointsConsultsListByVisitGetResponse = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  id: number;
+  id: string;
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  visitId: number;
+  visitId: string;
   /**
    * @description
    * Format: `date-time`

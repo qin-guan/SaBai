@@ -11,7 +11,7 @@ import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointPath<TData extends Partial<SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchEndpointPath> = object>(data?: TData) {
   const defaultFakeData = {
-    vitalsId: faker.number.int(),
+    vitalsId: faker.string.uuid(),
   }
   return {
     ...defaultFakeData,

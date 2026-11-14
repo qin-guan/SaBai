@@ -9,7 +9,7 @@ import { fakerEN as faker } from '@faker-js/faker'
 export function createSaBaiAPIEndpointsMedicationBrandsUpdatePatchRequestOp144491D9C6BF<TData extends Partial<SaBaiAPIEndpointsMedicationBrandsUpdatePatchRequestOp144491D9C6BF> = object>(data?: TData) {
   const defaultFakeData = {
     name: faker.string.alpha({ length: { min: 0, max: 255 } }),
-    activeIngredientId: faker.number.int(),
+    activeIngredientId: faker.string.uuid(),
     remarks: faker.string.alpha(),
   }
   return {

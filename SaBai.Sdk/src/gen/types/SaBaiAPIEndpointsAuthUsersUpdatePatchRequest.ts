@@ -25,4 +25,5 @@ export type SaBaiAPIEndpointsAuthUsersUpdatePatchRequest = {
    */
   nickname?: string | null;
   roles?: string[] | null;
+  tags?: string[] | null;
 };

@@ -6,16 +6,16 @@
 export type SaBaiAPIEndpointsChildVitalsUpdateByVitalsPatchResponse = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  id: number;
+  id: string;
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  vitalsId: number;
+  vitalsId: string;
   grossMotor: string | null;
   redReflex: string | null;
   scoliosis: string | null;

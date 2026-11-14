@@ -8,7 +8,7 @@ import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsPatientsPhotoPutResponse<TData extends Partial<SaBaiAPIEndpointsPatientsPhotoPutResponse> = object>(data?: TData) {
   const defaultFakeData = {
-    id: faker.number.int(),
+    id: faker.string.uuid(),
     hasPhoto: faker.datatype.boolean(),
   }
   return {

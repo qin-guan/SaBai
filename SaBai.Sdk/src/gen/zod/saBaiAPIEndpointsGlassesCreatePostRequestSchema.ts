@@ -6,7 +6,8 @@
 import * as z from 'zod'
 
 export const saBaiAPIEndpointsGlassesCreatePostRequestSchema = z.object({
-  visitId: z.int32().gt(0).optional(),
+  id: z.uuid().nullish(),
+  visitId: z.uuid().min(1),
   leftGlassesDegree: z.string().nullish(),
   rightGlassesDegree: z.string().nullish(),
   notes: z.string().nullish(),

@@ -10,7 +10,7 @@ import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsPharmacyOrdersGetVisitBundle<TData extends Partial<SaBaiAPIEndpointsPharmacyOrdersGetVisitBundle> = object>(data?: TData) {
   const defaultFakeData = {
-    visitId: faker.number.int(),
+    visitId: faker.string.uuid(),
     visitDate: faker.date.anytime().toISOString(),
     orders: createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPharmacyOrdersGetPharmacyOrderItem(),
     diagnoses: createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPharmacyOrdersGetDiagnosisItem(),

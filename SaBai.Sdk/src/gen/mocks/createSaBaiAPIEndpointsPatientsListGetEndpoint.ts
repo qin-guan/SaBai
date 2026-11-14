@@ -11,6 +11,7 @@ export function createSaBaiAPIEndpointsPatientsListGetEndpointQuery<TData extend
   const defaultFakeData = {
     name: faker.string.alpha(),
     villageCode: faker.string.alpha(),
+    tag: faker.string.alpha(),
   }
   return {
     ...defaultFakeData,

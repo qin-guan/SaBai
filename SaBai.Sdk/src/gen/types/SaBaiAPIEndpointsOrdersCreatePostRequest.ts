@@ -6,16 +6,24 @@
 export type SaBaiAPIEndpointsOrdersCreatePostRequest = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer | undefined
+   * Format: `uuid`
+   * @type string | undefined
    */
-  consultId?: number;
+  id?: string | null;
   /**
    * @description
-   * Format: `int32`
-   * @type integer | undefined
+   * Format: `uuid`
+   * @minLength 1
+   * @type string
    */
-  medicationBrandId?: number;
+  consultId: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @minLength 1
+   * @type string
+   */
+  medicationBrandId: string;
   /**
    * @description
    * Format: `int32`

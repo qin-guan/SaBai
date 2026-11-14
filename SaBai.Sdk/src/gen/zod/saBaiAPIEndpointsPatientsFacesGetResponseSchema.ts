@@ -7,6 +7,6 @@ import * as z from 'zod'
 import { saBaiAPIFaceRecognitionStoredFaceArraySchema } from './saBaiAPIFaceRecognitionStoredFaceArraySchema'
 
 export const saBaiAPIEndpointsPatientsFacesGetResponseSchema = z.object({
-  patientId: z.int32(),
+  patientId: z.uuid(),
   faces: saBaiAPIFaceRecognitionStoredFaceArraySchema,
 })

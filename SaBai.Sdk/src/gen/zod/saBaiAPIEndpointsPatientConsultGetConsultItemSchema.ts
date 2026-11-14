@@ -6,7 +6,7 @@
 import * as z from 'zod'
 
 export const saBaiAPIEndpointsPatientConsultGetConsultItemSchema = z.object({
-  id: z.int32(),
+  id: z.uuid(),
   date: z.iso.datetime(),
   doctorNickname: z.string(),
   referredFor: z.string().nullable(),

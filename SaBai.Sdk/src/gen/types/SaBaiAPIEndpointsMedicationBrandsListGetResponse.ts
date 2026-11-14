@@ -6,16 +6,16 @@
 export type SaBaiAPIEndpointsMedicationBrandsListGetResponse = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  id: number;
+  id: string;
   name: string;
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  activeIngredientId: number;
+  activeIngredientId: string;
   remarks: string | null;
 };

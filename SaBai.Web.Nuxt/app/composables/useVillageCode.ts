@@ -1,7 +1,8 @@
 import type { MaybeRefOrGetter } from 'vue'
-import type { LocalVillageCode } from '~/db/types'
+import { useQuery } from '@tanstack/vue-query'
+import { fetchVillageCodes, type VillageCode } from '~/offline/mutations/villageCodes'
 
-export type VillageCode = LocalVillageCode
+export type { VillageCode } from '~/offline/mutations/villageCodes'
 
 const STORAGE_KEY = 'villageCodeState'
 
@@ -10,46 +11,20 @@ function readStoredVillageId(): string | null {
     const stored = window.localStorage.getItem(STORAGE_KEY)
     if (!stored) return null
     const parsed = JSON.parse(stored) as { selectedVillageCodeId?: string | number | null }
+    // Ids were numbers before UUID keys; a stored number no longer matches anything.
     return typeof parsed.selectedVillageCodeId === 'string' ? parsed.selectedVillageCodeId : null
-  } catch {
+  }
+  catch {
     return null
   }
 }
 
+/** Village codes, newest first. Served from the cache (also offline) and refreshed from the API. */
 export function useVillageCodesList(includeHidden: MaybeRefOrGetter<boolean>) {
-  const query = useLocalQuery<{ villageCodes: LocalVillageCode[] }>(
-    ['village_codes'],
-    async () => {
-      const db = getPowerSyncInstance()
-      const showAll = toValue(includeHidden)
-      const rows = await db.getAll<{
-        id: string
-        version: number
-        code: string
-        name: string
-        color_hex: string
-        is_visible: number
-        created_at: string
-      }>(
-        showAll
-          ? 'SELECT id, version, code, name, color_hex, is_visible, created_at FROM village_codes ORDER BY code ASC'
-          : 'SELECT id, version, code, name, color_hex, is_visible, created_at FROM village_codes WHERE is_visible = 1 ORDER BY code ASC',
-      )
-      return {
-        villageCodes: rows.map(r => ({
-          id: r.id,
-          version: Number(r.version ?? 1),
-          code: r.code,
-          name: r.name,
-          colorHex: r.color_hex ?? '#1f3a5f',
-          isVisible: Boolean(r.is_visible),
-          createdAt: r.created_at,
-        })),
-      }
-    },
-    { watchDeps: [() => toValue(includeHidden)] },
-  )
-  return query
+  return useQuery({
+    queryKey: computed(() => queryKeys.villageCodesList(toValue(includeHidden))),
+    queryFn: ({ signal }) => fetchVillageCodes(toValue(includeHidden), signal),
+  })
 }
 
 /**
@@ -62,13 +37,14 @@ export function useVillageCode() {
   )
 
   const query = useVillageCodesList(false)
-  const villageCodes = computed(() => query.data.value?.villageCodes)
+  const villageCodes = computed<VillageCode[] | undefined>(() => query.data.value?.villageCodes)
 
   function setSelectedVillageCodeId(id: string | null) {
     selectedVillageCodeId.value = id
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ selectedVillageCodeId: id }))
-    } catch {
+    }
+    catch {
       // Storage unavailable (private mode); selection still works for this session.
     }
   }
@@ -93,7 +69,8 @@ export function useVillageCode() {
     selectedVillage,
     setSelectedVillageCodeId,
     villageCodes,
-    isLoading: query.isLoading,
-    isError: query.isError,
+    // Loading only while there is nothing to show; cached data renders straight away.
+    isLoading: computed(() => query.isLoading.value && !query.data.value),
+    isError: computed(() => query.isError.value && !query.data.value),
   }
 }

@@ -13,6 +13,7 @@ export function createSaBaiAPIEndpointsAuthUsersCreatePostRequest<TData extends 
     password: faker.string.alpha({ length: 1 }),
     nickname: faker.string.alpha({ length: { min: 0, max: 255 } }),
     roles: faker.helpers.multiple(() => (faker.string.alpha())),
+    tags: faker.helpers.multiple(() => (faker.string.alpha())),
   }
   return {
     ...defaultFakeData,

@@ -7,7 +7,7 @@ import * as z from 'zod'
 import { fastEndpointsProblemDetailsSchema } from './fastEndpointsProblemDetailsSchema'
 import { saBaiAPIEndpointsGlassesGetByVisitGetResponseSchema } from './saBaiAPIEndpointsGlassesGetByVisitGetResponseSchema'
 
-export const saBaiAPIEndpointsGlassesGetByVisitGetEndpointQueryVisitIdSchema = z.int32()
+export const saBaiAPIEndpointsGlassesGetByVisitGetEndpointQueryVisitIdSchema = z.uuid()
 
 export const saBaiAPIEndpointsGlassesGetByVisitGetEndpointStatus200Schema = saBaiAPIEndpointsGlassesGetByVisitGetResponseSchema
 
@@ -22,5 +22,5 @@ export const saBaiAPIEndpointsGlassesGetByVisitGetEndpointResponseSchema = saBai
 export const saBaiAPIEndpointsGlassesGetByVisitGetEndpointErrorSchema = z.union([saBaiAPIEndpointsGlassesGetByVisitGetEndpointStatus400Schema, saBaiAPIEndpointsGlassesGetByVisitGetEndpointStatus401Schema, saBaiAPIEndpointsGlassesGetByVisitGetEndpointStatus403Schema])
 
 export const saBaiAPIEndpointsGlassesGetByVisitGetEndpointQuerySchema = z.object({
-  visitId: z.int32(),
+  visitId: z.uuid(),
 })

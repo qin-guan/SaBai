@@ -7,7 +7,7 @@ import * as z from 'zod'
 import { saBaiAPIDomainOrderStatusSchema } from './saBaiAPIDomainOrderStatusSchema'
 
 export const saBaiAPIEndpointsPatientRecordsGetPrescriptionItemSchema = z.object({
-  consultId: z.int32(),
+  consultId: z.uuid(),
   visitDate: z.iso.datetime(),
   medicationName: z.string(),
   quantity: z.int32(),

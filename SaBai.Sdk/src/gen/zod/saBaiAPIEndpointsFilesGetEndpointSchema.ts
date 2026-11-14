@@ -6,7 +6,7 @@
 import * as z from 'zod'
 import { saBaiAPIEndpointsFilesGetResponseSchema } from './saBaiAPIEndpointsFilesGetResponseSchema'
 
-export const saBaiAPIEndpointsFilesGetEndpointPathIdSchema = z.int32()
+export const saBaiAPIEndpointsFilesGetEndpointPathIdSchema = z.uuid()
 
 export const saBaiAPIEndpointsFilesGetEndpointStatus200Schema = saBaiAPIEndpointsFilesGetResponseSchema
 
@@ -19,5 +19,5 @@ export const saBaiAPIEndpointsFilesGetEndpointResponseSchema = saBaiAPIEndpoints
 export const saBaiAPIEndpointsFilesGetEndpointErrorSchema = z.union([saBaiAPIEndpointsFilesGetEndpointStatus401Schema, saBaiAPIEndpointsFilesGetEndpointStatus403Schema])
 
 export const saBaiAPIEndpointsFilesGetEndpointPathSchema = z.object({
-  id: z.int32(),
+  id: z.uuid(),
 })

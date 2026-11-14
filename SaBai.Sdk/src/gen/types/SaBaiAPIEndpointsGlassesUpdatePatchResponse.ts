@@ -6,16 +6,16 @@
 export type SaBaiAPIEndpointsGlassesUpdatePatchResponse = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  id: number;
+  id: string;
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  visitId: number;
+  visitId: string;
   leftGlassesDegree: string | null;
   rightGlassesDegree: string | null;
   notes: string | null;

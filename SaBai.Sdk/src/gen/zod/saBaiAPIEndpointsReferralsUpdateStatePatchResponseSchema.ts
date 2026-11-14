@@ -7,16 +7,16 @@ import * as z from 'zod'
 import { saBaiAPIDomainReferralStateSchema } from './saBaiAPIDomainReferralStateSchema'
 
 export const saBaiAPIEndpointsReferralsUpdateStatePatchResponseSchema = z.object({
-  id: z.int32(),
+  id: z.uuid(),
   referredFor: z.string(),
   referralNotes: z.string().nullable(),
   referralState: saBaiAPIDomainReferralStateSchema,
   referralOutcome: z.string().nullable(),
-  consultId: z.int32(),
+  consultId: z.uuid(),
   createdAt: z.iso.datetime(),
   consultDate: z.iso.datetime(),
   doctorId: z.uuid(),
-  patientId: z.int32(),
+  patientId: z.uuid(),
   patientName: z.string(),
   doctorNickname: z.string(),
 })

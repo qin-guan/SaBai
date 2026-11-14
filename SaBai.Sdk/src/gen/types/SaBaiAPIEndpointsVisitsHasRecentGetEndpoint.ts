@@ -9,10 +9,10 @@ import type { SaBaiAPIEndpointsVisitsHasRecentGetResponse } from './SaBaiAPIEndp
 export type SaBaiAPIEndpointsVisitsHasRecentGetEndpointQuery = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  patientId: number;
+  patientId: string;
 };
 
 export type SaBaiAPIEndpointsVisitsHasRecentGetEndpointStatus200 = SaBaiAPIEndpointsVisitsHasRecentGetResponse;

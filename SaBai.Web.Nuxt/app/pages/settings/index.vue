@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PhBell, PhCaretRight, PhClockCounterClockwise, PhHospital, PhMapPin, PhUserCircle, PhUserGear } from '@phosphor-icons/vue'
+import { PhArrowsClockwise, PhBell, PhCaretRight, PhClockCounterClockwise, PhHospital, PhMapPin, PhUserCircle, PhUserGear } from '@phosphor-icons/vue'
 
 useHead({ title: "Settings · Sa'Bai" })
 
@@ -14,6 +14,7 @@ const settingsItems = computed(() => [
         { name: 'Audit Log', href: paths.settingsAuditLog(), icon: PhClockCounterClockwise, description: 'Who changed which record, and when staff signed in.' },
       ]
     : []),
+  { name: 'Sync', href: paths.settingsSync(), icon: PhArrowsClockwise, description: 'Changes saved on this device, conflicts, and downloading data for offline use.' },
   { name: 'My Account', href: paths.account(), icon: PhUserCircle, description: 'Change your password and set up two-factor authentication.' },
 ])
 </script>

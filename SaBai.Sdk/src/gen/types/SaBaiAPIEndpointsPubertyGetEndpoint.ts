@@ -9,10 +9,10 @@ import type { SaBaiAPIEndpointsPubertyGetResponse } from './SaBaiAPIEndpointsPub
 export type SaBaiAPIEndpointsPubertyGetEndpointPath = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  id: number;
+  id: string;
 };
 
 export type SaBaiAPIEndpointsPubertyGetEndpointStatus200 = SaBaiAPIEndpointsPubertyGetResponse;

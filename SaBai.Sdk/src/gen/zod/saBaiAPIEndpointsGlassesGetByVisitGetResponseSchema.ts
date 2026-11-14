@@ -6,8 +6,8 @@
 import * as z from 'zod'
 
 export const saBaiAPIEndpointsGlassesGetByVisitGetResponseSchema = z.object({
-  id: z.int32(),
-  visitId: z.int32(),
+  id: z.uuid(),
+  visitId: z.uuid(),
   leftGlassesDegree: z.string().nullable(),
   rightGlassesDegree: z.string().nullable(),
   notes: z.string().nullable(),

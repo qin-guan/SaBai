@@ -5,6 +5,12 @@
 
 export type SaBaiAPIEndpointsVillageCodesCreatePostRequest = {
   /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  id?: string | null;
+  /**
    * @minLength 0
    * @maxLength 255
    * @type string

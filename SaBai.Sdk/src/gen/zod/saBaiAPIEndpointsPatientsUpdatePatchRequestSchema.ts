@@ -17,5 +17,6 @@ export const saBaiAPIEndpointsPatientsUpdatePatchRequestSchema = z.object({
   hasBS2Card: z.boolean().nullish(),
   hasSabaiCard: z.boolean().nullish(),
   toGetReport: z.boolean().nullish(),
-  villageCodeId: z.int32().gt(0).nullish(),
+  villageCodeId: z.uuid().nullish(),
+  tags: z.array(z.string()).nullish(),
 })

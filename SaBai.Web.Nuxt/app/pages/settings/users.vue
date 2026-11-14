@@ -28,9 +28,12 @@ const { data, isLoading, isError } = useStaffUsersList()
 const { user: me } = useCurrentUser()
 
 const filter = ref('')
+const tagFilter = ref('')
 const users = computed(() => {
   const q = cleanKhmerText(filter.value)
-  const all = data.value ?? []
+  const all = (data.value ?? []).filter(u =>
+    !tagFilter.value || (u.tags ?? []).some(t => t.toLowerCase() === tagFilter.value.toLowerCase()),
+  )
   if (!q)
     return all
   return all.filter(u =>
@@ -100,6 +103,8 @@ function lockedLabel(user: StaffUser) {
         </Button>
       </template>
     </PageHeader>
+
+    <TagFilter v-model="tagFilter" class="mb-3" />
 
     <AppPanel title="Staff" flush>
       <StateMessage v-if="isLoading" kind="loading" message="Loading staff users..." />

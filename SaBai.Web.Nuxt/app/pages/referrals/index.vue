@@ -14,7 +14,7 @@ import {
   type ReferralListItem,
   type ReferralStatusGroup,
 } from '@/utils/referral'
-import { formatBillAmount, getBillBreakdown, hasReferralBill } from '@/utils/referralBills'
+import { formatBillAmount, hasReferralBill } from '@/utils/referralBills'
 
 /**
  * Referral worklist, laid out like the patient list: a status strip on top
@@ -389,15 +389,8 @@ const gridCols = 'md:grid-cols-[2rem_minmax(9rem,1fr)_minmax(0,2fr)_5.5rem_11rem
                 <p v-else-if="r.referralNotes" class="line-clamp-2 text-muted-foreground md:line-clamp-1">
                   {{ r.referralNotes }}
                 </p>
-                <p v-if="hasReferralBill(r)" class="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs">
-                  <span class="font-medium tabular-nums text-foreground">{{ formatBillAmount(r.amountPaidUsd, r.amountPaidRiels) }}</span>
-                  <Badge
-                    variant="outline"
-                    class="px-1.5 py-0 text-[0.6875rem]"
-                    :class="r.isReimbursed ? 'border-success/40 bg-success-subtle text-success' : getBillBreakdown(r).isPartial ? 'border-band-border bg-accent text-accent-foreground' : 'border-warning-border bg-warning-subtle text-warning'"
-                  >
-                    {{ r.isReimbursed ? 'Reimbursed' : getBillBreakdown(r).isPartial ? 'Partial' : 'Pending reimbursement' }}
-                  </Badge>
+                <p v-if="hasReferralBill(r)" class="mt-0.5 text-xs font-medium tabular-nums text-muted-foreground">
+                  Paid: <span class="text-foreground">{{ formatBillAmount(r.amountPaidUsd, r.amountPaidRiels) }}</span>
                 </p>
               </div>
 

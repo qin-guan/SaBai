@@ -31,9 +31,72 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Get.Response>
             throw new NotFoundException("Staff member who paid was not found.");
         }
 
+        var oldMemberId = referral.MemberWhoPaidId;
+        var oldUsd = referral.AmountPaidUsd ?? 0m;
+        var oldRiels = referral.AmountPaidRiels ?? 0;
+
         referral.AmountPaidUsd = req.AmountPaidUsd;
         referral.AmountPaidRiels = req.AmountPaidRiels;
         referral.MemberWhoPaidId = req.MemberWhoPaidId;
+
+        var newMemberId = referral.MemberWhoPaidId;
+        var newUsd = referral.AmountPaidUsd ?? 0m;
+        var newRiels = referral.AmountPaidRiels ?? 0;
+        var userId = User.Id();
+        var now = DateTimeOffset.UtcNow;
+
+        if (oldMemberId == newMemberId)
+        {
+            if (newMemberId is Guid sameMember)
+            {
+                var deltaUsd = newUsd - oldUsd;
+                var deltaRiels = newRiels - oldRiels;
+                if (deltaUsd != 0m || deltaRiels != 0)
+                {
+                    AddBillLedgerEntries(
+                        db,
+                        sameMember,
+                        referral.Id,
+                        deltaUsd,
+                        deltaRiels,
+                        oldUsd == 0m && oldRiels == 0
+                            ? "Referral bill recorded"
+                            : "Referral bill updated",
+                        userId,
+                        now
+                    );
+                }
+            }
+        }
+        else
+        {
+            if (oldMemberId is Guid prevMember && (oldUsd != 0m || oldRiels != 0))
+            {
+                AddBillLedgerEntries(
+                    db,
+                    prevMember,
+                    referral.Id,
+                    -oldUsd,
+                    -oldRiels,
+                    "Referral payer reassigned",
+                    userId,
+                    now
+                );
+            }
+            if (newMemberId is Guid nextMember && (newUsd != 0m || newRiels != 0))
+            {
+                AddBillLedgerEntries(
+                    db,
+                    nextMember,
+                    referral.Id,
+                    newUsd,
+                    newRiels,
+                    "Referral bill recorded",
+                    userId,
+                    now
+                );
+            }
+        }
 
         await db.SaveChangesAsync(ct);
 
@@ -77,16 +140,68 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Get.Response>
                 x.DoctorsUpdated,
                 x.AmountPaidUsd,
                 x.AmountPaidRiels,
-                x.MemberWhoPaidId,
-                x.IsReimbursed,
-                x.ReimbursedUsd,
-                x.ReimbursedRiels,
-                x.ReimbursedAt,
-                x.ReimbursedByUserId,
-                x.ReimbursementNotes
+                x.MemberWhoPaidId
             ))
             .FirstAsync(ct);
 
         await Send.OkAsync(updated, ct);
+    }
+
+    private static void AddBillLedgerEntries(
+        AppDbContext db,
+        Guid memberId,
+        Guid referralId,
+        decimal usd,
+        int riels,
+        string notes,
+        Guid createdByUserId,
+        DateTimeOffset createdAt
+    )
+    {
+        if (usd != 0m && riels != 0 && Math.Sign(usd) != Math.Sign(riels))
+        {
+            db.PnLedgerEntries.Add(new PnLedgerEntry
+            {
+                MemberId = memberId,
+                EntryType = PnLedgerEntryType.Bill,
+                DebitAccount = usd > 0m ? "Clinic:ReferralExpense" : "PN:Payable",
+                CreditAccount = usd > 0m ? "PN:Payable" : "Clinic:ReferralExpense",
+                AmountUsd = usd,
+                AmountRiels = 0,
+                ReferralId = referralId,
+                Notes = notes,
+                CreatedAt = createdAt,
+                CreatedByUserId = createdByUserId,
+            });
+            db.PnLedgerEntries.Add(new PnLedgerEntry
+            {
+                MemberId = memberId,
+                EntryType = PnLedgerEntryType.Bill,
+                DebitAccount = riels > 0 ? "Clinic:ReferralExpense" : "PN:Payable",
+                CreditAccount = riels > 0 ? "PN:Payable" : "Clinic:ReferralExpense",
+                AmountUsd = 0m,
+                AmountRiels = riels,
+                ReferralId = referralId,
+                Notes = notes,
+                CreatedAt = createdAt,
+                CreatedByUserId = createdByUserId,
+            });
+            return;
+        }
+
+        var isCreditToPn = usd > 0m || riels > 0;
+        db.PnLedgerEntries.Add(new PnLedgerEntry
+        {
+            MemberId = memberId,
+            EntryType = PnLedgerEntryType.Bill,
+            DebitAccount = isCreditToPn ? "Clinic:ReferralExpense" : "PN:Payable",
+            CreditAccount = isCreditToPn ? "PN:Payable" : "Clinic:ReferralExpense",
+            AmountUsd = usd,
+            AmountRiels = riels,
+            ReferralId = referralId,
+            Notes = notes,
+            CreatedAt = createdAt,
+            CreatedByUserId = createdByUserId,
+        });
     }
 }

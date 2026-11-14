@@ -41,12 +41,6 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
                 x.AmountPaidUsd,
                 x.AmountPaidRiels,
                 x.MemberWhoPaidId,
-                x.IsReimbursed,
-                x.ReimbursedUsd,
-                x.ReimbursedRiels,
-                x.ReimbursedAt,
-                x.ReimbursedByUserId,
-                x.ReimbursementNotes,
             })
             .ToListAsync(ct);
 
@@ -74,13 +68,7 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
                 x.ReferredToId,
                 x.AmountPaidUsd,
                 x.AmountPaidRiels,
-                x.MemberWhoPaidId,
-                x.IsReimbursed,
-                x.ReimbursedUsd,
-                x.ReimbursedRiels,
-                x.ReimbursedAt,
-                x.ReimbursedByUserId,
-                x.ReimbursementNotes
+                x.MemberWhoPaidId
             ))
             .ToList();
 

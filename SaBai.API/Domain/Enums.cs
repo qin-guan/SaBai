@@ -67,6 +67,21 @@ public enum ReferralState
     None,
 }
 
+public enum GuardiansContacted
+{
+    Yes,
+    No,
+    NotApplicable,
+}
+
+public enum ReferralServiceClass
+{
+    ChronicManagement,
+    ImagingDiagnostics,
+    DefinitiveTreatment,
+    SymptomaticTreatment,
+}
+
 public enum DiagnosisCategory
 {
     Cardiovascular,

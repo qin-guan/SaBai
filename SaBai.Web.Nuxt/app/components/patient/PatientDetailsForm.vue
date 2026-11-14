@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { PhArrowCounterClockwise, PhFloppyDisk } from '@phosphor-icons/vue'
-import type { SaBaiAPIEndpointsPatientsGetResponse } from '@sabai/sdk/types'
+import type { PatientDetail } from '~/composables/usePatientData'
 import { Button } from '@/components/ui/button'
 
 /**
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
  * forms: fields are always editable, unsaved input is kept as a draft, and
  * the save bar (Ctrl+S) appears with the changes.
  */
-const props = defineProps<{ patient: SaBaiAPIEndpointsPatientsGetResponse }>()
+const props = defineProps<{ patient: PatientDetail }>()
 
 const formEl = ref<HTMLFormElement>()
 const { form, draft, errors, newPhoto, isDirty, isSaving, submit, reset } = usePatientEditForm(() => props.patient, formEl)

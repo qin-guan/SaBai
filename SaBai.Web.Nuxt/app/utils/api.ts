@@ -19,6 +19,7 @@ export const apiConfig = {
 export const queryKeys = {
   currentUser: () => ["auth", "me"] as const,
   twoFactor: () => ["auth", "two-factor"] as const,
+  pushConfig: () => ["push", "config"] as const,
   staffUsers: () => ["staff-users"] as const,
   staffRoles: () => ["staff-roles"] as const,
   auditLog: () => ["audit-log"] as const,
@@ -32,6 +33,7 @@ export const queryKeys = {
   vitals: (visitId: number) => ["vitals", visitId] as const,
   eyesight: (visitId: number) => ["eyesight", visitId] as const,
   consults: (visitId: number) => ["consults", visitId] as const,
+  consult: (id: number) => ["consult", id] as const,
   dental: (visitId: number) => ["dental", visitId] as const,
   villageCodes: () => ["village-codes"] as const,
   villageCodesList: (includeHidden: boolean) => ["village-codes", includeHidden] as const,
@@ -39,6 +41,12 @@ export const queryKeys = {
   medicationBrands: () => ["medication-brands"] as const,
   medicationBrandsWithIngredient: () => ["medication-brands", "with-ingredient"] as const,
   medicationIngredients: () => ["medication-ingredients"] as const,
+  broadcasts: () => ["broadcasts"] as const,
+  referrals: () => ["referrals"] as const,
+  referral: (id: number) => ["referrals", id] as const,
+  referralsByConsult: (consultId: number) => ["referrals", "consult", consultId] as const,
+  referralPartners: () => ["referral-partners"] as const,
+  tags: () => ["tags"] as const,
 };
 
 /** Converts a captured data URL (e.g. from the webcam) into a `File` for multipart upload. */

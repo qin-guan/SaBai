@@ -10,7 +10,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
     public override void Configure()
     {
         Get("/auth/users");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.Admin, StaffRoles.Member, StaffRoles.Pn);
         Summary(s => s.Summary = "List staff users");
     }
 
@@ -40,6 +40,16 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             query = locked
                 ? query.Where(x => x.LockoutEnabled && x.LockoutEnd != null && x.LockoutEnd > now)
                 : query.Where(x => !x.LockoutEnabled || x.LockoutEnd == null || x.LockoutEnd <= now);
+        }
+
+        if (!string.IsNullOrWhiteSpace(req.Tag))
+        {
+            var tag = req.Tag.Trim().ToUpperInvariant();
+            query = query.Where(user =>
+                db.StaffUserTags.Any(ut =>
+                    ut.StaffUserId == user.Id && ut.Tag.NormalizedName == tag
+                )
+            );
         }
 
         var users = await UserResponse.ListAsync(

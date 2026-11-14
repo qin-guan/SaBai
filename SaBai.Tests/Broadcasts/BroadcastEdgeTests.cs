@@ -5,6 +5,7 @@ using SaBai.Tests.Support;
 namespace SaBai.Tests.Broadcasts;
 
 [ClassDataSource<AppFixture>(Shared = SharedType.PerTestSession)]
+[NotInParallel("Broadcasts")]
 public sealed class BroadcastEdgeTests(AppFixture fixture)
 {
     [Test]

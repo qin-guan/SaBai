@@ -8,6 +8,7 @@ import type { SaBaiAPIEndpointsConsultsCreatePostRequest } from '@sabai/sdk/type
 import { Button } from '@/components/ui/button'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { Textarea } from '@/components/ui/textarea'
+import { REFERRAL_CATEGORY_OPTIONS } from '@/utils/referral'
 
 /** The doctor's consultation form for one visit (each save appends a consult). */
 const props = defineProps<{ visitId: number }>()
@@ -17,6 +18,8 @@ const consultFormSchema = z.object({
   consultation: z.string().trim().optional(),
   treatmentPlan: z.string().trim().optional(),
   remarks: z.string().trim().optional(),
+  referredFor: z.string().optional(),
+  referralNotes: z.string().trim().optional(),
   diagnoses: z.array(
     z.object({
       details: z.string().trim().min(1, 'Diagnosis details are required'),
@@ -33,6 +36,8 @@ const blank = () => ({
   consultation: '',
   treatmentPlan: '',
   remarks: '',
+  referredFor: 'Not Referred',
+  referralNotes: '',
   diagnoses: [{ key: 0, details: '', category: '' }],
 })
 
@@ -64,6 +69,7 @@ const create = useMutation({
   mutationFn: (body: SaBaiAPIEndpointsConsultsCreatePostRequest) =>
     saBaiAPIEndpointsConsultsCreatePostEndpoint({ ...apiConfig, body, throwOnError: true }).unwrap(),
 })
+const createReferral = useCreateReferral()
 
 function submit() {
   if (create.isPending.value)
@@ -84,16 +90,33 @@ function submit() {
       consultation: data.consultation || undefined,
       treatmentPlan: data.treatmentPlan || undefined,
       remarks: data.remarks || undefined,
+      referredFor: data.referredFor && data.referredFor !== 'Not Referred' ? data.referredFor : undefined,
+      referralNotes: data.referredFor && data.referredFor !== 'Not Referred' && data.referralNotes ? data.referralNotes : undefined,
       diagnoses: data.diagnoses.map(d => ({ details: d.details, category: d.category as DiagnosisCategory })),
     },
     {
-      onSuccess: () => {
+      onSuccess: (savedConsult) => {
         // Before the form is cleared for the next consult.
         serviceTimer.saved()
         queryClient.invalidateQueries({ queryKey: queryKeys.consults(props.visitId) })
         // Refresh the journey bars and station backlogs.
         queryClient.invalidateQueries({ queryKey: queryKeys.patients() })
         toast.success('Consult has been saved successfully!')
+
+        if (data.referredFor && data.referredFor !== 'Not Referred') {
+          createReferral.mutate(
+            {
+              consultId: savedConsult.id,
+              referredFor: data.referredFor,
+              referralNotes: data.referralNotes || undefined,
+            },
+            {
+              onSuccess: () => toast.success('Referral submitted!'),
+              onError: err => toast.error(getApiErrorMessage(err, 'Failed to create referral.')),
+            },
+          )
+        }
+
         form.value = blank()
         draft.clear(form.value)
       },
@@ -179,6 +202,38 @@ useSaveShortcut(submit)
         <FormField v-slot="{ id }" label="Plan">
           <Textarea :id="id" v-model="form.treatmentPlan" :rows="3" placeholder="Type your plan here..." />
         </FormField>
+
+        <fieldset class="flex flex-col gap-2">
+          <legend class="mb-1 text-xs font-semibold touch:text-sm">
+            Referral
+          </legend>
+          <div class="grid grid-cols-1 gap-2 sm:grid-cols-[14rem_1fr]">
+            <FormField v-slot="{ id }" label="Referred for">
+              <NativeSelect :id="id" v-model="form.referredFor">
+                <NativeSelectOption
+                  v-for="option in REFERRAL_CATEGORY_OPTIONS"
+                  :key="option.value"
+                  :value="option.value"
+                >
+                  {{ option.label }}
+                </NativeSelectOption>
+              </NativeSelect>
+            </FormField>
+            <FormField
+              v-if="form.referredFor && form.referredFor !== 'Not Referred'"
+              v-slot="{ id }"
+              label="Referral notes"
+            >
+              <Textarea
+                :id="id"
+                v-model="form.referralNotes"
+                :rows="2"
+                placeholder="Type your referral notes here..."
+              />
+            </FormField>
+          </div>
+        </fieldset>
+
         <FormField v-slot="{ id }" label="Remarks">
           <Textarea :id="id" v-model="form.remarks" :rows="2" placeholder="Type your remarks here..." />
         </FormField>

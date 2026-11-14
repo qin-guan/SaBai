@@ -12,6 +12,7 @@ using SaBai.API.Domain;
 using SaBai.API.FaceRecognition;
 using SaBai.API.Middleware;
 using SaBai.API.OpenApi;
+using SaBai.API.Push;
 using SaBai.API.Storage;
 using Scalar.AspNetCore;
 
@@ -51,6 +52,15 @@ builder.Services.Configure<AuthSettings>(
     builder.Configuration.GetSection(AuthSettings.SectionName)
 );
 
+// Web Push notifications to installed copies of the web app. Off until a VAPID
+// key pair is configured under "Push".
+builder.Services.Configure<PushSettings>(builder.Configuration.GetSection(PushSettings.SectionName));
+builder
+    .Services.AddHttpClient<PushSender>(client => client.Timeout = TimeSpan.FromSeconds(15))
+    // The request URL is the device's push address; keep it out of the logs.
+    .RemoveAllLoggers();
+builder.Services.AddScoped<PushNotifier>();
+
 builder.Services.AddSingleton(sp => RustFsS3.Read(sp.GetRequiredService<IConfiguration>()));
 builder.Services.AddSingleton<Amazon.S3.IAmazonS3>(sp =>
     RustFsS3.CreateClient(sp.GetRequiredService<RustFsSettings>())
@@ -68,11 +78,11 @@ builder
     .Services.AddIdentityCore<StaffUser>(options =>
     {
         options.User.RequireUniqueEmail = false; // optional; uniqueness enforced by an index
-        options.Password.RequiredLength = 8;
-        options.Password.RequireDigit = false;
-        options.Password.RequireLowercase = false;
-        options.Password.RequireUppercase = false;
-        options.Password.RequireNonAlphanumeric = false;
+        options.Password.RequiredLength = builder.Environment.IsDevelopment() ? 8 : 12;
+        options.Password.RequireDigit = !builder.Environment.IsDevelopment();
+        options.Password.RequireLowercase = !builder.Environment.IsDevelopment();
+        options.Password.RequireUppercase = !builder.Environment.IsDevelopment();
+        options.Password.RequireNonAlphanumeric = !builder.Environment.IsDevelopment();
         options.Lockout.AllowedForNewUsers = true;
         options.Lockout.MaxFailedAccessAttempts = 5;
         options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
@@ -91,7 +101,9 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.Cookie.Name = SessionCookieName;
     options.Cookie.HttpOnly = true;
     options.Cookie.SameSite = SameSiteMode.Lax;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
+        ? CookieSecurePolicy.SameAsRequest
+        : CookieSecurePolicy.Always;
     options.ExpireTimeSpan = TimeSpan.FromMinutes(auth.SessionLifetimeMinutes);
     options.SlidingExpiration = true;
     // An API answers with status codes instead of redirecting to a login page.
@@ -168,23 +180,33 @@ if (pendingMigrations.Any())
 
 await AuthSeeder.EnsureAsync(scope.ServiceProvider, auth, app.Logger);
 
-app.MapOpenApi();
+var push = app.Services.GetRequiredService<Microsoft.Extensions.Options.IOptions<PushSettings>>().Value;
+if (!push.IsEnabled)
+{
+    app.Logger.LogWarning("Push notifications are off: {Reason}", push.Problem);
+}
 
 app.MapDefaultEndpoints();
-app.MapScalarApiReference(options =>
-{
-    options.AddDocuments("v1");
-    options.OperationTitleSource = OperationTitleSource.Path;
-});
 
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
 {
+    app.MapOpenApi();
+    app.MapScalarApiReference(options =>
+    {
+        options.AddDocuments("v1");
+        options.OperationTitleSource = OperationTitleSource.Path;
+    });
+}
+else
+{
+    app.UseHsts();
     app.UseHttpsRedirection();
 }
 
 app.UseCors(webCorsPolicy);
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<PhiAccessAuditMiddleware>();
 app.UseFastEndpoints(config =>
 {
     config.Errors.UseProblemDetails();

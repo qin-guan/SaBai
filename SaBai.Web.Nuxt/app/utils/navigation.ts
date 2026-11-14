@@ -1,6 +1,8 @@
 import type { Component } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import {
+  PhArrowUpRight,
+  PhBell,
   PhClockCounterClockwise,
   PhEyeglasses,
   PhFlask,
@@ -42,6 +44,7 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { name: 'Scan Face', href: paths.scanFace(), icon: PhScan, keywords: 'camera photo face match register new patient registration front desk visit start search find' },
   { name: 'Patients', href: paths.patient(), icon: PhUsers, keywords: 'patients records list demographics queue journey today' },
+  { name: 'Referrals', href: paths.referrals(), icon: PhArrowUpRight, keywords: 'referrals hospital specialist outcome status follow-up tracking' },
 ]
 
 export const STATION_NAV_ITEMS: NavItem[] = [
@@ -63,6 +66,7 @@ export const SUB_PAGES: NavItem[] = [
   { name: 'Medication Brands', href: paths.medicationBrands(), icon: PhTag, keywords: 'brand medicine' },
   { name: 'Medication Active Ingredients', href: paths.medicationActiveIngredients(), icon: PhFlask, keywords: 'ingredient fall below threshold low stock' },
   { name: 'Village Codes', href: paths.settingsVillageCodes(), icon: PhMapPin, keywords: 'village code colour color location' },
+  { name: 'Notifications', href: paths.settingsNotifications(), icon: PhBell, keywords: 'notifications broadcast push alerts announcements message send publish' },
   { name: 'Staff Users', href: paths.settingsUsers(), icon: PhUserGear, keywords: 'users staff accounts roles admin password lock two-factor 2fa', adminOnly: true },
   { name: 'Audit Log', href: paths.settingsAuditLog(), icon: PhClockCounterClockwise, keywords: 'audit log history changes activity sign-in login trail', adminOnly: true },
   { name: 'My Account', href: paths.account(), icon: PhUserCircle, keywords: 'profile password two-factor 2fa authenticator totp security' },
@@ -112,6 +116,8 @@ export function logicalBackTarget(route: Pick<RouteLocationNormalizedLoaded, 'pa
     return paths.patient('dental')
   if (route.path.startsWith(`${paths.patient()}/`))
     return paths.patient()
+  if (route.path.startsWith(`${paths.referrals()}/`))
+    return paths.referrals()
   if (route.path === paths.patient() && isStationKey(route.query?.station))
     return paths.patient()
   if (route.path === paths.medicationBrands() || route.path === paths.medicationActiveIngredients())

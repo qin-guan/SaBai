@@ -7,12 +7,26 @@ import {
   saBaiAPIEndpointsPatientsWithLatestVisitGetEndpoint,
 } from "@sabai/sdk/clients";
 
+import type {
+  SaBaiAPIEndpointsPatientsGetResponse,
+  SaBaiAPIEndpointsPatientsListGetItem,
+  SaBaiAPIEndpointsPatientsWithLatestVisitGetItem,
+} from "@sabai/sdk/types";
+
+export type PatientDetail = SaBaiAPIEndpointsPatientsGetResponse & { tags?: string[] };
+export type PatientListItem = SaBaiAPIEndpointsPatientsListGetItem & { tags?: string[] };
+export type PatientWithLatestVisitItem = SaBaiAPIEndpointsPatientsWithLatestVisitGetItem & {
+  tags?: string[];
+};
+
 /** All patients (used by the patients page and the global patient search). */
 export function usePatientsList() {
   return useQuery({
     queryKey: queryKeys.patientsList(),
     queryFn: ({ signal }) =>
-      saBaiAPIEndpointsPatientsListGetEndpoint({ ...apiConfig, signal }).unwrap(),
+      saBaiAPIEndpointsPatientsListGetEndpoint({ ...apiConfig, signal })
+        .unwrap()
+        .then((x) => x as { patients: PatientListItem[] }),
   });
 }
 
@@ -21,7 +35,9 @@ export function usePatientsWithLatestVisit() {
   return useQuery({
     queryKey: queryKeys.patientsWithLatestVisit(),
     queryFn: ({ signal }) =>
-      saBaiAPIEndpointsPatientsWithLatestVisitGetEndpoint({ ...apiConfig, signal }).unwrap(),
+      saBaiAPIEndpointsPatientsWithLatestVisitGetEndpoint({ ...apiConfig, signal })
+        .unwrap()
+        .then((x) => x as { patients: PatientWithLatestVisitItem[] }),
   });
 }
 
@@ -34,7 +50,9 @@ export function usePatient(id: MaybeRefOrGetter<number | null>) {
         ...apiConfig,
         path: { id: toValue(id)! },
         signal,
-      }).unwrap(),
+      })
+        .unwrap()
+        .then((x) => x as PatientDetail),
   });
 }
 

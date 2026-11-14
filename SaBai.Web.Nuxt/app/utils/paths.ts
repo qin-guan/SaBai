@@ -18,13 +18,24 @@ export const paths = {
   dental: () => "/dental",
   dentalDetail: (patientId: number, visitId?: number) => withVisit(`/dental/${patientId}`, visitId),
   consults: () => "/consults",
-  consultsDetail: (patientId: number, visitId?: number) => withVisit(`/consults/${patientId}`, visitId),
+  consultsDetail: (patientId: number, visitId?: number, consultId?: number) => {
+    const query = new URLSearchParams();
+    if (visitId !== undefined) query.set("visit", String(visitId));
+    if (consultId !== undefined) query.set("consult", String(consultId));
+    const qs = query.toString();
+    return qs ? `/consults/${patientId}?${qs}` : `/consults/${patientId}`;
+  },
+  consultPdf: (consultId: number) => `/api/consults/${consultId}/pdf`,
+  referrals: () => "/referrals",
+  referralsDetail: (referralId: number) => `/referrals/${referralId}`,
   medicationStock: () => "/medication-stock",
   medicationBrands: () => "/medication-brands",
   medicationActiveIngredients: () => "/medication-active-ingredients",
   orders: () => "/orders",
   settings: () => "/settings",
+  settingsNotifications: () => "/settings/notifications",
   settingsVillageCodes: () => "/settings/village-codes",
+  settingsReferralPartners: () => "/settings/referral-partners",
   settingsUsers: () => "/settings/users",
   /** The audit log, optionally filtered to one record's or one staff user's history. */
   settingsAuditLog: (filter?: { entityType?: string; entityId?: string | number; userId?: string }) => {

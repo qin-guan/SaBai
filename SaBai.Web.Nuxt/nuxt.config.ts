@@ -2,7 +2,7 @@ import tailwindcss from '@tailwindcss/vite'
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  modules: ['@nuxt/a11y', '@nuxt/fonts', '@nuxt/hints', '@nuxt/icon/module', '@nuxt/image', '@nuxt/scripts', 'shadcn-nuxt'],
+  modules: ['@nuxt/a11y', '@nuxt/fonts', '@nuxt/hints', '@nuxt/icon/module', '@nuxt/image', '@nuxt/scripts', 'shadcn-nuxt', '@vite-pwa/nuxt'],
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   // The app is a pure client of SaBai.API: auth is an HttpOnly session cookie
@@ -27,8 +27,47 @@ export default defineNuxtConfig({
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
         { name: 'theme-color', content: '#1f3a5f' },
+        { name: 'mobile-web-app-capable', content: 'yes' },
+        { name: 'apple-mobile-web-app-title', content: "Sa'Bai" },
+      ],
+      link: [
+        { rel: 'icon', href: '/favicon.ico', sizes: 'any' },
+        { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
+        { rel: 'manifest', href: '/manifest.webmanifest' },
       ],
     },
+  },
+  // Installable app (PWA). It exists so notifications can reach installed
+  // copies on phones and desktops: iOS only delivers Web Push to an app added
+  // to the Home Screen, and every platform needs the service worker below.
+  pwa: {
+    // Our own worker (app/service-worker/sw.ts) handles push messages.
+    strategies: 'injectManifest',
+    srcDir: 'service-worker',
+    filename: 'sw.ts',
+    registerType: 'autoUpdate',
+    // No offline cache: every screen needs the API and a stale app shell is a
+    // risk in a clinic, so the worker is not given a precache list.
+    injectManifest: { injectionPoint: undefined },
+    manifest: {
+      id: '/',
+      name: "Sa'Bai",
+      short_name: "Sa'Bai",
+      description: "Sa'Bai clinic patient records",
+      lang: 'en',
+      start_url: '/',
+      scope: '/',
+      display: 'standalone',
+      theme_color: '#1f3a5f',
+      background_color: '#eef1f5',
+      icons: [
+        { src: '/pwa-192x192.png', sizes: '192x192', type: 'image/png' },
+        { src: '/pwa-512x512.png', sizes: '512x512', type: 'image/png' },
+        { src: '/pwa-maskable-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+      ],
+    },
+    // Run the worker under `pnpm dev` too, so notifications can be developed locally.
+    devOptions: { enabled: true, type: 'module' },
   },
   fonts: {
     defaults: {

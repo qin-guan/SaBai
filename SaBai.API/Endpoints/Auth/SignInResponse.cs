@@ -15,6 +15,7 @@ public sealed record SignInResponse(bool RequiresTwoFactor, UserResponse? User)
         SignInResult result,
         StaffUser user,
         UserManager<StaffUser> users,
+        AppDbContext db,
         AuditTrail audit,
         string method,
         CancellationToken ct
@@ -23,7 +24,7 @@ public sealed record SignInResponse(bool RequiresTwoFactor, UserResponse? User)
         if (result.Succeeded)
         {
             await audit.RecordAsync(AuditAction.SignedIn, user, details: method, ct: ct);
-            return new SignInResponse(false, await UserResponse.FromAsync(user, users));
+            return new SignInResponse(false, await UserResponse.FromAsync(user, users, db, ct));
         }
 
         if (result.RequiresTwoFactor)

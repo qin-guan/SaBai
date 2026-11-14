@@ -1,10 +1,16 @@
 using FastEndpoints;
+using Microsoft.Extensions.Options;
 using SaBai.API.Auth;
 using SaBai.API.Data;
+using SaBai.API.Push;
 
 namespace SaBai.API.Endpoints.Broadcasts.Publish.Post;
 
-public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
+public sealed class Endpoint(
+    AppDbContext db,
+    PushNotifier notifier,
+    IOptions<PushSettings> settings
+) : Endpoint<Request, Response>
 {
     public override void Configure()
     {
@@ -24,6 +30,19 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
         {
             broadcast.PublishedAt = DateTimeOffset.UtcNow;
             await db.SaveChangesAsync(ct);
+        }
+
+        if (settings.Value.IsEnabled)
+        {
+            await notifier.NotifyEveryoneAsync(
+                new PushNotification(
+                    broadcast.Title,
+                    broadcast.Body,
+                    Url: "/settings/notifications",
+                    Tag: $"broadcast-{broadcast.Id}"
+                ),
+                ct
+            );
         }
 
         await Send.OkAsync(

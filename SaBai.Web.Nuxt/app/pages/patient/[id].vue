@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { PhClockCounterClockwise } from '@phosphor-icons/vue'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 
@@ -16,12 +17,6 @@ const visits = computed(() => visitsData.value?.visits ?? [])
 const current = computed(() => visits.value[0])
 const next = computed(() => (current.value ? nextStep(current.value.journey) : null))
 const progress = computed(() => (current.value ? requiredProgress(current.value.journey) : null))
-const currentSummary = computed(() => {
-  if (!current.value || !progress.value)
-    return undefined
-  const status = next.value ? `Next: ${next.value.label} · ${progress.value.done} of ${progress.value.total} done` : 'Complete'
-  return `${formatVisitDate(current.value.date)} · ${status}`
-})
 useRememberPatient(patientId)
 const { isAdmin } = useCurrentUser()
 
@@ -58,11 +53,45 @@ useHead({ title: () => `${patient.value?.name ?? 'Patient'} · Sa'Bai` })
         <div class="flex min-w-0 flex-col gap-3">
           <AppPanel
             title="Current visit"
-            :description="currentSummary"
             collapsible
             collapse-key="current-visit"
             :default-open="!visitsLoading && !current"
           >
+            <template #headerActions>
+              <Badge v-if="next" variant="default" class="font-semibold">
+                Next: {{ next.label }}
+              </Badge>
+              <Badge
+                v-else-if="current"
+                variant="outline"
+                class="border-success/40 bg-success-subtle font-semibold text-success"
+              >
+                Complete
+              </Badge>
+            </template>
+
+            <template #description>
+              <span v-if="visitsLoading">Loading visits...</span>
+              <span v-else-if="!current">No visits recorded</span>
+              <div v-else class="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                <span class="inline-flex items-center gap-1.5 font-medium text-foreground">
+                  <span
+                    class="size-2.5 shrink-0"
+                    :style="{ backgroundColor: current.villageColorHex }"
+                    :title="`Village: ${current.villageName}`"
+                    aria-hidden="true"
+                  />
+                  <span>{{ current.villageName }}</span>
+                </span>
+                <span>·</span>
+                <span>{{ formatVisitDate(current.date) }}</span>
+                <template v-if="progress">
+                  <span>·</span>
+                  <span>{{ progress.done }} of {{ progress.total }} done</span>
+                </template>
+              </div>
+            </template>
+
             <StateMessage v-if="visitsLoading" kind="loading" message="Loading visits..." />
             <p v-else-if="!current" class="text-xs text-muted-foreground touch:text-sm">
               No visits yet. Use New Visit above to start one.
@@ -109,7 +138,10 @@ useHead({ title: () => `${patient.value?.name ?? 'Patient'} · Sa'Bai` })
           </AppPanel>
         </div>
 
-        <PatientDetailsForm :key="patient.id" :patient="patient" />
+        <div class="flex min-w-0 flex-col gap-3">
+          <PatientDetailsForm :key="patient.id" :patient="patient" />
+          <PatientPrivacyPanel :patient-id="patient.id" />
+        </div>
       </div>
     </template>
   </div>

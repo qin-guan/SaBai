@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Globalization;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Text.Json;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Compliance.Classification;
 using SaBai.API.Domain;
 
 namespace SaBai.API.Data;
@@ -32,6 +34,7 @@ public sealed class AuditInterceptor(IHttpContextAccessor http, TimeProvider clo
     internal const int MaxValueLength = 2000;
 
     internal const string Redacted = "[redacted]";
+    internal const string PhiRedacted = "[phi-redacted]";
 
     private static readonly HashSet<Type> IgnoredTypes =
     [
@@ -48,6 +51,9 @@ public sealed class AuditInterceptor(IHttpContextAccessor http, TimeProvider clo
     [
         nameof(StaffUser.PasswordHash),
         nameof(StaffUser.SecurityStamp),
+        nameof(StaffPushSubscription.Endpoint),
+        nameof(StaffPushSubscription.P256dhKey),
+        nameof(StaffPushSubscription.AuthSecret),
     ];
 
     private readonly ConditionalWeakTable<DbContext, List<Pending>> _pending = new();
@@ -203,27 +209,28 @@ public sealed class AuditInterceptor(IHttpContextAccessor http, TimeProvider clo
             }
 
             var secret = SecretProperties.Contains(name) || (redactAll && !property.Metadata.IsKey());
+            var phi = !secret && IsPhi(property);
             switch (action)
             {
                 case AuditAction.Created when property.CurrentValue is not null:
                     // Keys are in EntityId; join rows (e.g. user roles) keep theirs to show the link.
                     if (!property.Metadata.IsPrimaryKey() || property.Metadata.IsForeignKey())
                     {
-                        changes.Add(Change(name, null, property.CurrentValue, secret));
+                        changes.Add(Change(name, null, property.CurrentValue, secret, phi));
                     }
 
                     break;
                 case AuditAction.Deleted when property.OriginalValue is not null:
                     if (!property.Metadata.IsPrimaryKey() || property.Metadata.IsForeignKey())
                     {
-                        changes.Add(Change(name, property.OriginalValue, null, secret));
+                        changes.Add(Change(name, property.OriginalValue, null, secret, phi));
                     }
 
                     break;
                 case AuditAction.Updated
                     when property.IsModified
                         && !Equals(property.OriginalValue, property.CurrentValue):
-                    changes.Add(Change(name, property.OriginalValue, property.CurrentValue, secret));
+                    changes.Add(Change(name, property.OriginalValue, property.CurrentValue, secret, phi));
                     break;
             }
         }
@@ -247,13 +254,26 @@ public sealed class AuditInterceptor(IHttpContextAccessor http, TimeProvider clo
         };
     }
 
-    private static AuditFieldChange Change(string field, object? old, object? next, bool secret) =>
-        new()
+    private static AuditFieldChange Change(
+        string field,
+        object? old,
+        object? next,
+        bool secret,
+        bool phi
+    )
+    {
+        var mask = secret ? Redacted : (phi ? PhiRedacted : null);
+        return new AuditFieldChange
         {
             Field = field,
-            Old = secret ? (old is null ? null : Redacted) : Format(old),
-            New = secret ? (next is null ? null : Redacted) : Format(next),
+            Old = mask is not null ? (old is null ? null : mask) : Format(old),
+            New = mask is not null ? (next is null ? null : mask) : Format(next),
         };
+    }
+
+    private static bool IsPhi(PropertyEntry property) =>
+        property.Metadata.PropertyInfo?.GetCustomAttributes<DataClassificationAttribute>(inherit: true)
+            .Any(attr => attr.Classification == HipaaDataTaxonomy.Phi) == true;
 
     /// <summary>Authenticator keys and recovery codes live in the user token table.</summary>
     private static bool IsTokenStore(Type type) =>

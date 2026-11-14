@@ -17,7 +17,19 @@ public class AppFixture : AspireFixture<Projects.SaBai_AppHost>
     // Validate session cookies on every request so lock/role/password changes are
     // observable immediately instead of after the one-minute production interval.
     protected override string[] Args =>
-        ["--Auth:SeedDemoUsers=true", "--Auth:SecurityStampValidationMinutes=0"];
+        [
+            "--Auth:SeedDemoUsers=true",
+            "--Auth:SecurityStampValidationMinutes=0",
+            "--Push:Subject=mailto:push@sabai.test",
+            $"--Push:PublicKey={PushPublicKey}",
+            $"--Push:PrivateKey={PushPrivateKey}",
+        ];
+
+    /// <summary>A throwaway VAPID key pair so the push endpoints are switched on in tests.</summary>
+    public const string PushPublicKey =
+        "BGJ5ooB5kDkrAWZXGRjAgaCS7tiDNwMq38AHbApKnpJP0Fs1ykjqPHgfzq22mtPqPl6XSD5mK0PtZHRzzPUdNIU";
+
+    public const string PushPrivateKey = "ttxHYerkAeg1Mntwzqade39Y7rfv36lhkq9fS4N8-uk";
 
     protected override IEnumerable<string> ResourcesToRemove() => ["postgres-pgadmin"];
 

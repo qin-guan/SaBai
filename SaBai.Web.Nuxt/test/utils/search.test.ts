@@ -2,13 +2,17 @@ import { describe, expect, it } from "vitest";
 import { buildPageIndex, buildPatientIndex, searchIndex } from "~/utils/search";
 
 const patients = [
-  { id: 12, name: "Sok Dara", identificationNumber: "KH1012", contactNo: "012 345 678", villageCode: "PC", displayId: "PC0012" },
+  { id: 12, name: "Sok Dara", identificationNumber: "KH1012", contactNo: "012 345 678", villageCode: "PC", displayId: "PC0012", tags: ["Diabetic", "Elderly"] },
   { id: 4, name: "Heng Sophea", identificationNumber: "KH1004", contactNo: "097-111-222", villageCode: "KK", displayId: "KK0004" },
   { id: 7, name: "Kim Vuthy", identificationNumber: null, contactNo: null, villageCode: null, displayId: "0007" },
 ];
 const ids = (q: string) => searchIndex(buildPatientIndex(patients), q).map((r) => r.id);
 
 describe("patient search", () => {
+  it("matches tags", () => {
+    expect(ids("diab")).toEqual([12]);
+    expect(ids("elderly")).toEqual([12]);
+  });
   it("matches name prefixes", () => {
     expect(ids("sok")).toEqual([12]);
     expect(ids("soph")).toEqual([4]);

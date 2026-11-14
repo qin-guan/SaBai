@@ -7,23 +7,11 @@ var builder = DistributedApplication.CreateBuilder(args);
 var qdrant = builder.AddQdrant("qdrant").WithDataVolume();
 var postgres = builder
     .AddPostgres("postgres")
-    .WithDataVolume()
-    .WithPgAdmin(pgAdmin =>
-    {
-        if (builder.ExecutionContext.IsPublishMode)
-        {
-            // WithPgAdmin excludes this development tool from publishing by default.
-            pgAdmin
-                .PublishAsContainer()
-                .PublishAsDockerComposeService(
-                    (_, service) =>
-                    {
-                        service.Name = "pgadmin";
-                        service.Ports = ["5050:80"];
-                    }
-                );
-        }
-    });
+    .WithDataVolume();
+if (!builder.ExecutionContext.IsPublishMode)
+{
+    postgres.WithPgAdmin();
+}
 var db = postgres.AddDatabase("sabai");
 
 var rustFsAccessKey = builder.AddParameter("rustFsAccessKey", "rustfsadmin");
@@ -71,6 +59,14 @@ if (builder.ExecutionContext.IsPublishMode)
         .WithEnvironment(
             "Auth__BootstrapAdmin__Password",
             builder.AddParameter("adminPassword", secret: true)
+        )
+        // Web Push (VAPID) keys. Notifications stay off while these are empty;
+        // generate a pair with `npx web-push generate-vapid-keys`.
+        .WithEnvironment("Push__Subject", builder.AddParameter("pushSubject", ""))
+        .WithEnvironment("Push__PublicKey", builder.AddParameter("pushPublicKey", ""))
+        .WithEnvironment(
+            "Push__PrivateKey",
+            builder.AddParameter("pushPrivateKey", "", secret: true)
         );
 }
 else
@@ -84,6 +80,16 @@ else
     if (builder.Configuration["Auth:SecurityStampValidationMinutes"] is { } interval)
     {
         api.WithEnvironment("Auth__SecurityStampValidationMinutes", interval);
+    }
+
+    // Notifications are off locally unless a VAPID key pair is passed in, for example
+    // --Push:Subject=mailto:you@example.org --Push:PublicKey=... --Push:PrivateKey=...
+    foreach (var key in new[] { "Subject", "PublicKey", "PrivateKey" })
+    {
+        if (builder.Configuration[$"Push:{key}"] is { Length: > 0 } value)
+        {
+            api.WithEnvironment($"Push__{key}", value);
+        }
     }
 }
 

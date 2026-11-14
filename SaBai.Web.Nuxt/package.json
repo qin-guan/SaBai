@@ -21,6 +21,7 @@
     "@phosphor-icons/vue": "^2.2.1",
     "@sabai/sdk": "workspace:*",
     "@tanstack/vue-query": "^5.107.1",
+    "@vite-pwa/nuxt": "^1.1.1",
     "@vueuse/core": "^15.0.0",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.5.2",

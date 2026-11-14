@@ -1,10 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { toast } from 'vue-sonner'
 import { saBaiAPIEndpointsPatientsUpdatePatchEndpoint } from '@sabai/sdk/clients'
-import type { SaBaiAPIEndpointsPatientsGetResponse } from '@sabai/sdk/types'
+import type { PatientDetail } from '~/composables/usePatientData'
 import type { PatientFormValues } from '~/utils/patientForm'
 
-function toFormValues(patient: SaBaiAPIEndpointsPatientsGetResponse): PatientFormValues {
+function toFormValues(patient: PatientDetail): PatientFormValues {
   return {
     name: patient.name,
     identificationNumber: patient.identificationNumber ?? '',
@@ -16,6 +16,7 @@ function toFormValues(patient: SaBaiAPIEndpointsPatientsGetResponse): PatientFor
     hasPoorCard: patient.hasPoorCard,
     hasBS2Card: patient.hasBS2Card,
     hasSabaiCard: patient.hasSabaiCard,
+    tags: [...(patient.tags ?? [])],
   }
 }
 
@@ -26,7 +27,7 @@ function toFormValues(patient: SaBaiAPIEndpointsPatientsGetResponse): PatientFor
  * the profile photo and re-enrolls the face.
  */
 export function usePatientEditForm(
-  patient: () => SaBaiAPIEndpointsPatientsGetResponse,
+  patient: () => PatientDetail,
   formEl: Ref<HTMLElement | undefined>,
 ) {
   const initial = toFormValues(patient())
@@ -65,7 +66,8 @@ export function usePatientEditForm(
           hasPoorCard: values.hasPoorCard,
           hasBS2Card: values.hasBS2Card,
           hasSabaiCard: values.hasSabaiCard,
-        },
+          tags: values.tags,
+        } as never,
         throwOnError: true,
       }).unwrap(),
   })
@@ -110,6 +112,7 @@ export function usePatientEditForm(
     baseline.value = JSON.stringify(form.value)
     draft.clear(form.value)
     queryClient.invalidateQueries({ queryKey: queryKeys.patients() })
+    queryClient.invalidateQueries({ queryKey: queryKeys.tags() })
     toast.success('Patient details updated successfully!')
     return true
   }

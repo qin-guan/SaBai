@@ -31,13 +31,19 @@ describe('logicalBackTarget', () => {
 
   it('goes from settings sub-pages to settings', () => {
     expect(logicalBackTarget(route('/settings/village-codes'))).toBe('/settings')
+    expect(logicalBackTarget(route('/settings/notifications'))).toBe('/settings')
     expect(logicalBackTarget(route('/settings/users'))).toBe('/settings')
     expect(logicalBackTarget(route('/settings/audit-log', { entityType: 'Patient', entityId: '42' }))).toBe('/settings')
+  })
+
+  it('goes from referral details to the referrals list', () => {
+    expect(logicalBackTarget(route('/referrals/42'))).toBe('/referrals')
   })
 
   it('returns undefined on top-level pages', () => {
     expect(logicalBackTarget(route('/patient'))).toBeUndefined()
     expect(logicalBackTarget(route('/scan-face'))).toBeUndefined()
+    expect(logicalBackTarget(route('/referrals'))).toBeUndefined()
     expect(logicalBackTarget(route('/medication-stock'))).toBeUndefined()
     expect(logicalBackTarget(route('/orders'))).toBeUndefined()
     expect(logicalBackTarget(route('/settings'))).toBeUndefined()
@@ -56,5 +62,15 @@ describe('currentStation and patientTargetFor', () => {
     expect(patientTargetFor(route('/patient'))).toBe('patient')
     expect(patientTargetFor(route('/patient', { station: 'pharmacy' }))).toBe('patient')
     expect(patientTargetFor(route('/patient', { station: 'vision' }))).toBe('vision')
+  })
+})
+
+describe('paths.consultsDetail', () => {
+  it('builds consults detail URLs with optional visit and consult query params', async () => {
+    const { paths } = await import('~/utils/paths')
+    expect(paths.consultsDetail(42)).toBe('/consults/42')
+    expect(paths.consultsDetail(42, 7)).toBe('/consults/42?visit=7')
+    expect(paths.consultsDetail(42, undefined, 15)).toBe('/consults/42?consult=15')
+    expect(paths.consultsDetail(42, 7, 15)).toBe('/consults/42?visit=7&consult=15')
   })
 })

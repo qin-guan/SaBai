@@ -10,7 +10,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
     public override void Configure()
     {
         Get("/referrals/{Id}");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.Admin, StaffRoles.Member, StaffRoles.Pn);
         Summary(s => s.Summary = "Get a referral");
     }
 
@@ -37,15 +37,36 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                 referral.ReferralOutcome,
                 referral.ConsultId,
                 referral.CreatedAt,
+                referral.UpdatedAt,
                 referral.Consult.Date,
                 referral.Consult.DoctorId,
                 referral.Consult.Visit.PatientId,
                 referral.Consult.Visit.Patient.Name,
+                referral.Consult.Visit.Patient.DateOfBirth,
+                referral.Consult.Visit.Patient.ContactNo,
+                referral.Consult.Visit.Patient.HasPoorCard,
+                referral.Consult.Visit.Patient.HasBS2Card,
+                referral.Consult.Visit.Patient.HasSabaiCard,
                 referral.Consult.Visit.Patient.PhotoStoredFileName != null,
                 referral.Consult.Visit.VillageCodeId,
                 referral.Consult.Visit.VillageCode.Code,
                 referral.Consult.Visit.VillageCode.ColorHex,
-                referral.Consult.Doctor.Nickname
+                referral.Consult.Doctor.Nickname,
+                referral.ReferredToId,
+                referral.MemberInChargeId,
+                referral.GuardiansContacted,
+                referral.ClassOfService,
+                referral.DescriptionOfService,
+                referral.PatientSummaryFromScreening,
+                referral.RemarksAtBooth,
+                referral.MemberOnRunId,
+                referral.PresentAtReferralParty,
+                referral.ReferralPartyResults,
+                referral.FollowUp,
+                referral.DoctorsUpdated,
+                referral.AmountPaidUsd,
+                referral.AmountPaidRiels,
+                referral.MemberWhoPaidId
             ),
             ct
         );

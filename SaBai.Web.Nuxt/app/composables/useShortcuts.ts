@@ -6,19 +6,41 @@
  *    dialog's form takes precedence over the page behind it.
  */
 type Handler = () => void;
-const saveHandlers: Handler[] = [];
+interface SaveEntry {
+  handler: Handler;
+  enabled?: () => boolean;
+}
+const saveHandlers: SaveEntry[] = [];
 
 export function runSaveShortcut(): boolean {
-  const handler = saveHandlers[saveHandlers.length - 1];
-  if (!handler) return false;
-  handler();
-  return true;
+  // Newest first; entries whose `enabled` gate is closed are skipped.
+  for (let i = saveHandlers.length - 1; i >= 0; i--) {
+    const entry = saveHandlers[i]!;
+    if (entry.enabled && !entry.enabled()) continue;
+    entry.handler();
+    return true;
+  }
+  return false;
 }
 
-export function useSaveShortcut(handler: Handler) {
-  onMounted(() => saveHandlers.push(handler));
+/**
+ * `scope` limits the shortcut to while focus is inside that element (for pages
+ * with several independent forms, e.g. accordion sections); `enabled` gates it
+ * on any other condition.
+ */
+export function useSaveShortcut(
+  handler: Handler,
+  options: { enabled?: () => boolean; scope?: Ref<HTMLElement | undefined | null> } = {},
+) {
+  const entry: SaveEntry = {
+    handler,
+    enabled: () =>
+      (!options.scope || !!options.scope.value?.contains(document.activeElement))
+      && (!options.enabled || options.enabled()),
+  };
+  onMounted(() => saveHandlers.push(entry));
   onBeforeUnmount(() => {
-    const index = saveHandlers.lastIndexOf(handler);
+    const index = saveHandlers.indexOf(entry);
     if (index >= 0) saveHandlers.splice(index, 1);
   });
 }

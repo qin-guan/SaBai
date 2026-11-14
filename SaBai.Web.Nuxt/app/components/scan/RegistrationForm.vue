@@ -45,7 +45,8 @@ const create = useMutation({
         hasSabaiCard: values.hasSabaiCard,
         toGetReport: false,
         villageCodeId: selectedVillageCodeId.value!,
-      },
+        tags: values.tags,
+      } as never,
       throwOnError: true,
     }).unwrap(),
 })
@@ -79,6 +80,7 @@ async function submit() {
 
   remember(patient.id)
   queryClient.invalidateQueries({ queryKey: queryKeys.patients() })
+  queryClient.invalidateQueries({ queryKey: queryKeys.tags() })
 
   // Best-effort: the patient already exists, so a failure here must not discard the registration.
   try {

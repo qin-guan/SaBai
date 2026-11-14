@@ -21,6 +21,8 @@ public sealed class AuditTrail(AppDbContext db, IHttpContextAccessor http, TimeP
         StaffUser? user = null,
         string? userName = null,
         string? details = null,
+        string? entityType = null,
+        string? entityId = null,
         CancellationToken ct = default
     )
     {
@@ -33,6 +35,8 @@ public sealed class AuditTrail(AppDbContext db, IHttpContextAccessor http, TimeP
                 Action = action,
                 UserId = user?.Id ?? actor.UserId,
                 UserName = name is { Length: > MaxUserNameLength } ? name[..MaxUserNameLength] : name,
+                EntityType = entityType,
+                EntityId = entityId,
                 Details = details,
                 IpAddress = actor.IpAddress,
                 Request = actor.Request,

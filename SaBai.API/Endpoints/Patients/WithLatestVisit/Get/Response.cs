@@ -27,5 +27,6 @@ public sealed record Item(
     int? LastVisitId,
     bool HasPhoto,
     bool HasFace,
-    VisitJourney? LastVisitJourney
+    VisitJourney? LastVisitJourney,
+    IReadOnlyList<string> Tags
 );

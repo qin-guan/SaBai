@@ -8,16 +8,21 @@ public sealed class Consult
 
     public DateTimeOffset Date { get; set; }
 
+    [PhiData]
     public string? PastMedicalHistory { get; set; }
 
+    [PhiData]
     public string? Consultation { get; set; }
 
+    [PhiData]
     public string? TreatmentPlan { get; set; }
 
     public string? ReferredFor { get; set; }
 
+    [PhiData]
     public string? ReferralNotes { get; set; }
 
+    [PhiData]
     public string? Remarks { get; set; }
 
     public Guid DoctorId { get; set; }
@@ -41,9 +46,19 @@ public sealed class Diagnosis
 {
     public int Id { get; set; }
 
+    [PhiData]
     public required string Details { get; set; }
 
     public DiagnosisCategory? Category { get; set; }
+
+    /// <summary>Optional standard terminology URI (e.g. http://hl7.org/fhir/sid/icd-10 or http://snomed.info/sct).</summary>
+    public string? CodingSystem { get; set; }
+
+    /// <summary>Optional standard code within <see cref="CodingSystem"/>.</summary>
+    public string? Code { get; set; }
+
+    /// <summary>Optional preferred term for <see cref="Code"/>.</summary>
+    public string? CodeDisplay { get; set; }
 
     public int ConsultId { get; set; }
 
@@ -73,10 +88,12 @@ public sealed class Referral
 
     public required string ReferredFor { get; set; }
 
+    [PhiData]
     public string? ReferralNotes { get; set; }
 
     public ReferralState ReferralState { get; set; } = ReferralState.New;
 
+    [PhiData]
     public string? ReferralOutcome { get; set; }
 
     public int ConsultId { get; set; }

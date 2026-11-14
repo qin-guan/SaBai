@@ -35,6 +35,7 @@ public sealed class Vitals
 
     public decimal? Hba1c { get; set; }
 
+    [PhiData]
     public string? Others { get; set; }
 
     public PubertyAssessment? Puberty { get; set; }
@@ -65,6 +66,7 @@ public sealed class Eyesight
 
     public string? RightAstigmatism { get; set; }
 
+    [PhiData]
     public string? Comments { get; set; }
 
     public string? LeftPrescribedGlassesDegree { get; set; }
@@ -100,6 +102,7 @@ public sealed class PubertyAssessment
 
     public int? TesticularGrowthAge { get; set; }
 
+    [PhiData]
     public string? AdditionalNotes { get; set; }
 }
 

@@ -5,7 +5,7 @@ public sealed class AuthSettings
     public const string SectionName = "Auth";
 
     /// <summary>How long a sign-in cookie stays valid without activity (sliding).</summary>
-    public int SessionLifetimeMinutes { get; set; } = 480;
+    public int SessionLifetimeMinutes { get; set; } = 15;
 
     /// <summary>
     /// How often a signed-in cookie is re-checked against the database, so role

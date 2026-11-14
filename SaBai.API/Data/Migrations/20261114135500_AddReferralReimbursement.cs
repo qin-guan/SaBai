@@ -18,6 +18,20 @@ namespace SaBai.API.Data.Migrations
                 nullable: false,
                 defaultValue: false);
 
+            migrationBuilder.AddColumn<int>(
+                name: "ReimbursedRiels",
+                table: "Referrals",
+                type: "integer",
+                nullable: true);
+
+            migrationBuilder.AddColumn<decimal>(
+                name: "ReimbursedUsd",
+                table: "Referrals",
+                type: "numeric(10,2)",
+                precision: 10,
+                scale: 2,
+                nullable: true);
+
             migrationBuilder.AddColumn<DateTimeOffset>(
                 name: "ReimbursedAt",
                 table: "Referrals",
@@ -64,6 +78,14 @@ namespace SaBai.API.Data.Migrations
 
             migrationBuilder.DropColumn(
                 name: "IsReimbursed",
+                table: "Referrals");
+
+            migrationBuilder.DropColumn(
+                name: "ReimbursedRiels",
+                table: "Referrals");
+
+            migrationBuilder.DropColumn(
+                name: "ReimbursedUsd",
                 table: "Referrals");
 
             migrationBuilder.DropColumn(

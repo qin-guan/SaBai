@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Kbd } from '@/components/ui/kbd'
 import { Textarea } from '@/components/ui/textarea'
-import { hasReferralBill } from '@/utils/referralBills'
+import { formatBillAmount, getBillBreakdown, hasReferralBill } from '@/utils/referralBills'
 
 /**
  * One referral, worked like a station form: the four steps (booth → party →
@@ -65,6 +65,8 @@ function goToStep(step: ReferralStep) {
 REFERRAL_STEPS.forEach((step, i) => useKeyShortcut(String(i + 1), () => goToStep(step), { enabled: () => !!form.value }))
 
 const unsavedLabel = computed(() => changedSteps.value.map(s => REFERRAL_PART_LABELS[s].toLowerCase()).join(', '))
+
+const billBreakdown = computed(() => (referral.value ? getBillBreakdown(referral.value) : null))
 
 const updateReimbursement = useUpdateReferralReimbursement()
 async function toggleReimbursement() {
@@ -249,10 +251,13 @@ async function toggleReimbursement() {
                 <span class="font-semibold text-muted-foreground">Reimbursement:</span>
                 <Badge
                   variant="outline"
-                  :class="referral.isReimbursed ? 'border-success/40 bg-success-subtle text-success' : 'border-warning-border bg-warning-subtle text-warning'"
+                  :class="referral.isReimbursed ? 'border-success/40 bg-success-subtle text-success' : billBreakdown?.isPartial ? 'border-band-border bg-accent text-accent-foreground' : 'border-warning-border bg-warning-subtle text-warning'"
                 >
-                  {{ referral.isReimbursed ? 'Reimbursed' : 'Pending reimbursement' }}
+                  {{ referral.isReimbursed ? 'Reimbursed' : billBreakdown?.isPartial ? 'Partial' : 'Pending reimbursement' }}
                 </Badge>
+                <span v-if="billBreakdown?.isPartial" class="text-muted-foreground tabular-nums">
+                  ({{ formatBillAmount(billBreakdown.reimbursedUsd, billBreakdown.reimbursedRiels) }} repaid)
+                </span>
                 <span v-if="referral.reimbursedAt" class="text-muted-foreground tabular-nums">
                   ({{ formatVisitDate(referral.reimbursedAt) }})
                 </span>

@@ -137,6 +137,7 @@ export { saBaiAPIEndpointsReferralsListByConsultGetEndpoint } from './saBaiAPIEn
 export { saBaiAPIEndpointsReferralsListGetEndpoint } from './saBaiAPIEndpointsReferralsListGetEndpoint'
 export { saBaiAPIEndpointsReferralsUpdateBoothPatchEndpoint } from './saBaiAPIEndpointsReferralsUpdateBoothPatchEndpoint'
 export { saBaiAPIEndpointsReferralsReimburseBillsPostEndpoint } from './saBaiAPIEndpointsReferralsReimburseBillsPostEndpoint'
+export { saBaiAPIEndpointsReferralsRepayPnPostEndpoint } from './saBaiAPIEndpointsReferralsRepayPnPostEndpoint'
 export { saBaiAPIEndpointsReferralsUpdateMoneyPatchEndpoint } from './saBaiAPIEndpointsReferralsUpdateMoneyPatchEndpoint'
 export { saBaiAPIEndpointsReferralsUpdateReimbursementPatchEndpoint } from './saBaiAPIEndpointsReferralsUpdateReimbursementPatchEndpoint'
 export { saBaiAPIEndpointsReferralsUpdateOutcomePatchEndpoint } from './saBaiAPIEndpointsReferralsUpdateOutcomePatchEndpoint'

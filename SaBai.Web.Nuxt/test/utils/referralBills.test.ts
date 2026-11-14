@@ -4,6 +4,7 @@ import {
   buildReferralBillsCsv,
   consolidateBillsByPn,
   formatBillAmount,
+  getBillBreakdown,
   hasReferralBill,
   isUnattributedBill,
   matchesReferralBill,
@@ -36,6 +37,8 @@ function makeReferral(overrides: Partial<ReferralListItem> = {}): ReferralListIt
     amountPaidRiels: null,
     memberWhoPaidId: null,
     isReimbursed: false,
+    reimbursedUsd: null,
+    reimbursedRiels: null,
     reimbursedAt: null,
     reimbursedByUserId: null,
     reimbursementNotes: null,
@@ -157,8 +160,58 @@ describe('referralBills helpers', () => {
     const csv = buildReferralBillsCsv([bill], lookup)
     const lines = csv.split('\r\n')
     expect(lines).toHaveLength(2)
-    expect(lines[0]).toContain('PN Member Who Paid,Amount USD,Amount KHR,Reimbursement Status')
+    expect(lines[0]).toContain('PN Member Who Paid,Amount USD,Amount KHR,Reimbursed USD,Reimbursed KHR,Remaining USD,Remaining KHR,Reimbursement Status')
     expect(lines[1]).toContain('"Chan, ""Sokha"""')
-    expect(lines[1]).toContain('Siem Reap Hospital,Dara,12.50,40000,Reimbursed,2026-11-14,"Paid, cash"')
+    expect(lines[1]).toContain('Siem Reap Hospital,Dara,12.50,40000,12.50,40000,0.00,0,Reimbursed,2026-11-14,"Paid, cash"')
+  })
+
+  it('computes partial repayment breakdowns, summaries, PN consolidation, and CSV status', () => {
+    const partialBill = makeReferral({
+      id: 'p1',
+      amountPaidUsd: 20,
+      amountPaidRiels: 40000,
+      memberWhoPaidId: 'pn-1',
+      isReimbursed: false,
+      reimbursedUsd: 7.5,
+      reimbursedRiels: 10000,
+      reimbursedAt: '2026-11-14T10:00:00Z',
+      reimbursementNotes: 'First installment',
+    })
+
+    expect(getBillBreakdown(partialBill)).toEqual({
+      paidUsd: 20,
+      paidRiels: 40000,
+      reimbursedUsd: 7.5,
+      reimbursedRiels: 10000,
+      remainingUsd: 12.5,
+      remainingRiels: 30000,
+      isPartial: true,
+    })
+
+    const summary = summarizeReferralBills([partialBill])
+    expect(summary).toMatchObject({
+      totalCount: 1,
+      totalUsd: 20,
+      totalRiels: 40000,
+      pendingCount: 1,
+      pendingUsd: 12.5,
+      pendingRiels: 30000,
+      reimbursedCount: 0,
+      reimbursedUsd: 7.5,
+      reimbursedRiels: 10000,
+    })
+
+    const groups = consolidateBillsByPn([partialBill], id => lookup.memberName(id))
+    expect(groups[0]).toMatchObject({
+      memberId: 'pn-1',
+      pendingCount: 1,
+      pendingUsd: 12.5,
+      pendingRiels: 30000,
+      reimbursedUsd: 7.5,
+      reimbursedRiels: 10000,
+    })
+
+    const csv = buildReferralBillsCsv([partialBill], lookup)
+    expect(csv.split('\r\n')[1]).toContain('20.00,40000,7.50,10000,12.50,30000,Partial,2026-11-14,First installment')
   })
 })

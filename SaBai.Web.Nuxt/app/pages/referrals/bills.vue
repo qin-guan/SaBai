@@ -32,6 +32,7 @@ import {
   formatBillAmount,
   formatRiels,
   formatUsd,
+  getBillBreakdown,
   hasReferralBill,
   isUnattributedBill,
   matchesReferralBill,
@@ -53,6 +54,7 @@ const { villageCodes } = useVillageCode()
 const updateMoney = useUpdateReferralMoney()
 const updateReimbursement = useUpdateReferralReimbursement()
 const reimburseBills = useReimburseReferralBills()
+const repayPnBills = useRepayPnBills()
 
 const filters = useState('referrals:bills-filters', () => ({
   search: '',
@@ -213,7 +215,92 @@ function toggleRowSelected(id: string, checked: boolean | 'indeterminate') {
   }
 }
 
-// ── Settle / bulk reimburse dialog ───────────────────────────────────────
+// ── Repay PN (full or partial lump-sum) dialog ───────────────────────────
+const repayPnDialog = ref<{
+  open: boolean
+  memberId: string
+  memberName: string
+  maxUsd: number
+  maxRiels: number
+  amountUsd: string
+  amountRiels: string
+  notes: string
+  error: string
+}>({
+  open: false,
+  memberId: '',
+  memberName: '',
+  maxUsd: 0,
+  maxRiels: 0,
+  amountUsd: '',
+  amountRiels: '',
+  notes: '',
+  error: '',
+})
+
+function openRepayPn(group: PnMemberBillGroup) {
+  if (group.pendingIds.length === 0 || group.isUnassigned) return
+  repayPnDialog.value = {
+    open: true,
+    memberId: group.memberId,
+    memberName: group.memberName,
+    maxUsd: group.pendingUsd,
+    maxRiels: group.pendingRiels,
+    amountUsd: group.pendingUsd > 0 ? group.pendingUsd.toFixed(2) : '',
+    amountRiels: group.pendingRiels > 0 ? String(group.pendingRiels) : '',
+    notes: '',
+    error: '',
+  }
+}
+
+async function confirmRepayPn() {
+  if (repayPnBills.isPending.value || !repayPnDialog.value.memberId) return
+
+  const usdStr = repayPnDialog.value.amountUsd.trim()
+  const rielsStr = repayPnDialog.value.amountRiels.trim()
+  const moneyErrors = validateReferralMoney({
+    amountPaidUsd: usdStr,
+    amountPaidRiels: rielsStr,
+    memberWhoPaidId: repayPnDialog.value.memberId,
+  })
+  if (moneyErrors.amountPaidUsd || moneyErrors.amountPaidRiels) {
+    repayPnDialog.value.error = moneyErrors.amountPaidUsd || moneyErrors.amountPaidRiels || ''
+    return
+  }
+
+  const usd = usdStr ? Number(usdStr) : 0
+  const riels = rielsStr ? Number(rielsStr) : 0
+  if (usd <= 0 && riels <= 0) {
+    repayPnDialog.value.error = 'Enter a repayment amount in USD or KHR.'
+    return
+  }
+  if (usd > repayPnDialog.value.maxUsd) {
+    repayPnDialog.value.error = `USD repayment cannot exceed ${formatUsd(repayPnDialog.value.maxUsd)} owed.`
+    return
+  }
+  if (riels > repayPnDialog.value.maxRiels) {
+    repayPnDialog.value.error = `KHR repayment cannot exceed ${formatRiels(repayPnDialog.value.maxRiels)} owed.`
+    return
+  }
+
+  repayPnDialog.value.error = ''
+  try {
+    const outcome = await repayPnBills.mutateAsync({
+      memberWhoPaidId: repayPnDialog.value.memberId,
+      amountUsd: usd > 0 ? usd : null,
+      amountRiels: riels > 0 ? riels : null,
+      reimbursementNotes: repayPnDialog.value.notes.trim() || null,
+      label: `Repay ${repayPnDialog.value.memberName}`,
+    })
+    notifySaved(outcome, `Repayment recorded for ${repayPnDialog.value.memberName}`)
+    repayPnDialog.value.open = false
+  }
+  catch (err) {
+    toast.error(getApiErrorMessage(err, 'Could not record repayment.'))
+  }
+}
+
+// ── Bulk settle dialog ───────────────────────────────────────────────────
 const settleDialog = ref<{
   open: boolean
   ids: string[]
@@ -229,18 +316,6 @@ const settleDialog = ref<{
   description: '',
   notes: '',
 })
-
-function openSettleForPn(group: PnMemberBillGroup) {
-  if (group.pendingIds.length === 0) return
-  settleDialog.value = {
-    open: true,
-    ids: [...group.pendingIds],
-    isReimbursed: true,
-    title: `Reimburse ${group.memberName}`,
-    description: `Mark ${group.pendingCount} pending bill${group.pendingCount === 1 ? '' : 's'} (${formatSummaryTotals(group.pendingUsd, group.pendingRiels)}) as reimbursed.`,
-    notes: '',
-  }
-}
 
 function openBulkSettle(isReimbursed: boolean) {
   if (selectedIds.value.length === 0) return
@@ -303,8 +378,10 @@ const editDialog = ref<{
   amountPaidRiels: string
   memberWhoPaidId: string
   isReimbursed: boolean
+  reimbursedUsd: string
+  reimbursedRiels: string
   reimbursementNotes: string
-  errors: ReferralMoneyErrors
+  errors: ReferralMoneyErrors & { reimbursedUsd?: string, reimbursedRiels?: string }
 }>({
   open: false,
   item: null,
@@ -312,6 +389,8 @@ const editDialog = ref<{
   amountPaidRiels: '',
   memberWhoPaidId: '',
   isReimbursed: false,
+  reimbursedUsd: '',
+  reimbursedRiels: '',
   reimbursementNotes: '',
   errors: {},
 })
@@ -319,6 +398,7 @@ const editDialog = ref<{
 const editPnOptions = usePnMemberOptions(() => editDialog.value.item?.memberWhoPaidId ?? '')
 
 function openEditBill(item: ReferralListItem) {
+  const b = getBillBreakdown(item)
   editDialog.value = {
     open: true,
     item,
@@ -326,6 +406,8 @@ function openEditBill(item: ReferralListItem) {
     amountPaidRiels: item.amountPaidRiels != null ? String(item.amountPaidRiels) : '',
     memberWhoPaidId: item.memberWhoPaidId ?? '',
     isReimbursed: item.isReimbursed,
+    reimbursedUsd: b.reimbursedUsd > 0 ? String(b.reimbursedUsd) : '',
+    reimbursedRiels: b.reimbursedRiels > 0 ? String(b.reimbursedRiels) : '',
     reimbursementNotes: item.reimbursementNotes ?? '',
     errors: {},
   }
@@ -335,18 +417,37 @@ async function saveEditBill() {
   const item = editDialog.value.item
   if (!item || updateMoney.isPending.value || updateReimbursement.isPending.value) return
 
-  const errors = validateReferralMoney({
+  const errors: ReferralMoneyErrors & { reimbursedUsd?: string, reimbursedRiels?: string } = validateReferralMoney({
     amountPaidUsd: editDialog.value.amountPaidUsd,
     amountPaidRiels: editDialog.value.amountPaidRiels,
     memberWhoPaidId: editDialog.value.memberWhoPaidId,
   })
-  editDialog.value.errors = errors
-  if (Object.keys(errors).length > 0) return
+  const reimbMoneyErrors = validateReferralMoney({
+    amountPaidUsd: editDialog.value.reimbursedUsd,
+    amountPaidRiels: editDialog.value.reimbursedRiels,
+    memberWhoPaidId: '',
+  })
+  if (reimbMoneyErrors.amountPaidUsd) errors.reimbursedUsd = reimbMoneyErrors.amountPaidUsd
+  if (reimbMoneyErrors.amountPaidRiels) errors.reimbursedRiels = reimbMoneyErrors.amountPaidRiels
 
   const usd = editDialog.value.amountPaidUsd.trim()
   const riels = editDialog.value.amountPaidRiels.trim()
   const nextUsd = usd ? Number(usd) : null
   const nextRiels = riels ? Number(riels) : null
+
+  const rUsdStr = editDialog.value.reimbursedUsd.trim()
+  const rRielsStr = editDialog.value.reimbursedRiels.trim()
+  const nextReimbUsd = rUsdStr ? Number(rUsdStr) : null
+  const nextReimbRiels = rRielsStr ? Number(rRielsStr) : null
+
+  if (!errors.reimbursedUsd && nextReimbUsd != null && nextReimbUsd > (nextUsd ?? 0))
+    errors.reimbursedUsd = 'Cannot exceed amount paid in USD.'
+  if (!errors.reimbursedRiels && nextReimbRiels != null && nextReimbRiels > (nextRiels ?? 0))
+    errors.reimbursedRiels = 'Cannot exceed amount paid in KHR.'
+
+  editDialog.value.errors = errors
+  if (Object.keys(errors).length > 0) return
+
   const nextMember = editDialog.value.memberWhoPaidId || null
   const nextReimbursed = editDialog.value.isReimbursed
   const nextNotes = editDialog.value.reimbursementNotes.trim() || null
@@ -358,6 +459,8 @@ async function saveEditBill() {
 
   const reimbursementChanged
     = nextReimbursed !== item.isReimbursed
+    || nextReimbUsd !== (item.reimbursedUsd ?? null)
+    || nextReimbRiels !== (item.reimbursedRiels ?? null)
     || nextNotes !== (item.reimbursementNotes ?? null)
 
   try {
@@ -376,6 +479,8 @@ async function saveEditBill() {
         id: item.id,
         patientName: item.patientName,
         isReimbursed: nextReimbursed,
+        reimbursedUsd: nextReimbursed ? nextUsd : nextReimbUsd,
+        reimbursedRiels: nextReimbursed ? nextRiels : nextReimbRiels,
         reimbursementNotes: nextNotes,
       })
     }
@@ -532,9 +637,9 @@ const shortDate = (date: string) => {
                   v-if="group.pendingCount > 0 && !group.isUnassigned"
                   size="sm"
                   variant="success"
-                  @click="openSettleForPn(group)"
+                  @click="openRepayPn(group)"
                 >
-                  <PhCheck aria-hidden="true" /> Settle pending
+                  <PhCheck aria-hidden="true" /> Repay
                 </Button>
               </div>
             </TableCell>
@@ -738,12 +843,22 @@ const shortDate = (date: string) => {
                   Reimbursed
                 </Badge>
                 <Badge
+                  v-else-if="getBillBreakdown(bill).isPartial"
+                  variant="outline"
+                  class="w-fit border-band-border bg-accent text-accent-foreground"
+                >
+                  Partial
+                </Badge>
+                <Badge
                   v-else
                   variant="outline"
                   class="w-fit border-warning-border bg-warning-subtle text-warning"
                 >
                   Pending
                 </Badge>
+                <span v-if="getBillBreakdown(bill).isPartial" class="text-xs text-muted-foreground tabular-nums">
+                  {{ formatSummaryTotals(getBillBreakdown(bill).reimbursedUsd, getBillBreakdown(bill).reimbursedRiels) }} repaid · {{ formatSummaryTotals(getBillBreakdown(bill).remainingUsd, getBillBreakdown(bill).remainingRiels) }} left
+                </span>
                 <span v-if="bill.reimbursedAt" class="text-xs text-muted-foreground tabular-nums">
                   {{ shortDate(bill.reimbursedAt) }}
                 </span>
@@ -777,7 +892,66 @@ const shortDate = (date: string) => {
       </Table>
     </AppPanel>
 
-    <!-- Settle / Bulk Reimburse Dialog -->
+    <!-- Repay PN (full or partial) Dialog -->
+    <Dialog v-model:open="repayPnDialog.open">
+      <DialogContent class="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Repay {{ repayPnDialog.memberName }}</DialogTitle>
+          <DialogDescription>
+            Total owed: {{ formatSummaryTotals(repayPnDialog.maxUsd, repayPnDialog.maxRiels) }}. Enter the full amount or a partial repayment (applied oldest bill first).
+          </DialogDescription>
+        </DialogHeader>
+        <div class="flex flex-col gap-3 py-2">
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <FormField v-slot="{ id }" label="Repay in US dollars">
+              <NumericInput
+                :id="id"
+                v-model="repayPnDialog.amountUsd"
+                unit="USD"
+                step="0.01"
+                min="0"
+                placeholder="0.00"
+              />
+            </FormField>
+            <FormField v-slot="{ id }" label="Repay in riels">
+              <NumericInput
+                :id="id"
+                v-model="repayPnDialog.amountRiels"
+                unit="KHR"
+                step="1"
+                min="0"
+                placeholder="0"
+              />
+            </FormField>
+          </div>
+          <p v-if="repayPnDialog.error" class="text-xs font-medium text-destructive" role="alert">
+            {{ repayPnDialog.error }}
+          </p>
+          <FormField v-slot="{ id }" label="Reimbursement note (optional)">
+            <Textarea
+              :id="id"
+              v-model="repayPnDialog.notes"
+              :rows="2"
+              placeholder="e.g. Partial cash repayment, receipt #12"
+            />
+          </FormField>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" :disabled="repayPnBills.isPending.value" @click="repayPnDialog.open = false">
+            Cancel
+          </Button>
+          <Button
+            variant="success"
+            :disabled="repayPnBills.isPending.value"
+            @click="confirmRepayPn"
+          >
+            {{ repayPnBills.isPending.value ? 'Saving…' : 'Record repayment' }}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+    <!-- Bulk Reimburse Dialog -->
     <Dialog v-model:open="settleDialog.open">
       <DialogContent class="sm:max-w-md">
         <DialogHeader>
@@ -858,8 +1032,34 @@ const shortDate = (date: string) => {
           <div class="flex items-center gap-2 pt-1">
             <Checkbox id="edit-bill-reimbursed" v-model="editDialog.isReimbursed" />
             <label for="edit-bill-reimbursed" class="text-sm font-medium">
-              Reimbursed to PN member
+              Fully reimbursed to PN member
             </label>
+          </div>
+          <div v-if="!editDialog.isReimbursed" class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <FormField v-slot="{ id, describedby, invalid }" label="Reimbursed USD (partial)" :error="editDialog.errors.reimbursedUsd">
+              <NumericInput
+                :id="id"
+                v-model="editDialog.reimbursedUsd"
+                unit="USD"
+                step="0.01"
+                min="0"
+                placeholder="0.00"
+                :aria-describedby="describedby"
+                :aria-invalid="invalid || undefined"
+              />
+            </FormField>
+            <FormField v-slot="{ id, describedby, invalid }" label="Reimbursed KHR (partial)" :error="editDialog.errors.reimbursedRiels">
+              <NumericInput
+                :id="id"
+                v-model="editDialog.reimbursedRiels"
+                unit="KHR"
+                step="1"
+                min="0"
+                placeholder="0"
+                :aria-describedby="describedby"
+                :aria-invalid="invalid || undefined"
+              />
+            </FormField>
           </div>
           <FormField v-slot="{ id }" label="Reimbursement note (optional)">
             <Textarea

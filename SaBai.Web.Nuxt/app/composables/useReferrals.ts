@@ -6,6 +6,7 @@ import {
   fetchReferrals,
   fetchReferralsByConsult,
   reimburseReferralBills,
+  repayPnBills,
   updateReferralBooth,
   updateReferralMoney,
   updateReferralOutcome,
@@ -15,6 +16,7 @@ import {
   type CreateReferralContext,
   type ReferralDetail,
   type ReimburseReferralBillsVars,
+  type RepayPnBillsVars,
   type UpdateReferralBoothVars,
   type UpdateReferralMoneyVars,
   type UpdateReferralOutcomeVars,
@@ -148,6 +150,7 @@ export function useUpdateReferralMoney() {
 
 export type UpdateReferralReimbursementInput = UpdateReferralReimbursementVars
 export type ReimburseReferralBillsInput = ReimburseReferralBillsVars
+export type RepayPnBillsInput = RepayPnBillsVars
 
 /**
  * Marks a single referral bill as reimbursed or pending reimbursement.
@@ -161,4 +164,11 @@ export function useUpdateReferralReimbursement() {
  */
 export function useReimburseReferralBills() {
   return useOfflineWrite(reimburseReferralBills, (input: ReimburseReferralBillsInput) => input)
+}
+
+/**
+ * Applies a full or partial lump-sum repayment to a PN member's pending bills (FIFO).
+ */
+export function useRepayPnBills() {
+  return useOfflineWrite(repayPnBills, (input: RepayPnBillsInput) => input)
 }

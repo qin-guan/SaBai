@@ -478,6 +478,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             entity.Property(x => x.GuardiansContacted).HasConversion<string>().HasMaxLength(32);
             entity.Property(x => x.ClassOfService).HasConversion<string>().HasMaxLength(32);
             entity.Property(x => x.AmountPaidUsd).HasPrecision(10, 2);
+            entity.Property(x => x.ReimbursedUsd).HasPrecision(10, 2);
             entity.Property(x => x.ReimbursementNotes).HasMaxLength(500);
             entity
                 .HasOne(x => x.Consult)

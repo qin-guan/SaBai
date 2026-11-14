@@ -42,6 +42,8 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
                 x.AmountPaidRiels,
                 x.MemberWhoPaidId,
                 x.IsReimbursed,
+                x.ReimbursedUsd,
+                x.ReimbursedRiels,
                 x.ReimbursedAt,
                 x.ReimbursedByUserId,
                 x.ReimbursementNotes,
@@ -74,6 +76,8 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
                 x.AmountPaidRiels,
                 x.MemberWhoPaidId,
                 x.IsReimbursed,
+                x.ReimbursedUsd,
+                x.ReimbursedRiels,
                 x.ReimbursedAt,
                 x.ReimbursedByUserId,
                 x.ReimbursementNotes

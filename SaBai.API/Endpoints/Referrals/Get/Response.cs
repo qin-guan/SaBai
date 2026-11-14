@@ -47,6 +47,8 @@ public sealed record Response(
     int? AmountPaidRiels,
     Guid? MemberWhoPaidId,
     bool IsReimbursed,
+    decimal? ReimbursedUsd,
+    int? ReimbursedRiels,
     DateTimeOffset? ReimbursedAt,
     Guid? ReimbursedByUserId,
     string? ReimbursementNotes

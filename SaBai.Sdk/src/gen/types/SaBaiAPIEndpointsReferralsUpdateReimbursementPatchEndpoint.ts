@@ -4,6 +4,8 @@ import type { SaBaiAPIEndpointsReferralsGetResponse } from './SaBaiAPIEndpointsR
 export type SaBaiAPIEndpointsReferralsUpdateReimbursementPatchRequest = {
   isReimbursed: boolean;
   reimbursementNotes?: string | null;
+  reimbursedUsd?: number | null;
+  reimbursedRiels?: number | null;
 };
 
 export type SaBaiAPIEndpointsReferralsUpdateReimbursementPatchEndpointPath = {

@@ -12,7 +12,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Get.Response>
         Patch("/referrals/{Id}/reimbursement");
         Roles(StaffRoles.Admin, StaffRoles.Member, StaffRoles.Pn);
         Summary(s =>
-            s.Summary = "Mark a referral bill as reimbursed or pending reimbursement"
+            s.Summary = "Update reimbursement status or partial repayment amounts on a referral bill"
         );
     }
 
@@ -24,9 +24,56 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Get.Response>
             ct
         );
 
-        referral.IsReimbursed = req.IsReimbursed;
-        referral.ReimbursedAt = req.IsReimbursed ? DateTimeOffset.UtcNow : null;
-        referral.ReimbursedByUserId = req.IsReimbursed ? User.Id() : null;
+        var hasPartialAmounts = req.ReimbursedUsd.HasValue || req.ReimbursedRiels.HasValue;
+
+        if (req.IsReimbursed && !hasPartialAmounts)
+        {
+            referral.IsReimbursed = true;
+            referral.ReimbursedUsd = referral.AmountPaidUsd;
+            referral.ReimbursedRiels = referral.AmountPaidRiels;
+            referral.ReimbursedAt = DateTimeOffset.UtcNow;
+            referral.ReimbursedByUserId = User.Id();
+        }
+        else if (!req.IsReimbursed && !hasPartialAmounts)
+        {
+            referral.IsReimbursed = false;
+            referral.ReimbursedUsd = null;
+            referral.ReimbursedRiels = null;
+            referral.ReimbursedAt = null;
+            referral.ReimbursedByUserId = null;
+        }
+        else
+        {
+            var paidUsd = referral.AmountPaidUsd ?? 0m;
+            var paidRiels = referral.AmountPaidRiels ?? 0;
+
+            if (req.ReimbursedUsd.HasValue && req.ReimbursedUsd.Value > paidUsd)
+                ThrowError("Reimbursed USD cannot exceed the amount paid.");
+            if (req.ReimbursedRiels.HasValue && req.ReimbursedRiels.Value > paidRiels)
+                ThrowError("Reimbursed KHR cannot exceed the amount paid.");
+
+            var nextUsd = req.ReimbursedUsd ?? referral.ReimbursedUsd ?? 0m;
+            var nextRiels = req.ReimbursedRiels ?? referral.ReimbursedRiels ?? 0;
+
+            referral.ReimbursedUsd = nextUsd > 0m ? nextUsd : null;
+            referral.ReimbursedRiels = nextRiels > 0 ? nextRiels : null;
+
+            var hasAnyPaid = paidUsd > 0m || paidRiels > 0;
+            var fullyRepaid = hasAnyPaid && nextUsd >= paidUsd && nextRiels >= paidRiels;
+            referral.IsReimbursed = req.IsReimbursed || fullyRepaid;
+
+            if (referral.IsReimbursed || nextUsd > 0m || nextRiels > 0)
+            {
+                referral.ReimbursedAt = DateTimeOffset.UtcNow;
+                referral.ReimbursedByUserId = User.Id();
+            }
+            else
+            {
+                referral.ReimbursedAt = null;
+                referral.ReimbursedByUserId = null;
+            }
+        }
+
         referral.ReimbursementNotes = string.IsNullOrWhiteSpace(req.ReimbursementNotes)
             ? null
             : req.ReimbursementNotes.Trim();
@@ -75,6 +122,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Get.Response>
                 x.AmountPaidRiels,
                 x.MemberWhoPaidId,
                 x.IsReimbursed,
+                x.ReimbursedUsd,
+                x.ReimbursedRiels,
                 x.ReimbursedAt,
                 x.ReimbursedByUserId,
                 x.ReimbursementNotes

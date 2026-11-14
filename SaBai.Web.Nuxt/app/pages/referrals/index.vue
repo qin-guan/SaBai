@@ -14,7 +14,7 @@ import {
   type ReferralListItem,
   type ReferralStatusGroup,
 } from '@/utils/referral'
-import { formatBillAmount, hasReferralBill } from '@/utils/referralBills'
+import { formatBillAmount, getBillBreakdown, hasReferralBill } from '@/utils/referralBills'
 
 /**
  * Referral worklist, laid out like the patient list: a status strip on top
@@ -394,9 +394,9 @@ const gridCols = 'md:grid-cols-[2rem_minmax(9rem,1fr)_minmax(0,2fr)_5.5rem_11rem
                   <Badge
                     variant="outline"
                     class="px-1.5 py-0 text-[0.6875rem]"
-                    :class="r.isReimbursed ? 'border-success/40 bg-success-subtle text-success' : 'border-warning-border bg-warning-subtle text-warning'"
+                    :class="r.isReimbursed ? 'border-success/40 bg-success-subtle text-success' : getBillBreakdown(r).isPartial ? 'border-band-border bg-accent text-accent-foreground' : 'border-warning-border bg-warning-subtle text-warning'"
                   >
-                    {{ r.isReimbursed ? 'Reimbursed' : 'Pending reimbursement' }}
+                    {{ r.isReimbursed ? 'Reimbursed' : getBillBreakdown(r).isPartial ? 'Partial' : 'Pending reimbursement' }}
                   </Badge>
                 </p>
               </div>

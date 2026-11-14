@@ -1125,6 +1125,13 @@ namespace SaBai.API.Data.Migrations
                     b.Property<Guid?>("ReimbursedByUserId")
                         .HasColumnType("uuid");
 
+                    b.Property<int?>("ReimbursedRiels")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal?>("ReimbursedUsd")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
                     b.Property<string>("ReimbursementNotes")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");

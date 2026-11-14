@@ -61,6 +61,42 @@ export function isUnattributedBill(item: Pick<ReferralListItem, 'amountPaidUsd' 
   return ((item.amountPaidUsd ?? 0) > 0 || (item.amountPaidRiels ?? 0) > 0) && !item.memberWhoPaidId
 }
 
+/** Returns the reimbursed and remaining amounts for a bill, accounting for partial repayments. */
+export function getBillBreakdown(
+  item: Pick<ReferralListItem, 'amountPaidUsd' | 'amountPaidRiels' | 'isReimbursed' | 'reimbursedUsd' | 'reimbursedRiels'>,
+): {
+  paidUsd: number
+  paidRiels: number
+  reimbursedUsd: number
+  reimbursedRiels: number
+  remainingUsd: number
+  remainingRiels: number
+  isPartial: boolean
+} {
+  const paidUsd = item.amountPaidUsd ?? 0
+  const paidRiels = item.amountPaidRiels ?? 0
+
+  if (item.isReimbursed) {
+    return {
+      paidUsd,
+      paidRiels,
+      reimbursedUsd: paidUsd,
+      reimbursedRiels: paidRiels,
+      remainingUsd: 0,
+      remainingRiels: 0,
+      isPartial: false,
+    }
+  }
+
+  const reimbursedUsd = Math.min(paidUsd, Math.max(0, item.reimbursedUsd ?? 0))
+  const reimbursedRiels = Math.min(paidRiels, Math.max(0, item.reimbursedRiels ?? 0))
+  const remainingUsd = Math.max(0, Math.round((paidUsd - reimbursedUsd) * 100) / 100)
+  const remainingRiels = Math.max(0, paidRiels - reimbursedRiels)
+  const isPartial = (reimbursedUsd > 0 || reimbursedRiels > 0) && (remainingUsd > 0 || remainingRiels > 0)
+
+  return { paidUsd, paidRiels, reimbursedUsd, reimbursedRiels, remainingUsd, remainingRiels, isPartial }
+}
+
 export function formatUsd(amount: number): string {
   return `US$${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
@@ -78,7 +114,7 @@ export function formatBillAmount(usd: number | null | undefined, riels: number |
   return parts.length ? parts.join(' + ') : 'No amount'
 }
 
-/** Aggregates bill counts and currency totals across a list of referral bills. */
+/** Aggregates bill counts and currency totals across a list of referral bills (including partial repayments). */
 export function summarizeReferralBills(items: readonly ReferralListItem[]): ReferralBillSummary {
   const summary: ReferralBillSummary = {
     totalCount: 0,
@@ -96,27 +132,24 @@ export function summarizeReferralBills(items: readonly ReferralListItem[]): Refe
   }
 
   for (const item of items) {
-    const usd = item.amountPaidUsd ?? 0
-    const riels = item.amountPaidRiels ?? 0
+    const b = getBillBreakdown(item)
     summary.totalCount += 1
-    summary.totalUsd += usd
-    summary.totalRiels += riels
+    summary.totalUsd += b.paidUsd
+    summary.totalRiels += b.paidRiels
+    summary.reimbursedUsd += b.reimbursedUsd
+    summary.reimbursedRiels += b.reimbursedRiels
+    summary.pendingUsd += b.remainingUsd
+    summary.pendingRiels += b.remainingRiels
 
-    if (item.isReimbursed) {
+    if (item.isReimbursed)
       summary.reimbursedCount += 1
-      summary.reimbursedUsd += usd
-      summary.reimbursedRiels += riels
-    }
-    else {
+    else
       summary.pendingCount += 1
-      summary.pendingUsd += usd
-      summary.pendingRiels += riels
-    }
 
     if (isUnattributedBill(item)) {
       summary.unattributedCount += 1
-      summary.unattributedUsd += usd
-      summary.unattributedRiels += riels
+      summary.unattributedUsd += b.paidUsd
+      summary.unattributedRiels += b.paidRiels
     }
   }
 
@@ -159,21 +192,20 @@ export function consolidateBillsByPn(
       groups.set(key, group)
     }
 
-    const usd = item.amountPaidUsd ?? 0
-    const riels = item.amountPaidRiels ?? 0
+    const b = getBillBreakdown(item)
     group.totalCount += 1
-    group.totalUsd += usd
-    group.totalRiels += riels
+    group.totalUsd += b.paidUsd
+    group.totalRiels += b.paidRiels
+    group.reimbursedUsd += b.reimbursedUsd
+    group.reimbursedRiels += b.reimbursedRiels
+    group.pendingUsd += b.remainingUsd
+    group.pendingRiels += b.remainingRiels
 
     if (item.isReimbursed) {
       group.reimbursedCount += 1
-      group.reimbursedUsd += usd
-      group.reimbursedRiels += riels
     }
     else {
       group.pendingCount += 1
-      group.pendingUsd += usd
-      group.pendingRiels += riels
       group.pendingIds.push(item.id)
     }
   }
@@ -269,25 +301,37 @@ export function buildReferralBillsCsv(items: readonly ReferralListItem[], lookup
     'PN Member Who Paid',
     'Amount USD',
     'Amount KHR',
+    'Reimbursed USD',
+    'Reimbursed KHR',
+    'Remaining USD',
+    'Remaining KHR',
     'Reimbursement Status',
     'Reimbursed At',
     'Reimbursement Notes',
   ]
 
-  const rows = items.map(item => [
-    item.createdAt.slice(0, 10),
-    item.patientName,
-    item.patientDisplayId ?? '',
-    item.villageCode,
-    item.referredFor,
-    lookup.partnerName(item.referredToId) ?? '',
-    item.memberWhoPaidId ? (lookup.memberName(item.memberWhoPaidId) ?? '') : 'Unassigned',
-    item.amountPaidUsd != null ? item.amountPaidUsd.toFixed(2) : '',
-    item.amountPaidRiels != null ? String(item.amountPaidRiels) : '',
-    item.isReimbursed ? 'Reimbursed' : 'Pending',
-    item.reimbursedAt ? item.reimbursedAt.slice(0, 10) : '',
-    item.reimbursementNotes ?? '',
-  ])
+  const rows = items.map((item) => {
+    const b = getBillBreakdown(item)
+    const status = item.isReimbursed ? 'Reimbursed' : b.isPartial ? 'Partial' : 'Pending'
+    return [
+      item.createdAt.slice(0, 10),
+      item.patientName,
+      item.patientDisplayId ?? '',
+      item.villageCode,
+      item.referredFor,
+      lookup.partnerName(item.referredToId) ?? '',
+      item.memberWhoPaidId ? (lookup.memberName(item.memberWhoPaidId) ?? '') : 'Unassigned',
+      item.amountPaidUsd != null ? item.amountPaidUsd.toFixed(2) : '',
+      item.amountPaidRiels != null ? String(item.amountPaidRiels) : '',
+      b.reimbursedUsd > 0 ? b.reimbursedUsd.toFixed(2) : '0.00',
+      b.reimbursedRiels > 0 ? String(b.reimbursedRiels) : '0',
+      b.remainingUsd > 0 ? b.remainingUsd.toFixed(2) : '0.00',
+      b.remainingRiels > 0 ? String(b.remainingRiels) : '0',
+      status,
+      item.reimbursedAt ? item.reimbursedAt.slice(0, 10) : '',
+      item.reimbursementNotes ?? '',
+    ]
+  })
 
   return [headers, ...rows].map(row => row.map(csvCell).join(',')).join('\r\n')
 }

@@ -4,6 +4,7 @@ import {
   createReferral,
   deleteReferralPartner,
   reimburseReferralBills,
+  repayPnBills,
   sortReferralPartners,
   updateReferralBooth,
   updateReferralPartner,
@@ -97,6 +98,84 @@ describe('referral optimistic edits', () => {
     reimburseReferralBills.optimistic!({ referralIds: [referralId], isReimbursed: false }, qc)
     expect(qc.getQueryData<ReferralDetail>(queryKeys.referral(referralId))).toMatchObject({ isReimbursed: false, reimbursedAt: null, reimbursementNotes: null })
     expect(qc.getQueryData<ReferralListEntry[]>(queryKeys.referrals())![0]).toMatchObject({ isReimbursed: false, reimbursedAt: null })
+  })
+
+  it('partial bill repayment and FIFO PN lump-sum repayment update caches accurately', () => {
+    const qc = new QueryClient()
+    const bill1: ReferralListEntry = {
+      id: 'b1',
+      consultId,
+      doctorId: context.doctorId,
+      patientId: context.patientId,
+      patientName: 'Sokha Chan',
+      hasPhoto: false,
+      villageCodeId: context.villageCodeId,
+      villageCode: context.villageCode,
+      villageColorHex: context.villageColorHex,
+      referredFor: 'Diagnostic',
+      referralNotes: null,
+      referralState: 'Completed',
+      referralOutcome: null,
+      createdAt: '2026-11-10T08:00:00Z',
+      consultDate: context.consultDate,
+      tags: [],
+      referredToId: null,
+      amountPaidUsd: 10,
+      amountPaidRiels: 20000,
+      memberWhoPaidId: 'pn-1',
+      isReimbursed: false,
+      reimbursedUsd: null,
+      reimbursedRiels: null,
+      reimbursedAt: null,
+      reimbursedByUserId: null,
+      reimbursementNotes: null,
+    }
+    const bill2: ReferralListEntry = {
+      ...bill1,
+      id: 'b2',
+      createdAt: '2026-11-11T08:00:00Z',
+      amountPaidUsd: 15,
+      amountPaidRiels: null,
+    }
+    qc.setQueryData<ReferralListEntry[]>(queryKeys.referrals(), [bill1, bill2])
+
+    updateReferralReimbursement.optimistic!({
+      id: 'b1',
+      isReimbursed: false,
+      reimbursedUsd: 4,
+      reimbursedRiels: 5000,
+      reimbursementNotes: 'Partial',
+    }, qc)
+    expect(qc.getQueryData<ReferralListEntry[]>(queryKeys.referrals())![0]).toMatchObject({
+      isReimbursed: false,
+      reimbursedUsd: 4,
+      reimbursedRiels: 5000,
+      reimbursementNotes: 'Partial',
+    })
+
+    // Remaining on b1: $6 + 15000 KHR. Paying $10 + 15000 KHR should settle b1 and put $4 toward b2.
+    repayPnBills.optimistic!({
+      memberWhoPaidId: 'pn-1',
+      amountUsd: 10,
+      amountRiels: 15000,
+      reimbursementNotes: 'EOD cash',
+    }, qc)
+
+    const updated = qc.getQueryData<ReferralListEntry[]>(queryKeys.referrals())!
+    expect(updated[0]).toMatchObject({
+      id: 'b1',
+      isReimbursed: true,
+      reimbursedUsd: 10,
+      reimbursedRiels: 20000,
+      reimbursementNotes: 'EOD cash',
+    })
+    expect(updated[1]).toMatchObject({
+      id: 'b2',
+      isReimbursed: false,
+      reimbursedUsd: 4,
+      reimbursedRiels: null,
+      reimbursementNotes: 'EOD cash',
+    })
   })
 })
 

@@ -89,6 +89,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Get.Response>
                 x.AmountPaidRiels,
                 x.MemberWhoPaidId,
                 x.IsReimbursed,
+                x.ReimbursedUsd,
+                x.ReimbursedRiels,
                 x.ReimbursedAt,
                 x.ReimbursedByUserId,
                 x.ReimbursementNotes

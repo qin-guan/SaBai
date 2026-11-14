@@ -68,6 +68,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                 referral.AmountPaidRiels,
                 referral.MemberWhoPaidId,
                 referral.IsReimbursed,
+                referral.ReimbursedUsd,
+                referral.ReimbursedRiels,
                 referral.ReimbursedAt,
                 referral.ReimbursedByUserId,
                 referral.ReimbursementNotes

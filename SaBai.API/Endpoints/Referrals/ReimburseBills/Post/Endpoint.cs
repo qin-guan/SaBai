@@ -37,6 +37,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
         foreach (var referral in referrals)
         {
             referral.IsReimbursed = req.IsReimbursed;
+            referral.ReimbursedUsd = req.IsReimbursed ? referral.AmountPaidUsd : null;
+            referral.ReimbursedRiels = req.IsReimbursed ? referral.AmountPaidRiels : null;
             referral.ReimbursedAt = now;
             referral.ReimbursedByUserId = userId;
             if (req.ReimbursementNotes is not null)

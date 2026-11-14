@@ -17,7 +17,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
         var query = db.Visits.AsNoTracking().AsQueryable();
-        if (req.PatientId is int patientId)
+        if (req.PatientId is Guid patientId)
         {
             query = query.Where(x => x.PatientId == patientId);
         }

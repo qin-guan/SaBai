@@ -85,7 +85,7 @@ function saveOutcome() {
                 <span
                   class="size-2.5 shrink-0 border border-border/40"
                   :style="{ backgroundColor: referral.villageColorHex }"
-                  :title="referral.villageCode"
+                  :title="referral.villageCode ?? undefined"
                   aria-hidden="true"
                 />
                 <span class="font-mono text-xs font-semibold text-muted-foreground">

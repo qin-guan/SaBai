@@ -1,11 +1,7 @@
 <script setup lang="ts">
 import { PhFloppyDisk } from '@phosphor-icons/vue'
-import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { toast } from 'vue-sonner'
-import {
-  saBaiAPIEndpointsVillageCodesCreatePostEndpoint,
-  saBaiAPIEndpointsVillageCodesUpdatePatchEndpoint,
-} from '@sabai/sdk/clients'
+import type { LocalVillageCode } from '~/db/types'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
@@ -15,7 +11,7 @@ import { Label } from '@/components/ui/label'
  * Create or edit a village code. A new-code draft is kept in localStorage
  * (same key as SaBai.Web) so an interrupted entry is not lost.
  */
-const props = defineProps<{ village: VillageCode | null }>()
+const props = defineProps<{ village: LocalVillageCode | null }>()
 const emit = defineEmits<{ close: [] }>()
 
 const DRAFT_KEY = 'village-codes-form'
@@ -57,50 +53,9 @@ watch(form, (value) => {
 }, { deep: true })
 onBeforeUnmount(() => window.clearTimeout(draftTimer))
 
-const queryClient = useQueryClient()
-const invalidate = () => queryClient.invalidateQueries({ queryKey: queryKeys.villageCodes() })
+const saving = ref(false)
 
-const create = useMutation({
-  mutationFn: () =>
-    saBaiAPIEndpointsVillageCodesCreatePostEndpoint({ ...apiConfig, body: { ...form.value }, throwOnError: true }).unwrap(),
-  onSuccess: () => {
-    invalidate()
-    window.clearTimeout(draftTimer)
-    try {
-      window.localStorage.removeItem(DRAFT_KEY)
-    }
-    catch {}
-    emit('close')
-    toast.success('Village code created!')
-  },
-  onError: (err) => {
-    console.error(err)
-    toast.error(getApiErrorMessage(err, 'Unable to create village code.'))
-  },
-})
-
-const update = useMutation({
-  mutationFn: () =>
-    saBaiAPIEndpointsVillageCodesUpdatePatchEndpoint({
-      ...apiConfig,
-      path: { id: props.village!.id },
-      body: { ...form.value },
-      throwOnError: true,
-    }).unwrap(),
-  onSuccess: () => {
-    invalidate()
-    emit('close')
-    toast.success('Village code updated!')
-  },
-  onError: (err) => {
-    console.error(err)
-    toast.error(getApiErrorMessage(err, 'Unable to update village code.'))
-  },
-})
-
-const saving = computed(() => create.isPending.value || update.isPending.value)
-
-function submit() {
+async function submit() {
   if (saving.value)
     return
   errors.value = {}
@@ -112,15 +67,52 @@ function submit() {
     focusFirstInvalid(formEl.value)
     return
   }
-  if (isEditing.value) {
-    if (!isDirty.value) {
-      toast.error('Fields not changed!')
-      return
-    }
-    update.mutate()
+  if (isEditing.value && !isDirty.value) {
+    toast.error('Fields not changed!')
+    return
   }
-  else {
-    create.mutate()
+
+  saving.value = true
+  try {
+    const db = getPowerSyncInstance()
+    const code = form.value.code.trim()
+    const name = form.value.name.trim()
+    const colorHex = form.value.colorHex
+    const isVisible = form.value.isVisible ? 1 : 0
+
+    if (isEditing.value) {
+      await db.execute(
+        `UPDATE village_codes
+         SET code = ?, name = ?, color_hex = ?, is_visible = ?, version = COALESCE(version, 0) + 1
+         WHERE id = ?`,
+        [code, name, colorHex, isVisible, props.village!.id],
+      )
+      await refreshPendingCrudCount()
+      emit('close')
+      toast.success('Village code updated!')
+    }
+    else {
+      await db.execute(
+        `INSERT INTO village_codes (id, version, code, name, color_hex, is_visible, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [uuidv7(), 1, code, name, colorHex, isVisible, new Date().toISOString()],
+      )
+      await refreshPendingCrudCount()
+      window.clearTimeout(draftTimer)
+      try {
+        window.localStorage.removeItem(DRAFT_KEY)
+      }
+      catch {}
+      emit('close')
+      toast.success('Village code created!')
+    }
+  }
+  catch (err) {
+    console.error(err)
+    toast.error(isEditing.value ? 'Unable to update village code.' : 'Unable to create village code.')
+  }
+  finally {
+    saving.value = false
   }
 }
 

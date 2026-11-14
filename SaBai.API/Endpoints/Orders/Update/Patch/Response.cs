@@ -4,9 +4,9 @@ namespace SaBai.API.Endpoints.Orders.Update.Patch;
 
 /// <summary>Medication order after a status or notes update.</summary>
 public sealed record Response(
-    int Id,
-    int ConsultId,
-    int MedicationBrandId,
+    Guid Id,
+    Guid ConsultId,
+    Guid MedicationBrandId,
     string BrandName,
     int Quantity,
     OrderStatus Status,

@@ -27,7 +27,7 @@ public sealed class DiagnosisTests(AppFixture fixture)
             ApiJson.Options
         );
         var createdBody = await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
-        var id = ClinicSetup.ReadInt(createdBody, "id");
+        var id = ClinicSetup.ReadGuid(createdBody, "id");
         var fetched = await client.GetAsync($"/diagnoses/{id}");
         var body = await fetched.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
         var listed = await client.GetAsync($"/diagnoses?consultId={consultId}");
@@ -39,7 +39,7 @@ public sealed class DiagnosisTests(AppFixture fixture)
         await Assert.That(body.GetProperty("details").GetString()).IsEqualTo("wheeze");
         await Assert.That(body.GetProperty("category").GetString()).IsEqualTo("Respiratory");
         await Assert.That(listed.StatusCode).IsEqualTo(HttpStatusCode.OK);
-        await Assert.That(items!.Any(x => ClinicSetup.ReadInt(x, "id") == id)).IsTrue();
+        await Assert.That(items!.Any(x => ClinicSetup.ReadGuid(x, "id") == id)).IsTrue();
     }
 
     [Test]
@@ -60,7 +60,7 @@ public sealed class DiagnosisTests(AppFixture fixture)
             ApiJson.Options
         );
         created.EnsureSuccessStatusCode();
-        var id = ClinicSetup.ReadInt(
+        var id = ClinicSetup.ReadGuid(
             await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
             "id"
         );
@@ -96,7 +96,7 @@ public sealed class DiagnosisTests(AppFixture fixture)
             "/diagnoses",
             new
             {
-                consultId = 99999999,
+                consultId = ClinicSetup.MissingId,
                 details = $"absent {ClinicSetup.Suffix()}",
                 category = "Respiratory",
             },
@@ -139,7 +139,7 @@ public sealed class DiagnosisTests(AppFixture fixture)
         await client.LoginAsync();
 
         // Act
-        var response = await client.GetAsync("/diagnoses/99999999");
+        var response = await client.GetAsync($"/diagnoses/{ClinicSetup.MissingId}");
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.NotFound);
@@ -163,7 +163,7 @@ public sealed class DiagnosisTests(AppFixture fixture)
             ApiJson.Options
         );
         created.EnsureSuccessStatusCode();
-        var id = ClinicSetup.ReadInt(
+        var id = ClinicSetup.ReadGuid(
             await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
             "id"
         );
@@ -176,7 +176,7 @@ public sealed class DiagnosisTests(AppFixture fixture)
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.Unauthorized);
     }
 
-    private static async Task<int> CreateConsultAsync(HttpClient client)
+    private static async Task<Guid> CreateConsultAsync(HttpClient client)
     {
         var suffix = ClinicSetup.Suffix();
         var villageId = await ClinicSetup.CreateVillageAsync(client, $"D{suffix}");

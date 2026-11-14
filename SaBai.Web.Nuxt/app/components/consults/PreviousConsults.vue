@@ -3,8 +3,23 @@
  * Read-only consults already saved for this visit (a visit can accumulate
  * several), shown alongside the form for recording a new one.
  */
-const props = defineProps<{ visitId: number }>()
-const { data: consults, isLoading } = useVisitConsults(() => props.visitId)
+const props = defineProps<{ visitId: string }>()
+const { data, isLoading } = useVisitConsults(() => props.visitId)
+
+interface LocalConsultItem {
+  id: string
+  date: string
+  doctorName?: string | null
+  pastMedicalHistory?: string | null
+  consultation?: string | null
+  treatmentPlan?: string | null
+  remarks?: string | null
+  referredFor?: string | null
+  referralNotes?: string | null
+  diagnoses: Array<{ id: string, details: string, category?: string | null }>
+}
+
+const consults = computed(() => (data.value?.consults ?? []) as unknown as LocalConsultItem[])
 
 const fields = [
   { key: 'pastMedicalHistory', label: 'Past Medical History' },
@@ -19,7 +34,7 @@ const trailing = [
 <template>
   <StateMessage v-if="isLoading" kind="loading" message="Loading previous consults..." />
   <AppPanel
-    v-else-if="consults && consults.length > 0"
+    v-else-if="consults.length > 0"
     :title="`Previous consults from this visit (${consults.length})`"
     description="Earlier notes for this visit"
     collapsible
@@ -32,8 +47,8 @@ const trailing = [
           <p class="text-xs font-semibold text-muted-foreground touch:text-sm">
             {{ formatVisitDate(consult.date) }}
           </p>
-          <p v-if="consult.doctorNickname" class="text-xs text-muted-foreground">
-            Dr. {{ consult.doctorNickname }}
+          <p v-if="consult.doctorName" class="text-xs text-muted-foreground">
+            Dr. {{ consult.doctorName }}
           </p>
         </div>
         <ConsultPdfLink :consult-id="consult.id" size="sm" />

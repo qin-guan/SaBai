@@ -1,8 +1,12 @@
 namespace SaBai.API.Domain;
 
-public sealed class MedicationActiveIngredient
+public sealed class MedicationActiveIngredient : ISyncEntity
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; } = Guid.CreateVersion7();
+
+    public int Version { get; set; } = 1;
+
+    public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
 
     public required string Name { get; set; }
 
@@ -15,13 +19,17 @@ public sealed class MedicationActiveIngredient
     public ICollection<MedicationBrand> Brands { get; set; } = [];
 }
 
-public sealed class MedicationBrand
+public sealed class MedicationBrand : ISyncEntity
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; } = Guid.CreateVersion7();
+
+    public int Version { get; set; } = 1;
+
+    public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
 
     public required string Name { get; set; }
 
-    public int ActiveIngredientId { get; set; }
+    public Guid ActiveIngredientId { get; set; }
 
     public MedicationActiveIngredient ActiveIngredient { get; set; } = null!;
 
@@ -32,11 +40,15 @@ public sealed class MedicationBrand
     public ICollection<Order> Orders { get; set; } = [];
 }
 
-public sealed class MedicationStock
+public sealed class MedicationStock : ISyncEntity
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; } = Guid.CreateVersion7();
 
-    public int MedicationBrandId { get; set; }
+    public int Version { get; set; } = 1;
+
+    public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+
+    public Guid MedicationBrandId { get; set; }
 
     public MedicationBrand MedicationBrand { get; set; } = null!;
 
@@ -53,11 +65,15 @@ public sealed class MedicationStock
     public ICollection<StockChange> Changes { get; set; } = [];
 }
 
-public sealed class StockChange
+public sealed class StockChange : ISyncEntity
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; } = Guid.CreateVersion7();
 
-    public int StockId { get; set; }
+    public int Version { get; set; } = 1;
+
+    public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+
+    public Guid StockId { get; set; }
 
     public MedicationStock Stock { get; set; } = null!;
 
@@ -76,15 +92,19 @@ public sealed class StockChange
     public ICollection<OrderItem> OrderItems { get; set; } = [];
 }
 
-public sealed class Order
+public sealed class Order : ISyncEntity
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; } = Guid.CreateVersion7();
 
-    public int ConsultId { get; set; }
+    public int Version { get; set; } = 1;
+
+    public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+
+    public Guid ConsultId { get; set; }
 
     public Consult Consult { get; set; } = null!;
 
-    public int MedicationBrandId { get; set; }
+    public Guid MedicationBrandId { get; set; }
 
     public MedicationBrand MedicationBrand { get; set; } = null!;
 
@@ -109,11 +129,11 @@ public sealed class Order
 
 public sealed class OrderItem
 {
-    public int OrderId { get; set; }
+    public Guid OrderId { get; set; }
 
     public Order Order { get; set; } = null!;
 
-    public int StockChangeId { get; set; }
+    public Guid StockChangeId { get; set; }
 
     public StockChange StockChange { get; set; } = null!;
 }

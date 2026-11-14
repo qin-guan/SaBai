@@ -88,7 +88,7 @@ public sealed class VillageUnhappyTests(AppFixture fixture)
         await client.LoginAsync();
 
         // Act
-        var response = await client.GetAsync("/village-codes/99999999");
+        var response = await client.GetAsync($"/village-codes/{ClinicSetup.MissingId}");
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.NotFound);
@@ -103,7 +103,7 @@ public sealed class VillageUnhappyTests(AppFixture fixture)
 
         // Act
         var response = await client.PatchAsJsonAsync(
-            "/village-codes/99999999",
+            $"/village-codes/{ClinicSetup.MissingId}",
             new { name = "Missing" },
             ApiJson.Options
         );
@@ -120,7 +120,7 @@ public sealed class VillageUnhappyTests(AppFixture fixture)
         await client.LoginAsync();
 
         // Act
-        var response = await client.DeleteAsync("/village-codes/99999999");
+        var response = await client.DeleteAsync($"/village-codes/{ClinicSetup.MissingId}");
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.NotFound);

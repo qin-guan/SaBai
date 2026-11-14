@@ -13,7 +13,7 @@ public sealed class BroadcastEdgeTests(AppFixture fixture)
         // Arrange
         var client = fixture.CreateApiClient();
         await client.LoginAsync();
-        var ids = new List<int>();
+        var ids = new List<Guid>();
         for (var i = 0; i < 3; i++)
         {
             var created = await client.PostAsJsonAsync(
@@ -44,7 +44,7 @@ public sealed class BroadcastEdgeTests(AppFixture fixture)
         // Assert
         await Assert.That(newestTwo!.Select(x => x.Id)).IsEquivalentTo(new[] { ids[2], ids[1] });
         await Assert.That(afterFirst!.Select(x => x.Id).Take(2)).IsEquivalentTo(new[] { ids[2], ids[1] });
-        await Assert.That(afterFirst!.All(x => x.Id > ids[0])).IsTrue();
+        await Assert.That(afterFirst!.All(x => x.Id.CompareTo(ids[0]) > 0)).IsTrue();
         await Assert.That(tooMany.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
         await Assert.That(zero.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
     }
@@ -110,7 +110,7 @@ public sealed class BroadcastEdgeTests(AppFixture fixture)
         await client.LoginAsync();
 
         // Act
-        var response = await client.PostAsync("/broadcasts/99999999/publish", null);
+        var response = await client.PostAsync($"/broadcasts/{ClinicSetup.MissingId}/publish", null);
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.NotFound);
@@ -134,7 +134,7 @@ public sealed class BroadcastEdgeTests(AppFixture fixture)
             ApiJson.Options
         );
         created.EnsureSuccessStatusCode();
-        var id = ClinicSetup.ReadInt(
+        var id = ClinicSetup.ReadGuid(
             await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
             "id"
         );
@@ -172,5 +172,5 @@ public sealed class BroadcastEdgeTests(AppFixture fixture)
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.Unauthorized);
     }
 
-    private sealed record BroadcastCreated(int Id, string? CreatedBy);
+    private sealed record BroadcastCreated(Guid Id, string? CreatedBy);
 }

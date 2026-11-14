@@ -5,34 +5,32 @@
 const KEY = 'sabai:recent-patients'
 const MAX = 8
 
-function read(): number[] {
+function read(): string[] {
   try {
     const parsed = JSON.parse(window.localStorage.getItem(KEY) ?? '[]')
-    return Array.isArray(parsed) ? parsed.filter(n => typeof n === 'number') : []
-  }
-  catch {
+    return Array.isArray(parsed) ? parsed.filter((n): n is string => typeof n === 'string') : []
+  } catch {
     return []
   }
 }
 
 export function useRecentPatients() {
-  const ids = useState<number[]>('recent-patients', () => (import.meta.client ? read() : []))
+  const ids = useState<string[]>('recent-patients', () => (import.meta.client ? read() : []))
 
-  function remember(id: number | null | undefined) {
-    if (!id)
-      return
-    ids.value = [id, ...ids.value.filter(x => x !== id)].slice(0, MAX)
+  function remember(id: string | number | null | undefined) {
+    if (!id) return
+    const strId = String(id)
+    ids.value = [strId, ...ids.value.filter(x => x !== strId)].slice(0, MAX)
     try {
       window.localStorage.setItem(KEY, JSON.stringify(ids.value))
-    }
-    catch {}
+    } catch {}
   }
 
   return { recentIds: readonly(ids), remember }
 }
 
 /** Remembers the patient whose page is open. */
-export function useRememberPatient(id: MaybeRefOrGetter<number | null>) {
+export function useRememberPatient(id: MaybeRefOrGetter<string | number | null>) {
   const { remember } = useRecentPatients()
   watch(() => toValue(id), value => remember(value), { immediate: true })
 }

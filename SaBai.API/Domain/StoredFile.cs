@@ -4,7 +4,7 @@ namespace SaBai.API.Domain;
 /// A file kept in the RustFS bucket. Patient documents, dental images and any other upload
 /// share this table; the bytes live in the bucket under <see cref="StoredFileName"/>.
 /// </summary>
-public sealed class StoredFile
+public sealed class StoredFile : ISyncEntity
 {
     public const int MaxBytes = 26_214_400;
 
@@ -19,10 +19,14 @@ public sealed class StoredFile
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     };
 
-    public int Id { get; set; }
+    public Guid Id { get; set; } = Guid.CreateVersion7();
+
+    public int Version { get; set; } = 1;
+
+    public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
 
     /// <summary>The patient the file belongs to. Null for files that are not about a patient.</summary>
-    public int? PatientId { get; set; }
+    public Guid? PatientId { get; set; }
 
     public Patient? Patient { get; set; }
 

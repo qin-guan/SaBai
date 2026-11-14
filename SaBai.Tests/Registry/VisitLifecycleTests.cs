@@ -60,7 +60,7 @@ public sealed class VisitLifecycleTests(AppFixture fixture)
             .That(
                 body.GetProperty("visits")
                     .EnumerateArray()
-                    .Any(x => ClinicSetup.ReadInt(x, "id") == visitId)
+                    .Any(x => ClinicSetup.ReadGuid(x, "id") == visitId)
             )
             .IsTrue();
     }
@@ -76,7 +76,7 @@ public sealed class VisitLifecycleTests(AppFixture fixture)
         // Act
         var response = await client.PostAsJsonAsync(
             "/visits",
-            new { patientId = 99999999, villageCodeId = villageId },
+            new { patientId = ClinicSetup.MissingId, villageCodeId = villageId },
             ApiJson.Options
         );
 
@@ -92,7 +92,7 @@ public sealed class VisitLifecycleTests(AppFixture fixture)
         await client.LoginAsync();
 
         // Act
-        var response = await client.GetAsync("/visits/99999999");
+        var response = await client.GetAsync($"/visits/{ClinicSetup.MissingId}");
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.NotFound);

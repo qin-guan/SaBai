@@ -1,6 +1,6 @@
 import type { StationKey } from "./journey";
 
-const withVisit = (path: string, visitId?: number) =>
+const withVisit = (path: string, visitId?: string | number) =>
   visitId === undefined ? path : `${path}?visit=${visitId}`;
 
 export const paths = {
@@ -8,25 +8,26 @@ export const paths = {
   login: () => "/login",
   /** The patient list; `station` filters it to who that station is waiting for. */
   patient: (station?: StationKey) => (station ? `/patient?station=${station}` : "/patient"),
-  patientDetail: (patientId: number) => `/patient/${patientId}`,
+  patientDetail: (patientId: string | number) => `/patient/${patientId}`,
   scanFace: () => "/scan-face",
   vitals: () => "/vitals",
-  vitalsDetail: (patientId: number, visitId?: number) => withVisit(`/vitals/${patientId}`, visitId),
+  vitalsDetail: (patientId: string | number, visitId?: string | number) => withVisit(`/vitals/${patientId}`, visitId),
   vision: () => "/vision",
-  visionUpdateGlasses: (patientId: number, visitId?: number) =>
+  visionUpdateGlasses: (patientId: string | number, visitId?: string | number) =>
     withVisit(`/vision/update-glasses/${patientId}`, visitId),
   dental: () => "/dental",
-  dentalDetail: (patientId: number, visitId?: number) => withVisit(`/dental/${patientId}`, visitId),
+  dentalDetail: (patientId: string | number, visitId?: string | number) => withVisit(`/dental/${patientId}`, visitId),
   consults: () => "/consults",
-  consultsDetail: (patientId: number, visitId?: number) => withVisit(`/consults/${patientId}`, visitId),
-  consultPdf: (consultId: number) => `/api/consults/${consultId}/pdf`,
+  consultsDetail: (patientId: string | number, visitId?: string | number) => withVisit(`/consults/${patientId}`, visitId),
+  consultPdf: (consultId: string | number) => `/api/consults/${consultId}/pdf`,
   referrals: () => "/referrals",
-  referralsDetail: (referralId: number) => `/referrals/${referralId}`,
+  referralsDetail: (referralId: string | number) => `/referrals/${referralId}`,
   medicationStock: () => "/medication-stock",
   medicationBrands: () => "/medication-brands",
   medicationActiveIngredients: () => "/medication-active-ingredients",
   orders: () => "/orders",
   settings: () => "/settings",
+  settingsSync: () => "/settings/sync",
   settingsNotifications: () => "/settings/notifications",
   settingsVillageCodes: () => "/settings/village-codes",
   settingsUsers: () => "/settings/users",
@@ -45,7 +46,7 @@ export const paths = {
 /** Which page a patient link opens: their record, or one station's form. */
 export type PatientLinkTarget = "patient" | StationKey;
 
-export function patientLinkFor(target: PatientLinkTarget | undefined, patientId: number, visitId?: number) {
+export function patientLinkFor(target: PatientLinkTarget | undefined, patientId: string | number, visitId?: string | number) {
   switch (target) {
     case "vitals":
       return paths.vitalsDetail(patientId, visitId);

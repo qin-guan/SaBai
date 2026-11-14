@@ -2,7 +2,7 @@ namespace SaBai.API.Domain;
 
 public sealed class Broadcast
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; } = Guid.CreateVersion7();
 
     public required string Title { get; set; }
 

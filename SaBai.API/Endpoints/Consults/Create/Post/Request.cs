@@ -5,7 +5,7 @@ namespace SaBai.API.Endpoints.Consults.Create.Post;
 /// <summary>New consult, its diagnoses, and any prescriptions to record together.</summary>
 public sealed record Request
 {
-    public int VisitId { get; init; }
+    public Guid VisitId { get; init; }
 
     public string? PastMedicalHistory { get; init; }
 
@@ -35,7 +35,7 @@ public sealed record DiagnosisInput
 /// <summary>Prescription inserted with a new consult. Status is always pending.</summary>
 public sealed record OrderInput
 {
-    public int MedicationBrandId { get; init; }
+    public Guid MedicationBrandId { get; init; }
 
     public int Quantity { get; init; }
 

@@ -1,10 +1,14 @@
 namespace SaBai.API.Domain;
 
-public sealed class Consult
+public sealed class Consult : ISyncEntity
 {
     public static readonly TimeSpan EditWindow = TimeSpan.FromHours(24);
 
-    public int Id { get; set; }
+    public Guid Id { get; set; } = Guid.CreateVersion7();
+
+    public int Version { get; set; } = 1;
+
+    public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
 
     public DateTimeOffset Date { get; set; }
 
@@ -24,7 +28,7 @@ public sealed class Consult
 
     public StaffUser Doctor { get; set; } = null!;
 
-    public int VisitId { get; set; }
+    public Guid VisitId { get; set; }
 
     public Visit Visit { get; set; } = null!;
 
@@ -37,22 +41,30 @@ public sealed class Consult
     public bool IsEditLocked(DateTimeOffset now) => now - Date > EditWindow;
 }
 
-public sealed class Diagnosis
+public sealed class Diagnosis : ISyncEntity
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; } = Guid.CreateVersion7();
+
+    public int Version { get; set; } = 1;
+
+    public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
 
     public required string Details { get; set; }
 
     public DiagnosisCategory? Category { get; set; }
 
-    public int ConsultId { get; set; }
+    public Guid ConsultId { get; set; }
 
     public Consult Consult { get; set; } = null!;
 }
 
-public sealed class Referral
+public sealed class Referral : ISyncEntity
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; } = Guid.CreateVersion7();
+
+    public int Version { get; set; } = 1;
+
+    public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
 
     public required string ReferredFor { get; set; }
 
@@ -62,7 +74,7 @@ public sealed class Referral
 
     public string? ReferralOutcome { get; set; }
 
-    public int ConsultId { get; set; }
+    public Guid ConsultId { get; set; }
 
     public Consult Consult { get; set; } = null!;
 

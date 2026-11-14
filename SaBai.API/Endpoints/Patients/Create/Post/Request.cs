@@ -25,7 +25,7 @@ public sealed record Request
 
     public bool ToGetReport { get; init; }
 
-    public int VillageCodeId { get; init; }
+    public Guid VillageCodeId { get; init; }
 
     public VitalsRequest? Vitals { get; init; }
 }

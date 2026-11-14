@@ -54,10 +54,10 @@ const matches = computed(() => search.data.value ?? [])
               • <span class="font-semibold text-foreground">{{ Math.round(match.similarity * 100) }}% match</span>
             </p>
           </div>
-          <StartVisitButton :patient-id="match.id" :name="match.name" />
+          <StartVisitButton :patient-id="String(match.id)" :name="match.name" />
         </div>
         <div class="pl-[3.75rem]">
-          <MatchVisits :patient-id="match.id" />
+          <MatchVisits :patient-id="String(match.id)" />
         </div>
       </li>
     </ol>

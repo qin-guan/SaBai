@@ -75,7 +75,7 @@ public sealed class StockTests(AppFixture fixture)
             "/medication-stock",
             new
             {
-                medicationBrandId = 99999999,
+                medicationBrandId = ClinicSetup.MissingId,
                 quantity = 1,
                 expiry = DateTimeOffset.UtcNow.AddMonths(1),
                 location,
@@ -97,7 +97,7 @@ public sealed class StockTests(AppFixture fixture)
 
         // Act
         var response = await client.PatchAsJsonAsync(
-            "/medication-stock/99999999",
+            $"/medication-stock/{ClinicSetup.MissingId}",
             new { location = $"missing-{ClinicSetup.Suffix()}" },
             ApiJson.Options
         );
@@ -244,14 +244,14 @@ public sealed class StockTests(AppFixture fixture)
         await Assert.That(listed!.Single(x => x.Id == okId).IsLowStock).IsFalse();
     }
 
-    private static async Task<int> CreateStockAsync(
+    private static async Task<Guid> CreateStockAsync(
         HttpClient client,
         string suffix,
         int quantity,
         string location
     ) => (await CreateStockWithBrandAsync(client, suffix, quantity, location)).StockId;
 
-    private static async Task<(int StockId, int BrandId)> CreateStockWithBrandAsync(
+    private static async Task<(Guid StockId, Guid BrandId)> CreateStockWithBrandAsync(
         HttpClient client,
         string suffix,
         int quantity,
@@ -269,7 +269,7 @@ public sealed class StockTests(AppFixture fixture)
             ApiJson.Options
         );
         ingredient.EnsureSuccessStatusCode();
-        var ingredientId = ClinicSetup.ReadInt(
+        var ingredientId = ClinicSetup.ReadGuid(
             await ingredient.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
             "id"
         );
@@ -284,7 +284,7 @@ public sealed class StockTests(AppFixture fixture)
             ApiJson.Options
         );
         brand.EnsureSuccessStatusCode();
-        var brandId = ClinicSetup.ReadInt(
+        var brandId = ClinicSetup.ReadGuid(
             await brand.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
             "id"
         );
@@ -301,14 +301,14 @@ public sealed class StockTests(AppFixture fixture)
             ApiJson.Options
         );
         stock.EnsureSuccessStatusCode();
-        var stockId = ClinicSetup.ReadInt(
+        var stockId = ClinicSetup.ReadGuid(
             await stock.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
             "id"
         );
         return (stockId, brandId);
     }
 
-    private static StockLot FindLot(string body, int stockId)
+    private static StockLot FindLot(string body, Guid stockId)
     {
         var stocks =
             JsonSerializer.Deserialize<List<StockLot>>(body, ApiJson.Options)
@@ -317,9 +317,9 @@ public sealed class StockTests(AppFixture fixture)
             ?? throw new InvalidOperationException($"Stock {stockId} was not listed: {body}");
     }
 
-    private sealed record StockLot(int Id, int Quantity, string Location);
+    private sealed record StockLot(Guid Id, int Quantity, string Location);
 
     private sealed record HistoryRow(string Kind, int QuantityChanged);
 
-    private sealed record LowStockRow(int Id, bool IsLowStock);
+    private sealed record LowStockRow(Guid Id, bool IsLowStock);
 }

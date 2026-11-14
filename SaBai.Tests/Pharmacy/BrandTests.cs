@@ -53,7 +53,7 @@ public sealed class BrandTests(AppFixture fixture)
             new
             {
                 name,
-                activeIngredientId = 99999999,
+                activeIngredientId = ClinicSetup.MissingId,
                 remarks = "",
             },
             ApiJson.Options
@@ -89,13 +89,13 @@ public sealed class BrandTests(AppFixture fixture)
         await client.LoginAsync(ClinicApi.PharmacistEmail);
 
         // Act
-        var response = await client.DeleteAsync("/medication-brands/99999999");
+        var response = await client.DeleteAsync($"/medication-brands/{ClinicSetup.MissingId}");
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.NotFound);
     }
 
-    private static async Task<int> CreateIngredientAsync(HttpClient client, string name)
+    private static async Task<Guid> CreateIngredientAsync(HttpClient client, string name)
     {
         var response = await client.PostAsJsonAsync(
             "/medication-ingredients",
@@ -108,16 +108,16 @@ public sealed class BrandTests(AppFixture fixture)
             ApiJson.Options
         );
         response.EnsureSuccessStatusCode();
-        return ClinicSetup.ReadInt(
+        return ClinicSetup.ReadGuid(
             await response.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
             "id"
         );
     }
 
-    private static async Task<int> CreateBrandAsync(
+    private static async Task<Guid> CreateBrandAsync(
         HttpClient client,
         string name,
-        int ingredientId
+        Guid ingredientId
     )
     {
         var response = await client.PostAsJsonAsync(
@@ -131,13 +131,13 @@ public sealed class BrandTests(AppFixture fixture)
             ApiJson.Options
         );
         response.EnsureSuccessStatusCode();
-        return ClinicSetup.ReadInt(
+        return ClinicSetup.ReadGuid(
             await response.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
             "id"
         );
     }
 
-    private static async Task CreateStockAsync(HttpClient client, int brandId, string location)
+    private static async Task CreateStockAsync(HttpClient client, Guid brandId, string location)
     {
         var response = await client.PostAsJsonAsync(
             "/medication-stock",

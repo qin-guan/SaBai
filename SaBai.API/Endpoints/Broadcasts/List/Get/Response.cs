@@ -4,7 +4,7 @@ namespace SaBai.API.Endpoints.Broadcasts.List.Get;
 
 /// <summary>Clinic broadcast, newest first.</summary>
 public sealed record Response(
-    int Id,
+    Guid Id,
     string Title,
     string Body,
     BroadcastSeverity Severity,

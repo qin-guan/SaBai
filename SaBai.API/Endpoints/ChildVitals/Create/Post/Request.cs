@@ -3,7 +3,7 @@ namespace SaBai.API.Endpoints.ChildVitals.Create.Post;
 /// <summary>Child vitals to record against a vitals record.</summary>
 public sealed record Request
 {
-    public int VitalsId { get; init; }
+    public Guid VitalsId { get; init; }
 
     public string? GrossMotor { get; init; }
 

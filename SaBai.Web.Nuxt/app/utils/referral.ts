@@ -1,12 +1,10 @@
 import type { Option } from './options'
 import { cleanKhmerText, matchesSearchText } from './khmer'
 import { formatPatientCode } from './patient'
-import type {
-  SaBaiAPIDomainReferralStateKey,
-  SaBaiAPIEndpointsReferralsListGetResponse,
-} from '@sabai/sdk/types'
+import type { SaBaiAPIDomainReferralStateKey } from '@sabai/sdk/types'
+import type { LocalReferralItem } from '~/composables/useReferrals'
 
-export type ReferralListItem = SaBaiAPIEndpointsReferralsListGetResponse
+export type ReferralListItem = LocalReferralItem
 
 /**
  * Natural lifecycle order of referral states.
@@ -76,7 +74,7 @@ export function referralStateBadgeClass(state: SaBaiAPIDomainReferralStateKey): 
 
 export interface ReferralFilterOptions {
   search?: string
-  villageCodeId?: number | null
+  villageCodeId?: string | null
   referralState?: SaBaiAPIDomainReferralStateKey | null
 }
 
@@ -95,12 +93,11 @@ export function matchesReferral(item: ReferralListItem, filters: ReferralFilterO
   if (!needle)
     return true
 
-  const patientCode = formatPatientCode(item.villageCode, item.patientId)
   const targets = [
     item.patientName,
-    patientCode,
+    item.patientDisplayId,
     String(item.patientId),
-    item.villageCode,
+    item.villageCode ?? '',
     item.referredFor,
     item.referralNotes ?? '',
     item.referralOutcome ?? '',

@@ -1,8 +1,10 @@
 namespace SaBai.API.Domain;
 
-public sealed class VillageCode
+public sealed class VillageCode : ISyncEntity
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; } = Guid.CreateVersion7();
+
+    public int Version { get; set; } = 1;
 
     public required string Code { get; set; }
 

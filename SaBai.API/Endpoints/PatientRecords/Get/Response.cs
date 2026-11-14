@@ -13,7 +13,7 @@ public sealed record Response(
 
 /// <summary>Patient identity shown on a visit chart.</summary>
 public sealed record PatientItem(
-    int Id,
+    Guid Id,
     string Name,
     string? IdentificationNumber,
     string? ContactNo,
@@ -24,18 +24,18 @@ public sealed record PatientItem(
     bool HasBS2Card,
     bool HasSabaiCard,
     bool ToGetReport,
-    int? VillageCodeId,
+    Guid? VillageCodeId,
     string? VillageCode,
     string DisplayId,
     string FilterString,
     DateTimeOffset? LastVisitDate,
-    int? LastVisitId
+    Guid? LastVisitId
 );
 
 /// <summary>Vitals recorded for the visit, or null when none exist.</summary>
 public sealed record VitalsItem(
-    int Id,
-    int VisitId,
+    Guid Id,
+    Guid VisitId,
     decimal? Height,
     decimal? Weight,
     decimal? Temperature,
@@ -53,7 +53,7 @@ public sealed record VitalsItem(
 
 /// <summary>Consult summary for the records list.</summary>
 public sealed record ConsultItem(
-    int Id,
+    Guid Id,
     DateTimeOffset Date,
     string DoctorNickname,
     string? ReferredFor
@@ -61,7 +61,7 @@ public sealed record ConsultItem(
 
 /// <summary>Prescription on a consult of this visit. Notes are the order remarks.</summary>
 public sealed record PrescriptionItem(
-    int ConsultId,
+    Guid ConsultId,
     DateTimeOffset VisitDate,
     string MedicationName,
     int Quantity,

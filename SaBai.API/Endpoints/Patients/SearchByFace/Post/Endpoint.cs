@@ -43,7 +43,7 @@ public sealed class Endpoint(
         var faces = await analyzer.AnalyzeAsync(image!, ct);
 
         // Best similarity per patient across every detected face.
-        var best = new Dictionary<int, float>();
+        var best = new Dictionary<Guid, float>();
         foreach (var face in faces)
         {
             var matches = await store.SearchAsync(face.Embedding, threshold, req.MaxMatches, ct);
@@ -72,6 +72,7 @@ public sealed class Endpoint(
             .Select(x => new
             {
                 x.Id,
+                x.Number,
                 x.Name,
                 x.PhotoStoredFileName,
                 VillageCode = x.VillageCode != null ? x.VillageCode.Code : null,
@@ -82,7 +83,7 @@ public sealed class Endpoint(
         var results = rows.Select(x => new PatientFaceMatch(
                 x.Id,
                 x.Name,
-                Patient.FormatDisplayId(x.VillageCode, x.Id),
+                Patient.FormatDisplayId(x.VillageCode, x.Number),
                 x.VillageCode,
                 x.VillageColorHex,
                 x.PhotoStoredFileName != null,

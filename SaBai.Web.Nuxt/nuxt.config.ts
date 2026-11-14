@@ -19,6 +19,9 @@ export default defineNuxtConfig({
     // browser cannot reach. The browser calls this server under /api and
     // server/api/[...path].ts proxies to it. Override with NUXT_API_URL.
     apiUrl: 'http://localhost:5250',
+    // Server-only URL of the PowerSync Service, proxied under /powersync.
+    // Override with NUXT_POWERSYNC_URL.
+    powersyncUrl: 'http://localhost:8089',
   },
   app: {
     head: {
@@ -37,18 +40,17 @@ export default defineNuxtConfig({
       ],
     },
   },
-  // Installable app (PWA). It exists so notifications can reach installed
-  // copies on phones and desktops: iOS only delivers Web Push to an app added
-  // to the Home Screen, and every platform needs the service worker below.
+  // Installable offline-first PWA: precaches the app shell & WASM SQLite runtime,
+  // while PowerSync handles clinical data replication and offline writes.
   pwa: {
-    // Our own worker (app/service-worker/sw.ts) handles push messages.
     strategies: 'injectManifest',
     srcDir: 'service-worker',
     filename: 'sw.ts',
-    registerType: 'autoUpdate',
-    // No offline cache: every screen needs the API and a stale app shell is a
-    // risk in a clinic, so the worker is not given a precache list.
-    injectManifest: { injectionPoint: undefined },
+    registerType: 'prompt',
+    injectManifest: {
+      globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,wasm}'],
+      maximumFileSizeToCacheInBytes: 15 * 1024 * 1024,
+    },
     manifest: {
       id: '/',
       name: "Sa'Bai",
@@ -66,7 +68,7 @@ export default defineNuxtConfig({
         { src: '/pwa-maskable-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
       ],
     },
-    // Run the worker under `pnpm dev` too, so notifications can be developed locally.
+    // Run the worker under `pnpm dev` too, so notifications and offline shell can be tested locally.
     devOptions: { enabled: true, type: 'module' },
   },
   fonts: {
@@ -86,6 +88,12 @@ export default defineNuxtConfig({
     plugins: [
       tailwindcss(),
     ],
+    optimizeDeps: {
+      exclude: ['@journeyapps/wa-sqlite', '@powersync/web'],
+    },
+    worker: {
+      format: 'es',
+    },
   },
   shadcn: {
     /**

@@ -138,7 +138,7 @@ public sealed class Endpoint(AppDbContext db, IAmazonS3 s3, RustFsSettings stora
     }
 
     private async Task<(
-        int PatientId,
+        Guid PatientId,
         IReadOnlyList<IFormFile> Files,
         IReadOnlyList<string> Descriptions
     )> ReadFormAsync(Request req, CancellationToken ct)
@@ -150,10 +150,10 @@ public sealed class Endpoint(AppDbContext db, IAmazonS3 s3, RustFsSettings stora
 
         var form = await HttpContext.Request.ReadFormAsync(ct);
         var patientId = req.PatientId;
-        if (patientId <= 0)
+        if (patientId == Guid.Empty)
         {
             var rawPatientId = FirstValue(form, "patientId", "PatientId");
-            if (int.TryParse(rawPatientId, out var parsed))
+            if (Guid.TryParse(rawPatientId, out var parsed))
             {
                 patientId = parsed;
             }

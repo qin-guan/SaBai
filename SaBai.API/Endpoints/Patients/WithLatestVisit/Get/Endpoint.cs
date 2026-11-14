@@ -26,6 +26,7 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<Response>
             .Select(x => new
             {
                 x.Id,
+                x.Number,
                 x.Name,
                 x.IdentificationNumber,
                 x.ContactNo,
@@ -73,10 +74,10 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<Response>
                 x.Row.VillageCodeId,
                 x.Row.VillageCode,
                 x.Row.VillageColorHex,
-                Patient.FormatDisplayId(x.Row.VillageCode, x.Row.Id),
+                Patient.FormatDisplayId(x.Row.VillageCode, x.Row.Number),
                 Patient.FormatFilterString(
                     x.Row.VillageCode,
-                    x.Row.Id,
+                    x.Row.Number,
                     x.Row.ContactNo,
                     x.Row.Name
                 ),
@@ -91,8 +92,8 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<Response>
         await Send.OkAsync(new Response(patients), ct);
     }
 
-    private async Task<Dictionary<int, LatestVisit>> LatestVisitsAsync(
-        int[] patientIds,
+    private async Task<Dictionary<Guid, LatestVisit>> LatestVisitsAsync(
+        Guid[] patientIds,
         CancellationToken ct
     )
     {
@@ -115,5 +116,5 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<Response>
             );
     }
 
-    private sealed record LatestVisit(int Id, int PatientId, DateTimeOffset Date);
+    private sealed record LatestVisit(Guid Id, Guid PatientId, DateTimeOffset Date);
 }

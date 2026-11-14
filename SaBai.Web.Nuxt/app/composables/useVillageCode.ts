@@ -1,50 +1,73 @@
-import { useQuery } from "@tanstack/vue-query";
-import { saBaiAPIEndpointsVillageCodesListGetEndpoint } from "@sabai/sdk/clients";
-import type { SaBaiAPIEndpointsVillageCodesListGetItem } from "@sabai/sdk/types";
+import type { MaybeRefOrGetter } from 'vue'
+import type { LocalVillageCode } from '~/db/types'
 
-export type VillageCode = SaBaiAPIEndpointsVillageCodesListGetItem;
+export type VillageCode = LocalVillageCode
 
-const STORAGE_KEY = "villageCodeState";
+const STORAGE_KEY = 'villageCodeState'
 
-function readStoredVillageId(): number | null {
+function readStoredVillageId(): string | null {
   try {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    if (!stored) return null;
-    const parsed = JSON.parse(stored) as { selectedVillageCodeId?: number | null };
-    return parsed.selectedVillageCodeId ?? null;
+    const stored = window.localStorage.getItem(STORAGE_KEY)
+    if (!stored) return null
+    const parsed = JSON.parse(stored) as { selectedVillageCodeId?: string | number | null }
+    return typeof parsed.selectedVillageCodeId === 'string' ? parsed.selectedVillageCodeId : null
   } catch {
-    return null;
+    return null
   }
 }
 
 export function useVillageCodesList(includeHidden: MaybeRefOrGetter<boolean>) {
-  return useQuery({
-    queryKey: computed(() => queryKeys.villageCodesList(toValue(includeHidden))),
-    queryFn: ({ signal }) =>
-      saBaiAPIEndpointsVillageCodesListGetEndpoint({
-        ...apiConfig,
-        query: { includeHidden: toValue(includeHidden) },
-        signal,
-      }).unwrap(),
-  });
+  const query = useLocalQuery<{ villageCodes: LocalVillageCode[] }>(
+    ['village_codes'],
+    async () => {
+      const db = getPowerSyncInstance()
+      const showAll = toValue(includeHidden)
+      const rows = await db.getAll<{
+        id: string
+        version: number
+        code: string
+        name: string
+        color_hex: string
+        is_visible: number
+        created_at: string
+      }>(
+        showAll
+          ? 'SELECT id, version, code, name, color_hex, is_visible, created_at FROM village_codes ORDER BY code ASC'
+          : 'SELECT id, version, code, name, color_hex, is_visible, created_at FROM village_codes WHERE is_visible = 1 ORDER BY code ASC',
+      )
+      return {
+        villageCodes: rows.map(r => ({
+          id: r.id,
+          version: Number(r.version ?? 1),
+          code: r.code,
+          name: r.name,
+          colorHex: r.color_hex ?? '#1f3a5f',
+          isVisible: Boolean(r.is_visible),
+          createdAt: r.created_at,
+        })),
+      }
+    },
+    { watchDeps: [() => toValue(includeHidden)] },
+  )
+  return query
 }
 
 /**
  * The village new patients and visits are recorded against. Persisted in
- * localStorage (same key and shape as SaBai.Web) so it survives reloads.
+ * localStorage so it survives reloads and offline restarts.
  */
 export function useVillageCode() {
-  const selectedVillageCodeId = useState<number | null>("selected-village", () =>
+  const selectedVillageCodeId = useState<string | null>('selected-village', () =>
     import.meta.client ? readStoredVillageId() : null,
-  );
+  )
 
-  const query = useVillageCodesList(false);
-  const villageCodes = computed(() => query.data.value?.villageCodes);
+  const query = useVillageCodesList(false)
+  const villageCodes = computed(() => query.data.value?.villageCodes)
 
-  function setSelectedVillageCodeId(id: number | null) {
-    selectedVillageCodeId.value = id;
+  function setSelectedVillageCodeId(id: string | null) {
+    selectedVillageCodeId.value = id
     try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ selectedVillageCodeId: id }));
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ selectedVillageCodeId: id }))
     } catch {
       // Storage unavailable (private mode); selection still works for this session.
     }
@@ -54,16 +77,16 @@ export function useVillageCode() {
   watch(
     [villageCodes, selectedVillageCodeId],
     ([codes, selected]) => {
-      if (codes && selected !== null && !codes.some((v) => v.id === selected)) {
-        setSelectedVillageCodeId(null);
+      if (codes && selected !== null && !codes.some(v => v.id === selected)) {
+        setSelectedVillageCodeId(null)
       }
     },
     { immediate: true },
-  );
+  )
 
   const selectedVillage = computed(() =>
-    villageCodes.value?.find((v) => v.id === selectedVillageCodeId.value),
-  );
+    villageCodes.value?.find(v => v.id === selectedVillageCodeId.value),
+  )
 
   return {
     selectedVillageCodeId: readonly(selectedVillageCodeId),
@@ -72,5 +95,5 @@ export function useVillageCode() {
     villageCodes,
     isLoading: query.isLoading,
     isError: query.isError,
-  };
+  }
 }

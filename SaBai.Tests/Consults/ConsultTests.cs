@@ -253,7 +253,7 @@ public sealed class ConsultTests(AppFixture fixture)
         await Assert.That(header).IsEqualTo("%PDF");
     }
 
-    private static async Task<int> CreateVisitAsync(HttpClient client)
+    private static async Task<Guid> CreateVisitAsync(HttpClient client)
     {
         var suffix = Guid.NewGuid().ToString("N")[..8];
         var village = await client.PostAsJsonAsync(
@@ -289,7 +289,7 @@ public sealed class ConsultTests(AppFixture fixture)
         return await ReadVisitIdAsync(patient);
     }
 
-    private static async Task<int> CreateConsultAsync(HttpClient client, int visitId)
+    private static async Task<Guid> CreateConsultAsync(HttpClient client, Guid visitId)
     {
         var response = await client.PostAsJsonAsync(
             "/consults",
@@ -308,7 +308,7 @@ public sealed class ConsultTests(AppFixture fixture)
         return await ReadRootIdAsync(response, "id");
     }
 
-    private static async Task<int> ReadRootIdAsync(HttpResponseMessage response, string name)
+    private static async Task<Guid> ReadRootIdAsync(HttpResponseMessage response, string name)
     {
         var body = await response.Content.ReadAsStringAsync();
         if (!response.IsSuccessStatusCode)
@@ -325,7 +325,7 @@ public sealed class ConsultTests(AppFixture fixture)
         }
 
         var last = response.Headers.Location?.Segments.LastOrDefault()?.Trim('/');
-        if (int.TryParse(last, out id))
+        if (Guid.TryParse(last, out id))
         {
             return id;
         }
@@ -333,7 +333,7 @@ public sealed class ConsultTests(AppFixture fixture)
         throw new InvalidOperationException($"Response did not include {name}: {body}");
     }
 
-    private static async Task<int> ReadVisitIdAsync(HttpResponseMessage response)
+    private static async Task<Guid> ReadVisitIdAsync(HttpResponseMessage response)
     {
         var body = await response.Content.ReadAsStringAsync();
         if (!response.IsSuccessStatusCode)
@@ -344,7 +344,7 @@ public sealed class ConsultTests(AppFixture fixture)
         }
 
         using var document = JsonDocument.Parse(body);
-        if (TryFindInt(document.RootElement, "visitId", out var visitId))
+        if (TryFindGuid(document.RootElement, "visitId", out var visitId))
         {
             return visitId;
         }
@@ -361,7 +361,7 @@ public sealed class ConsultTests(AppFixture fixture)
         throw new InvalidOperationException($"POST /patients did not return visitId: {body}");
     }
 
-    private static bool TryReadProperty(JsonElement element, string name, out int value)
+    private static bool TryReadProperty(JsonElement element, string name, out Guid value)
     {
         if (element.ValueKind == JsonValueKind.Object)
         {
@@ -369,7 +369,7 @@ public sealed class ConsultTests(AppFixture fixture)
             {
                 if (
                     property.Name.Equals(name, StringComparison.OrdinalIgnoreCase)
-                    && property.Value.TryGetInt32(out value)
+                    && property.Value.TryGetGuid(out value)
                 )
                 {
                     return true;
@@ -377,11 +377,11 @@ public sealed class ConsultTests(AppFixture fixture)
             }
         }
 
-        value = 0;
+        value = Guid.Empty;
         return false;
     }
 
-    private static bool TryFindInt(JsonElement element, string name, out int value)
+    private static bool TryFindGuid(JsonElement element, string name, out Guid value)
     {
         if (TryReadProperty(element, name, out value))
         {
@@ -393,7 +393,7 @@ public sealed class ConsultTests(AppFixture fixture)
             case JsonValueKind.Object:
                 foreach (var property in element.EnumerateObject())
                 {
-                    if (TryFindInt(property.Value, name, out value))
+                    if (TryFindGuid(property.Value, name, out value))
                     {
                         return true;
                     }
@@ -403,7 +403,7 @@ public sealed class ConsultTests(AppFixture fixture)
             case JsonValueKind.Array:
                 foreach (var item in element.EnumerateArray())
                 {
-                    if (TryFindInt(item, name, out value))
+                    if (TryFindGuid(item, name, out value))
                     {
                         return true;
                     }
@@ -412,7 +412,7 @@ public sealed class ConsultTests(AppFixture fixture)
                 break;
         }
 
-        value = 0;
+        value = Guid.Empty;
         return false;
     }
 

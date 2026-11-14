@@ -3,7 +3,7 @@ namespace SaBai.API.Endpoints.ChildVitals.UpdateByVitals.Patch;
 /// <summary>Partial child vitals update for a vitals record. Omitted fields are left unchanged, and the vitals record cannot be changed.</summary>
 public sealed record Request
 {
-    public int VitalsId { get; init; }
+    public Guid VitalsId { get; init; }
 
     public string? GrossMotor { get; init; }
 

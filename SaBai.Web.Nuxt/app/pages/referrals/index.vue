@@ -17,7 +17,7 @@ const selectedStatus = ref<string>('')
 
 const filterOptions = computed(() => ({
   search: search.value,
-  villageCodeId: selectedVillageId.value ? Number(selectedVillageId.value) : null,
+  villageCodeId: selectedVillageId.value || null,
   referralState: selectedStatus.value ? (selectedStatus.value as SaBaiAPIDomainReferralStateKey) : null,
 }))
 
@@ -266,7 +266,7 @@ function clearFilters() {
                     <span
                       class="size-2.5 shrink-0 border border-border/40"
                       :style="{ backgroundColor: referral.villageColorHex }"
-                      :title="referral.villageCode"
+                      :title="referral.villageCode ?? undefined"
                       aria-hidden="true"
                     />
                     <NuxtLink

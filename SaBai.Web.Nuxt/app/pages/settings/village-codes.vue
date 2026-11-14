@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { PhPencilSimple, PhPlus, PhTrash } from '@phosphor-icons/vue'
-import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { toast } from 'vue-sonner'
-import { saBaiAPIEndpointsVillageCodesDeleteDeleteEndpoint } from '@sabai/sdk/clients'
+import type { LocalVillageCode } from '~/db/types'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -16,13 +15,13 @@ const { data, isLoading } = useVillageCodesList(showHidden)
 const codes = computed(() => data.value?.villageCodes ?? [])
 
 const mode = ref<'editing' | 'deleting' | null>(null)
-const active = ref<VillageCode | null>(null)
+const active = ref<LocalVillageCode | null>(null)
 
-function openEdit(code: VillageCode | null) {
+function openEdit(code: LocalVillageCode | null) {
   active.value = code
   mode.value = 'editing'
 }
-function openDelete(code: VillageCode) {
+function openDelete(code: LocalVillageCode) {
   active.value = code
   mode.value = 'deleting'
 }
@@ -31,20 +30,34 @@ function close() {
   active.value = null
 }
 
-const queryClient = useQueryClient()
-const remove = useMutation({
-  mutationFn: (id: number) =>
-    saBaiAPIEndpointsVillageCodesDeleteDeleteEndpoint({ ...apiConfig, path: { id }, throwOnError: true }).unwrap(),
-  onSuccess: () => {
-    queryClient.invalidateQueries({ queryKey: queryKeys.villageCodes() })
+const isDeleting = ref(false)
+async function deleteVillageCode(id: string) {
+  if (isDeleting.value)
+    return
+  isDeleting.value = true
+  try {
+    const db = getPowerSyncInstance()
+    const visitRow = await db.getOptional<{ c: number }>(
+      'SELECT COUNT(*) AS c FROM visits WHERE village_code_id = ?',
+      [id],
+    )
+    if (Number(visitRow?.c ?? 0) > 0) {
+      toast.error('Unable to delete village code. There are visits associated with this village code.')
+      return
+    }
+    await db.execute('DELETE FROM village_codes WHERE id = ?', [id])
+    await refreshPendingCrudCount()
     toast.success('Village code deleted!')
     close()
-  },
-  onError: (err) => {
+  }
+  catch (err) {
     console.error(err)
-    toast.error(getApiErrorMessage(err, 'Unable to delete village code. Check that there are no visits with this village code before deleting.'))
-  },
-})
+    toast.error('Unable to delete village code. Check that there are no visits with this village code before deleting.')
+  }
+  finally {
+    isDeleting.value = false
+  }
+}
 </script>
 
 <template>
@@ -121,8 +134,8 @@ const remove = useMutation({
         <Button variant="outline" @click="close">
           Cancel
         </Button>
-        <Button variant="destructive" :disabled="remove.isPending.value" @click="remove.mutate(active.id)">
-          <PhTrash aria-hidden="true" /> {{ remove.isPending.value ? 'Deleting...' : 'Confirm' }}
+        <Button variant="destructive" :disabled="isDeleting" @click="deleteVillageCode(active.id)">
+          <PhTrash aria-hidden="true" /> {{ isDeleting ? 'Deleting...' : 'Confirm' }}
         </Button>
       </template>
     </AppDialog>

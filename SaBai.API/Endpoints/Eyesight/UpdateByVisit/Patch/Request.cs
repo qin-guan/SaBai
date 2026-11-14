@@ -3,7 +3,7 @@ namespace SaBai.API.Endpoints.Eyesight.UpdateByVisit.Patch;
 /// <summary>Partial eyesight update for a visit. Omitted readings are left unchanged, and the visit cannot be changed.</summary>
 public sealed record Request
 {
-    public int VisitId { get; init; }
+    public Guid VisitId { get; init; }
 
     public string? LeftEyeDegree { get; init; }
 

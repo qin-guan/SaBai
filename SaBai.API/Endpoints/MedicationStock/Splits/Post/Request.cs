@@ -17,7 +17,7 @@ public sealed record SplitItem
 /// <summary>Split a parent stock lot into two to ten distinct children.</summary>
 public sealed record Request
 {
-    public int Id { get; init; }
+    public Guid Id { get; init; }
 
     public List<SplitItem> Splits { get; init; } = [];
 }

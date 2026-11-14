@@ -7,7 +7,7 @@ public sealed class Validator : Validator<Request>
 {
     public Validator()
     {
-        RuleFor(x => x.VisitId).GreaterThan(0);
+        RuleFor(x => x.VisitId).NotEmpty();
         RuleFor(x => x.Diagnoses).NotEmpty();
         RuleForEach(x => x.Diagnoses)
             .ChildRules(diagnosis =>
@@ -17,7 +17,7 @@ public sealed class Validator : Validator<Request>
         RuleForEach(x => x.Orders)
             .ChildRules(order =>
             {
-                order.RuleFor(x => x.MedicationBrandId).GreaterThan(0);
+                order.RuleFor(x => x.MedicationBrandId).NotEmpty();
                 order.RuleFor(x => x.Quantity).GreaterThan(0);
             });
     }

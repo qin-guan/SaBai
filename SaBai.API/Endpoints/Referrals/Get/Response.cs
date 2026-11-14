@@ -6,19 +6,19 @@ namespace SaBai.API.Endpoints.Referrals.Get;
 /// Referral with consult, doctor nickname, patient, and the village of the visit it was made at.
 /// </summary>
 public sealed record Response(
-    int Id,
+    Guid Id,
     string ReferredFor,
     string? ReferralNotes,
     ReferralState ReferralState,
     string? ReferralOutcome,
-    int ConsultId,
+    Guid ConsultId,
     DateTimeOffset CreatedAt,
     DateTimeOffset ConsultDate,
     Guid DoctorId,
-    int PatientId,
+    Guid PatientId,
     string PatientName,
     bool HasPhoto,
-    int VillageCodeId,
+    Guid VillageCodeId,
     string VillageCode,
     string VillageColorHex,
     string DoctorNickname

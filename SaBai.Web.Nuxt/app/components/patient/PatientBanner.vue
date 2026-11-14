@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SaBaiAPIEndpointsPatientsGetResponse } from '@sabai/sdk/types'
+import type { LocalPatientSummary } from '~/db/types'
 
 /**
  * Patient banner ("storyboard"): who you are charting on, always at the top of
@@ -7,7 +7,7 @@ import type { SaBaiAPIEndpointsPatientsGetResponse } from '@sabai/sdk/types'
  * flagged in red.
  */
 const props = defineProps<{
-  patient: SaBaiAPIEndpointsPatientsGetResponse
+  patient: LocalPatientSummary
   /** Link the name here (the patient record, from station screens). */
   to?: string
 }>()
@@ -41,7 +41,7 @@ const cards = computed(() =>
             ID
           </dt>
           <dd class="font-mono font-semibold">
-            {{ formatPatientCode(props.patient.villageCode, props.patient.id) }}
+            {{ props.patient.displayId }}
           </dd>
         </div>
         <div class="flex gap-1">

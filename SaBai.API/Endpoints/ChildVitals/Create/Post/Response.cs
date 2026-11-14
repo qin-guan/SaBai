@@ -2,8 +2,8 @@ namespace SaBai.API.Endpoints.ChildVitals.Create.Post;
 
 /// <summary>Child vitals recorded against a vitals record.</summary>
 public sealed record Response(
-    int Id,
-    int VitalsId,
+    Guid Id,
+    Guid VitalsId,
     string? GrossMotor,
     string? RedReflex,
     string? Scoliosis,

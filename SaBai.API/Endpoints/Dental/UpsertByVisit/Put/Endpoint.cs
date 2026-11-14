@@ -24,7 +24,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, DentalConsultR
             .Visits.AsNoTracking()
             .FirstOrNotFoundAsync(x => x.Id == req.VisitId, "Visit was not found.", ct);
 
-        if (req.ImageFileId is int imageFileId)
+        if (req.ImageFileId is Guid imageFileId)
         {
             var file = await db
                 .Files.AsNoTracking()

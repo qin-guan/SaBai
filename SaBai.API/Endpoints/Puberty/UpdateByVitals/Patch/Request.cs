@@ -3,7 +3,7 @@ namespace SaBai.API.Endpoints.Puberty.UpdateByVitals.Patch;
 /// <summary>Partial puberty update for a vitals record. Omitted fields are left unchanged, and the vitals record cannot be changed.</summary>
 public sealed record Request
 {
-    public int VitalsId { get; init; }
+    public Guid VitalsId { get; init; }
 
     public bool? Pubarche { get; init; }
 

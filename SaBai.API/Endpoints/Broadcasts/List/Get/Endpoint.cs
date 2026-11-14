@@ -17,9 +17,9 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, List<Response>
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
         var query = db.Broadcasts.AsNoTracking().AsQueryable();
-        if (req.Since is int since)
+        if (req.Since is Guid since)
         {
-            query = query.Where(x => x.Id > since);
+            query = query.Where(x => x.Id.CompareTo(since) > 0);
         }
 
         var broadcasts = await query

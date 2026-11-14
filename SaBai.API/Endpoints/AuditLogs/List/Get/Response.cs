@@ -4,10 +4,10 @@ namespace SaBai.API.Endpoints.AuditLogs.List.Get;
 
 /// <summary>A page of audit entries, newest first.</summary>
 /// <param name="NextBefore">Pass as <c>before</c> to get the next (older) page; null on the last page.</param>
-public sealed record Response(IReadOnlyList<AuditLogEntryResponse> Entries, int? NextBefore);
+public sealed record Response(IReadOnlyList<AuditLogEntryResponse> Entries, Guid? NextBefore);
 
 public sealed record AuditLogEntryResponse(
-    int Id,
+    Guid Id,
     DateTimeOffset OccurredAt,
     AuditAction Action,
     Guid? UserId,

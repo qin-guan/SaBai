@@ -3,12 +3,12 @@
  * Existing visits for a face match, each with its journey; every step tile
  * opens that station for the visit.
  */
-const props = defineProps<{ patientId: number }>()
+const props = defineProps<{ patientId: string }>()
 const { data, isLoading } = usePatientVisits(() => props.patientId)
 // Most recent first; numbered oldest = #1 so the newest carries the highest number.
 const visits = computed(() =>
   [...(data.value?.visits ?? [])].sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime() || b.id - a.id,
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime() || b.id.localeCompare(a.id),
   ),
 )
 </script>

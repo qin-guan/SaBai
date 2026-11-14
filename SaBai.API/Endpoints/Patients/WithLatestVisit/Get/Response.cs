@@ -7,7 +7,7 @@ public sealed record Response(IReadOnlyList<Item> Patients);
 
 /// <summary>A patient row including village color, latest visit and where that visit is in the clinic flow.</summary>
 public sealed record Item(
-    int Id,
+    Guid Id,
     string Name,
     string? IdentificationNumber,
     string? ContactNo,
@@ -18,13 +18,13 @@ public sealed record Item(
     bool HasBS2Card,
     bool HasSabaiCard,
     bool ToGetReport,
-    int? VillageCodeId,
+    Guid? VillageCodeId,
     string? VillageCode,
     string? VillageColorHex,
     string DisplayId,
     string FilterString,
     DateTimeOffset? LastVisitDate,
-    int? LastVisitId,
+    Guid? LastVisitId,
     bool HasPhoto,
     bool HasFace,
     VisitJourney? LastVisitJourney

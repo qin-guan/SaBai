@@ -50,7 +50,7 @@ public sealed class BroadcastTests(AppFixture fixture)
     }
 
     private sealed record BroadcastDto(
-        int Id,
+        Guid Id,
         string Title,
         string? CreatedBy,
         DateTimeOffset? PublishedAt

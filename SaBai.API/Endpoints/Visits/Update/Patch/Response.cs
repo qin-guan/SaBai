@@ -2,11 +2,11 @@ namespace SaBai.API.Endpoints.Visits.Update.Patch;
 
 /// <summary>A visit after a partial update.</summary>
 public sealed record Response(
-    int Id,
+    Guid Id,
     DateTimeOffset Date,
-    int PatientId,
+    Guid PatientId,
     string PatientName,
-    int VillageCodeId,
+    Guid VillageCodeId,
     string VillageCode,
     string VillageName,
     string VillageColorHex,

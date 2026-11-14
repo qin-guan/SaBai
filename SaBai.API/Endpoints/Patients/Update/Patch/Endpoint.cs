@@ -90,7 +90,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             patient.ToGetReport = toGetReport;
         }
 
-        if (req.VillageCodeId is int villageCodeId)
+        if (req.VillageCodeId is Guid villageCodeId)
         {
             await db
                 .VillageCodes.AsNoTracking()
@@ -106,7 +106,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
         await Send.OkAsync(await LoadAsync(patient.Id, ct), ct);
     }
 
-    private async Task<Response> LoadAsync(int id, CancellationToken ct)
+    private async Task<Response> LoadAsync(Guid id, CancellationToken ct)
     {
         await db
             .Patients.AsNoTracking()
@@ -117,6 +117,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             .Select(x => new
             {
                 x.Id,
+                x.Number,
                 x.Name,
                 x.IdentificationNumber,
                 x.ContactNo,
@@ -155,8 +156,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             row.ToGetReport,
             row.VillageCodeId,
             row.VillageCode,
-            Patient.FormatDisplayId(row.VillageCode, row.Id),
-            Patient.FormatFilterString(row.VillageCode, row.Id, row.ContactNo, row.Name),
+            Patient.FormatDisplayId(row.VillageCode, row.Number),
+            Patient.FormatFilterString(row.VillageCode, row.Number, row.ContactNo, row.Name),
             lastVisit?.Date,
             lastVisit?.Id,
             row.PhotoStoredFileName != null,

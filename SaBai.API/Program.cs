@@ -60,6 +60,8 @@ builder
     // The request URL is the device's push address; keep it out of the logs.
     .RemoveAllLoggers();
 builder.Services.AddScoped<PushNotifier>();
+builder.Services.AddSingleton<SaBai.API.Sync.SyncTokenService>();
+builder.Services.AddScoped<SaBai.API.Sync.SyncUploadProcessor>();
 
 builder.Services.AddSingleton(sp => RustFsS3.Read(sp.GetRequiredService<IConfiguration>()));
 builder.Services.AddSingleton<Amazon.S3.IAmazonS3>(sp =>
@@ -177,6 +179,7 @@ if (pendingMigrations.Any())
 }
 
 await AuthSeeder.EnsureAsync(scope.ServiceProvider, auth, app.Logger);
+await SaBai.API.Sync.PowerSyncPublication.EnsureAsync(db, app.Logger);
 
 var push = app.Services.GetRequiredService<Microsoft.Extensions.Options.IOptions<PushSettings>>().Value;
 if (!push.IsEnabled)

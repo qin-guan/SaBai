@@ -30,7 +30,7 @@ public enum AuditAction
 /// </summary>
 public sealed class AuditLogEntry
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; } = Guid.CreateVersion7();
 
     public DateTimeOffset OccurredAt { get; set; }
 

@@ -2,7 +2,7 @@ namespace SaBai.API.Endpoints.VillageCodes.Get;
 
 /// <summary>A village code.</summary>
 public sealed record Response(
-    int Id,
+    Guid Id,
     string Code,
     string Name,
     string ColorHex,

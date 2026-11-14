@@ -4,7 +4,7 @@ namespace SaBai.API.Endpoints.Patients.Create.Post;
 
 /// <summary>Newly registered patient, the visit opened for them, and vitals when captured.</summary>
 public sealed record Response(
-    int Id,
+    Guid Id,
     string Name,
     string? IdentificationNumber,
     string? ContactNo,
@@ -15,14 +15,14 @@ public sealed record Response(
     bool HasBS2Card,
     bool HasSabaiCard,
     bool ToGetReport,
-    int? VillageCodeId,
+    Guid? VillageCodeId,
     string? VillageCode,
     string DisplayId,
     string FilterString,
     DateTimeOffset LastVisitDate,
-    int LastVisitId,
-    int VisitId,
-    int? VitalsId,
+    Guid LastVisitId,
+    Guid VisitId,
+    Guid? VitalsId,
     bool HasPhoto,
     bool HasFace
 );

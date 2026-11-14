@@ -52,9 +52,9 @@ public sealed record VisitJourney(
     );
 
     /// <summary>Loads the journey of each visit in <paramref name="visitIds"/>, in one query.</summary>
-    public static async Task<Dictionary<int, VisitJourney>> ForVisitsAsync(
+    public static async Task<Dictionary<Guid, VisitJourney>> ForVisitsAsync(
         IQueryable<Visit> visits,
-        IReadOnlyCollection<int> visitIds,
+        IReadOnlyCollection<Guid> visitIds,
         CancellationToken ct
     )
     {

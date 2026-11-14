@@ -7,7 +7,7 @@ public sealed record Response(IReadOnlyList<Item> Patients);
 
 /// <summary>A patient row including display id and latest visit.</summary>
 public sealed record Item(
-    int Id,
+    Guid Id,
     string Name,
     string? IdentificationNumber,
     string? ContactNo,
@@ -18,12 +18,12 @@ public sealed record Item(
     bool HasBS2Card,
     bool HasSabaiCard,
     bool ToGetReport,
-    int? VillageCodeId,
+    Guid? VillageCodeId,
     string? VillageCode,
     string DisplayId,
     string FilterString,
     DateTimeOffset? LastVisitDate,
-    int? LastVisitId,
+    Guid? LastVisitId,
     bool HasPhoto,
     bool HasFace
 );

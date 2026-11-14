@@ -26,6 +26,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             .Select(x => new
             {
                 x.Id,
+                x.Number,
                 x.Name,
                 x.IdentificationNumber,
                 x.ContactNo,
@@ -65,8 +66,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                 row.ToGetReport,
                 row.VillageCodeId,
                 row.VillageCode,
-                Patient.FormatDisplayId(row.VillageCode, row.Id),
-                Patient.FormatFilterString(row.VillageCode, row.Id, row.ContactNo, row.Name),
+                Patient.FormatDisplayId(row.VillageCode, row.Number),
+                Patient.FormatFilterString(row.VillageCode, row.Number, row.ContactNo, row.Name),
                 lastVisit?.Date,
                 lastVisit?.Id,
                 row.PhotoStoredFileName != null,

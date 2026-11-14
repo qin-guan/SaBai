@@ -5,7 +5,7 @@ namespace SaBai.API.Endpoints.Patients.Update.Patch;
 /// <summary>Partial patient update. Image fields are not accepted.</summary>
 public sealed record Request
 {
-    public int Id { get; init; }
+    public Guid Id { get; init; }
 
     public string? Name { get; init; }
 
@@ -27,5 +27,5 @@ public sealed record Request
 
     public bool? ToGetReport { get; init; }
 
-    public int? VillageCodeId { get; init; }
+    public Guid? VillageCodeId { get; init; }
 }

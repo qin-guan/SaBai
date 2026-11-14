@@ -2,8 +2,8 @@ namespace SaBai.API.Endpoints.Glasses.Create.Post;
 
 /// <summary>Prescribed glasses degrees recorded against a visit.</summary>
 public sealed record Response(
-    int Id,
-    int VisitId,
+    Guid Id,
+    Guid VisitId,
     string? LeftGlassesDegree,
     string? RightGlassesDegree,
     string? Notes

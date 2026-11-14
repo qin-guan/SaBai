@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { PhArrowCounterClockwise, PhFloppyDisk, PhPlus, PhTrash } from '@phosphor-icons/vue'
-import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { toast } from 'vue-sonner'
-import { saBaiAPIEndpointsDentalUpsertByVisitPutEndpoint } from '@sabai/sdk/clients'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
@@ -10,9 +8,9 @@ import { Textarea } from '@/components/ui/textarea'
 
 /**
  * The dental station's consultation for one visit. Loads any saved
- * consultation and saves the whole form back with a single PUT.
+ * consultation and saves the whole form back to local SQLite.
  */
-const props = defineProps<{ visitId: number }>()
+const props = defineProps<{ visitId: string }>()
 
 const SECTIONS = [
   { id: 'dental-history', title: 'Dental History', tab: 'Dental History' },
@@ -24,7 +22,6 @@ const SECTIONS = [
   { id: 'remarks', title: 'Remarks', tab: 'Remarks' },
 ] as const
 
-// A visit without a dental consultation answers 404; that is just an empty form.
 const { data, isLoading } = useVisitDental(() => props.visitId)
 const form = ref<DentalFormValues>(toDentalFormValues(null))
 const draft = useFormDraft(() => `dental:${props.visitId}`, form)
@@ -55,31 +52,132 @@ function addDiagnosis() {
   })
 }
 
-const queryClient = useQueryClient()
-const save = useMutation({
-  mutationFn: (values: DentalFormValues) =>
-    saBaiAPIEndpointsDentalUpsertByVisitPutEndpoint({
-      ...apiConfig,
-      path: { visitId: props.visitId },
-      body: toDentalRequest(values),
-      throwOnError: true,
-    }).unwrap(),
-  onSuccess: (saved) => {
+const saving = ref(false)
+const toSqliteBool = (v: boolean | null | undefined) => (v === true ? 1 : v === false ? 0 : null)
+
+async function submit() {
+  if (saving.value || isLoading.value)
+    return
+
+  const values = { ...form.value }
+  const body = toDentalRequest(values)
+  const now = new Date().toISOString()
+  const diagnosesJson = JSON.stringify(body.diagnoses ?? [])
+
+  saving.value = true
+  try {
+    const db = getPowerSyncInstance()
+    const existingId = data.value?.id ? String(data.value.id) : null
+    const params = [
+      body.previousDentalVisit ?? null,
+      body.previousDentalTreatment ?? null,
+      toSqliteBool(body.toothache),
+      toSqliteBool(body.extraction),
+      toSqliteBool(body.dentalTrauma),
+      toSqliteBool(body.currentToothache),
+      toSqliteBool(body.toothSensitivity),
+      toSqliteBool(body.bleedingGums),
+      body.brushingFrequency ?? null,
+      body.fluorideToothpaste ?? null,
+      body.sugarConsumption ?? null,
+      body.otherDentalHistory ?? null,
+      body.chiefComplaint ?? null,
+      body.facialSymmetry ?? null,
+      body.facialSwelling ?? null,
+      body.lymphadenopathy ?? null,
+      body.mouthOpening ?? null,
+      body.oralHygiene ?? null,
+      body.plaque ?? null,
+      body.calculus ?? null,
+      body.gingivalCondition ?? null,
+      body.caries ?? null,
+      body.missingTeeth ?? null,
+      body.fracturedTeeth ?? null,
+      body.mucosalLesions ?? null,
+      body.malocclusion ?? null,
+      diagnosesJson,
+      toSqliteBool(body.fluorideDone),
+      body.fluorideDate ?? null,
+      body.fluorideOperator ?? null,
+      body.fluorideToothNumbers ?? null,
+      toSqliteBool(body.sealantDone),
+      body.sealantDate ?? null,
+      body.sealantOperator ?? null,
+      body.sealantToothNumbers ?? null,
+      toSqliteBool(body.sdfDone),
+      body.sdfDate ?? null,
+      body.sdfOperator ?? null,
+      body.sdfToothNumbers ?? null,
+      toSqliteBool(body.scalingDone),
+      body.scalingDate ?? null,
+      body.scalingOperator ?? null,
+      body.scalingToothNumbers ?? null,
+      body.referredFor ?? null,
+      body.referralPriority ?? null,
+      body.referralNotes ?? null,
+      body.recommendedFacility ?? null,
+      body.remarks ?? null,
+      now,
+    ]
+
+    if (!existingId) {
+      await db.execute(
+        `INSERT INTO dental_consults (
+          id, visit_id, recorded_at,
+          previous_dental_visit, previous_dental_treatment,
+          toothache, extraction, dental_trauma, current_toothache, tooth_sensitivity, bleeding_gums,
+          brushing_frequency, fluoride_toothpaste, sugar_consumption, other_dental_history,
+          chief_complaint, facial_symmetry, facial_swelling, lymphadenopathy, mouth_opening,
+          oral_hygiene, plaque, calculus, gingival_condition, caries,
+          missing_teeth, fractured_teeth, mucosal_lesions, malocclusion, diagnoses,
+          fluoride_done, fluoride_date, fluoride_operator, fluoride_tooth_numbers,
+          sealant_done, sealant_date, sealant_operator, sealant_tooth_numbers,
+          sdf_done, sdf_date, sdf_operator, sdf_tooth_numbers,
+          scaling_done, scaling_date, scaling_operator, scaling_tooth_numbers,
+          referred_for, referral_priority, referral_notes, recommended_facility, remarks,
+          updated_at, version
+        ) VALUES (
+          ?, ?, ?,
+          ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+          ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+          ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+          ?, ?, ?, ?, ?, ?, 1
+        )`,
+        [uuidv7(), props.visitId, now, ...params],
+      )
+    }
+    else {
+      await db.execute(
+        `UPDATE dental_consults SET
+          previous_dental_visit = ?, previous_dental_treatment = ?,
+          toothache = ?, extraction = ?, dental_trauma = ?, current_toothache = ?, tooth_sensitivity = ?, bleeding_gums = ?,
+          brushing_frequency = ?, fluoride_toothpaste = ?, sugar_consumption = ?, other_dental_history = ?,
+          chief_complaint = ?, facial_symmetry = ?, facial_swelling = ?, lymphadenopathy = ?, mouth_opening = ?,
+          oral_hygiene = ?, plaque = ?, calculus = ?, gingival_condition = ?, caries = ?,
+          missing_teeth = ?, fractured_teeth = ?, mucosal_lesions = ?, malocclusion = ?, diagnoses = ?,
+          fluoride_done = ?, fluoride_date = ?, fluoride_operator = ?, fluoride_tooth_numbers = ?,
+          sealant_done = ?, sealant_date = ?, sealant_operator = ?, sealant_tooth_numbers = ?,
+          sdf_done = ?, sdf_date = ?, sdf_operator = ?, sdf_tooth_numbers = ?,
+          scaling_done = ?, scaling_date = ?, scaling_operator = ?, scaling_tooth_numbers = ?,
+          referred_for = ?, referral_priority = ?, referral_notes = ?, recommended_facility = ?, remarks = ?,
+          updated_at = ?
+        WHERE id = ?`,
+        [...params, existingId],
+      )
+    }
+    await refreshPendingCrudCount()
     serviceTimer.saved()
-    queryClient.setQueryData(queryKeys.dental(props.visitId), saved)
-    // Refresh the journey bars and station backlogs.
-    queryClient.invalidateQueries({ queryKey: queryKeys.patients() })
-    const values = toDentalFormValues(saved as DentalResponse)
     load(values)
     draft.clear(values)
     toast.success('Dental consultation saved.')
-  },
-  onError: error => toast.error(getApiErrorMessage(error, 'Failed to save dental consultation.')),
-})
-
-function submit() {
-  if (!save.isPending.value && !isLoading.value)
-    save.mutate(form.value)
+  }
+  catch (error) {
+    console.error('Error saving dental consultation:', error)
+    toast.error('Failed to save dental consultation.')
+  }
+  finally {
+    saving.value = false
+  }
 }
 
 useSaveShortcut(submit)
@@ -252,9 +350,9 @@ const extraIds = { brushingFrequency: useId(), sugarConsumption: useId(), referr
       <Button variant="outline" :disabled="!isDirty" @click="form = draft.discard()">
         <PhArrowCounterClockwise aria-hidden="true" /> Reset<span class="hidden sm:inline">&nbsp;Form</span>
       </Button>
-      <Button type="submit" variant="success" :disabled="save.isPending.value">
+      <Button type="submit" variant="success" :disabled="saving">
         <PhFloppyDisk aria-hidden="true" />
-        <template v-if="save.isPending.value">Saving…</template>
+        <template v-if="saving">Saving…</template>
         <template v-else>
           Save<span class="hidden sm:inline">&nbsp;Dental Consultation</span>
         </template>

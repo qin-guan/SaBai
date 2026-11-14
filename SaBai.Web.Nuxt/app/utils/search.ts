@@ -20,7 +20,8 @@ import { formatPatientCode, formatPatientId } from './patient'
  */
 
 export interface SearchablePatient {
-  id: number
+  id: string | number
+  number?: number
   name: string
   identificationNumber?: string | null
   contactNo?: string | null

@@ -24,7 +24,7 @@ public sealed class ReferralTests(AppFixture fixture)
             ApiJson.Options
         );
         var createdBody = await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
-        var id = ClinicSetup.ReadInt(createdBody, "id");
+        var id = ClinicSetup.ReadGuid(createdBody, "id");
         var listed = await client.GetAsync($"/consults/{consultId}/referrals");
         var items = await listed.Content.ReadFromJsonAsync<List<JsonElement>>(ApiJson.Options);
         var fetched = await client.GetAsync($"/referrals/{id}");
@@ -34,11 +34,11 @@ public sealed class ReferralTests(AppFixture fixture)
         await Assert.That(created.StatusCode).IsEqualTo(HttpStatusCode.Created);
         await Assert.That(createdBody.GetProperty("referralState").GetString()).IsEqualTo("New");
         await Assert.That(listed.StatusCode).IsEqualTo(HttpStatusCode.OK);
-        await Assert.That(items!.Any(x => ClinicSetup.ReadInt(x, "id") == id)).IsTrue();
+        await Assert.That(items!.Any(x => ClinicSetup.ReadGuid(x, "id") == id)).IsTrue();
         await Assert.That(fetched.StatusCode).IsEqualTo(HttpStatusCode.OK);
         await Assert.That(body.GetProperty("patientName").GetString()).IsEqualTo(patientName);
         await Assert.That(body.GetProperty("hasPhoto").GetBoolean()).IsFalse();
-        await Assert.That(ClinicSetup.ReadInt(body, "villageCodeId")).IsGreaterThan(0);
+        await Assert.That(ClinicSetup.ReadGuid(body, "villageCodeId")).IsNotEqualTo(Guid.Empty);
         await Assert.That(body.GetProperty("villageCode").GetString()).IsNotNull();
         await Assert.That(body.GetProperty("villageColorHex").GetString()).IsNotNull();
     }
@@ -53,7 +53,7 @@ public sealed class ReferralTests(AppFixture fixture)
         // Act
         var response = await client.PostAsJsonAsync(
             "/referrals",
-            new { consultId = 99999999, referredFor = $"missing {ClinicSetup.Suffix()}" },
+            new { consultId = ClinicSetup.MissingId, referredFor = $"missing {ClinicSetup.Suffix()}" },
             ApiJson.Options
         );
 
@@ -91,7 +91,7 @@ public sealed class ReferralTests(AppFixture fixture)
         await client.LoginAsync();
 
         // Act
-        var response = await client.GetAsync("/referrals/99999999");
+        var response = await client.GetAsync($"/referrals/{ClinicSetup.MissingId}");
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.NotFound);
@@ -111,7 +111,7 @@ public sealed class ReferralTests(AppFixture fixture)
             ApiJson.Options
         );
         created.EnsureSuccessStatusCode();
-        var id = ClinicSetup.ReadInt(
+        var id = ClinicSetup.ReadGuid(
             await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
             "id"
         );
@@ -157,7 +157,7 @@ public sealed class ReferralTests(AppFixture fixture)
 
         // Act
         var unknown = await client.PatchAsJsonAsync(
-            "/referrals/99999999/outcome",
+            $"/referrals/{ClinicSetup.MissingId}/outcome",
             new { referralOutcome = "x" },
             ApiJson.Options
         );
@@ -186,7 +186,7 @@ public sealed class ReferralTests(AppFixture fixture)
             ApiJson.Options
         );
         created.EnsureSuccessStatusCode();
-        var id = ClinicSetup.ReadInt(
+        var id = ClinicSetup.ReadGuid(
             await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
             "id"
         );
@@ -216,7 +216,7 @@ public sealed class ReferralTests(AppFixture fixture)
             ApiJson.Options
         );
         created.EnsureSuccessStatusCode();
-        var id = ClinicSetup.ReadInt(
+        var id = ClinicSetup.ReadGuid(
             await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
             "id"
         );
@@ -241,7 +241,7 @@ public sealed class ReferralTests(AppFixture fixture)
         await Assert.That(body.GetProperty("referralOutcome").GetString()).IsEqualTo("booked");
     }
 
-    private static async Task<(int ConsultId, int VisitId)> CreateConsultAsync(
+    private static async Task<(Guid ConsultId, Guid VisitId)> CreateConsultAsync(
         HttpClient client,
         string patientName
     )

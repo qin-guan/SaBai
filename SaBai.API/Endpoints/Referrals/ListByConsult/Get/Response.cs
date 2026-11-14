@@ -4,11 +4,11 @@ namespace SaBai.API.Endpoints.Referrals.ListByConsult.Get;
 
 /// <summary>Referral row without joined patient or doctor fields.</summary>
 public sealed record Response(
-    int Id,
+    Guid Id,
     string ReferredFor,
     string? ReferralNotes,
     ReferralState ReferralState,
     string? ReferralOutcome,
-    int ConsultId,
+    Guid ConsultId,
     DateTimeOffset CreatedAt
 );

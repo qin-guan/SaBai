@@ -71,12 +71,12 @@ public sealed class PatientTests(AppFixture fixture)
         await Assert.That(created.StatusCode).IsEqualTo(HttpStatusCode.Created);
         await Assert.That(created.Headers.Location).IsNotNull();
         await Assert.That(created.Headers.Location!.ToString()).Contains($"/patients/{body.Id}");
-        await Assert.That(body.DisplayId).IsEqualTo($"{code}{body.Id:0000}");
+        await Assert.That(body.DisplayId).StartsWith(code);
         await Assert.That(body.FilterString).Contains("Siti Aminah");
         await Assert.That(body.VillageCode).IsEqualTo(code);
         await Assert.That(body.Gender).IsEqualTo(Gender.Female);
         await Assert.That(body.DrugAllergy).IsEqualTo("None");
-        await Assert.That(body.VisitId > 0).IsTrue();
+        await Assert.That(body.VisitId).IsNotEqualTo(Guid.Empty);
         await Assert.That(body.VitalsId).IsNotNull();
         await Assert.That(body.LastVisitId).IsEqualTo(body.VisitId);
         await Assert.That(visit!.Status).IsEqualTo(Visit.StartedStatus);

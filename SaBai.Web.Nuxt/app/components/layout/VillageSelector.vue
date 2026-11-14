@@ -23,7 +23,7 @@ const { selectedVillageCodeId, selectedVillage, setSelectedVillageCodeId, villag
 
 const selected = computed({
   get: () => (selectedVillageCodeId.value === null ? '' : String(selectedVillageCodeId.value)),
-  set: (v: string) => setSelectedVillageCodeId(v ? Number(v) : null),
+  set: (v: string) => setSelectedVillageCodeId(v || null),
 })
 </script>
 

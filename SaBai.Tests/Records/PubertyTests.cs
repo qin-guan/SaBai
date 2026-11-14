@@ -48,7 +48,7 @@ public sealed class PubertyTests(AppFixture fixture)
             "/puberty",
             new
             {
-                vitalsId = 99999999,
+                vitalsId = ClinicSetup.MissingId,
                 pubarche = true,
                 pubarcheAge = 12,
             },
@@ -114,7 +114,7 @@ public sealed class PubertyTests(AppFixture fixture)
             ApiJson.Options
         );
         created.EnsureSuccessStatusCode();
-        var id = ClinicSetup.ReadInt(
+        var id = ClinicSetup.ReadGuid(
             await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
             "id"
         );
@@ -149,7 +149,7 @@ public sealed class PubertyTests(AppFixture fixture)
             ApiJson.Options
         );
         created.EnsureSuccessStatusCode();
-        var id = ClinicSetup.ReadInt(
+        var id = ClinicSetup.ReadGuid(
             await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
             "id"
         );
@@ -161,14 +161,14 @@ public sealed class PubertyTests(AppFixture fixture)
         await Assert.That(deleted.StatusCode).IsEqualTo(HttpStatusCode.NoContent);
     }
 
-    private static async Task<(int PatientId, int VisitId)> RegisterAsync(HttpClient client)
+    private static async Task<(Guid PatientId, Guid VisitId)> RegisterAsync(HttpClient client)
     {
         var suffix = ClinicSetup.Suffix();
         var villageId = await ClinicSetup.CreateVillageAsync(client, $"P{suffix}");
         return await ClinicSetup.RegisterPatientAsync(client, villageId, $"Puberty {suffix}");
     }
 
-    private static async Task<int> CreateVitalsAsync(HttpClient client, int visitId)
+    private static async Task<Guid> CreateVitalsAsync(HttpClient client, Guid visitId)
     {
         var response = await client.PostAsJsonAsync(
             "/vitals",
@@ -176,7 +176,7 @@ public sealed class PubertyTests(AppFixture fixture)
             ApiJson.Options
         );
         response.EnsureSuccessStatusCode();
-        return ClinicSetup.ReadInt(
+        return ClinicSetup.ReadGuid(
             await response.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
             "id"
         );

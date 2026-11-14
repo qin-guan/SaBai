@@ -7,7 +7,7 @@ import { PhUser } from "@phosphor-icons/vue";
  */
 const props = withDefaults(
     defineProps<{
-        patientId: number;
+        patientId: string | number;
         hasPhoto?: boolean;
         size?: number;
         alt?: string;

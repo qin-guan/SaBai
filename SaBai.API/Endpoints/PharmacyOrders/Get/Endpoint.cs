@@ -28,9 +28,10 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
                 MedicationName = x.MedicationBrand.Name,
                 IngredientId = x.MedicationBrand.ActiveIngredientId,
                 FallBelow = x.MedicationBrand.ActiveIngredient.FallBelow,
-                VisitId = (int?)x.Consult.Visit.Id,
+                VisitId = (Guid?)x.Consult.Visit.Id,
                 VisitDate = (DateTimeOffset?)x.Consult.Visit.Date,
-                PatientId = (int?)x.Consult.Visit.Patient.Id,
+                PatientId = (Guid?)x.Consult.Visit.Patient.Id,
+                PatientNumber = x.Consult.Visit.Patient.Number,
                 PatientName = x.Consult.Visit.Patient.Name,
                 VillageCode = x.Consult.Visit.Patient.VillageCode != null
                     ? x.Consult.Visit.Patient.VillageCode.Code
@@ -47,7 +48,7 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
             .ToList();
 
         var ingredientIds = usable.Select(x => x.IngredientId).Distinct().ToList();
-        var activeByIngredient = new Dictionary<int, int>();
+        var activeByIngredient = new Dictionary<Guid, int>();
         if (ingredientIds.Count > 0)
         {
             var activeRows = await db
@@ -64,7 +65,7 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
         }
 
         var visitIds = usable.Select(x => x.VisitId!.Value).Distinct().ToList();
-        var diagnoses = new List<(int VisitId, DiagnosisCategory? Category, string Details)>();
+        var diagnoses = new List<(Guid VisitId, DiagnosisCategory? Category, string Details)>();
         if (visitIds.Count > 0)
         {
             var loaded = await db
@@ -118,7 +119,7 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
 
                 return new Response(
                     new PatientHeader(
-                        Patient.FormatDisplayId(header.VillageCode, header.PatientId!.Value),
+                        Patient.FormatDisplayId(header.VillageCode, header.PatientNumber),
                         header.PatientName!,
                         header.VillageCode
                     ),

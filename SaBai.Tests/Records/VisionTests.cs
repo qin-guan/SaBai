@@ -71,7 +71,7 @@ public sealed class VisionTests(AppFixture fixture)
         await client.LoginAsync();
 
         // Act
-        var response = await client.GetAsync("/vision?visitId=99999999");
+        var response = await client.GetAsync($"/vision?visitId={ClinicSetup.MissingId}");
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.NotFound);
@@ -90,7 +90,7 @@ public sealed class VisionTests(AppFixture fixture)
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.Unauthorized);
     }
 
-    private static async Task<(int PatientId, int VisitId)> RegisterAsync(HttpClient client)
+    private static async Task<(Guid PatientId, Guid VisitId)> RegisterAsync(HttpClient client)
     {
         var suffix = ClinicSetup.Suffix();
         var villageId = await ClinicSetup.CreateVillageAsync(client, $"N{suffix}");

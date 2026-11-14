@@ -15,8 +15,8 @@ import type { Journey, StationKey, StepState } from '~/utils/journey'
  */
 const props = withDefaults(defineProps<{
   journey: Journey
-  patientId: number
-  visitId: number
+  patientId: string | number
+  visitId: string | number
   active?: StationKey
   /** `compact`: a single dense row for lists. */
   size?: 'compact' | 'full'

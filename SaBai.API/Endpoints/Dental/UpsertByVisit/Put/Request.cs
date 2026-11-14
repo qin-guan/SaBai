@@ -8,7 +8,7 @@ namespace SaBai.API.Endpoints.Dental.UpsertByVisit.Put;
 /// </summary>
 public sealed record Request
 {
-    public int VisitId { get; init; }
+    public Guid VisitId { get; init; }
 
     public YesNoUnknown? PreviousDentalVisit { get; init; }
 
@@ -107,5 +107,5 @@ public sealed record Request
     public string? Remarks { get; init; }
 
     /// <summary>Id of a file uploaded through <c>POST /files</c> for this patient. Null clears it.</summary>
-    public int? ImageFileId { get; init; }
+    public Guid? ImageFileId { get; init; }
 }

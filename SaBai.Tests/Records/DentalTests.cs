@@ -73,7 +73,7 @@ public sealed class DentalTests(AppFixture fixture)
             ApiJson.Options
         );
         first.EnsureSuccessStatusCode();
-        var firstId = ClinicSetup.ReadInt(
+        var firstId = ClinicSetup.ReadGuid(
             await first.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
             "id"
         );
@@ -88,7 +88,7 @@ public sealed class DentalTests(AppFixture fixture)
 
         // Assert
         await Assert.That(second.StatusCode).IsEqualTo(HttpStatusCode.OK);
-        await Assert.That(ClinicSetup.ReadInt(body, "id")).IsEqualTo(firstId);
+        await Assert.That(ClinicSetup.ReadGuid(body, "id")).IsEqualTo(firstId);
         await Assert.That(body.GetProperty("oralHygiene").GetString()).IsEqualTo("Good");
         await Assert.That(IsNullOrMissing(body, "remarks")).IsTrue();
     }
@@ -121,7 +121,7 @@ public sealed class DentalTests(AppFixture fixture)
 
         // Act
         var response = await client.PutAsJsonAsync(
-            "/visits/999999999/dental",
+            $"/visits/{ClinicSetup.MissingId}/dental",
             new { oralHygiene = "Good" },
             ApiJson.Options
         );
@@ -188,7 +188,7 @@ public sealed class DentalTests(AppFixture fixture)
         // Act
         var response = await client.PutAsJsonAsync(
             $"/visits/{visitId}/dental",
-            new { imageFileId = 99999999 },
+            new { imageFileId = ClinicSetup.MissingId },
             ApiJson.Options
         );
 
@@ -238,7 +238,7 @@ public sealed class DentalTests(AppFixture fixture)
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
     }
 
-    private static async Task<int> UploadImageAsync(HttpClient client, int patientId)
+    private static async Task<Guid> UploadImageAsync(HttpClient client, Guid patientId)
     {
         using var content = new MultipartFormDataContent();
         content.Add(new StringContent(patientId.ToString()), "patientId");
@@ -250,13 +250,13 @@ public sealed class DentalTests(AppFixture fixture)
         var response = await client.PostAsync("/files", content);
         response.EnsureSuccessStatusCode();
         var created = await response.Content.ReadFromJsonAsync<List<JsonElement>>(ApiJson.Options);
-        return created![0].GetProperty("id").GetInt32();
+        return created![0].GetProperty("id").GetGuid();
     }
 
     private static bool IsNullOrMissing(JsonElement body, string name) =>
         !body.TryGetProperty(name, out var value) || value.ValueKind == JsonValueKind.Null;
 
-    private static async Task<(int PatientId, int VisitId)> RegisterAsync(HttpClient client)
+    private static async Task<(Guid PatientId, Guid VisitId)> RegisterAsync(HttpClient client)
     {
         var suffix = ClinicSetup.Suffix();
         var villageId = await ClinicSetup.CreateVillageAsync(client, $"D{suffix}");

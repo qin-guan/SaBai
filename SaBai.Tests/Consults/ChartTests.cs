@@ -36,7 +36,7 @@ public sealed class ChartTests(AppFixture fixture)
             .That(
                 body.GetProperty("consults")
                     .EnumerateArray()
-                    .Any(x => x.GetProperty("id").GetInt32() == consultId)
+                    .Any(x => x.GetProperty("id").GetGuid() == consultId)
             )
             .IsTrue();
     }
@@ -93,7 +93,7 @@ public sealed class ChartTests(AppFixture fixture)
         await client.LoginAsync();
 
         // Act
-        var response = await client.GetAsync("/patient-consult?visitId=99999999");
+        var response = await client.GetAsync($"/patient-consult?visitId={ClinicSetup.MissingId}");
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.NotFound);

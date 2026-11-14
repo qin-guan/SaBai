@@ -11,13 +11,15 @@ import {
 } from '~/utils/referral'
 
 const sampleReferral: ReferralListItem = {
-  id: 1,
-  consultId: 10,
-  doctorId: '00000000-0000-0000-0000-000000000001',
-  patientId: 42,
+  id: '01930000-0000-7000-8000-000000000001',
+  consultId: '01930000-0000-7000-8000-000000000010',
+  visitId: '01930000-0000-7000-8000-000000000020',
+  patientId: '01930000-0000-7000-8000-000000000042',
   patientName: 'Sokha Chan',
+  patientNumber: 42,
+  patientDisplayId: 'SB0042',
   hasPhoto: true,
-  villageCodeId: 2,
+  villageCodeId: '01930000-0000-7000-8000-000000000002',
   villageCode: 'SB',
   villageColorHex: '#2563eb',
   referredFor: 'Diagnostic',
@@ -26,6 +28,8 @@ const sampleReferral: ReferralListItem = {
   referralOutcome: null,
   createdAt: '2026-11-10T08:00:00Z',
   consultDate: '2026-11-10T07:45:00Z',
+  doctorName: 'Dr. Lim',
+  doctorNickname: 'Dr. Lim',
 }
 
 describe('referral constants & options', () => {
@@ -110,8 +114,8 @@ describe('matchesReferral filtering', () => {
   })
 
   it('filters by villageCodeId', () => {
-    expect(matchesReferral(sampleReferral, { villageCodeId: 2 })).toBe(true)
-    expect(matchesReferral(sampleReferral, { villageCodeId: 99 })).toBe(false)
+    expect(matchesReferral(sampleReferral, { villageCodeId: '01930000-0000-7000-8000-000000000002' })).toBe(true)
+    expect(matchesReferral(sampleReferral, { villageCodeId: '01930000-0000-7000-8000-000000000099' })).toBe(false)
   })
 
   it('filters by referralState', () => {

@@ -130,6 +130,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
         <div class="hidden md:block">
           <VillageSelector tone="chrome" />
         </div>
+        <SyncStatusBadge />
         <Button
           variant="ghost"
           size="icon"
@@ -141,6 +142,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
           <PhKeyboard aria-hidden="true" />
         </Button>
       </header>
+      <PwaUpdateBanner />
       <main id="main" tabindex="-1" class="min-w-0 flex-1 px-3 py-3 outline-none sm:px-4">
         <slot />
       </main>

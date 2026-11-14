@@ -1,15 +1,7 @@
 <script setup lang="ts">
 import { PhFloppyDisk, PhPencilSimple, PhTrash, PhX } from '@phosphor-icons/vue'
-import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { toast } from 'vue-sonner'
-import {
-  saBaiAPIEndpointsMedicationBrandsDeleteDeleteEndpoint,
-  saBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint1,
-} from '@sabai/sdk/clients'
-import type {
-  SaBaiAPIEndpointsMedicationBrandsListGetResponse,
-  SaBaiAPIEndpointsMedicationIngredientsListGetResponse,
-} from '@sabai/sdk/types'
+import type { LocalMedicationBrand, LocalMedicationIngredient } from '~/composables/useMedication'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
@@ -17,8 +9,8 @@ import { TableCell, TableRow } from '@/components/ui/table'
 
 /** One medication brand; inline edit (Esc cancels, Enter saves) and delete with confirmation. */
 const props = defineProps<{
-  brand: SaBaiAPIEndpointsMedicationBrandsListGetResponse
-  ingredients: SaBaiAPIEndpointsMedicationIngredientsListGetResponse[]
+  brand: LocalMedicationBrand
+  ingredients: LocalMedicationIngredient[]
 }>()
 
 const ingredientName = computed(() => {
@@ -28,6 +20,8 @@ const ingredientName = computed(() => {
 
 const isEditing = ref(false)
 const isDeleting = ref(false)
+const isSaving = ref(false)
+const isRemoving = ref(false)
 const initial = () => ({
   name: props.brand.name,
   activeIngredientId: String(props.brand.activeIngredientId),
@@ -48,68 +42,79 @@ function cancel() {
   isEditing.value = false
 }
 
-const queryClient = useQueryClient()
-const invalidate = () => {
-  // Brand lists (incl. the with-ingredient one) and stock, which shows brand names.
-  queryClient.invalidateQueries({ queryKey: queryKeys.medicationBrands() })
-  queryClient.invalidateQueries({ queryKey: queryKeys.medicationStock() })
-}
-
-const update = useMutation({
-  mutationFn: () =>
-    saBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint1({
-      ...apiConfig,
-      path: { id: props.brand.id },
-      body: {
-        name: form.value.name.trim(),
-        activeIngredientId: Number(form.value.activeIngredientId),
-        remarks: form.value.remarks,
-      },
-      throwOnError: true,
-    }).unwrap(),
-  onSuccess: () => {
-    toast.success('Successfully updated!')
-    invalidate()
-  },
-  onError: (err) => {
-    toast.error(getApiErrorMessage(err, 'An error has occurred.'))
-    console.error(err)
-    form.value = initial()
-  },
-})
-
-const remove = useMutation({
-  mutationFn: () =>
-    saBaiAPIEndpointsMedicationBrandsDeleteDeleteEndpoint({
-      ...apiConfig,
-      path: { id: props.brand.id },
-      throwOnError: true,
-    }).unwrap(),
-  onSuccess: () => {
+async function remove() {
+  if (isRemoving.value)
+    return
+  isRemoving.value = true
+  try {
+    const db = getPowerSyncInstance()
+    const stockCount = await db.getOptional<{ c: number }>(
+      'SELECT COUNT(*) AS c FROM medication_stocks WHERE medication_brand_id = ?',
+      [props.brand.id],
+    )
+    const orderCount = await db.getOptional<{ c: number }>(
+      'SELECT COUNT(*) AS c FROM orders WHERE medication_brand_id = ?',
+      [props.brand.id],
+    )
+    if (Number(stockCount?.c ?? 0) > 0 || Number(orderCount?.c ?? 0) > 0) {
+      toast.error('Error! Check that no stock or orders use this brand.')
+      return
+    }
+    await db.execute('DELETE FROM medication_brands WHERE id = ?', [props.brand.id])
+    await refreshPendingCrudCount()
     toast.success('Successfully deleted.')
     isDeleting.value = false
-    invalidate()
-  },
-  onError: (err) => {
-    toast.error(getApiErrorMessage(err, 'Error! Check that no stock or orders use this brand.'))
-    isDeleting.value = false
-  },
-})
+  }
+  catch (err) {
+    console.error(err)
+    toast.error('Error! Check that no stock or orders use this brand.')
+  }
+  finally {
+    isRemoving.value = false
+  }
+}
 
-function save() {
+async function save() {
+  if (isSaving.value)
+    return
   nameError.value = form.value.name.trim() ? null : 'Missing name!'
   if (nameError.value)
     return
   const b = props.brand
   const changed = form.value.name.trim() !== b.name
-    || Number(form.value.activeIngredientId) !== b.activeIngredientId
+    || form.value.activeIngredientId !== b.activeIngredientId
     || form.value.remarks !== (b.remarks ?? '')
   if (!changed) {
     toast.error('No form field changed!')
     return
   }
-  update.mutate()
-  isEditing.value = false
+
+  isSaving.value = true
+  try {
+    const db = getPowerSyncInstance()
+    await db.execute(
+      `UPDATE medication_brands
+       SET name = ?, active_ingredient_id = ?, remarks = ?
+       WHERE id = ?`,
+      [
+        form.value.name.trim(),
+        form.value.activeIngredientId,
+        form.value.remarks.trim() || null,
+        props.brand.id,
+      ],
+    )
+    await refreshPendingCrudCount()
+    toast.success('Successfully updated!')
+    isEditing.value = false
+  }
+  catch (err) {
+    console.error(err)
+    toast.error('An error has occurred.')
+    form.value = initial()
+  }
+  finally {
+    isSaving.value = false
+  }
 }
 
 function onKeydown(event: KeyboardEvent) {
@@ -161,8 +166,8 @@ function onKeydown(event: KeyboardEvent) {
     <TableCell data-stack="actions">
       <div class="flex justify-end gap-1">
         <template v-if="isEditing">
-          <Button size="sm" variant="success" :disabled="update.isPending.value" @click="save">
-            <PhFloppyDisk aria-hidden="true" /> {{ update.isPending.value ? 'Saving...' : 'Save' }}
+          <Button size="sm" variant="success" :disabled="isSaving" @click="save">
+            <PhFloppyDisk aria-hidden="true" /> {{ isSaving ? 'Saving...' : 'Save' }}
           </Button>
           <Button size="sm" variant="outline" @click="cancel">
             <PhX aria-hidden="true" /> Cancel
@@ -195,7 +200,7 @@ function onKeydown(event: KeyboardEvent) {
           <Button variant="outline" @click="isDeleting = false">
             Cancel
           </Button>
-          <Button variant="destructive" :disabled="remove.isPending.value" @click="remove.mutate()">
+          <Button variant="destructive" :disabled="isRemoving" @click="remove()">
             <PhTrash aria-hidden="true" /> Confirm
           </Button>
         </template>

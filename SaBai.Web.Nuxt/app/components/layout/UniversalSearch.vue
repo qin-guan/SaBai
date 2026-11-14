@@ -106,7 +106,7 @@ const groups = computed<Group[]>(() => {
   }
   const patientHits = searchIndex(patientIndex.value, q)
     .slice(0, MAX_PATIENTS)
-    .map(r => patientsById.value.get(r.id as number))
+    .map(r => patientsById.value.get(String(r.id)))
     .filter((p): p is Patient => !!p)
   const pageHits = searchIndex(pageIndex, q)
     .slice(0, 5)

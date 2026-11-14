@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { PhFloppyDisk } from '@phosphor-icons/vue'
-import type { SaBaiAPIEndpointsPatientsGetResponse } from '@sabai/sdk/types'
+import type { LocalPatientSummary } from '~/db/types'
 import { Button } from '@/components/ui/button'
 
 /**
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
  * the form in progress. The patient record edits the same fields inline
  * (<PatientDetailsForm>).
  */
-const props = defineProps<{ patient: SaBaiAPIEndpointsPatientsGetResponse }>()
+const props = defineProps<{ patient: LocalPatientSummary }>()
 const emit = defineEmits<{ close: [] }>()
 
 const formEl = ref<HTMLFormElement>()

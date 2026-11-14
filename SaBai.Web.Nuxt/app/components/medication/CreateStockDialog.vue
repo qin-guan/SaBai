@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { PhFloppyDisk } from '@phosphor-icons/vue'
-import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { toast } from 'vue-sonner'
-import { saBaiAPIEndpointsMedicationStockCreatePostEndpoint } from '@sabai/sdk/clients'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
@@ -15,37 +13,13 @@ const formEl = ref<HTMLFormElement>()
 
 const brands = useMedicationBrandsWithIngredient()
 const brandOptions = computed(() =>
-  (brands.data.value ?? []).map(b => ({ value: b.id.toString(), label: `${b.activeIngredientName} (${b.name})` })),
+  (brands.data.value ?? []).map(b => ({ value: b.id, label: `${b.activeIngredientName} (${b.name})` })),
 )
 
-const queryClient = useQueryClient()
-const create = useMutation({
-  mutationFn: () =>
-    saBaiAPIEndpointsMedicationStockCreatePostEndpoint({
-      ...apiConfig,
-      body: {
-        medicationBrandId: Number(form.value.medicationBrandId),
-        quantity: Number(form.value.quantity),
-        expiry: form.value.expiry,
-        location: form.value.location,
-        stockStatus: form.value.stockStatus as StockStatus,
-        remarks: form.value.remarks,
-      },
-      throwOnError: true,
-    }).unwrap(),
-  onSuccess: () => {
-    toast.success('Successfully created!')
-    queryClient.invalidateQueries({ queryKey: queryKeys.medicationStock() })
-    emit('close')
-  },
-  onError: (err) => {
-    console.error(err)
-    toast.error(getApiErrorMessage(err, 'An error has occurred.'))
-  },
-})
+const isSaving = ref(false)
 
-function submit() {
-  if (create.isPending.value)
+async function submit() {
+  if (isSaving.value)
     return
   const e: Record<string, string> = {}
   const f = form.value
@@ -66,7 +40,37 @@ function submit() {
     focusFirstInvalid(formEl.value)
     return
   }
-  create.mutate()
+
+  isSaving.value = true
+  try {
+    const db = getPowerSyncInstance()
+    const now = new Date().toISOString()
+    await db.execute(
+      `INSERT INTO medication_stocks (
+        id, medication_brand_id, quantity, expiry, location, stock_status, remarks, version, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?)`,
+      [
+        uuidv7(),
+        f.medicationBrandId,
+        Number(f.quantity),
+        f.expiry,
+        f.location.trim(),
+        f.stockStatus,
+        f.remarks.trim() || null,
+        now,
+      ],
+    )
+    await refreshPendingCrudCount()
+    toast.success('Successfully created!')
+    emit('close')
+  }
+  catch (err) {
+    console.error(err)
+    toast.error('An error has occurred.')
+  }
+  finally {
+    isSaving.value = false
+  }
 }
 
 useSaveShortcut(submit)
@@ -118,8 +122,8 @@ useSaveShortcut(submit)
       <Button variant="outline" @click="emit('close')">
         Cancel
       </Button>
-      <Button type="submit" form="create-stock-form" variant="success" :disabled="create.isPending.value">
-        <PhFloppyDisk aria-hidden="true" /> {{ create.isPending.value ? 'Saving...' : 'Save' }}
+      <Button type="submit" form="create-stock-form" variant="success" :disabled="isSaving">
+        <PhFloppyDisk aria-hidden="true" /> {{ isSaving ? 'Saving...' : 'Save' }}
       </Button>
     </template>
   </AppDialog>

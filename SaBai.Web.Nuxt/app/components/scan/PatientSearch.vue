@@ -19,7 +19,7 @@ const MAX_RESULTS = 10
 const hits = computed(() =>
   searchIndex(index.value, debounced.value)
     .slice(0, MAX_RESULTS)
-    .map(r => byId.value.get(r.id as number))
+    .map(r => byId.value.get(String(r.id)))
     .filter(p => !!p),
 )
 const lastVisit = (date: string) => `Last visit ${formatVisitDate(date)}`

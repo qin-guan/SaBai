@@ -297,14 +297,14 @@ public sealed class VitalsEndpointTests(AppFixture fixture)
                 hasPoorCard = false,
                 hasBS2Card = false,
                 hasSabaiCard = false,
-                villageCodeId = villageBody.GetProperty("id").GetInt32(),
+                villageCodeId = villageBody.GetProperty("id").GetGuid(),
             },
             ApiJson.Options
         );
         var patientBody = await ReadCreatedAsync(patient, "Create patient");
         return new Seed(
-            patientBody.GetProperty("id").GetInt32(),
-            patientBody.GetProperty("visitId").GetInt32(),
+            patientBody.GetProperty("id").GetGuid(),
+            patientBody.GetProperty("visitId").GetGuid(),
             code,
             name
         );
@@ -326,11 +326,11 @@ public sealed class VitalsEndpointTests(AppFixture fixture)
         return (await response.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options))!;
     }
 
-    private sealed record Seed(int PatientId, int VisitId, string VillageCode, string PatientName);
+    private sealed record Seed(Guid PatientId, Guid VisitId, string VillageCode, string PatientName);
 
     private sealed record VitalsBody(
-        int Id,
-        int VisitId,
+        Guid Id,
+        Guid VisitId,
         decimal? Height,
         decimal? Weight,
         decimal? Temperature,
@@ -339,8 +339,8 @@ public sealed class VitalsEndpointTests(AppFixture fixture)
     );
 
     private sealed record EyesightBody(
-        int Id,
-        int VisitId,
+        Guid Id,
+        Guid VisitId,
         string? LeftEyeDegree,
         string? RightEyeDegree,
         string? LeftEyePinhole
@@ -353,7 +353,7 @@ public sealed class VitalsEndpointTests(AppFixture fixture)
     );
 
     private sealed record VisionPatient(
-        int Id,
+        Guid Id,
         string Name,
         string DisplayId,
         Gender Gender,
@@ -361,8 +361,8 @@ public sealed class VitalsEndpointTests(AppFixture fixture)
     );
 
     private sealed record GlassesBody(
-        int Id,
-        int VisitId,
+        Guid Id,
+        Guid VisitId,
         string? LeftGlassesDegree,
         string? RightGlassesDegree,
         string? Notes

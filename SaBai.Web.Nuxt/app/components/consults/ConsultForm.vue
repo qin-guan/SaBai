@@ -1,17 +1,14 @@
 <script setup lang="ts">
 import { PhFloppyDisk, PhPlus, PhTrash } from '@phosphor-icons/vue'
-import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { toast } from 'vue-sonner'
 import { z } from 'zod'
-import { saBaiAPIEndpointsConsultsCreatePostEndpoint } from '@sabai/sdk/clients'
-import type { SaBaiAPIEndpointsConsultsCreatePostRequest } from '@sabai/sdk/types'
 import { Button } from '@/components/ui/button'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { Textarea } from '@/components/ui/textarea'
 import { REFERRAL_CATEGORY_OPTIONS } from '@/utils/referral'
 
 /** The doctor's consultation form for one visit (each save appends a consult). */
-const props = defineProps<{ visitId: number }>()
+const props = defineProps<{ visitId: string }>()
 
 const consultFormSchema = z.object({
   pastMedicalHistory: z.string().trim().optional(),
@@ -64,15 +61,11 @@ function removeDiagnosis(index: number) {
   errors.value = {}
 }
 
-const queryClient = useQueryClient()
-const create = useMutation({
-  mutationFn: (body: SaBaiAPIEndpointsConsultsCreatePostRequest) =>
-    saBaiAPIEndpointsConsultsCreatePostEndpoint({ ...apiConfig, body, throwOnError: true }).unwrap(),
-})
-const createReferral = useCreateReferral()
+const { user } = useCurrentUser()
+const isSaving = ref(false)
 
-function submit() {
-  if (create.isPending.value)
+async function submit() {
+  if (isSaving.value)
     return
   const parsed = consultFormSchema.safeParse(form.value)
   if (!parsed.success) {
@@ -83,46 +76,64 @@ function submit() {
   }
   errors.value = {}
   const data: ConsultFormValues = parsed.data
-  create.mutate(
-    {
-      visitId: props.visitId,
-      pastMedicalHistory: data.pastMedicalHistory || undefined,
-      consultation: data.consultation || undefined,
-      treatmentPlan: data.treatmentPlan || undefined,
-      remarks: data.remarks || undefined,
-      referredFor: data.referredFor && data.referredFor !== 'Not Referred' ? data.referredFor : undefined,
-      referralNotes: data.referredFor && data.referredFor !== 'Not Referred' && data.referralNotes ? data.referralNotes : undefined,
-      diagnoses: data.diagnoses.map(d => ({ details: d.details, category: d.category as DiagnosisCategory })),
-    },
-    {
-      onSuccess: (savedConsult) => {
-        // Before the form is cleared for the next consult.
-        serviceTimer.saved()
-        queryClient.invalidateQueries({ queryKey: queryKeys.consults(props.visitId) })
-        // Refresh the journey bars and station backlogs.
-        queryClient.invalidateQueries({ queryKey: queryKeys.patients() })
-        toast.success('Consult has been saved successfully!')
+  const consultId = uuidv7()
+  const now = new Date().toISOString()
+  const hasReferral = Boolean(data.referredFor && data.referredFor !== 'Not Referred')
 
-        if (data.referredFor && data.referredFor !== 'Not Referred') {
-          createReferral.mutate(
-            {
-              consultId: savedConsult.id,
-              referredFor: data.referredFor,
-              referralNotes: data.referralNotes || undefined,
-            },
-            {
-              onSuccess: () => toast.success('Referral submitted!'),
-              onError: err => toast.error(getApiErrorMessage(err, 'Failed to create referral.')),
-            },
-          )
-        }
+  isSaving.value = true
+  try {
+    const db = getPowerSyncInstance()
+    await db.writeTransaction(async (tx) => {
+      await tx.execute(
+        `INSERT INTO consults (
+          id, visit_id, date, past_medical_history, consultation, treatment_plan,
+          referred_for, referral_notes, remarks, doctor_id, version, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)`,
+        [
+          consultId,
+          props.visitId,
+          now,
+          data.pastMedicalHistory || null,
+          data.consultation || null,
+          data.treatmentPlan || null,
+          hasReferral ? data.referredFor! : null,
+          hasReferral && data.referralNotes ? data.referralNotes : null,
+          data.remarks || null,
+          user.value?.id ? String(user.value.id) : null,
+          now,
+        ],
+      )
 
-        form.value = blank()
-        draft.clear(form.value)
-      },
-      onError: error => toast.error(getApiErrorMessage(error, 'Failed to save consult.')),
-    },
-  )
+      for (const d of data.diagnoses) {
+        await tx.execute(
+          `INSERT INTO diagnoses (id, consult_id, details, category, version)
+           VALUES (?, ?, ?, ?, 1)`,
+          [uuidv7(), consultId, d.details, d.category],
+        )
+      }
+
+      if (hasReferral) {
+        await tx.execute(
+          `INSERT INTO referrals (
+            id, consult_id, referred_for, referral_notes, referral_state, created_at, updated_at, version
+          ) VALUES (?, ?, ?, ?, 'New', ?, ?, 1)`,
+          [uuidv7(), consultId, data.referredFor!, data.referralNotes || null, now, now],
+        )
+      }
+    })
+    await refreshPendingCrudCount()
+    serviceTimer.saved()
+    toast.success(hasReferral ? 'Consult and referral saved!' : 'Consult saved!')
+    form.value = blank()
+    draft.clear(form.value)
+  }
+  catch (error) {
+    console.error('Error saving consult:', error)
+    toast.error('Failed to save consult.')
+  }
+  finally {
+    isSaving.value = false
+  }
 }
 
 useSaveShortcut(submit)
@@ -240,9 +251,9 @@ useSaveShortcut(submit)
       </div>
     </AppPanel>
     <SaveBar>
-      <Button type="submit" variant="success" :disabled="create.isPending.value">
+      <Button type="submit" variant="success" :disabled="isSaving">
         <PhFloppyDisk aria-hidden="true" />
-        {{ create.isPending.value ? 'Saving…' : 'Save Consult' }}
+        {{ isSaving ? 'Saving…' : 'Save Consult' }}
       </Button>
     </SaveBar>
   </form>

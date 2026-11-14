@@ -7,7 +7,9 @@ public static class ClinicSetup
 {
     public static string Suffix() => Guid.NewGuid().ToString("N")[..8];
 
-    public static async Task<int> CreateVillageAsync(HttpClient client, string? code = null)
+    public static readonly Guid MissingId = Guid.Parse("01900000-0000-7000-8000-000000999999");
+
+    public static async Task<Guid> CreateVillageAsync(HttpClient client, string? code = null)
     {
         code ??= $"V{Suffix().ToUpperInvariant()}";
         var response = await client.PostAsJsonAsync(
@@ -22,15 +24,15 @@ public static class ClinicSetup
             ApiJson.Options
         );
         response.EnsureSuccessStatusCode();
-        return ReadInt(
+        return ReadGuid(
             await response.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
             "id"
         );
     }
 
-    public static async Task<(int PatientId, int VisitId)> RegisterPatientAsync(
+    public static async Task<(Guid PatientId, Guid VisitId)> RegisterPatientAsync(
         HttpClient client,
-        int villageId,
+        Guid villageId,
         string? name = null
     )
     {
@@ -52,12 +54,12 @@ public static class ClinicSetup
         );
         response.EnsureSuccessStatusCode();
         var body = await response.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
-        return (ReadInt(body, "id"), ReadInt(body, "visitId"));
+        return (ReadGuid(body, "id"), ReadGuid(body, "visitId"));
     }
 
-    public static async Task<int> CreateConsultAsync(
+    public static async Task<Guid> CreateConsultAsync(
         HttpClient client,
-        int visitId,
+        Guid visitId,
         string details = "cough"
     )
     {
@@ -72,10 +74,24 @@ public static class ClinicSetup
             ApiJson.Options
         );
         response.EnsureSuccessStatusCode();
-        return ReadInt(
+        return ReadGuid(
             await response.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
             "id"
         );
+    }
+
+    public static Guid ReadGuid(JsonElement element, string name)
+    {
+        if (
+            element.ValueKind == JsonValueKind.Object
+            && element.TryGetProperty(name, out var value)
+            && value.TryGetGuid(out var id)
+        )
+        {
+            return id;
+        }
+
+        throw new InvalidOperationException($"Response did not include {name}: {element}");
     }
 
     public static int ReadInt(JsonElement element, string name)

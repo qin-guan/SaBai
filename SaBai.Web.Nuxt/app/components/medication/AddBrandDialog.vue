@@ -1,45 +1,20 @@
 <script setup lang="ts">
 import { PhFloppyDisk } from '@phosphor-icons/vue'
-import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { toast } from 'vue-sonner'
-import { saBaiAPIEndpointsMedicationBrandsCreatePostEndpoint } from '@sabai/sdk/clients'
-import type { SaBaiAPIEndpointsMedicationIngredientsListGetResponse } from '@sabai/sdk/types'
+import type { LocalMedicationIngredient } from '~/composables/useMedication'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 
-defineProps<{ ingredients: SaBaiAPIEndpointsMedicationIngredientsListGetResponse[] }>()
+defineProps<{ ingredients: LocalMedicationIngredient[] }>()
 const emit = defineEmits<{ close: [] }>()
 const form = ref({ name: '', activeIngredientId: '', remarks: '' })
 const errors = ref<{ name?: string, activeIngredientId?: string }>({})
 const formEl = ref<HTMLFormElement>()
+const isSaving = ref(false)
 
-const queryClient = useQueryClient()
-const create = useMutation({
-  mutationFn: () =>
-    saBaiAPIEndpointsMedicationBrandsCreatePostEndpoint({
-      ...apiConfig,
-      body: {
-        name: form.value.name.trim(),
-        activeIngredientId: Number(form.value.activeIngredientId),
-        remarks: form.value.remarks,
-      },
-      throwOnError: true,
-    }).unwrap(),
-  onSuccess: () => {
-    toast.success('Successfully created!')
-    // Also covers the brand + ingredient list used by the stock forms.
-    queryClient.invalidateQueries({ queryKey: queryKeys.medicationBrands() })
-    emit('close')
-  },
-  onError: (err) => {
-    console.error(err)
-    toast.error(getApiErrorMessage(err, 'An error has occurred.'))
-  },
-})
-
-function submit() {
-  if (create.isPending.value)
+async function submit() {
+  if (isSaving.value)
     return
   errors.value = {
     name: form.value.name.trim() ? undefined : 'Missing name!',
@@ -49,7 +24,31 @@ function submit() {
     focusFirstInvalid(formEl.value)
     return
   }
-  create.mutate()
+
+  isSaving.value = true
+  try {
+    const db = getPowerSyncInstance()
+    await db.execute(
+      `INSERT INTO medication_brands (id, name, active_ingredient_id, remarks, version)
+       VALUES (?, ?, ?, ?, 1)`,
+      [
+        uuidv7(),
+        form.value.name.trim(),
+        form.value.activeIngredientId,
+        form.value.remarks.trim() || null,
+      ],
+    )
+    await refreshPendingCrudCount()
+    toast.success('Successfully created!')
+    emit('close')
+  }
+  catch (err) {
+    console.error(err)
+    toast.error('An error has occurred.')
+  }
+  finally {
+    isSaving.value = false
+  }
 }
 
 useSaveShortcut(submit)
@@ -79,8 +78,8 @@ useSaveShortcut(submit)
       <Button variant="outline" @click="emit('close')">
         Cancel
       </Button>
-      <Button type="submit" form="add-brand-form" variant="success" :disabled="create.isPending.value">
-        <PhFloppyDisk aria-hidden="true" /> {{ create.isPending.value ? 'Saving...' : 'Save' }}
+      <Button type="submit" form="add-brand-form" variant="success" :disabled="isSaving">
+        <PhFloppyDisk aria-hidden="true" /> {{ isSaving ? 'Saving...' : 'Save' }}
       </Button>
     </template>
   </AppDialog>

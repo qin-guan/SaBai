@@ -17,9 +17,9 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        if (req.VisitId <= 0)
+        if (req.VisitId == Guid.Empty)
         {
-            throw new BadRequestException("visitId is required and must be a positive integer.");
+            throw new BadRequestException("visitId is required.");
         }
 
         var visit = await db
@@ -35,7 +35,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                 new PatientResponse(
                     visit.Patient.Id,
                     visit.Patient.Name,
-                    Patient.FormatDisplayId(visit.VillageCode.Code, visit.Patient.Id),
+                    Patient.FormatDisplayId(visit.VillageCode.Code, visit.Patient.Number),
                     visit.Patient.Gender,
                     visit.Patient.DateOfBirth
                 ),

@@ -4,8 +4,8 @@ namespace SaBai.API.Endpoints.MedicationStock.Adjustments.Post;
 
 /// <summary>Stock lot after a catalog quantity adjustment.</summary>
 public sealed record Response(
-    int Id,
-    int MedicationBrandId,
+    Guid Id,
+    Guid MedicationBrandId,
     int Quantity,
     DateTimeOffset Expiry,
     string Location,

@@ -14,7 +14,7 @@ public static class PatientPhoto
 
     private const long MaxPixels = 50_000_000;
 
-    public static string BuildKey(int patientId, string? fileName) =>
+    public static string BuildKey(Guid patientId, string? fileName) =>
         $"patients/{patientId}/{Guid.NewGuid():N}{Extension(fileName)}";
 
     public static string Extension(string? fileName)

@@ -13,7 +13,7 @@ namespace SaBai.API.Middleware;
 /// </summary>
 public sealed class ClientIdRetryMiddleware(RequestDelegate next)
 {
-    /// <summary>Larger bodies (uploads) are not buffered and not retried.</summary>
+    /// <summary>Bodies declared larger than this are not buffered and not retried.</summary>
     private const long MaxBufferedBody = 1024 * 1024;
 
     public async Task InvokeAsync(HttpContext context, AppDbContext db)
@@ -22,17 +22,16 @@ public sealed class ClientIdRetryMiddleware(RequestDelegate next)
         if (
             !(HttpMethods.IsPost(request.Method) || HttpMethods.IsPut(request.Method))
             || request.HasJsonContentType() is false
-            || request.ContentLength is null or > MaxBufferedBody
+            || request.ContentLength > MaxBufferedBody
         )
         {
             await next(context);
             return;
         }
 
-        using var buffer = new MemoryStream();
-        await request.Body.CopyToAsync(buffer, context.RequestAborted);
-        var body = buffer.ToArray();
-        request.Body = new MemoryStream(body, writable: false);
+        // Keeps what is read of the body so it can be read again. A body sent without a
+        // Content-Length (chunked) is buffered too.
+        request.EnableBuffering();
 
         try
         {
@@ -42,7 +41,7 @@ public sealed class ClientIdRetryMiddleware(RequestDelegate next)
         {
             // Forget the failed insert and read the body afresh.
             db.ChangeTracker.Clear();
-            request.Body = new MemoryStream(body, writable: false);
+            request.Body.Position = 0;
             await next(context);
         }
     }

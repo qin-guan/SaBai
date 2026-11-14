@@ -188,21 +188,6 @@ const diabetesLabelId = useId()
       </div>
     </AppPanel>
 
-    <!-- Growth chart: below Body Measurements on narrow screens, pinned in a side column on wide screens. -->
-    <div
-      v-if="showChart"
-      class="self-start min-[1128px]:sticky min-[1128px]:top-16 min-[1128px]:col-start-2 min-[1128px]:row-span-6 min-[1128px]:row-start-1"
-    >
-      <AppPanel
-        title="Growth Charts"
-        description="Height (blue) and weight (red) on the NCHS chart for age and gender."
-        collapsible
-        collapse-key="growth-chart"
-      >
-        <HeightWeightChart :age="patientAge" :height="chartHeight" :weight="chartWeight" :gender="props.patient.gender" />
-      </AppPanel>
-    </div>
-
     <AppPanel title="Cardiovascular" description="Blood pressure and heart rate readings.">
       <div class="grid grid-cols-2 items-end gap-3 md:grid-cols-3">
         <FormField v-slot="{ id }" label="Systolic Blood Pressure (mmHg)">
@@ -266,6 +251,21 @@ const diabetesLabelId = useId()
         <Textarea :id="id" v-model="form.others" :rows="3" />
       </FormField>
     </AppPanel>
+
+    <!-- Growth chart: after the fields on narrow screens (so opening it never pushes a field away), pinned in a side column on wide screens. -->
+    <div
+      v-if="showChart"
+      class="self-start min-[1128px]:sticky min-[1128px]:top-16 min-[1128px]:col-start-2 min-[1128px]:row-span-6 min-[1128px]:row-start-1"
+    >
+      <AppPanel
+        title="Growth Charts"
+        description="Height (blue) and weight (red) on the NCHS chart for age and gender."
+        collapsible
+        collapse-key="growth-chart"
+      >
+        <HeightWeightChart :age="patientAge" :height="chartHeight" :weight="chartWeight" :gender="props.patient.gender" />
+      </AppPanel>
+    </div>
 
     <SaveBar :class="showChart && 'min-[1128px]:col-start-1'">
       <span v-if="isDirty" class="text-xs font-semibold text-warning touch:text-sm">Unsaved changes</span>

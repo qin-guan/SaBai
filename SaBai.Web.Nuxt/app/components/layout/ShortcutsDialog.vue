@@ -32,11 +32,13 @@ const groups = [
     ],
   },
   {
-    title: 'Referral',
+    title: 'Referrals',
     items: [
-      { keys: 'E', label: 'Edit the referral outcome' },
-      { keys: 'Ctrl+S', label: 'Save the section or outcome you are editing' },
-      { keys: 'Esc', label: 'Cancel editing / clear search; again to go back' },
+      { keys: '↓', label: 'From the search box: into the list' },
+      { keys: '↑ / ↓', label: 'Move between referrals; Enter opens' },
+      { keys: '1 – 4', label: 'Go to booth, party, payment or outcome' },
+      { keys: 'Ctrl+S', label: 'Save every step you changed' },
+      { keys: 'Esc', label: 'Back to the list, on the same referral' },
     ],
   },
   {

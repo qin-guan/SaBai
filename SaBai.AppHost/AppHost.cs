@@ -99,7 +99,25 @@ var apiHttp = api.GetEndpoint("http");
 
 var powersync = builder
     .AddContainer("powersync", "journeyapps/powersync-service", "latest")
-    .WithBindMount("./powersync", "/config")
+    .WithContainerFiles(
+        "/config",
+        [
+            new ContainerFile
+            {
+                Name = "service.yaml",
+                Contents = File.ReadAllText(
+                    Path.Combine(builder.AppHostDirectory, "powersync", "service.yaml")
+                ),
+            },
+            new ContainerFile
+            {
+                Name = "sync-config.yaml",
+                Contents = File.ReadAllText(
+                    Path.Combine(builder.AppHostDirectory, "powersync", "sync-config.yaml")
+                ),
+            },
+        ]
+    )
     .WithArgs("start", "-r", "unified", "-c", "/config/service.yaml")
     .WithHttpEndpoint(port: 8089, targetPort: 8080, name: "http")
     .WithEnvironment("PS_SOURCE_PG_URI", db.Resource.UriExpression)

@@ -22,7 +22,7 @@ public static class PowerSyncPublication
             return;
         }
 
-        const string sql = """
+        const string publicationSql = """
             DO $$
             BEGIN
                 IF NOT EXISTS (SELECT 1 FROM pg_publication WHERE pubname = 'powersync') THEN
@@ -55,11 +55,28 @@ public static class PowerSyncPublication
 
         try
         {
-            await db.Database.ExecuteSqlRawAsync(sql, ct);
+            await db.Database.ExecuteSqlRawAsync(publicationSql, ct);
         }
         catch (Exception ex)
         {
             logger.LogWarning(ex, "Could not ensure PowerSync publication.");
+        }
+
+        try
+        {
+            var exists = await db
+                .Database.SqlQueryRaw<int>(
+                    "SELECT 1 AS \"Value\" FROM pg_database WHERE datname = 'powersync'"
+                )
+                .AnyAsync(ct);
+            if (!exists)
+            {
+                await db.Database.ExecuteSqlRawAsync("CREATE DATABASE powersync;", ct);
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Could not ensure PowerSync storage database.");
         }
     }
 }

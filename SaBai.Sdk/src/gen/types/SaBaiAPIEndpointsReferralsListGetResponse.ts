@@ -58,4 +58,12 @@ export type SaBaiAPIEndpointsReferralsListGetResponse = {
   villageCode: string;
   villageColorHex: string;
   tags: SystemCollectionsGenericIReadOnlyListOfSystemString;
+  referredToId: string | null;
+  amountPaidUsd: number | null;
+  amountPaidRiels: number | null;
+  memberWhoPaidId: string | null;
+  isReimbursed: boolean;
+  reimbursedAt: string | null;
+  reimbursedByUserId: string | null;
+  reimbursementNotes: string | null;
 };

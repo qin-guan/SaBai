@@ -156,4 +156,14 @@ public sealed class Referral : ITrackedEntity
     public Guid? MemberWhoPaidId { get; set; }
 
     public StaffUser? MemberWhoPaid { get; set; }
+
+    public bool IsReimbursed { get; set; }
+
+    public DateTimeOffset? ReimbursedAt { get; set; }
+
+    public Guid? ReimbursedByUserId { get; set; }
+
+    public StaffUser? ReimbursedByUser { get; set; }
+
+    public string? ReimbursementNotes { get; set; }
 }

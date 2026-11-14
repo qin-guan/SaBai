@@ -13,6 +13,7 @@ import {
   PhMapPin,
   PhNotebook,
   PhPill,
+  PhReceipt,
   PhScan,
   PhStethoscope,
   PhTag,
@@ -49,10 +50,14 @@ export interface NavItem {
  * filtered to who that station is waiting for, so every station works the same
  * way and a patient's whole journey is visible from any of them.
  */
+export const REFERRAL_PAGES: NavItem[] = [
+  { name: 'PN Referral Bills', navLabel: 'PN Bills', href: paths.referralBills(), icon: PhReceipt, keywords: 'bills payment reimbursement money usd riels khr settle pn consolidation overview' },
+]
+
 export const NAV_ITEMS: NavItem[] = [
   { name: 'Scan Face', href: paths.scanFace(), icon: PhScan, keywords: 'camera photo face match register new patient registration front desk visit start search find' },
   { name: 'Patients', href: paths.patient(), icon: PhUsers, keywords: 'patients records list demographics queue journey today' },
-  { name: 'Referrals', href: paths.referrals(), icon: PhArrowUpRight, keywords: 'referrals hospital specialist outcome status follow-up tracking' },
+  { name: 'Referrals', href: paths.referrals(), icon: PhArrowUpRight, keywords: 'referrals hospital specialist outcome status follow-up tracking', children: REFERRAL_PAGES },
 ]
 
 export const STATION_NAV_ITEMS: NavItem[] = [
@@ -89,6 +94,7 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
 
 /** Pages below a sidebar entry (nested under it there) and the account page: all reachable from search. */
 export const SUB_PAGES: NavItem[] = [
+  ...REFERRAL_PAGES,
   ...MEDICATION_PAGES,
   ...SETTINGS_PAGES,
   MY_ACCOUNT_PAGE,

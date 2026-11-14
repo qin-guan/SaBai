@@ -120,4 +120,8 @@ export type SaBaiAPIEndpointsReferralsGetResponse = {
    * @type string
    */
   memberWhoPaidId: string | null;
+  isReimbursed: boolean;
+  reimbursedAt: string | null;
+  reimbursedByUserId: string | null;
+  reimbursementNotes: string | null;
 };

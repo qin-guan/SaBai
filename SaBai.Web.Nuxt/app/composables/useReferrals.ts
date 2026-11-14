@@ -5,17 +5,21 @@ import {
   fetchReferral,
   fetchReferrals,
   fetchReferralsByConsult,
+  reimburseReferralBills,
   updateReferralBooth,
   updateReferralMoney,
   updateReferralOutcome,
   updateReferralParty,
+  updateReferralReimbursement,
   updateReferralState,
   type CreateReferralContext,
   type ReferralDetail,
+  type ReimburseReferralBillsVars,
   type UpdateReferralBoothVars,
   type UpdateReferralMoneyVars,
   type UpdateReferralOutcomeVars,
   type UpdateReferralPartyVars,
+  type UpdateReferralReimbursementVars,
   type UpdateReferralStateVars,
 } from '~/offline/mutations/referrals'
 import type { OfflineMutationDef } from '~/offline/defineOfflineMutation'
@@ -140,4 +144,21 @@ export function useUpdateReferralParty() {
  */
 export function useUpdateReferralMoney() {
   return useOfflineWrite(updateReferralMoney, (input: UpdateReferralMoneyInput) => input)
+}
+
+export type UpdateReferralReimbursementInput = UpdateReferralReimbursementVars
+export type ReimburseReferralBillsInput = ReimburseReferralBillsVars
+
+/**
+ * Marks a single referral bill as reimbursed or pending reimbursement.
+ */
+export function useUpdateReferralReimbursement() {
+  return useOfflineWrite(updateReferralReimbursement, (input: UpdateReferralReimbursementInput) => input)
+}
+
+/**
+ * Bulk marks multiple referral bills as reimbursed or pending reimbursement.
+ */
+export function useReimburseReferralBills() {
+  return useOfflineWrite(reimburseReferralBills, (input: ReimburseReferralBillsInput) => input)
 }

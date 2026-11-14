@@ -37,6 +37,14 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
                 x.Consult.Visit.VillageCodeId,
                 VillageCode = x.Consult.Visit.VillageCode.Code,
                 VillageColorHex = x.Consult.Visit.VillageCode.ColorHex,
+                x.ReferredToId,
+                x.AmountPaidUsd,
+                x.AmountPaidRiels,
+                x.MemberWhoPaidId,
+                x.IsReimbursed,
+                x.ReimbursedAt,
+                x.ReimbursedByUserId,
+                x.ReimbursementNotes,
             })
             .ToListAsync(ct);
 
@@ -60,7 +68,15 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
                 x.VillageCodeId,
                 x.VillageCode,
                 x.VillageColorHex,
-                tagsByPatient[x.PatientId].ToList()
+                tagsByPatient[x.PatientId].ToList(),
+                x.ReferredToId,
+                x.AmountPaidUsd,
+                x.AmountPaidRiels,
+                x.MemberWhoPaidId,
+                x.IsReimbursed,
+                x.ReimbursedAt,
+                x.ReimbursedByUserId,
+                x.ReimbursementNotes
             ))
             .ToList();
 

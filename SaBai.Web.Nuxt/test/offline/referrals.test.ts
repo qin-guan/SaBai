@@ -3,9 +3,11 @@ import { describe, expect, it } from 'vitest'
 import {
   createReferral,
   deleteReferralPartner,
+  reimburseReferralBills,
   sortReferralPartners,
   updateReferralBooth,
   updateReferralPartner,
+  updateReferralReimbursement,
   updateReferralState,
   type ReferralDetail,
   type ReferralListEntry,
@@ -81,6 +83,20 @@ describe('referral optimistic edits', () => {
     expect(qc.getQueryData<ReferralDetail>(queryKeys.referral(referralId))).toMatchObject({ referredToId: 'p1', classOfService: 'ChronicManagement' })
     expect(updateReferralBooth.recordIds!({ id: referralId, referredToId: 'p1' } as never)).toEqual([referralId])
     expect(updateReferralBooth.dependsOn!({ id: referralId, referredToId: 'p1' } as never)).toEqual(['p1'])
+  })
+
+  it('reimbursing a single bill or bulk bills updates both list and detail caches', () => {
+    const qc = new QueryClient()
+    qc.setQueryData<ReferralListEntry[]>(queryKeys.referrals(), [])
+    createReferral.optimistic!(createVars, qc)
+
+    updateReferralReimbursement.optimistic!({ id: referralId, isReimbursed: true, reimbursementNotes: 'Cash' }, qc)
+    expect(qc.getQueryData<ReferralDetail>(queryKeys.referral(referralId))).toMatchObject({ isReimbursed: true, reimbursementNotes: 'Cash' })
+    expect(qc.getQueryData<ReferralListEntry[]>(queryKeys.referrals())![0]).toMatchObject({ isReimbursed: true, reimbursementNotes: 'Cash' })
+
+    reimburseReferralBills.optimistic!({ referralIds: [referralId], isReimbursed: false }, qc)
+    expect(qc.getQueryData<ReferralDetail>(queryKeys.referral(referralId))).toMatchObject({ isReimbursed: false, reimbursedAt: null, reimbursementNotes: null })
+    expect(qc.getQueryData<ReferralListEntry[]>(queryKeys.referrals())![0]).toMatchObject({ isReimbursed: false, reimbursedAt: null })
   })
 })
 

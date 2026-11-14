@@ -41,7 +41,7 @@ const isParentActive = (item: NavItem) =>
 // A section opens when you are in it, and can be opened or closed by hand.
 const openSections = ref(new Set<string>())
 watch(() => route.path, () => {
-  for (const item of ADMIN_NAV_ITEMS) {
+  for (const item of ALL_NAV_ITEMS) {
     if (item.children && isInNavSection(item, route))
       openSections.value.add(item.href)
   }

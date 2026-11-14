@@ -2,6 +2,7 @@ using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 using SaBai.API.Auth;
 using SaBai.API.Data;
+using SaBai.API.Domain;
 
 namespace SaBai.API.Endpoints.Referrals.ReimburseBills.Post;
 

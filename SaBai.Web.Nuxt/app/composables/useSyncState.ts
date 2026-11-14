@@ -8,6 +8,7 @@ import {
   getOfflineUser,
   lastServerContactAt,
   requeueOutboxItem,
+  retryAllOutboxItems,
   subscribeOfflineUser,
   syncNow as runSyncNow,
 } from '~/offline/runtime'
@@ -111,7 +112,12 @@ export function useSyncState() {
     downloadForOffline,
     retry: (id: string) => requeueOutboxItem(id),
     overwrite: (id: string) => requeueOutboxItem(id, { overwrite: true }),
-    /** Drops an item (the change is lost) and takes its edit off the screen, also offline. */
+    /** Retries every conflict and rejected item of the user, then syncs. */
+    retryAll: retryAllOutboxItems,
+    /**
+     * Drops an item (the change is lost). Resolves whether its edit left the
+     * screen at once; otherwise it goes with the next refetch from the server.
+     */
     discard: (id: string) => discardOutboxItem(id),
     clearOfflineData,
   }

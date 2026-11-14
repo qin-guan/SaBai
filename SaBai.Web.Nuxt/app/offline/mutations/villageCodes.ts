@@ -126,6 +126,7 @@ const afterSave = async (saved: VillageCode, _vars: unknown, queryClient: QueryC
 
 export const createVillageCode = defineOfflineMutation({
   key: 'villageCodes.create',
+  creates: true,
   describe: (vars: SaveVillageCodeVars) => `New village code ${vars.code} (${vars.name})`,
   recordIds: vars => [vars.id],
   send: (vars, ctx) => {
@@ -141,6 +142,7 @@ export const createVillageCode = defineOfflineMutation({
     return saBaiAPIEndpointsVillageCodesCreatePostEndpoint({ ...apiConfig, ...requestOptions(ctx), body }).unwrap()
   },
   optimistic: (vars, queryClient) => upsertVillageCode(queryClient, optimisticRecord(queryClient, vars)),
+  revert: (vars, queryClient) => removeVillageCode(queryClient, vars.id),
   onSuccess: afterSave,
 })
 

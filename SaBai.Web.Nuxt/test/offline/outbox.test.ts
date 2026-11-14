@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { OfflineMutationContext, OfflineMutationDef } from '~/offline/defineOfflineMutation'
-import { partitionSendable, type OutboxItem } from '~/offline/outbox'
+import { MAX_SERVER_ERRORS, partitionSendable, type OutboxItem } from '~/offline/outbox'
 import { httpError, makeOutbox, networkError } from './helpers'
 
 interface Vars { recordId: string, n: number }
@@ -58,14 +58,11 @@ describe('outbox', () => {
     expect(calls.map(c => c.vars.n)).toEqual([1, 2, 3, 4])
   })
 
-  it('stamps the base time when queued and sends it as If-Unmodified-Since on replay', async () => {
+  it('keeps the base time each write was made from and sends it as If-Unmodified-Since on replay', async () => {
     const { def, calls } = recordingDef()
-    let serverTime: string | undefined = 'Fri, 13 Nov 2026 08:00:00 GMT'
-    const { outbox } = makeOutbox([def], { getBaseTime: () => serverTime })
-    const first = await outbox.enqueue(def, { recordId: 'a', n: 1 })
-    serverTime = 'Sat, 14 Nov 2026 09:30:00 GMT'
-    const second = await outbox.enqueue(def, { recordId: 'b', n: 2 })
-    serverTime = undefined
+    const { outbox } = makeOutbox([def])
+    const first = await outbox.enqueue(def, { recordId: 'a', n: 1 }, { baseTime: 'Fri, 13 Nov 2026 08:00:00 GMT' })
+    const second = await outbox.enqueue(def, { recordId: 'b', n: 2 }, { baseTime: 'Sat, 14 Nov 2026 09:30:00 GMT' })
     const third = await outbox.enqueue(def, { recordId: 'c', n: 3 })
 
     expect(first.baseTime).toBe('Fri, 13 Nov 2026 08:00:00 GMT')
@@ -127,27 +124,68 @@ describe('outbox', () => {
     expect(outbox.getItems()[0]?.status).toBe('queued')
   })
 
-  it('marks a 412 as conflict and other 4xx/5xx as rejected, with the server message', async () => {
+  it('marks a 412 as conflict and other 4xx as rejected, with the server message', async () => {
     const { def } = recordingDef()
     const { outbox } = makeOutbox([def])
     await outbox.enqueue(def, { recordId: 'a', n: 1 })
     await outbox.enqueue(def, { recordId: 'b', n: 2 })
     await outbox.enqueue(def, { recordId: 'c', n: 3 })
-    await outbox.enqueue(def, { recordId: 'd', n: 4 })
     def.send = async (vars: Vars) => {
       if (vars.n === 1) throw httpError(412, 'Changed by someone else.')
       if (vars.n === 2) throw httpError(400, 'Code is required.')
-      if (vars.n === 3) throw httpError(500)
       return { ok: vars.n }
     }
 
     const result = await outbox.replay()
-    expect(result).toEqual({ sent: 1, failed: 3, stopped: undefined })
+    expect(result).toEqual({ sent: 1, failed: 2, stopped: undefined })
     expect(outbox.getItems().map(i => [i.status, i.error])).toEqual([
       ['conflict', 'Changed by someone else.'],
       ['rejected', 'Code is required.'],
-      ['rejected', 'Request failed with status 500'],
     ])
+  })
+
+  it('stops at a server error and tries again later, rejecting the item after MAX_SERVER_ERRORS runs', async () => {
+    const { def, calls } = recordingDef()
+    const { outbox } = makeOutbox([def])
+    await outbox.enqueue(def, { recordId: 'a', n: 1 })
+    await outbox.enqueue(def, { recordId: 'b', n: 2 })
+    const send = def.send
+    let failing = true
+    def.send = async (vars, ctx) => {
+      if (failing && vars.n === 1) throw httpError(500, 'Database unavailable.')
+      return send(vars, ctx)
+    }
+
+    // A passing outage: the run stops, nothing is lost or reordered, and it goes through afterwards.
+    expect(await outbox.replay()).toEqual({ sent: 0, failed: 0, stopped: 'server' })
+    expect(outbox.getItems().map(i => [i.status, i.serverErrors])).toEqual([['queued', 1], ['queued', undefined]])
+    failing = false
+    expect(await outbox.replay()).toEqual({ sent: 2, failed: 0, stopped: undefined })
+    expect(calls.map(c => c.vars.n)).toEqual([1, 2])
+
+    // A write the server always fails on is rejected after a few runs, so the rest can go.
+    failing = true
+    await outbox.enqueue(def, { recordId: 'a', n: 1 })
+    await outbox.enqueue(def, { recordId: 'c', n: 3 })
+    for (let run = 1; run < MAX_SERVER_ERRORS; run++) {
+      expect((await outbox.replay()).stopped).toBe('server')
+    }
+    expect(await outbox.replay()).toEqual({ sent: 1, failed: 1, stopped: undefined })
+    expect(outbox.getItems().map(i => [i.status, i.error, i.serverErrors])).toEqual([['rejected', 'Database unavailable.', undefined]])
+    // Retry starts counting again.
+    await outbox.retry(outbox.getItems()[0]!.id)
+    expect(outbox.getItems()[0]).toMatchObject({ status: 'queued' })
+    expect(outbox.getItems()[0]!.serverErrors).toBeUndefined()
+  })
+
+  it('does not bring back an item that was removed from storage meanwhile (another tab)', async () => {
+    const { def } = recordingDef()
+    const { outbox, store } = makeOutbox([def])
+    const item = await outbox.enqueue(def, { recordId: 'a', n: 1 })
+    await store.del(item.id)
+    await outbox.retry(item.id)
+    expect(await store.get(item.id)).toBeUndefined()
+    expect(outbox.getItems()).toEqual([])
   })
 
   it('holds later writes for the same record behind a conflict, and sends the rest', async () => {
@@ -194,11 +232,32 @@ describe('outbox', () => {
     expect(sendable.map(i => i.id)).toEqual(['i4', 'i5'])
   })
 
+  it('blocks writes that depend on a failed write\'s records, but not its siblings', () => {
+    const item = (n: number, status: OutboxItem['status'], recordIds: string[], dependsOn: string[] = [], creates = false): OutboxItem =>
+      ({ id: `i${n}`, seq: n, key: 'k', vars: { n }, label: '', queuedAt: '', status, recordIds, dependsOn, creates })
+    const { sendable, blocked } = partitionSendable([
+      // A rejected registration holds back what needs its patient or visit, and what needs that in turn…
+      item(1, 'rejected', ['patient-1', 'visit-1'], [], true),
+      item(2, 'queued', ['consult-1'], ['visit-1', 'patient-1'], true),
+      item(3, 'queued', ['referral-1'], ['consult-1'], true),
+      // …while a rejected vitals does not hold back the same visit's eyesight,
+      item(4, 'rejected', ['vitals-2'], ['visit-2', 'patient-2'], true),
+      item(5, 'queued', ['eyesight-2'], ['visit-2', 'patient-2'], true),
+      // and a conflicted patient edit does not hold back that patient's clinical writes,
+      item(6, 'conflict', ['patient-3']),
+      item(7, 'queued', ['consult-3'], ['visit-3', 'patient-3'], true),
+      // but a later edit of the same patient waits.
+      item(8, 'queued', ['patient-3']),
+    ])
+    expect(blocked.map(i => i.id)).toEqual(['i2', 'i3', 'i8'])
+    expect(sendable.map(i => i.id)).toEqual(['i5', 'i7'])
+  })
+
   it('overwrite resends without If-Unmodified-Since; retry keeps it', async () => {
     const { def, calls } = recordingDef()
     const { outbox } = makeOutbox([def])
-    await outbox.enqueue(def, { recordId: 'a', n: 1 })
-    await outbox.enqueue(def, { recordId: 'b', n: 2 })
+    await outbox.enqueue(def, { recordId: 'a', n: 1 }, { baseTime: 'Fri, 13 Nov 2026 08:00:00 GMT' })
+    await outbox.enqueue(def, { recordId: 'b', n: 2 }, { baseTime: 'Fri, 13 Nov 2026 08:00:00 GMT' })
     const send = def.send
     let fail = true
     def.send = async (vars, ctx) => {
@@ -289,16 +348,26 @@ describe('outbox', () => {
     expect(invalidate).not.toHaveBeenCalled()
   })
 
-  it('mustQueue: when anything is queued, or a waiting item touches the same record', async () => {
+  it('mustQueue: when anything is queued, or a waiting item writes the same record or creates one it needs', async () => {
     const { def } = recordingDef()
     const { outbox } = makeOutbox([def])
-    expect(outbox.mustQueue(['a'])).toBe(false)
+    expect(outbox.mustQueue({ recordIds: ['a'] })).toBe(false)
     await outbox.enqueue(def, { recordId: 'a', n: 1 })
-    expect(outbox.mustQueue(['z'])).toBe(true)
+    expect(outbox.mustQueue({ recordIds: ['z'] })).toBe(true)
     def.send = async () => { throw httpError(400) }
     await outbox.replay()
-    expect(outbox.mustQueue(['z'])).toBe(false)
-    expect(outbox.mustQueue(['a'])).toBe(true)
+    expect(outbox.mustQueue({ recordIds: ['z'] })).toBe(false)
+    expect(outbox.mustQueue({ recordIds: ['a'] })).toBe(true)
+    // `a` was only changed, not created, by the failed write: a write that needs it may go.
+    expect(outbox.mustQueue({ recordIds: ['z'], dependsOn: ['a'] })).toBe(false)
+
+    const create = recordingDef('test.create')
+    create.def.creates = true
+    await outbox.enqueue(create.def, { recordId: 'new', n: 2 })
+    create.def.send = async () => { throw httpError(400) }
+    outbox.getItems() // the failed create below
+    await outbox.replay()
+    expect(outbox.mustQueue({ recordIds: ['z'], dependsOn: ['new'] })).toBe(true)
   })
 
   it('loads persisted items in order and clears everything', async () => {

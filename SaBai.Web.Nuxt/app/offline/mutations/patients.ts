@@ -266,6 +266,16 @@ function setLatestVisit(queryClient: QueryClient, patientId: string, visit: Pati
   })
 }
 
+/** Takes a patient that was never sent off every cached list (discarding their registration). */
+function removePatient(queryClient: QueryClient, id: string) {
+  queryClient.removeQueries({ queryKey: queryKeys.patient(id), exact: true })
+  queryClient.removeQueries({ queryKey: queryKeys.patientVisits(id), exact: true })
+  queryClient.setQueryData<PatientsList | undefined>(queryKeys.patientsList(), old =>
+    old && { ...old, patients: old.patients.filter(p => p.id !== id) })
+  queryClient.setQueryData<PatientsWithLatestVisit | undefined>(queryKeys.patientsWithLatestVisit(), old =>
+    old && { ...old, patients: old.patients.filter(p => p.id !== id) })
+}
+
 function addTagsToCache(queryClient: QueryClient, tags: readonly string[]) {
   if (tags.length === 0) return
   queryClient.setQueryData<string[] | undefined>(queryKeys.tags(), old => old && normalizeTags([...old, ...tags]))
@@ -376,8 +386,11 @@ function applyRegistered(queryClient: QueryClient, response: SaBaiAPIEndpointsPa
 
 export const registerPatient = defineOfflineMutation({
   key: 'patients.register',
+  creates: true,
   describe: (vars: RegisterPatientVars) => `Register patient ${vars.name.trim()}`,
   recordIds: vars => [vars.id, vars.visitId, ...(vars.vitalsId ? [vars.vitalsId] : [])],
+  // The village may have been created on this device too.
+  dependsOn: vars => [vars.village.villageCodeId],
   send: (vars, ctx) =>
     saBaiAPIEndpointsPatientsCreatePostEndpoint({
       ...apiConfig,
@@ -402,6 +415,7 @@ export const registerPatient = defineOfflineMutation({
       },
     }).unwrap(),
   optimistic: applyRegistration,
+  revert: (vars, queryClient) => removePatient(queryClient, vars.id),
   onSuccess: async (result, _vars, queryClient) => {
     applyRegistered(queryClient, result)
     await Promise.all([
@@ -447,6 +461,8 @@ export const updatePatient = defineOfflineMutation({
   key: 'patients.update',
   describe: (vars: UpdatePatientVars) => `Edit patient ${vars.name.trim()}`,
   recordIds: vars => [vars.id],
+  // The details form shows the patient record.
+  baseQueries: vars => [queryKeys.patient(vars.id)],
   send: (vars, ctx) =>
     saBaiAPIEndpointsPatientsUpdatePatchEndpoint({
       ...apiConfig,
@@ -483,7 +499,11 @@ export interface StartVisitVars {
   patientId: string
   patientName: string
   village: VisitVillage
-  /** ISO time the visit was started on this device; sent so replay keeps the order of arrival. */
+  /**
+   * ISO time the visit was started on this device: sent only when the visit is
+   * replayed from the outbox (it really started earlier); a live send lets the
+   * server date it.
+   */
   date: string
 }
 
@@ -508,19 +528,29 @@ function optimisticVisit(vars: StartVisitVars): PatientVisit {
 
 export const startVisit = defineOfflineMutation({
   key: 'visits.start',
+  creates: true,
   describe: (vars: StartVisitVars) => `New visit for ${vars.patientName}`,
-  recordIds: vars => [vars.id, vars.patientId],
+  recordIds: vars => [vars.id],
+  dependsOn: vars => [vars.patientId, vars.village.villageCodeId],
   send: (vars, ctx) =>
     saBaiAPIEndpointsVisitsCreatePostEndpoint({
       ...apiConfig,
       ...requestOptions(ctx),
-      body: { id: vars.id, patientId: vars.patientId, villageCodeId: vars.village.villageCodeId, date: vars.date },
+      body: {
+        id: vars.id,
+        patientId: vars.patientId,
+        villageCodeId: vars.village.villageCodeId,
+        date: ctx.replay ? vars.date : undefined,
+      },
     }).unwrap(),
   optimistic: (vars, queryClient) => {
     const visit = optimisticVisit(vars)
     upsertVisit(queryClient, visit, true)
     setLatestVisit(queryClient, vars.patientId, visit)
   },
+  revert: (vars, queryClient) =>
+    queryClient.setQueryData<PatientVisits | undefined>(queryKeys.patientVisits(vars.patientId), old =>
+      old && { ...old, visits: old.visits.filter(v => v.id !== vars.id) }),
   onSuccess: async (_result: SaBaiAPIEndpointsVisitsCreatePostResponse, _vars, queryClient) => {
     await queryClient.invalidateQueries({ queryKey: queryKeys.patients() })
   },
@@ -562,8 +592,10 @@ function upsertFirst<T extends { id: string | number }>(queryClient: QueryClient
 
 export const recordConsent = defineOfflineMutation({
   key: 'patients.recordConsent',
+  creates: true,
   describe: (vars: RecordConsentVars) => `${vars.granted ? 'Consent given' : 'Consent revoked'} (${vars.consentType})`,
-  recordIds: vars => [vars.id, vars.patientId],
+  recordIds: vars => [vars.id],
+  dependsOn: vars => [vars.patientId],
   send: (vars, ctx) =>
     saBaiAPIEndpointsPatientsConsentsPostEndpoint({
       ...apiConfig,
@@ -586,8 +618,10 @@ export const recordConsent = defineOfflineMutation({
 
 export const recordDisclosure = defineOfflineMutation({
   key: 'patients.recordDisclosure',
+  creates: true,
   describe: (vars: RecordDisclosureVars) => `Disclosure to ${vars.recipient}`,
-  recordIds: vars => [vars.id, vars.patientId],
+  recordIds: vars => [vars.id],
+  dependsOn: vars => [vars.patientId],
   send: (vars, ctx) =>
     saBaiAPIEndpointsPatientsDisclosuresPostEndpoint({
       ...apiConfig,

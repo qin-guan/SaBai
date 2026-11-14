@@ -106,16 +106,23 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         {
             return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
         }
-        catch (DbUpdateException ex) when (IsPrimaryKeyViolation(ex))
+        catch (DbUpdateException ex) when (IsUniqueViolation(ex))
         {
-            throw new DuplicateKeyException(ex);
+            if (IsPrimaryKeyViolation(ex) || await AnyInsertedKeyExistsAsync(cancellationToken))
+            {
+                throw new DuplicateKeyException(ex);
+            }
+
+            throw;
         }
     }
 
+    private static bool IsUniqueViolation(DbUpdateException ex) =>
+        ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation };
+
     /// <summary>
     /// An insert collided with an existing primary key. Postgres names primary-key constraints
-    /// <c>PK_*</c> (EF Core's convention); other unique indexes stay ordinary unique violations
-    /// that endpoints turn into their own messages.
+    /// <c>PK_*</c> (EF Core's convention).
     /// </summary>
     private static bool IsPrimaryKeyViolation(DbUpdateException ex) =>
         ex.InnerException is PostgresException
@@ -124,6 +131,50 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             ConstraintName: { } constraint,
         }
         && constraint.StartsWith("PK_", StringComparison.Ordinal);
+
+    /// <summary>
+    /// After a unique violation on another index (e.g. one vitals record per visit): whether a
+    /// row this save tried to insert already exists by its id, i.e. the same create was saved
+    /// by a concurrent request. Postgres may report either constraint first.
+    /// </summary>
+    private async Task<bool> AnyInsertedKeyExistsAsync(CancellationToken ct)
+    {
+        try
+        {
+            foreach (var entry in ChangeTracker.Entries().Where(x => x.State == EntityState.Added))
+            {
+                if (
+                    entry.Metadata.FindPrimaryKey()
+                        is not { Properties: [{ Name: "Id", ClrType: var type }] }
+                    || type != typeof(Guid)
+                    || entry.Metadata.GetTableName() is not { } table
+                )
+                {
+                    continue;
+                }
+
+                var id = (Guid)entry.Property("Id").CurrentValue!;
+                var schema = entry.Metadata.GetSchema();
+                var name = schema is null ? $"\"{table}\"" : $"\"{schema}\".\"{table}\"";
+                var exists = await Database
+                    .SqlQueryRaw<bool>(
+                        $"SELECT EXISTS (SELECT 1 FROM {name} WHERE \"Id\" = @p0) AS \"Value\"",
+                        new NpgsqlParameter("p0", id)
+                    )
+                    .SingleAsync(ct);
+                if (exists)
+                {
+                    return true;
+                }
+            }
+        }
+        catch (Exception)
+        {
+            // In a failed transaction nothing more can be read: treat it as an ordinary violation.
+        }
+
+        return false;
+    }
 
     /// <summary>
     /// Stamps when a station record (vitals, eyesight, dental) was first saved,

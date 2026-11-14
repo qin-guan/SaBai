@@ -29,6 +29,7 @@ const {
   syncNow,
   downloadForOffline,
   retry,
+  retryAll,
   overwrite,
   discard,
 } = useSyncState()
@@ -89,9 +90,26 @@ async function act(item: OutboxItem, action: (id: string) => Promise<unknown>) {
 async function confirmDiscard() {
   const item = discarding.value
   if (!item) return
-  await act(item, discard)
+  let shownAtOnce = true
+  await act(item, async id => (shownAtOnce = await discard(id)))
   discarding.value = null
-  toast.success('Change discarded.')
+  if (shownAtOnce) toast.success('Change discarded.')
+  else toast.success('Change discarded. Screens show it until they are next refreshed from the server.')
+}
+
+const retryingAll = ref(false)
+async function onRetryAll() {
+  retryingAll.value = true
+  try {
+    await retryAll()
+  }
+  catch (err) {
+    console.error(err)
+    toast.error('That did not work. Try again.')
+  }
+  finally {
+    retryingAll.value = false
+  }
 }
 
 const timeFormat = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' })
@@ -132,6 +150,11 @@ const prefetchPercent = computed(() =>
 
     <!-- Conflicts and rejections -->
     <AppPanel v-if="attentionItems.length > 0" :title="`Needs attention (${attentionItems.length})`" flush>
+      <template v-if="attentionItems.length > 1" #actions>
+        <Button size="sm" variant="outline" :disabled="retryingAll || isOffline" @click="onRetryAll">
+          <PhArrowClockwise aria-hidden="true" /> Retry all
+        </Button>
+      </template>
       <ul class="divide-y divide-border">
         <li
           v-for="item in attentionItems"
@@ -279,6 +302,9 @@ const prefetchPercent = computed(() =>
       </p>
       <p class="mt-2">
         The change is deleted from this device and will never reach the server. This cannot be undone.
+      </p>
+      <p v-if="discarding.status === 'queued'" class="mt-2 text-muted-foreground">
+        Screens may still show it until they are next refreshed from the server.
       </p>
       <p v-if="discardingParked" class="mt-2">
         It was made by {{ discarding.userName || 'another user' }}, who has not signed in again since.

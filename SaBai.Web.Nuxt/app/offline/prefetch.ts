@@ -67,10 +67,6 @@ export function registerOfflinePrefetch(name: string, fn: OfflinePrefetchFn, opt
   prefetches.set(name, { fn, roles: options.roles })
 }
 
-export function listOfflinePrefetches(): string[] {
-  return [...prefetches.keys()]
-}
-
 export function getPrefetchState(): PrefetchState {
   return state
 }

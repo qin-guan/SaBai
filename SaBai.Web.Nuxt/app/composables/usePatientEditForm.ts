@@ -84,9 +84,10 @@ export function usePatientEditForm(
     }
     catch (error) {
       console.error('Error updating patient:', error)
-      // Surface a known conflict (duplicate ID) directly; otherwise a generic message.
+      // Surface a known conflict (duplicate ID, changed by someone else) directly; otherwise a generic message.
+      const status = getApiErrorStatus(error)
       toast.error(
-        getApiErrorStatus(error) === 409
+        status === 409 || status === 412
           ? getApiErrorMessage(error, 'Failed to update patient. Please try again.')
           : 'Failed to update patient. Please try again.',
       )

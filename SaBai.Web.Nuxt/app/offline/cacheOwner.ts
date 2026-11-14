@@ -14,9 +14,10 @@ import { readLocal, writeLocal } from './storage'
 export const CACHE_OWNER_KEY = 'sabai.offline.cacheOwner'
 
 /**
- * Records `userId` as the owner of the cache. If another user owned it, removes
- * every cached query except those matching `keep` (the session query) — the
- * persister then saves the emptied cache — and returns true.
+ * Records `userId` as the owner of the cache. Unless they already owned it,
+ * removes every cached query except those matching `keep` (the session query)
+ * — the persister then saves the emptied cache — and returns true. A cache
+ * with no recorded owner is dropped too: whose it was cannot be known.
  */
 export function claimQueryCache(
   queryClient: QueryClient,
@@ -26,7 +27,6 @@ export function claimQueryCache(
   const owner = readLocal<string>(CACHE_OWNER_KEY)
   if (owner === userId) return false
   writeLocal(CACHE_OWNER_KEY, userId)
-  if (owner === undefined) return false
   queryClient.removeQueries({ predicate: query => !keep(query.queryKey) })
   return true
 }

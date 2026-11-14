@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { claimQueryCache, releaseQueryCache } from '~/offline/cacheOwner'
 import type { OfflineMutationContext, OfflineMutationDef } from '~/offline/defineOfflineMutation'
 import { runOfflineMutation } from '~/offline/mutate'
-import { undoQueuedEdit } from '~/offline/optimistic'
+import { discardQueuedEdit } from '~/offline/optimistic'
 import type { OutboxUser } from '~/offline/outbox'
 import { httpError, makeOutbox, newQueryClient } from './helpers'
 
@@ -73,8 +73,8 @@ describe('outbox ownership', () => {
     const { outbox, def, signIn } = setup()
     await outbox.enqueue(def, { recordId: 'patient-1', n: 1 })
     signIn(bob)
-    expect(outbox.mustQueue(['patient-9'])).toBe(false)
-    expect(outbox.mustQueue(['patient-1'])).toBe(true)
+    expect(outbox.mustQueue({ recordIds: ['patient-9'] })).toBe(false)
+    expect(outbox.mustQueue({ recordIds: ['patient-1'] })).toBe(true)
   })
 
   it('sends nothing while nobody is signed in', async () => {
@@ -131,7 +131,10 @@ describe('cache owner', () => {
     qc.setQueryData(['patients', 'list'], ['alice data'])
     qc.setQueryData(['auth', 'me'], { id: 'bob' })
 
-    expect(claimQueryCache(qc, 'alice', isSession)).toBe(false) // first owner
+    // A cache with no recorded owner cannot be trusted to be alice's: dropped.
+    expect(claimQueryCache(qc, 'alice', isSession)).toBe(true)
+    expect(qc.getQueryData(['patients', 'list'])).toBeUndefined()
+    qc.setQueryData(['patients', 'list'], ['alice data'])
     expect(claimQueryCache(qc, 'alice', isSession)).toBe(false)
     expect(qc.getQueryData(['patients', 'list'])).toEqual(['alice data'])
 
@@ -139,10 +142,11 @@ describe('cache owner', () => {
     expect(qc.getQueryData(['patients', 'list'])).toBeUndefined()
     expect(qc.getQueryData(['auth', 'me'])).toEqual({ id: 'bob' })
 
+    // After sign-out nobody owns it: whatever is left is dropped for the next user.
     releaseQueryCache()
-    qc.setQueryData(['patients', 'list'], ['fresh'])
-    expect(claimQueryCache(qc, 'alice', isSession)).toBe(false)
-    expect(qc.getQueryData(['patients', 'list'])).toEqual(['fresh'])
+    qc.setQueryData(['patients', 'list'], ['left over'])
+    expect(claimQueryCache(qc, 'alice', isSession)).toBe(true)
+    expect(qc.getQueryData(['patients', 'list'])).toBeUndefined()
   })
 })
 
@@ -158,36 +162,38 @@ describe('discarding a queued write offline', () => {
       qc.setQueryData<Item[]>(listKey, old => old && [vars, ...old.filter(i => i.id !== vars.id)])
       qc.setQueryData<Item>(detailKey(vars.id), vars)
     },
+    revert: (vars, qc) => {
+      qc.setQueryData<Item[]>(listKey, old => old?.filter(i => i.id !== vars.id))
+      qc.removeQueries({ queryKey: detailKey(vars.id), exact: true })
+    },
   }
+  const getDefinition = (d: OfflineMutationDef<Item, Item>) => (key: string) => (key === d.key ? d : undefined)
 
-  it('takes the discarded edit off the screen and keeps the other queued edits', async () => {
+  it('reverts the discarded edit by id, keeping rows fetched since and the other queued edits', async () => {
     const { outbox, queryClient } = makeOutbox([def])
     const runtime = { queryClient, outbox, isOffline: () => true }
     queryClient.setQueryData<Item[]>(listKey, [{ id: 'old', name: 'Server' }])
 
     await runOfflineMutation(def, { id: 'a', name: 'A' }, runtime)
     await runOfflineMutation(def, { id: 'b', name: 'B' }, runtime)
-    expect(queryClient.getQueryData(listKey)).toEqual([{ id: 'b', name: 'B' }, { id: 'a', name: 'A' }, { id: 'old', name: 'Server' }])
+    // Fetched after the writes were made.
+    queryClient.setQueryData<Item[]>(listKey, old => [...old!, { id: 'later', name: 'Later' }])
 
     const [first] = outbox.getItems()
-    expect(first!.undo).toEqual([
-      { queryKey: listKey, existed: true, data: [{ id: 'old', name: 'Server' }] },
-      { queryKey: detailKey('a'), existed: false },
-    ])
-    const invalidate = vi.spyOn(queryClient, 'invalidateQueries')
+    expect(first).not.toHaveProperty('undo')
     await outbox.discard(first!.id)
-    undoQueuedEdit(queryClient, first!, outbox.getItems(), key => (key === def.key ? def : undefined))
+    expect(discardQueuedEdit(queryClient, first!, outbox.getItems(), getDefinition(def))).toBe(true)
 
-    expect(queryClient.getQueryData(listKey)).toEqual([{ id: 'b', name: 'B' }, { id: 'old', name: 'Server' }])
+    expect(queryClient.getQueryData(listKey)).toEqual([{ id: 'b', name: 'B' }, { id: 'old', name: 'Server' }, { id: 'later', name: 'Later' }])
     expect(queryClient.getQueryCache().find({ queryKey: detailKey('a'), exact: true })).toBeUndefined()
     expect(queryClient.getQueryData(detailKey('b'))).toEqual({ id: 'b', name: 'B' })
-    expect(invalidate).toHaveBeenCalledWith({ queryKey: listKey, exact: true })
   })
 
-  it('without an undo record, refetches everything instead', () => {
+  it('without revert, leaves the screen to the next refetch', () => {
     const qc = newQueryClient()
     const invalidate = vi.spyOn(qc, 'invalidateQueries')
-    undoQueuedEdit(qc, {}, [], () => undefined)
+    const plain = { ...def, revert: undefined }
+    expect(discardQueuedEdit(qc, { key: plain.key, vars: { id: 'a', name: 'A' } }, [], getDefinition(plain))).toBe(false)
     expect(invalidate).toHaveBeenCalledWith()
   })
 })

@@ -1,4 +1,4 @@
-import type { QueryClient } from '@tanstack/vue-query'
+import type { QueryClient, QueryKey } from '@tanstack/vue-query'
 
 /**
  * Offline-capable writes.
@@ -14,12 +14,18 @@ import type { QueryClient } from '@tanstack/vue-query'
 export interface OfflineMutationContext {
   queryClient: QueryClient
   /**
-   * Extra request headers for the SDK call. Empty when sent live; carries
-   * `If-Unmodified-Since` when replayed from the outbox. Pass them with
-   * `...requestOptions(ctx)`.
+   * Extra request headers for the SDK call: `If-Unmodified-Since`, the server
+   * time of the cached data the write was made from (absent when it was made
+   * from no cached data). Pass them with `...requestOptions(ctx)`.
    */
   headers: Record<string, string>
   signal?: AbortSignal
+  /**
+   * True when sent from the outbox: the write was made earlier, so times in
+   * `vars` (e.g. when a visit was opened) are real; a live send lets the
+   * server use its own clock.
+   */
+  replay: boolean
 }
 
 export interface OfflineMutationDef<TVars, TResult> {
@@ -51,12 +57,39 @@ export interface OfflineMutationDef<TVars, TResult> {
    */
   onSuccess?: (result: TResult, vars: TVars, queryClient: QueryClient) => void | Promise<void>
   /**
-   * Ids of the records this write creates, changes or deletes (and of the parent
-   * records it depends on, e.g. the patient and visit for a vitals record). When
-   * a queued write ends up in conflict or is rejected, later queued writes that
-   * share one of these ids wait behind it instead of being sent out of order.
+   * Ids of the records this write creates, changes or deletes. When a queued
+   * write ends up in conflict or is rejected, later queued writes for the same
+   * records, or that depend on one of them, wait behind it.
    */
   recordIds?: (vars: TVars) => string[]
+  /**
+   * True when the write creates the records in `recordIds` (a registration, a
+   * new consult). Writes that `dependsOn` one of them wait while it is failed.
+   */
+  creates?: boolean
+  /**
+   * Ids of records that must exist on the server before this write can succeed
+   * (the patient and visit of a vitals record, the consult of a referral). It
+   * waits behind a failed write that creates one of them (a rejected
+   * registration), but not behind a failed change to one (a conflicted patient
+   * edit) or to a sibling (a rejected vitals does not hold back the same
+   * visit's eyesight).
+   */
+  dependsOn?: (vars: TVars) => string[]
+  /**
+   * The cached queries the write is made from — what the form showed (e.g. the
+   * patient detail for a patient edit). The write is checked against changes
+   * made after the oldest of them was fetched. Default: every cached query the
+   * optimistic edit changes.
+   */
+  baseQueries?: (vars: TVars) => QueryKey[]
+  /**
+   * Takes this write's optimistic edit off the cache by id (e.g. removes a
+   * created record from the lists), for discarding a queued write while
+   * offline. Without it, a discarded write stays on screen until the next
+   * successful refetch.
+   */
+  revert?: (vars: TVars, queryClient: QueryClient) => void
 }
 
 // Registered definitions are stored without their type parameters.

@@ -34,7 +34,6 @@ export function makeOutbox(defs: AnyOfflineMutationDef[], overrides: Partial<Out
     store,
     getDefinition: key => byKey.get(key),
     getQueryClient: () => queryClient,
-    getBaseTime: () => 'Fri, 13 Nov 2026 08:00:00 GMT',
     newId: sequentialId,
     ...overrides,
   })

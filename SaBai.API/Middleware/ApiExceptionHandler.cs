@@ -123,7 +123,7 @@ internal sealed class ApiExceptionHandler(ILogger<ApiExceptionHandler> logger) :
             {
                 Status = StatusCodes.Status412PreconditionFailed,
                 Title = "Precondition Failed",
-                Detail = "The record was changed by another user after this change was made.",
+                Detail = "The record was changed by another user after the data this change was made from was loaded.",
                 Instance = httpContext.Request.Path,
                 Extensions =
                 {

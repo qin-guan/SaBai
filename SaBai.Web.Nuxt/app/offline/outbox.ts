@@ -21,9 +21,10 @@ import type { KeyValueStore } from './storage'
  *
  * A `conflict` or `rejected` item does not hold up the rest of the outbox,
  * except later items for the same record or for a record it creates: a later
- * item whose `recordIds` or `dependsOn` share an id with the failed item's
- * `recordIds` stays queued behind it until it is retried, overwritten or
- * discarded (and holds back items behind it in turn). After a run that sent
+ * item whose `recordIds` share an id with the failed item's, or whose
+ * `dependsOn` name a record the failed item creates, stays queued behind it
+ * until it is retried, overwritten or discarded (and holds back items behind
+ * it in turn). After a run that sent
  * anything and was not stopped, all queries are invalidated so the cache
  * matches the server.
  *
@@ -54,6 +55,8 @@ export interface OutboxItem {
   error?: string
   /** Records the write creates or changes (`OfflineMutationDef.recordIds`). */
   recordIds?: string[]
+  /** Whether it creates the records in `recordIds` (`OfflineMutationDef.creates`). */
+  creates?: boolean
   /** Records that must exist on the server first (`OfflineMutationDef.dependsOn`). */
   dependsOn?: string[]
   /** Runs in a row that stopped on a server error (5xx) for this item. */
@@ -119,11 +122,11 @@ export interface Outbox {
   isReplaying: () => boolean
   /**
    * Whether a new write must be queued rather than sent now to keep order:
-   * any of the user's items is still queued, or any item (anyone's) that
-   * creates or changes one of the records in `ids` (the new write's
-   * `recordIds` and `dependsOn`) is waiting.
+   * any of the user's items is still queued, or any item (anyone's) is waiting
+   * that changes one of the new write's `recordIds` or creates one of its
+   * `dependsOn`.
    */
-  mustQueue: (ids?: string[]) => boolean
+  mustQueue: (write?: Pick<OutboxItem, 'recordIds' | 'dependsOn'>) => boolean
   /** The user's queued items that are not blocked behind a conflict/rejected/parked item of the same record. */
   sendableCount: () => number
   /** Queues a write; `baseTime` is the server time of the data it was made from (`If-Unmodified-Since`). */
@@ -150,9 +153,26 @@ function intersects(ids: readonly string[] | undefined, blocked: ReadonlySet<str
   return !!ids?.some(id => blocked.has(id))
 }
 
-/** Whether an item creates/changes or depends on one of the `blocked` records. */
-function touchesBlocked(item: Pick<OutboxItem, 'recordIds' | 'dependsOn'>, blocked: ReadonlySet<string>): boolean {
-  return intersects(item.recordIds, blocked) || intersects(item.dependsOn, blocked)
+/** Records held back by failed, blocked or parked items: the ones they write, and the ones they create. */
+interface Blocked {
+  records: Set<string>
+  created: Set<string>
+}
+
+function newBlocked(): Blocked {
+  return { records: new Set(), created: new Set() }
+}
+
+function block(blocked: Blocked, item: Pick<OutboxItem, 'recordIds' | 'creates'>) {
+  for (const id of item.recordIds ?? []) {
+    blocked.records.add(id)
+    if (item.creates) blocked.created.add(id)
+  }
+}
+
+/** Whether an item writes a held-back record or needs one that is not created yet. */
+function isBlocked(item: Pick<OutboxItem, 'recordIds' | 'dependsOn'>, blocked: Blocked): boolean {
+  return intersects(item.recordIds, blocked.records) || intersects(item.dependsOn, blocked.created)
 }
 
 function sortItems(items: OutboxItem[]): OutboxItem[] {
@@ -161,27 +181,27 @@ function sortItems(items: OutboxItem[]): OutboxItem[] {
 
 /**
  * Which queued items may be sent now: walks the outbox in order, collecting
- * the `recordIds` of conflict/rejected items and of other users' (parked)
- * items; a queued item that changes or depends on one of them is blocked, and
- * blocks later items for its own records in turn.
+ * the records of conflict/rejected items and of other users' (parked) items;
+ * a queued item that writes one of them, or depends on one they create, is
+ * blocked, and blocks later items in turn.
  */
 export function partitionSendable(
   items: readonly OutboxItem[],
   isOwn: (item: OutboxItem) => boolean = () => true,
 ): { sendable: OutboxItem[], blocked: OutboxItem[], parked: OutboxItem[] } {
-  const blockedIds = new Set<string>()
+  const held = newBlocked()
   const sendable: OutboxItem[] = []
   const blocked: OutboxItem[] = []
   const parked: OutboxItem[] = []
   for (const item of items) {
     if (!isOwn(item)) {
       parked.push(item)
-      for (const id of item.recordIds ?? []) blockedIds.add(id)
+      block(held, item)
       continue
     }
-    if (item.status !== 'queued' || touchesBlocked(item, blockedIds)) {
+    if (item.status !== 'queued' || isBlocked(item, held)) {
       if (item.status === 'queued') blocked.push(item)
-      for (const id of item.recordIds ?? []) blockedIds.add(id)
+      block(held, item)
       continue
     }
     sendable.push(item)
@@ -270,6 +290,7 @@ export function createOutbox(options: OutboxOptions): Outbox {
     if (extra.baseTime) item.baseTime = extra.baseTime
     const recordIds = def.recordIds?.(plainVars)
     if (recordIds?.length) item.recordIds = [...recordIds]
+    if (def.creates) item.creates = true
     const dependsOn = def.dependsOn?.(plainVars)
     if (dependsOn?.length) item.dependsOn = [...dependsOn]
     const user = options.getCurrentUser?.()
@@ -291,21 +312,21 @@ export function createOutbox(options: OutboxOptions): Outbox {
     // Another tab may have changed the outbox since this tab last read it.
     await load()
 
-    const blockedIds = new Set<string>()
+    const held = newBlocked()
     for (const listed of items) {
       if (signal.aborted) break
       // Re-read: another tab may have sent, retried or discarded it meanwhile.
       const item = await store.get(listed.id)
       if (!item) continue
-      if (!isOwn(item) || item.status !== 'queued' || touchesBlocked(item, blockedIds)) {
-        for (const id of item.recordIds ?? []) blockedIds.add(id)
+      if (!isOwn(item) || item.status !== 'queued' || isBlocked(item, held)) {
+        block(held, item)
         continue
       }
 
       const def = options.getDefinition(item.key)
       if (!def) {
         await update(item.id, { status: 'rejected', error: `This app version cannot send "${item.key}" changes.` })
-        for (const id of item.recordIds ?? []) blockedIds.add(id)
+        block(held, item)
         result.failed++
         continue
       }
@@ -331,12 +352,12 @@ export function createOutbox(options: OutboxOptions): Outbox {
             return result
           }
           await update(item.id, { status: 'rejected', error: describeWriteError(error) }, ['serverErrors'])
-          for (const id of item.recordIds ?? []) blockedIds.add(id)
+          block(held, item)
           result.failed++
           continue
         }
         await update(item.id, { status: failure, error: describeWriteError(error) })
-        for (const id of item.recordIds ?? []) blockedIds.add(id)
+        block(held, item)
         result.failed++
         continue
       }
@@ -386,11 +407,11 @@ export function createOutbox(options: OutboxOptions): Outbox {
     return running
   }
 
-  function mustQueue(ids?: string[]): boolean {
+  function mustQueue(write: Pick<OutboxItem, 'recordIds' | 'dependsOn'> = {}): boolean {
     if (items.some(item => item.status === 'queued' && isOwn(item))) return true
-    if (!ids?.length) return false
-    const waiting = new Set(items.flatMap(item => item.recordIds ?? []))
-    return ids.some(id => waiting.has(id))
+    const waiting = newBlocked()
+    for (const item of items) block(waiting, item)
+    return isBlocked(write, waiting)
   }
 
   return {

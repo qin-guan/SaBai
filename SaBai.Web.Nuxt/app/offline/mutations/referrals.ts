@@ -176,9 +176,16 @@ function optimisticReferral(vars: CreateReferralVars, now: string) {
 
 export const createReferral = defineOfflineMutation({
   key: 'referrals.create',
+  creates: true,
   describe: (vars: CreateReferralVars) =>
     `Referral${vars.context ? ` for ${vars.context.patientName}` : ''}: ${vars.referredFor}`,
-  recordIds: vars => [vars.id, vars.consultId, ...(vars.context ? [vars.context.patientId] : [])],
+  recordIds: vars => [vars.id],
+  dependsOn: vars => [vars.consultId, ...(vars.context ? [vars.context.patientId] : [])],
+  revert: (vars, queryClient) => {
+    queryClient.setQueryData<ConsultReferral[]>(queryKeys.referralsByConsult(vars.consultId), old => old?.filter(r => r.id !== vars.id))
+    queryClient.setQueryData<ReferralListEntry[]>(queryKeys.referrals(), old => old?.filter(r => r.id !== vars.id))
+    queryClient.removeQueries({ queryKey: queryKeys.referral(vars.id), exact: true })
+  },
   send: (vars, ctx) =>
     saBaiAPIEndpointsReferralsCreatePostEndpoint({
       ...apiConfig,
@@ -267,6 +274,8 @@ export const updateReferralState = defineOfflineMutation({
   key: 'referrals.state',
   describe: (vars: UpdateReferralStateVars) => `Referral status${forPatient(vars)}: ${vars.referralState}`,
   recordIds: vars => [vars.id],
+  // The referral page shows the referral detail.
+  baseQueries: vars => [queryKeys.referral(vars.id)],
   send: (vars, ctx) =>
     saBaiAPIEndpointsReferralsUpdateStatePatchEndpoint({
       ...apiConfig,
@@ -289,6 +298,8 @@ export const updateReferralOutcome = defineOfflineMutation({
   key: 'referrals.outcome',
   describe: (vars: UpdateReferralOutcomeVars) => `Referral outcome${forPatient(vars)}`,
   recordIds: vars => [vars.id],
+  // The referral page shows the referral detail.
+  baseQueries: vars => [queryKeys.referral(vars.id)],
   send: (vars, ctx) =>
     saBaiAPIEndpointsReferralsUpdateOutcomePatchEndpoint({
       ...apiConfig,
@@ -314,7 +325,11 @@ export const updateReferralBooth = defineOfflineMutation({
   key: 'referrals.booth',
   describe: (vars: UpdateReferralBoothVars) => `Referral booth details${forPatient(vars)}`,
   // The partner may itself have been created offline.
-  recordIds: vars => [vars.id, ...(vars.referredToId ? [vars.referredToId] : [])],
+  recordIds: vars => [vars.id],
+  // The referral page shows the referral detail.
+  baseQueries: vars => [queryKeys.referral(vars.id)],
+  // The partner clinic may have been added on this device too.
+  dependsOn: vars => (vars.referredToId ? [vars.referredToId] : []),
   send: (vars, ctx) =>
     saBaiAPIEndpointsReferralsUpdateBoothPatchEndpoint({
       ...apiConfig,
@@ -354,6 +369,8 @@ export const updateReferralParty = defineOfflineMutation({
   key: 'referrals.party',
   describe: (vars: UpdateReferralPartyVars) => `Referral party details${forPatient(vars)}`,
   recordIds: vars => [vars.id],
+  // The referral page shows the referral detail.
+  baseQueries: vars => [queryKeys.referral(vars.id)],
   send: (vars, ctx) =>
     saBaiAPIEndpointsReferralsUpdatePartyPatchEndpoint({
       ...apiConfig,
@@ -387,6 +404,8 @@ export const updateReferralMoney = defineOfflineMutation({
   key: 'referrals.money',
   describe: (vars: UpdateReferralMoneyVars) => `Referral payment${forPatient(vars)}`,
   recordIds: vars => [vars.id],
+  // The referral page shows the referral detail.
+  baseQueries: vars => [queryKeys.referral(vars.id)],
   send: (vars, ctx) =>
     saBaiAPIEndpointsReferralsUpdateMoneyPatchEndpoint({
       ...apiConfig,
@@ -439,6 +458,7 @@ const afterPartnerSave = async (saved: ReferralPartner, _vars: unknown, queryCli
 
 export const createReferralPartner = defineOfflineMutation({
   key: 'referralPartners.create',
+  creates: true,
   describe: (vars: SaveReferralPartnerVars) => `New referral partner ${vars.name}`,
   recordIds: vars => [vars.id],
   send: (vars, ctx) =>

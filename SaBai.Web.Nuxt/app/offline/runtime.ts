@@ -5,10 +5,10 @@ import { createConnectivity, probeApiHealth, type Connectivity } from './connect
 import { getOfflineMutation, type OfflineMutationDef } from './defineOfflineMutation'
 import { runOfflineMutation, type OfflineMutationOutcome } from './mutate'
 import { claimQueryCache, releaseQueryCache } from './cacheOwner'
-import { keepQueuedEditsVisible, reapplyQueuedEdits, undoQueuedEdit } from './optimistic'
+import { discardQueuedEdit, keepQueuedEditsVisible, reapplyQueuedEdits } from './optimistic'
 import { createOutbox, type Outbox, type OutboxItem, type OutboxUser, type ReplayResult } from './outbox'
 import { maybeRunOfflinePrefetch, resetPrefetchState, runOfflinePrefetch } from './prefetch'
-import { clearServerTime, getBaseTime, getLastServerContactAt, recordServerDate } from './serverTime'
+import { clearServerTime, getLastServerContactAt, recordServerDate, serverTimeAt } from './serverTime'
 import { idbStore, memoryStore } from './storage'
 import { setTransportHooks } from './transport'
 
@@ -28,6 +28,8 @@ export interface OfflineRuntime {
 let runtime: OfflineRuntime | undefined
 let clearPersistedQueries: () => Promise<void> = async () => {}
 let onUnauthorized: () => void = () => {}
+let onSignedOutElsewhere: () => void = () => {}
+let channel: BroadcastChannel | undefined
 
 /** The signed-in staff user, as far as the offline layer knows (see `setOfflineUser`). */
 let currentUser: OutboxUser | undefined
@@ -41,6 +43,21 @@ const isSessionQuery = (queryKey: readonly unknown[]) => JSON.stringify(queryKey
 
 const LOCK_NAME = 'sabai-outbox-replay'
 const CHANNEL_NAME = 'sabai-outbox'
+/** Messages between this app's tabs. */
+const OUTBOX_CHANGED = 'changed'
+const SIGNED_OUT = 'signed-out'
+/** The service worker's cache of patient photos (see service-worker/sw.ts). */
+const PATIENT_MEDIA_CACHE = 'sabai-patient-media'
+
+/** Deletes the service worker's cached patient photos (sign-out, another user signing in). */
+async function clearPatientMediaCache(): Promise<void> {
+  try {
+    await globalThis.caches?.delete(PATIENT_MEDIA_CACHE)
+  }
+  catch (error) {
+    console.warn('Could not clear cached patient photos', error)
+  }
+}
 
 function createExclusiveLock() {
   const locks = typeof navigator !== 'undefined' ? navigator.locks : undefined
@@ -53,29 +70,34 @@ export async function initOfflineRuntime(options: {
   queryClient: QueryClient
   /** Removes the persisted query cache (sign-out). */
   clearPersistedQueries: () => Promise<void>
-  /** A replayed write got 401: the session ended (send the user to sign in). */
+  /** A write got 401: the session ended (send the user to sign in). */
   onUnauthorized?: () => void
+  /** Another tab signed out; this tab's data is already cleared (leave the page). */
+  onSignedOutElsewhere?: () => void
 }): Promise<OfflineRuntime> {
   if (runtime) return runtime
   const { queryClient } = options
   clearPersistedQueries = options.clearPersistedQueries
   onUnauthorized = options.onUnauthorized ?? onUnauthorized
+  onSignedOutElsewhere = options.onSignedOutElsewhere ?? onUnauthorized
 
   // Ask the browser not to evict the cache and outbox under storage pressure.
   void navigator.storage?.persist?.().catch(() => {})
 
-  const channel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel(CHANNEL_NAME) : undefined
+  channel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel(CHANNEL_NAME) : undefined
   const outbox = createOutbox({
     store: typeof indexedDB !== 'undefined' ? idbStore<OutboxItem>('sabai-outbox', 'items') : memoryStore<OutboxItem>(),
     getDefinition: getOfflineMutation,
     getQueryClient: () => queryClient,
-    getBaseTime,
     getCurrentUser: () => currentUser,
     newId: uuidv7,
     withExclusiveLock: createExclusiveLock(),
-    notifyOtherTabs: () => channel?.postMessage('changed'),
+    notifyOtherTabs: () => channel?.postMessage(OUTBOX_CHANGED),
   })
-  channel?.addEventListener('message', () => void outbox.load())
+  channel?.addEventListener('message', (event: MessageEvent) => {
+    if (event.data === SIGNED_OUT) void signedOutElsewhere()
+    else void outbox.load()
+  })
 
   const connectivity = createConnectivity({
     probe: () => probeApiHealth(),
@@ -143,8 +165,11 @@ export function setOfflineUser(user: OutboxUser | null): void {
   currentUser = user ?? undefined
   if (previous === currentUser?.id) return
   if (user && runtime) {
-    // Someone else's cache was dropped: download this user's working set afresh.
-    if (claimQueryCache(runtime.queryClient, user.id, isSessionQuery)) resetPrefetchState()
+    // Someone else's cache was dropped: drop their photos too, and download this user's working set afresh.
+    if (claimQueryCache(runtime.queryClient, user.id, isSessionQuery)) {
+      void clearPatientMediaCache()
+      resetPrefetchState()
+    }
     reapplyQueuedEdits(runtime.queryClient, ownOutboxItems(), getOfflineMutation)
   }
   for (const listener of userListeners) listener(currentUser)
@@ -170,6 +195,8 @@ export function mutateOffline<TVars, TResult>(
     isOffline: () => connectivity.getState().offline,
     reportNetworkFailure: connectivity.reportNetworkFailure,
     scheduleReplay: () => void replayOutbox(),
+    serverTimeAt,
+    onUnauthorized,
   })
 }
 
@@ -212,21 +239,33 @@ export async function requeueOutboxItem(id: string, { overwrite = false } = {}):
 }
 
 /**
- * Discards an item: the change is lost. A queued item's optimistic edit is
- * taken off the screen straight away, also offline (see `undoQueuedEdit`).
- * Conflict and rejected items already show the server's data.
+ * Retries every conflict and rejected item of the signed-in user (as they
+ * were, still checked with `If-Unmodified-Since`) and syncs.
  */
-export async function discardOutboxItem(id: string): Promise<void> {
+export async function retryAllOutboxItems(): Promise<boolean> {
+  const { outbox, queryClient } = getOfflineRuntime()
+  for (const item of ownOutboxItems()) {
+    if (item.status !== 'queued') await outbox.retry(item.id)
+  }
+  reapplyQueuedEdits(queryClient, ownOutboxItems(), getOfflineMutation)
+  return syncNow()
+}
+
+/**
+ * Discards an item: the change is lost. A queued item's optimistic edit is
+ * taken off the screen at once when its definition can `revert` it; otherwise
+ * it goes with the next successful refetch (see `discardQueuedEdit`). Resolves
+ * whether the screen was updated at once. Conflict and rejected items already
+ * show the server's data.
+ */
+export async function discardOutboxItem(id: string): Promise<boolean> {
   const { outbox, queryClient } = getOfflineRuntime()
   const item = outbox.getItems().find(candidate => candidate.id === id)
   await outbox.discard(id)
-  if (!item) return
-  if (item.status === 'queued' && outbox.isOwn(item)) {
-    undoQueuedEdit(queryClient, item, ownOutboxItems(), getOfflineMutation)
-  }
-  else if (outbox.isOwn(item)) {
-    void queryClient.invalidateQueries()
-  }
+  if (!item || !outbox.isOwn(item)) return true
+  if (item.status === 'queued') return discardQueuedEdit(queryClient, item, ownOutboxItems(), getOfflineMutation)
+  void queryClient.invalidateQueries()
+  return true
 }
 
 /** "Download for offline use". */
@@ -247,10 +286,25 @@ export function lastServerContactAt(): number | undefined {
  */
 export async function clearOfflineData(): Promise<void> {
   if (runtime) await runtime.outbox.clear(runtime.outbox.isOwn)
+  await clearLocalData()
+  // Other open tabs hold the same data in memory and would save it again.
+  channel?.postMessage(SIGNED_OUT)
+}
+
+/** Clears what this tab holds: the query cache (memory and IndexedDB), photos, server time, user. */
+async function clearLocalData(): Promise<void> {
   await clearPersistedQueries()
+  await clearPatientMediaCache()
   clearServerTime()
   resetPrefetchState()
   releaseQueryCache()
   setOfflineUser(null)
   currentRoles = []
+}
+
+/** Another tab signed out: drop this tab's copy of the data too and leave the page. */
+async function signedOutElsewhere(): Promise<void> {
+  await runtime?.outbox.load()
+  await clearLocalData()
+  onSignedOutElsewhere()
 }

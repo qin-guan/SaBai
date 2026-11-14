@@ -10,7 +10,7 @@ export function useStaffUsersList() {
     queryFn: ({ signal }) =>
       saBaiAPIEndpointsAuthUsersListGetEndpoint({ ...apiConfig, signal })
         .unwrap()
-        .then((x) => x.users),
+        .then((x) => x.users as StaffUser[]),
   });
 }
 
@@ -33,4 +33,30 @@ export function isLockedByAdmin(user: StaffUser): boolean {
 export const ROLE_DESCRIPTIONS: Record<string, string> = {
   admin: "Everything, plus managing staff accounts.",
   member: "Clinic work: patients, stations, pharmacy and settings.",
+  pn: "Patient Navigation: manage referral booth, party, and payment details.",
 };
+
+const PN_ROLE = "pn";
+
+/**
+ * Dropdown options for picking a PN member on a referral. Only users with the
+ * "pn" Identity role can be picked, while preserving a member already saved on
+ * the record even if their "pn" role was later removed.
+ */
+export function usePnMemberOptions(savedMemberId: MaybeRefOrGetter<string | null | undefined>) {
+  const { data: users } = useStaffUsersList();
+
+  return computed(() => {
+    const savedId = toValue(savedMemberId);
+    return (users.value ?? [])
+      .filter(
+        (u) =>
+          u.roles.some((r) => r.trim().toLowerCase() === PN_ROLE) ||
+          (!!savedId && u.id === savedId),
+      )
+      .map((u) => ({
+        value: u.id,
+        label: u.nickname || u.userName,
+      }));
+  });
+}

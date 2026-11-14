@@ -35,6 +35,7 @@ export const paths = {
   settings: () => "/settings",
   settingsNotifications: () => "/settings/notifications",
   settingsVillageCodes: () => "/settings/village-codes",
+  settingsReferralPartners: () => "/settings/referral-partners",
   settingsUsers: () => "/settings/users",
   /** The audit log, optionally filtered to one record's or one staff user's history. */
   settingsAuditLog: (filter?: { entityType?: string; entityId?: string | number; userId?: string }) => {

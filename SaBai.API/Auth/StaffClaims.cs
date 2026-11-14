@@ -11,6 +11,7 @@ public static class StaffRoles
 {
     public const string Admin = "admin";
     public const string Member = "member";
+    public const string Pn = "pn";
     public const string Doctor = "doctor";
     public const string Nurse = "nurse";
     public const string Pharmacist = "pharmacist";
@@ -23,6 +24,7 @@ public static class StaffRoles
     [
         Admin,
         Member,
+        Pn,
         Doctor,
         Nurse,
         Pharmacist,

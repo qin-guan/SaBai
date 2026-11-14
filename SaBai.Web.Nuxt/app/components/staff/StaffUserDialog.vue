@@ -26,6 +26,7 @@ const form = ref({
   email: props.user?.email ?? '',
   password: '',
   roles: [...(props.user?.roles ?? ['member'])],
+  tags: [...(props.user?.tags ?? [])],
 })
 const errors = ref<Partial<Record<'userName' | 'email' | 'password' | 'roles', string>>>({})
 const formEl = ref<HTMLFormElement>()
@@ -38,6 +39,7 @@ const isSelf = computed(() => !!props.user && props.user.id === me.value?.id)
 const queryClient = useQueryClient()
 function done(message: string) {
   queryClient.invalidateQueries({ queryKey: queryKeys.staffUsers() })
+  queryClient.invalidateQueries({ queryKey: queryKeys.tags() })
   if (isSelf.value)
     queryClient.invalidateQueries({ queryKey: queryKeys.currentUser() })
   toast.success(message)
@@ -51,18 +53,19 @@ const save = useMutation({
       nickname: form.value.nickname.trim() || undefined,
       email: form.value.email.trim(),
       roles: form.value.roles,
+      tags: form.value.tags,
     }
     if (isEditing.value) {
       return saBaiAPIEndpointsAuthUsersUpdatePatchEndpoint({
         ...apiConfig,
         path: { id: props.user!.id },
-        body: { ...body, nickname: body.nickname ?? body.userName },
+        body: { ...body, nickname: body.nickname ?? body.userName } as never,
         throwOnError: true,
       }).unwrap()
     }
     return saBaiAPIEndpointsAuthUsersCreatePostEndpoint({
       ...apiConfig,
-      body: { ...body, email: body.email || undefined, password: form.value.password },
+      body: { ...body, email: body.email || undefined, password: form.value.password } as never,
       throwOnError: true,
     }).unwrap()
   },
@@ -147,6 +150,9 @@ useSaveShortcut(submit)
           {{ errors.roles }}
         </p>
       </fieldset>
+      <FormField v-slot="{ id, describedby }" label="Tags" hint="Optional freeform labels (e.g. Khmer-speaking, Pediatric).">
+        <TagInput :id="id" v-model="form.tags" :describedby="describedby" />
+      </FormField>
     </form>
     <template #footer>
       <Button variant="outline" @click="emit('close')">

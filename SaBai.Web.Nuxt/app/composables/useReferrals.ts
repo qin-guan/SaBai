@@ -30,6 +30,33 @@ export interface UpdateReferralOutcomeInput {
   referralOutcome: string
 }
 
+export interface UpdateReferralBoothInput {
+  id: number
+  referredToId: string | null
+  memberInChargeId: string | null
+  guardiansContacted: GuardiansContacted | null
+  classOfService: ReferralServiceClass | null
+  descriptionOfService: string | null
+  patientSummaryFromScreening: string | null
+  remarksAtBooth: string | null
+}
+
+export interface UpdateReferralPartyInput {
+  id: number
+  memberOnRunId: string | null
+  presentAtReferralParty: boolean
+  referralPartyResults: string | null
+  followUp: boolean
+  doctorsUpdated: boolean
+}
+
+export interface UpdateReferralMoneyInput {
+  id: number
+  amountPaidUsd: number | null
+  amountPaidRiels: number | null
+  memberWhoPaidId: string | null
+}
+
 /**
  * List of all clinic referrals, newest first.
  */
@@ -45,7 +72,7 @@ export function useReferralsList() {
 }
 
 /**
- * Single referral with consult and patient context.
+ * Single referral with consult, patient overview, booth, party, and money context.
  */
 export function useReferral(id: MaybeRefOrGetter<number | null | undefined>) {
   return useQuery({
@@ -59,7 +86,7 @@ export function useReferral(id: MaybeRefOrGetter<number | null | undefined>) {
         ...apiConfig,
         path: { id: toValue(id)! },
         signal,
-      }).unwrap(),
+      }).unwrap() as Promise<ReferralDetail>,
   })
 }
 
@@ -132,7 +159,7 @@ export function useUpdateReferralOutcome() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (input: UpdateReferralOutcomeInput) => {
-      return await $fetch<SaBaiAPIEndpointsReferralsGetResponse>(
+      return await $fetch<ReferralDetail>(
         `/api/referrals/${input.id}/outcome`,
         {
           method: 'PATCH',
@@ -147,6 +174,76 @@ export function useUpdateReferralOutcome() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.referrals() })
       queryClient.invalidateQueries({ queryKey: queryKeys.referral(variables.id) })
+    },
+  })
+}
+
+/**
+ * Updates only the referral booth fields so saving booth details cannot overwrite
+ * concurrent edits to party or money sections.
+ */
+export function useUpdateReferralBooth() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: UpdateReferralBoothInput) => {
+      return await $fetch<ReferralDetail>(
+        `/api/referrals/${input.id}/booth`,
+        {
+          method: 'PATCH',
+          body: input,
+          credentials: 'same-origin',
+        },
+      )
+    },
+    onSuccess: (updated, variables) => {
+      queryClient.setQueryData(queryKeys.referral(variables.id), updated)
+      queryClient.invalidateQueries({ queryKey: queryKeys.referrals() })
+    },
+  })
+}
+
+/**
+ * Updates only the referral party fields.
+ */
+export function useUpdateReferralParty() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: UpdateReferralPartyInput) => {
+      return await $fetch<ReferralDetail>(
+        `/api/referrals/${input.id}/party`,
+        {
+          method: 'PATCH',
+          body: input,
+          credentials: 'same-origin',
+        },
+      )
+    },
+    onSuccess: (updated, variables) => {
+      queryClient.setQueryData(queryKeys.referral(variables.id), updated)
+      queryClient.invalidateQueries({ queryKey: queryKeys.referrals() })
+    },
+  })
+}
+
+/**
+ * Updates only the referral money fields.
+ */
+export function useUpdateReferralMoney() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: UpdateReferralMoneyInput) => {
+      return await $fetch<ReferralDetail>(
+        `/api/referrals/${input.id}/money`,
+        {
+          method: 'PATCH',
+          body: input,
+          credentials: 'same-origin',
+        },
+      )
+    },
+    onSuccess: (updated, variables) => {
+      queryClient.setQueryData(queryKeys.referral(variables.id), updated)
+      queryClient.invalidateQueries({ queryKey: queryKeys.referrals() })
     },
   })
 }

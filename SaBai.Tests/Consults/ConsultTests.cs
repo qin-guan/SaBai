@@ -233,6 +233,7 @@ public sealed class ConsultTests(AppFixture fixture)
     public async Task ConsultPdf_WithKhmerText_StartsWithPdfHeader()
     {
         // Arrange
+        QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
         var bytes = SaBai.API.Endpoints.Consults.Pdf.Get.PdfDocument.Create(
             new SaBai.API.Endpoints.Consults.Pdf.Get.ConsultPdfContent(
                 "PC0012",

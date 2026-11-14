@@ -1,11 +1,13 @@
 using FastEndpoints;
 using Microsoft.AspNetCore.Identity;
 using SaBai.API.Auth;
+using SaBai.API.Data;
 using SaBai.API.Domain;
 
 namespace SaBai.API.Endpoints.Auth.Users.Create.Post;
 
-public sealed class Endpoint(UserManager<StaffUser> users) : Endpoint<Request, UserResponse>
+public sealed class Endpoint(UserManager<StaffUser> users, AppDbContext db)
+    : Endpoint<Request, UserResponse>
 {
     public override void Configure()
     {
@@ -37,9 +39,15 @@ public sealed class Endpoint(UserManager<StaffUser> users) : Endpoint<Request, U
         var roles = req.Roles is { Count: > 0 } ? req.Roles.Distinct() : [StaffRoles.Member];
         (await users.AddToRolesAsync(user, roles)).ThrowIfFailed();
 
+        if (req.Tags is not null)
+        {
+            await TagSync.SyncStaffUserTagsAsync(db, user.Id, req.Tags, ct);
+            await db.SaveChangesAsync(ct);
+        }
+
         await Send.CreatedAtAsync<Get.Endpoint>(
             new { user.Id },
-            await UserResponse.FromAsync(user, users),
+            await UserResponse.FromAsync(user, users, db, ct),
             cancellation: ct
         );
     }

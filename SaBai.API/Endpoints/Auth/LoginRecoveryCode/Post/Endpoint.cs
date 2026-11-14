@@ -8,6 +8,7 @@ namespace SaBai.API.Endpoints.Auth.LoginRecoveryCode.Post;
 public sealed class Endpoint(
     UserManager<StaffUser> users,
     SignInManager<StaffUser> signIn,
+    AppDbContext db,
     AuditTrail audit
 )
     : Endpoint<Request, SignInResponse>
@@ -32,6 +33,6 @@ public sealed class Endpoint(
         var result = await signIn.TwoFactorRecoveryCodeSignInAsync(
             req.RecoveryCode.Replace(" ", "")
         );
-        await Send.OkAsync(await SignInResponse.FromAsync(result, user, users, audit, "Recovery code", ct), ct);
+        await Send.OkAsync(await SignInResponse.FromAsync(result, user, users, db, audit, "Recovery code", ct), ct);
     }
 }

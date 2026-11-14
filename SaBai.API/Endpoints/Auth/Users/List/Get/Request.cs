@@ -9,4 +9,7 @@ public sealed record Request
     public string? Email { get; init; }
 
     public bool? IsLocked { get; init; }
+
+    /// <summary>Only users with this freeform tag (case-insensitive).</summary>
+    public string? Tag { get; init; }
 }

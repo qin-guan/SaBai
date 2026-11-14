@@ -22,5 +22,6 @@ public sealed record Response(
     DateTimeOffset? LastVisitDate,
     int? LastVisitId,
     bool HasPhoto,
-    bool HasFace
+    bool HasFace,
+    IReadOnlyList<string> Tags
 );

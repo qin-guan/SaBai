@@ -3,10 +3,68 @@ import { cleanKhmerText, matchesSearchText } from './khmer'
 import { formatPatientCode } from './patient'
 import type {
   SaBaiAPIDomainReferralStateKey,
+  SaBaiAPIEndpointsReferralsGetResponse,
   SaBaiAPIEndpointsReferralsListGetResponse,
 } from '@sabai/sdk/types'
 
 export type ReferralListItem = SaBaiAPIEndpointsReferralsListGetResponse
+
+export const GUARDIANS_CONTACTED = ['Yes', 'No', 'NotApplicable'] as const
+export type GuardiansContacted = (typeof GUARDIANS_CONTACTED)[number]
+
+export const GUARDIANS_CONTACTED_LABELS: Record<GuardiansContacted, string> = {
+  Yes: 'Yes',
+  No: 'No',
+  NotApplicable: 'Not Applicable',
+}
+
+export const REFERRAL_SERVICE_CLASSES = [
+  'ChronicManagement',
+  'ImagingDiagnostics',
+  'DefinitiveTreatment',
+  'SymptomaticTreatment',
+] as const
+export type ReferralServiceClass = (typeof REFERRAL_SERVICE_CLASSES)[number]
+
+export const REFERRAL_SERVICE_CLASS_LABELS: Record<ReferralServiceClass, string> = {
+  ChronicManagement: 'Chronic Management',
+  ImagingDiagnostics: 'Imaging/Diagnostics',
+  DefinitiveTreatment: 'Definitive Treatment',
+  SymptomaticTreatment: 'Symptomatic Treatment',
+}
+
+export const REFERRAL_SERVICE_CLASS_OPTIONS: Option<ReferralServiceClass>[] = REFERRAL_SERVICE_CLASSES.map(c => ({
+  value: c,
+  label: REFERRAL_SERVICE_CLASS_LABELS[c],
+}))
+
+export const ADULT_AGE = 18
+export const USD_AMOUNT_PATTERN = /^\d{1,8}(\.\d{1,2})?$/
+export const MAX_RIELS = 2_147_483_647
+
+export type ReferralDetail = SaBaiAPIEndpointsReferralsGetResponse & {
+  updatedAt?: string
+  patientDateOfBirth?: string
+  patientContactNo?: string | null
+  patientHasPoorCard?: boolean
+  patientHasBS2Card?: boolean
+  patientHasSabaiCard?: boolean
+  referredToId?: string | null
+  memberInChargeId?: string | null
+  guardiansContacted?: GuardiansContacted | null
+  classOfService?: ReferralServiceClass | null
+  descriptionOfService?: string | null
+  patientSummaryFromScreening?: string | null
+  remarksAtBooth?: string | null
+  memberOnRunId?: string | null
+  presentAtReferralParty?: boolean
+  referralPartyResults?: string | null
+  followUp?: boolean
+  doctorsUpdated?: boolean
+  amountPaidUsd?: number | string | null
+  amountPaidRiels?: number | null
+  memberWhoPaidId?: string | null
+}
 
 /**
  * Natural lifecycle order of referral states.

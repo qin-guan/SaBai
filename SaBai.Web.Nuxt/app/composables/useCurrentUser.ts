@@ -78,7 +78,7 @@ export async function loadCurrentUser(queryClient: QueryClient): Promise<StaffUs
     // Signed in: tell the offline layer who it is (only their queued writes are
     // sent; another user's cached data is dropped), send queued writes and
     // download the offline working set when due.
-    if (user && import.meta.client) startOfflineSync({ id: user.id, name: user.nickname || user.userName });
+    if (user && import.meta.client) startOfflineSync({ id: user.id, name: user.nickname || user.userName }, user.roles);
     return user;
   } catch (error) {
     if (isUnauthorizedError(error)) return null;

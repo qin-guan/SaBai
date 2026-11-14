@@ -39,10 +39,35 @@ public static class ClientIds
             return null;
         }
 
-        return belongs(existing)
-            ? existing
-            : throw new ConflictException($"Id {value} is already used by another record.");
+        if (!belongs(existing))
+        {
+            throw new ConflictException($"Id {value} is already used by another record.");
+        }
+
+        MarkReplay(typeof(T).Name, value);
+        return existing;
     }
+
+    private const string ReplayItemKey = "SaBai.ClientIdReplay";
+
+    /// <summary>
+    /// Notes on the current request that a create was answered with an existing record. The
+    /// replay changes no rows, so <see cref="Middleware.PhiAccessAuditMiddleware"/> records it
+    /// as a read of that record.
+    /// </summary>
+    private static void MarkReplay(string entityType, Guid id)
+    {
+        if (new HttpContextAccessor().HttpContext is { } http)
+        {
+            http.Items[ReplayItemKey] = (entityType, id.ToString());
+        }
+    }
+
+    /// <summary>The record a create request was answered with instead of inserting, if any.</summary>
+    public static (string EntityType, string EntityId)? ReplayedRecord(HttpContext http) =>
+        http.Items.TryGetValue(ReplayItemKey, out var value) && value is (string type, string id)
+            ? (type, id)
+            : null;
 
     /// <inheritdoc cref="FindExistingAsync{T}(IQueryable{T}, Guid?, Func{T, bool}, CancellationToken)"/>
     public static Task<T?> FindExistingAsync<T>(this IQueryable<T> rows, Guid? id, CancellationToken ct)

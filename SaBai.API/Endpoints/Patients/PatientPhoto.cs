@@ -14,33 +14,16 @@ public static class PatientPhoto
 
     private const long MaxPixels = 50_000_000;
 
-    public static string BuildKey(Guid patientId, string? fileName) =>
-        $"patients/{patientId}/{Guid.NewGuid():N}{Extension(fileName)}";
-
-    public static string Extension(string? fileName)
-    {
-        var extension = Path.GetExtension(Path.GetFileName(fileName ?? ""));
-        var cleaned = new string(extension.TrimStart('.').Where(char.IsLetterOrDigit).ToArray());
-        return string.IsNullOrEmpty(cleaned) ? ".jpg" : $".{cleaned.ToLowerInvariant()}";
-    }
-
-    public static string ContentType(string? contentType, string extension) =>
-        !string.IsNullOrWhiteSpace(contentType)
-            ? contentType
-            : extension switch
-            {
-                ".png" => "image/png",
-                ".webp" => "image/webp",
-                ".gif" => "image/gif",
-                ".bmp" => "image/bmp",
-                _ => "image/jpeg",
-            };
+    /// <summary>The object key for a photo; its extension follows the type found in its bytes.</summary>
+    public static string BuildKey(Guid patientId, string contentType) =>
+        $"patients/{patientId}/{Guid.NewGuid():N}{FileSignatures.ExtensionFor(contentType)}";
 
     /// <summary>
-    /// Buffers the upload into memory and validates that it decodes as an image,
-    /// returning the raw bytes to store. Records validation errors otherwise.
+    /// Buffers the upload into memory and validates that it is a JPEG or PNG (by its bytes, not
+    /// the client's Content-Type) that decodes, returning the raw bytes to store and their type.
+    /// Records validation errors otherwise.
     /// </summary>
-    public static async Task<byte[]?> ReadValidatedAsync(
+    public static async Task<(byte[] Bytes, string ContentType)?> ReadValidatedAsync(
         IEndpoint endpoint,
         IFormFile? file,
         string property,
@@ -67,6 +50,14 @@ public static class PatientPhoto
             var bytes = buffer.ToArray();
 
             using var probe = new MemoryStream(bytes);
+            var contentType = await FileSignatures.DetectAsync(probe, ct);
+            if (contentType is null || !FileSignatures.IsImage(contentType))
+            {
+                endpoint.ValidationFailures.Add(new(property, "Only JPEG and PNG images are allowed."));
+                return null;
+            }
+
+            probe.Position = 0;
             var image = RgbImage.Decode(probe);
             if ((long)image.Width * image.Height > MaxPixels)
             {
@@ -74,7 +65,7 @@ public static class PatientPhoto
                 return null;
             }
 
-            return bytes;
+            return (bytes, contentType);
         }
         catch (InvalidImageException ex)
         {

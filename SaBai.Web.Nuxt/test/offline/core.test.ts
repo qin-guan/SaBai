@@ -4,7 +4,7 @@ import { defineOfflineMutation, getOfflineMutation, listOfflineMutationKeys, req
 import { classifyReplayError, isNetworkError, NetworkError } from '~/offline/network'
 import { getPrefetchState, maybeRunOfflinePrefetch, registerOfflinePrefetch, resetPrefetchState, runOfflinePrefetch } from '~/offline/prefetch'
 import { sanitizePersistedClient, shouldPersistQuery } from '~/offline/queryPersistence'
-import { clearServerTime, getBaseTime, recordServerDate } from '~/offline/serverTime'
+import { clearServerTime, recordServerDate, serverTimeAt } from '~/offline/serverTime'
 import { httpError, newQueryClient } from './helpers'
 
 describe('isNetworkError / classifyReplayError', () => {
@@ -23,7 +23,7 @@ describe('isNetworkError / classifyReplayError', () => {
     ['404', httpError(404), false, 'rejected'],
     ['409', httpError(409), false, 'rejected'],
     ['412', httpError(412), false, 'conflict'],
-    ['500', httpError(500), false, 'rejected'],
+    ['500', httpError(500), false, 'server'],
     ['undefined', undefined, false, 'rejected'],
   ])('%s', (_name, error, network, replay) => {
     expect(isNetworkError(error)).toBe(network)
@@ -56,16 +56,18 @@ describe('defineOfflineMutation registry', () => {
 describe('serverTime', () => {
   beforeEach(() => clearServerTime())
 
-  it('keeps the latest server Date header as an HTTP-date', () => {
-    expect(getBaseTime()).toBeUndefined()
-    recordServerDate('Sat, 14 Nov 2026 09:30:00 GMT')
-    expect(getBaseTime()).toBe('Sat, 14 Nov 2026 09:30:00 GMT')
-    recordServerDate('Sat, 14 Nov 2026 09:00:00 GMT') // older: ignored
+  it('converts a device time to server time from the latest Date header, rounded down to the second', () => {
+    expect(serverTimeAt(Date.now())).toBeUndefined()
+    // The server clock is 1 h ahead of the device's.
+    const receivedAt = Date.parse('2026-11-14T08:30:00.000Z')
+    recordServerDate('Sat, 14 Nov 2026 09:30:00 GMT', receivedAt)
+    expect(serverTimeAt(receivedAt)).toBe('Sat, 14 Nov 2026 09:30:00 GMT')
+    // Data fetched ten minutes and a half second earlier (device clock).
+    expect(serverTimeAt(receivedAt - 10 * 60_000 - 500)).toBe('Sat, 14 Nov 2026 09:19:59 GMT')
+    recordServerDate('Sat, 14 Nov 2026 09:00:00 GMT', receivedAt + 1000) // older: ignored
     recordServerDate('not a date')
     recordServerDate(null)
-    expect(getBaseTime()).toBe('Sat, 14 Nov 2026 09:30:00 GMT')
-    recordServerDate('Sat, 14 Nov 2026 10:00:00 GMT')
-    expect(getBaseTime()).toBe('Sat, 14 Nov 2026 10:00:00 GMT')
+    expect(serverTimeAt(receivedAt)).toBe('Sat, 14 Nov 2026 09:30:00 GMT')
   })
 })
 
@@ -170,6 +172,23 @@ describe('offline prefetch', () => {
     await runOfflinePrefetch(newQueryClient())
     expect(first).not.toHaveBeenCalled()
     expect(second).toHaveBeenCalledTimes(1)
+  })
+
+  it('skips prefetches limited to roles the user does not have', async () => {
+    const clinical = vi.fn(async () => {})
+    const everyone = vi.fn(async () => {})
+    registerOfflinePrefetch('test-0', clinical, { roles: ['admin', 'member'] })
+    registerOfflinePrefetch('test-1', everyone)
+    for (let i = 2; i < 6; i++) registerOfflinePrefetch(`test-${i}`, async () => {})
+    const qc = newQueryClient()
+
+    await runOfflinePrefetch(qc, { roles: ['pn'] })
+    expect(clinical).not.toHaveBeenCalled()
+    expect(everyone).toHaveBeenCalledTimes(1)
+
+    await runOfflinePrefetch(qc, { roles: ['member'] })
+    expect(clinical).toHaveBeenCalledTimes(1)
+    registerOfflinePrefetch('test-0', async () => {})
   })
 
   it('maybeRun skips a run within the interval', async () => {

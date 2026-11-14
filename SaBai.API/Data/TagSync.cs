@@ -142,12 +142,21 @@ public static class TagSync
         }
 
         var existingIds = existing.Select(x => x.TagId).ToHashSet();
+        var added = false;
         foreach (var tag in wantedTags)
         {
             if (db.Entry(tag).State == EntityState.Added || !existingIds.Contains(tag.Id))
             {
                 db.PatientTags.Add(new PatientTag { PatientId = patient.Id, Tag = tag });
+                added = true;
             }
+        }
+
+        // Tag links are not tracked records themselves: a changed tag set counts as a change
+        // to the patient, so it is checked against If-Unmodified-Since and stamped.
+        if (added || toRemove.Count > 0)
+        {
+            db.Entry(patient).Property(x => x.UpdatedAt).IsModified = true;
         }
     }
 

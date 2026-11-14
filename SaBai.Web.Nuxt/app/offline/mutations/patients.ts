@@ -26,7 +26,7 @@ import type {
   SaBaiAPIEndpointsVisitsCreatePostResponse,
 } from '@sabai/sdk/types'
 import { defineOfflineMutation, requestOptions } from '~/offline/defineOfflineMutation'
-import { registerOfflinePrefetch } from '~/offline/prefetch'
+import { CLINIC_STAFF_ROLES, registerOfflinePrefetch } from '~/offline/prefetch'
 import { apiConfig, queryKeys } from '~/utils/api'
 import { uuidv7 } from '~/utils/uuid'
 
@@ -110,21 +110,18 @@ export function patientsToPrefetch(
     .map(p => p.id)
 }
 
-registerOfflinePrefetch('patients', async (queryClient) => {
-  const [, latest] = await Promise.all([
-    queryClient.fetchQuery({ queryKey: queryKeys.patientsList(), queryFn: ({ signal }) => fetchPatientsList(signal) }),
-    queryClient.fetchQuery({ queryKey: queryKeys.patientsWithLatestVisit(), queryFn: ({ signal }) => fetchPatientsWithLatestVisit(signal) }),
-    queryClient.fetchQuery({ queryKey: queryKeys.tags(), queryFn: ({ signal }) => fetchTags(signal) }),
-  ])
+/** Runs `fetchOne` for each of the recently seen patients, a few at a time; throws if any failed. */
+async function prefetchRecentPatients(queryClient: QueryClient, what: string, fetchOne: (id: string) => Promise<unknown>) {
+  const latest = await queryClient.ensureQueryData({
+    queryKey: queryKeys.patientsWithLatestVisit(),
+    queryFn: ({ signal }) => fetchPatientsWithLatestVisit(signal),
+  })
   const queue = patientsToPrefetch(latest.patients)
   let failures = 0
   async function worker() {
     for (let id = queue.shift(); id; id = queue.shift()) {
       try {
-        await Promise.all([
-          queryClient.fetchQuery({ queryKey: queryKeys.patient(id), queryFn: ({ signal }) => fetchPatient(id, signal) }),
-          queryClient.fetchQuery({ queryKey: queryKeys.patientVisits(id), queryFn: ({ signal }) => fetchPatientVisits(id, signal) }),
-        ])
+        await fetchOne(id)
       }
       catch {
         failures++
@@ -132,8 +129,24 @@ registerOfflinePrefetch('patients', async (queryClient) => {
     }
   }
   await Promise.all(Array.from({ length: PREFETCH_CONCURRENCY }, worker))
-  if (failures > 0) throw new Error(`${failures} patient records could not be downloaded.`)
+  if (failures > 0) throw new Error(`${failures} ${what} could not be downloaded.`)
+}
+
+registerOfflinePrefetch('patients', async (queryClient) => {
+  await Promise.all([
+    queryClient.fetchQuery({ queryKey: queryKeys.patientsList(), queryFn: ({ signal }) => fetchPatientsList(signal) }),
+    queryClient.fetchQuery({ queryKey: queryKeys.patientsWithLatestVisit(), queryFn: ({ signal }) => fetchPatientsWithLatestVisit(signal) }),
+    queryClient.fetchQuery({ queryKey: queryKeys.tags(), queryFn: ({ signal }) => fetchTags(signal) }),
+  ])
+  await prefetchRecentPatients(queryClient, 'patient records', id =>
+    queryClient.fetchQuery({ queryKey: queryKeys.patient(id), queryFn: ({ signal }) => fetchPatient(id, signal) }))
 })
+
+// Visits (with their station journey) are clinical: not for the referral desk.
+registerOfflinePrefetch('patient-visits', queryClient =>
+  prefetchRecentPatients(queryClient, 'patient visit lists', id =>
+    queryClient.fetchQuery({ queryKey: queryKeys.patientVisits(id), queryFn: ({ signal }) => fetchPatientVisits(id, signal) })),
+{ roles: CLINIC_STAFF_ROLES })
 
 // Staff names for the referral "PN member" picker.
 registerOfflinePrefetch('staff-users', async (queryClient) => {
@@ -253,6 +266,16 @@ function setLatestVisit(queryClient: QueryClient, patientId: string, visit: Pati
   })
 }
 
+/** Takes a patient that was never sent off every cached list (discarding their registration). */
+function removePatient(queryClient: QueryClient, id: string) {
+  queryClient.removeQueries({ queryKey: queryKeys.patient(id), exact: true })
+  queryClient.removeQueries({ queryKey: queryKeys.patientVisits(id), exact: true })
+  queryClient.setQueryData<PatientsList | undefined>(queryKeys.patientsList(), old =>
+    old && { ...old, patients: old.patients.filter(p => p.id !== id) })
+  queryClient.setQueryData<PatientsWithLatestVisit | undefined>(queryKeys.patientsWithLatestVisit(), old =>
+    old && { ...old, patients: old.patients.filter(p => p.id !== id) })
+}
+
 function addTagsToCache(queryClient: QueryClient, tags: readonly string[]) {
   if (tags.length === 0) return
   queryClient.setQueryData<string[] | undefined>(queryKeys.tags(), old => old && normalizeTags([...old, ...tags]))
@@ -363,8 +386,11 @@ function applyRegistered(queryClient: QueryClient, response: SaBaiAPIEndpointsPa
 
 export const registerPatient = defineOfflineMutation({
   key: 'patients.register',
+  creates: true,
   describe: (vars: RegisterPatientVars) => `Register patient ${vars.name.trim()}`,
   recordIds: vars => [vars.id, vars.visitId, ...(vars.vitalsId ? [vars.vitalsId] : [])],
+  // The village may have been created on this device too.
+  dependsOn: vars => [vars.village.villageCodeId],
   send: (vars, ctx) =>
     saBaiAPIEndpointsPatientsCreatePostEndpoint({
       ...apiConfig,
@@ -389,6 +415,7 @@ export const registerPatient = defineOfflineMutation({
       },
     }).unwrap(),
   optimistic: applyRegistration,
+  revert: (vars, queryClient) => removePatient(queryClient, vars.id),
   onSuccess: async (result, _vars, queryClient) => {
     applyRegistered(queryClient, result)
     await Promise.all([
@@ -434,6 +461,8 @@ export const updatePatient = defineOfflineMutation({
   key: 'patients.update',
   describe: (vars: UpdatePatientVars) => `Edit patient ${vars.name.trim()}`,
   recordIds: vars => [vars.id],
+  // The details form shows the patient record.
+  baseQueries: vars => [queryKeys.patient(vars.id)],
   send: (vars, ctx) =>
     saBaiAPIEndpointsPatientsUpdatePatchEndpoint({
       ...apiConfig,
@@ -470,7 +499,11 @@ export interface StartVisitVars {
   patientId: string
   patientName: string
   village: VisitVillage
-  /** ISO time the visit was started on this device; sent so replay keeps the order of arrival. */
+  /**
+   * ISO time the visit was started on this device: sent only when the visit is
+   * replayed from the outbox (it really started earlier); a live send lets the
+   * server date it.
+   */
   date: string
 }
 
@@ -495,19 +528,29 @@ function optimisticVisit(vars: StartVisitVars): PatientVisit {
 
 export const startVisit = defineOfflineMutation({
   key: 'visits.start',
+  creates: true,
   describe: (vars: StartVisitVars) => `New visit for ${vars.patientName}`,
-  recordIds: vars => [vars.id, vars.patientId],
+  recordIds: vars => [vars.id],
+  dependsOn: vars => [vars.patientId, vars.village.villageCodeId],
   send: (vars, ctx) =>
     saBaiAPIEndpointsVisitsCreatePostEndpoint({
       ...apiConfig,
       ...requestOptions(ctx),
-      body: { id: vars.id, patientId: vars.patientId, villageCodeId: vars.village.villageCodeId, date: vars.date },
+      body: {
+        id: vars.id,
+        patientId: vars.patientId,
+        villageCodeId: vars.village.villageCodeId,
+        date: ctx.replay ? vars.date : undefined,
+      },
     }).unwrap(),
   optimistic: (vars, queryClient) => {
     const visit = optimisticVisit(vars)
     upsertVisit(queryClient, visit, true)
     setLatestVisit(queryClient, vars.patientId, visit)
   },
+  revert: (vars, queryClient) =>
+    queryClient.setQueryData<PatientVisits | undefined>(queryKeys.patientVisits(vars.patientId), old =>
+      old && { ...old, visits: old.visits.filter(v => v.id !== vars.id) }),
   onSuccess: async (_result: SaBaiAPIEndpointsVisitsCreatePostResponse, _vars, queryClient) => {
     await queryClient.invalidateQueries({ queryKey: queryKeys.patients() })
   },
@@ -549,8 +592,10 @@ function upsertFirst<T extends { id: string | number }>(queryClient: QueryClient
 
 export const recordConsent = defineOfflineMutation({
   key: 'patients.recordConsent',
+  creates: true,
   describe: (vars: RecordConsentVars) => `${vars.granted ? 'Consent given' : 'Consent revoked'} (${vars.consentType})`,
-  recordIds: vars => [vars.id, vars.patientId],
+  recordIds: vars => [vars.id],
+  dependsOn: vars => [vars.patientId],
   send: (vars, ctx) =>
     saBaiAPIEndpointsPatientsConsentsPostEndpoint({
       ...apiConfig,
@@ -573,8 +618,10 @@ export const recordConsent = defineOfflineMutation({
 
 export const recordDisclosure = defineOfflineMutation({
   key: 'patients.recordDisclosure',
+  creates: true,
   describe: (vars: RecordDisclosureVars) => `Disclosure to ${vars.recipient}`,
-  recordIds: vars => [vars.id, vars.patientId],
+  recordIds: vars => [vars.id],
+  dependsOn: vars => [vars.patientId],
   send: (vars, ctx) =>
     saBaiAPIEndpointsPatientsDisclosuresPostEndpoint({
       ...apiConfig,

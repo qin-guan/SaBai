@@ -84,9 +84,10 @@ export function usePatientEditForm(
     }
     catch (error) {
       console.error('Error updating patient:', error)
-      // Surface a known conflict (duplicate ID) directly; otherwise a generic message.
+      // Surface a known conflict (duplicate ID, changed by someone else) directly; otherwise a generic message.
+      const status = getApiErrorStatus(error)
       toast.error(
-        getApiErrorStatus(error) === 409
+        status === 409 || status === 412
           ? getApiErrorMessage(error, 'Failed to update patient. Please try again.')
           : 'Failed to update patient. Please try again.',
       )
@@ -100,9 +101,11 @@ export function usePatientEditForm(
       }
       else {
         try {
-          await setPatientPhotoAndFace(id, newPhoto.value)
+          const face = await setPatientPhotoAndFace(id, newPhoto.value)
           queryClient.invalidateQueries({ queryKey: queryKeys.patientPhoto(id) })
           queryClient.invalidateQueries({ queryKey: queryKeys.patients() })
+          if (!face.enrolled)
+            toast.warning(`Photo saved, but the face was not enrolled: ${face.reason}`, { description: FACE_CONSENT_HINT })
         }
         catch (error) {
           console.error('Error saving patient photo/face:', error)

@@ -27,6 +27,11 @@ internal sealed class ApiExceptionHandler(ILogger<ApiExceptionHandler> logger) :
                 "Not Found",
                 notFound.Message
             ),
+            DuplicateKeyException duplicate => (
+                StatusCodes.Status409Conflict,
+                "Conflict",
+                duplicate.Message
+            ),
             ConflictException conflict => (
                 StatusCodes.Status409Conflict,
                 "Conflict",
@@ -80,7 +85,13 @@ internal sealed class ApiExceptionHandler(ILogger<ApiExceptionHandler> logger) :
             return false;
         }
 
-        logger.LogWarning(exception, "Handled API exception: {Title}", title);
+        // Only the type: these messages can echo request input (file names, tags), which is PHI
+        // that must not reach exported logs. The client still gets the message in the response.
+        logger.LogWarning(
+            "Handled API exception: {Title} ({ExceptionType})",
+            title,
+            exception.GetType().Name
+        );
         httpContext.Response.StatusCode = status;
         await httpContext.Response.WriteAsJsonAsync(
             new ProblemDetails
@@ -118,7 +129,7 @@ internal sealed class ApiExceptionHandler(ILogger<ApiExceptionHandler> logger) :
             {
                 Status = StatusCodes.Status412PreconditionFailed,
                 Title = "Precondition Failed",
-                Detail = "The record was changed by another user after this change was made.",
+                Detail = "The record was changed by another user after the data this change was made from was loaded.",
                 Instance = httpContext.Request.Path,
                 Extensions =
                 {

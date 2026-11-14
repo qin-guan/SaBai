@@ -5,6 +5,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ServiceDiscovery;
 using OpenTelemetry;
+using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 
@@ -48,11 +49,22 @@ public static class Extensions
     public static TBuilder ConfigureOpenTelemetry<TBuilder>(this TBuilder builder)
         where TBuilder : IHostApplicationBuilder
     {
+        // Exported log records carry the message template and its arguments, not the formatted
+        // text, and no scopes (ASP.NET Core's request scope holds the raw path). Log arguments
+        // must still never be PHI: they are exported as attributes.
         builder.Logging.AddOpenTelemetry(logging =>
         {
-            logging.IncludeFormattedMessage = true;
-            logging.IncludeScopes = true;
+            logging.IncludeFormattedMessage = false;
+            logging.IncludeScopes = false;
         });
+        // Request start/finish logs contain the full URL, query string included.
+        builder.Logging.AddFilter<OpenTelemetryLoggerProvider>(
+            "Microsoft.AspNetCore.Hosting.Diagnostics",
+            LogLevel.Warning
+        );
+        // ASP.NET Core records the query string on request spans, redacting only a few
+        // well-known secret parameters; UrlRedactionProcessor below also strips what remains.
+        AppContext.SetSwitch("Microsoft.AspNetCore.Hosting.SuppressActivityUrlQuery", true);
 
         builder
             .Services.AddOpenTelemetry()
@@ -68,6 +80,8 @@ public static class Extensions
             .WithTracing(tracing =>
             {
                 tracing
+                    // Before the exporters, so no span leaves the process with a query string.
+                    .AddProcessor(new UrlRedactionProcessor())
                     .AddSource(builder.Environment.ApplicationName)
                     .AddAspNetCoreInstrumentation(tracing =>
                         // Exclude health check requests from tracing

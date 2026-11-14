@@ -67,14 +67,28 @@ public sealed class Endpoint(AppDbContext db, IAmazonS3 s3, RustFsSettings stora
                     throw new BadRequestException($"{fileName} - File is too large.");
                 }
 
-                if (!StoredFile.AllowedContentTypes.Contains(upload.ContentType ?? ""))
+                // The type comes from the file's bytes; the client's Content-Type is ignored.
+                string? contentType;
+                await using (var sniff = upload.OpenReadStream())
+                {
+                    contentType = await FileSignatures.DetectAsync(sniff, ct);
+                }
+
+                if (contentType is null || !StoredFile.AllowedContentTypes.Contains(contentType))
                 {
                     throw new BadRequestException(
                         $"{fileName} - Only PDF, JPEG, PNG and DOCX files are allowed."
                     );
                 }
 
-                var storedName = $"{Guid.NewGuid():N}{Path.GetExtension(fileName)}";
+                if (!FileSignatures.HasExtensionFor(contentType, fileName))
+                {
+                    throw new BadRequestException(
+                        $"{fileName} - The file extension does not match its content ({FileSignatures.ExtensionFor(contentType)})."
+                    );
+                }
+
+                var storedName = $"{Guid.NewGuid():N}{FileSignatures.ExtensionFor(contentType)}";
                 await using var stream = upload.OpenReadStream();
                 await s3.PutObjectAsync(
                     new PutObjectRequest
@@ -82,7 +96,7 @@ public sealed class Endpoint(AppDbContext db, IAmazonS3 s3, RustFsSettings stora
                         BucketName = storage.Bucket,
                         Key = storedName,
                         InputStream = stream,
-                        ContentType = upload.ContentType,
+                        ContentType = contentType,
                         AutoCloseStream = false,
                     },
                     ct

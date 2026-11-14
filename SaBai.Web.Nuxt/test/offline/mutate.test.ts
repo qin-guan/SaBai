@@ -1,7 +1,7 @@
 import type { QueryClient } from '@tanstack/vue-query'
 import { describe, expect, it, vi } from 'vitest'
 import type { OfflineMutationDef } from '~/offline/defineOfflineMutation'
-import { runOfflineMutation, type OfflineMutationRuntime } from '~/offline/mutate'
+import { LIVE_CONFLICT_MESSAGE, runOfflineMutation, type OfflineMutationRuntime } from '~/offline/mutate'
 import { applyOptimistic, keepQueuedEditsVisible } from '~/offline/optimistic'
 import { httpError, makeOutbox, networkError } from './helpers'
 
@@ -87,7 +87,7 @@ describe('runOfflineMutation', () => {
     expect(queryClient.getQueryData(detailKey('n1'))).toEqual({ id: 'n1', name: 'New' })
   })
 
-  it.each([400, 403, 409, 412, 500])('rolls back the optimistic edit and throws on HTTP %i', async (status) => {
+  it.each([400, 403, 409, 500])('rolls back the optimistic edit and throws on HTTP %i', async (status) => {
     const error = httpError(status, 'No.')
     const def = upsertDef(async () => { throw error })
     const { runtime, outbox, queryClient } = setup(def)
@@ -99,6 +99,31 @@ describe('runOfflineMutation', () => {
     expect(queryClient.getQueryCache().find({ queryKey: detailKey('n1') })).toBeUndefined()
     expect(outbox.getItems()).toEqual([])
     expect(def.onSuccess).not.toHaveBeenCalled()
+  })
+
+  it('on 412 rolls back, refetches what the form showed and throws a "changed meanwhile" error', async () => {
+    const def = { ...upsertDef(async () => { throw httpError(412, 'Changed.') }), baseQueries: (vars: Vars) => [detailKey(vars.id)] }
+    const { runtime, outbox, queryClient } = setup(def)
+    queryClient.setQueryData<Item>(detailKey('old'), { id: 'old', name: 'Existing' })
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries')
+
+    const error = await runOfflineMutation(def, { id: 'old', name: 'Mine' }, runtime).catch((e: unknown) => e)
+    expect(error).toMatchObject({ status: 412, message: LIVE_CONFLICT_MESSAGE, data: { detail: LIVE_CONFLICT_MESSAGE } })
+    expect(queryClient.getQueryData(detailKey('old'))).toEqual({ id: 'old', name: 'Existing' })
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: detailKey('old') })
+    expect(outbox.getItems()).toEqual([])
+  })
+
+  it('on 401 keeps the write in the outbox and reports the ended session', async () => {
+    const def = upsertDef(async () => { throw httpError(401) })
+    const { runtime, outbox, queryClient } = setup(def)
+    const onUnauthorized = vi.fn()
+
+    const outcome = await runOfflineMutation(def, { id: 'n1', name: 'New' }, { ...runtime, onUnauthorized })
+    expect(outcome).toEqual({ queued: true })
+    expect(onUnauthorized).toHaveBeenCalled()
+    expect(outbox.getItems()).toHaveLength(1)
+    expect(queryClient.getQueryData(detailKey('n1'))).toEqual({ id: 'n1', name: 'New' })
   })
 
   it('a failing onSuccess after the server accepted the write does not fail the save', async () => {
@@ -171,5 +196,53 @@ describe('keepQueuedEditsVisible', () => {
     await queryClient.fetchQuery({ queryKey: listKey, queryFn: async () => [{ id: 'old', name: 'Server' }] })
     await Promise.resolve()
     expect(queryClient.getQueryData(listKey)).toEqual([{ id: 'n1', name: 'Queued' }, { id: 'old', name: 'Server' }])
+  })
+})
+
+describe('the base time of a write', () => {
+  const at = (iso: string) => Date.parse(iso)
+  // Device and server clocks agree in these tests.
+  const serverTimeAt = (deviceMs: number) => new Date(Math.floor(deviceMs / 1000) * 1000).toUTCString()
+
+  function setupAged(def: OfflineMutationDef<Vars, Item>, offline = false) {
+    const { outbox, queryClient } = makeOutbox([def])
+    queryClient.setQueryData<Item[]>(listKey, [{ id: 'old', name: 'Existing' }], { updatedAt: at('2026-11-14T08:00:00Z') })
+    queryClient.setQueryData<Item>(detailKey('old'), { id: 'old', name: 'Existing' }, { updatedAt: at('2026-11-14T09:00:00Z') })
+    const runtime: OfflineMutationRuntime = { queryClient, outbox, isOffline: () => offline, serverTimeAt }
+    return { outbox, queryClient, runtime }
+  }
+
+  it('a live send carries the server time of the oldest cached data the edit changed', async () => {
+    const def = upsertDef(async vars => vars)
+    const spy = vi.spyOn(def, 'send')
+    const { runtime } = setupAged(def)
+    await runOfflineMutation(def, { id: 'old', name: 'Renamed' }, runtime)
+    expect(spy.mock.calls[0]?.[1]).toMatchObject({ headers: { 'If-Unmodified-Since': 'Sat, 14 Nov 2026 08:00:00 GMT' }, replay: false })
+  })
+
+  it('uses baseQueries (what the form showed) when the definition names them', async () => {
+    const def = { ...upsertDef(async vars => vars), baseQueries: (vars: Vars) => [detailKey(vars.id)] }
+    const spy = vi.spyOn(def, 'send')
+    const { runtime } = setupAged(def)
+    await runOfflineMutation(def, { id: 'old', name: 'Renamed' }, runtime)
+    expect(spy.mock.calls[0]?.[1].headers).toEqual({ 'If-Unmodified-Since': 'Sat, 14 Nov 2026 09:00:00 GMT' })
+  })
+
+  it('a write made from no cached data has no bound', async () => {
+    const def = upsertDef(async vars => vars)
+    const spy = vi.spyOn(def, 'send')
+    const { outbox, queryClient } = makeOutbox([def])
+    await runOfflineMutation(def, { id: 'n1', name: 'New' }, { queryClient, outbox, isOffline: () => false, serverTimeAt })
+    expect(spy.mock.calls[0]?.[1].headers).toEqual({})
+  })
+
+  it('a queued write keeps the base time, and optimistic edits do not make cached data look newer', async () => {
+    const def = upsertDef(async vars => vars)
+    const { runtime, outbox, queryClient } = setupAged(def, true)
+    await runOfflineMutation(def, { id: 'old', name: 'First' }, runtime)
+    await runOfflineMutation(def, { id: 'old', name: 'Second' }, runtime)
+    expect(outbox.getItems().map(i => i.baseTime)).toEqual(['Sat, 14 Nov 2026 08:00:00 GMT', 'Sat, 14 Nov 2026 08:00:00 GMT'])
+    expect(queryClient.getQueryState(listKey)?.dataUpdatedAt).toBe(at('2026-11-14T08:00:00Z'))
+    expect(queryClient.getQueryData(detailKey('old'))).toEqual({ id: 'old', name: 'Second' })
   })
 })

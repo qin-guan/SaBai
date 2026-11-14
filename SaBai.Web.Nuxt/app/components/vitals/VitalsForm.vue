@@ -8,7 +8,7 @@ import { createVitals, updateVitals, type VitalsFields } from '~/offline/mutatio
 const props = defineProps<{
   visitId: string
   visitDate: string
-  patient: { name?: string, dateOfBirth: string, gender: string }
+  patient: { id?: string, name?: string, dateOfBirth: string, gender: string }
 }>()
 
 type NumberKey =
@@ -113,6 +113,7 @@ async function submit() {
   const vars = {
     id: existingId ?? uuidv7(),
     visitId: props.visitId,
+    patientId: props.patient.id,
     patientName: props.patient.name,
     recordedAt: new Date().toISOString(),
     fields,

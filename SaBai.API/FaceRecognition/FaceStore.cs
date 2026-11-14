@@ -195,7 +195,9 @@ public sealed class FaceStore(
 
     public async Task<ulong> DeletePersonAsync(string personId, CancellationToken ct)
     {
-        await InitializeAsync(ct);
+        // Deleting needs no models: without a collection there is nothing to delete.
+        if (!_initialized && !await qdrant.CollectionExistsAsync(_collection, ct))
+            return 0;
         var filter = MatchKeyword(PersonIdField, personId);
         var count = await qdrant.CountAsync(
             _collection,

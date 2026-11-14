@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata;
 using SaBai.API.Domain;
@@ -84,17 +85,95 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     {
         StampRecordedAt();
         StampTrackedEntities();
-        return base.SaveChanges(acceptAllChangesOnSuccess);
+        try
+        {
+            return base.SaveChanges(acceptAllChangesOnSuccess);
+        }
+        catch (DbUpdateException ex) when (IsPrimaryKeyViolation(ex))
+        {
+            throw new DuplicateKeyException(ex);
+        }
     }
 
-    public override Task<int> SaveChangesAsync(
+    public override async Task<int> SaveChangesAsync(
         bool acceptAllChangesOnSuccess,
         CancellationToken cancellationToken = default
     )
     {
         StampRecordedAt();
         StampTrackedEntities();
-        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        try
+        {
+            return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        }
+        catch (DbUpdateException ex) when (IsUniqueViolation(ex))
+        {
+            if (IsPrimaryKeyViolation(ex) || await AnyInsertedKeyExistsAsync(cancellationToken))
+            {
+                throw new DuplicateKeyException(ex);
+            }
+
+            throw;
+        }
+    }
+
+    private static bool IsUniqueViolation(DbUpdateException ex) =>
+        ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation };
+
+    /// <summary>
+    /// An insert collided with an existing primary key. Postgres names primary-key constraints
+    /// <c>PK_*</c> (EF Core's convention).
+    /// </summary>
+    private static bool IsPrimaryKeyViolation(DbUpdateException ex) =>
+        ex.InnerException is PostgresException
+        {
+            SqlState: PostgresErrorCodes.UniqueViolation,
+            ConstraintName: { } constraint,
+        }
+        && constraint.StartsWith("PK_", StringComparison.Ordinal);
+
+    /// <summary>
+    /// After a unique violation on another index (e.g. one vitals record per visit): whether a
+    /// row this save tried to insert already exists by its id, i.e. the same create was saved
+    /// by a concurrent request. Postgres may report either constraint first.
+    /// </summary>
+    private async Task<bool> AnyInsertedKeyExistsAsync(CancellationToken ct)
+    {
+        try
+        {
+            foreach (var entry in ChangeTracker.Entries().Where(x => x.State == EntityState.Added))
+            {
+                if (
+                    entry.Metadata.FindPrimaryKey()
+                        is not { Properties: [{ Name: "Id", ClrType: var type }] }
+                    || type != typeof(Guid)
+                    || entry.Metadata.GetTableName() is not { } table
+                )
+                {
+                    continue;
+                }
+
+                var id = (Guid)entry.Property("Id").CurrentValue!;
+                var schema = entry.Metadata.GetSchema();
+                var name = schema is null ? $"\"{table}\"" : $"\"{schema}\".\"{table}\"";
+                var exists = await Database
+                    .SqlQueryRaw<bool>(
+                        $"SELECT EXISTS (SELECT 1 FROM {name} WHERE \"Id\" = @p0) AS \"Value\"",
+                        new NpgsqlParameter("p0", id)
+                    )
+                    .SingleAsync(ct);
+                if (exists)
+                {
+                    return true;
+                }
+            }
+        }
+        catch (Exception)
+        {
+            // In a failed transaction nothing more can be read: treat it as an ordinary violation.
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -196,7 +275,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             var changedAt = entry.Property(x => x.UpdatedAt).OriginalValue;
             var changedBy = entry.Property(x => x.UpdatedByUserId).OriginalValue;
             // HTTP dates have whole-second precision; compare at that precision.
-            if (changedAt.ToUnixTimeSeconds() > sinceSeconds && changedBy is { } by && by != userId)
+            if (changedAt.ToUnixTimeSeconds() >= sinceSeconds && changedBy is { } by && by != userId)
             {
                 var key = entry.Metadata.FindPrimaryKey()!.Properties.Select(p =>
                     entry.Property(p.Name).OriginalValue?.ToString()

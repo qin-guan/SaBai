@@ -22,7 +22,7 @@ import type {
   SaBaiAPIEndpointsMedicationStockWithBrandGetResponse,
 } from '@sabai/sdk/types'
 import { defineOfflineMutation, requestOptions } from '~/offline/defineOfflineMutation'
-import { registerOfflinePrefetch } from '~/offline/prefetch'
+import { CLINIC_STAFF_ROLES, registerOfflinePrefetch } from '~/offline/prefetch'
 import { apiConfig, queryKeys } from '~/utils/api'
 import { getApiErrorStatus } from '~/utils/apiErrors'
 import {
@@ -76,7 +76,7 @@ registerOfflinePrefetch('medication', async (queryClient) => {
     queryClient.fetchQuery({ queryKey: queryKeys.medicationBrandsWithIngredient(), queryFn: ({ signal }) => fetchMedicationBrandsWithIngredient(signal) }),
     queryClient.fetchQuery({ queryKey: queryKeys.medicationStock(), queryFn: ({ signal }) => fetchMedicationStock(signal) }),
   ])
-})
+}, { roles: CLINIC_STAFF_ROLES })
 
 // ── Cache edits ──────────────────────────────────────────────────────────
 
@@ -192,6 +192,7 @@ function ingredientRecord(vars: SaveIngredientVars): MedicationIngredient {
 
 export const createMedicationIngredient = defineOfflineMutation({
   key: 'medication.ingredient.create',
+  creates: true,
   describe: (vars: SaveIngredientVars) => `New active ingredient ${vars.name}`,
   recordIds: vars => [vars.id],
   send: (vars, ctx) =>
@@ -274,8 +275,10 @@ const brandIngredient = (vars: SaveBrandVars) => ({ name: vars.ingredientName, f
 
 export const createMedicationBrand = defineOfflineMutation({
   key: 'medication.brand.create',
+  creates: true,
   describe: (vars: SaveBrandVars) => `New brand ${vars.name} (${vars.ingredientName})`,
-  recordIds: vars => [vars.id, vars.activeIngredientId],
+  recordIds: vars => [vars.id],
+  dependsOn: vars => [vars.activeIngredientId],
   send: (vars, ctx) =>
     saBaiAPIEndpointsMedicationBrandsCreatePostEndpoint({
       ...apiConfig,
@@ -292,7 +295,8 @@ export const createMedicationBrand = defineOfflineMutation({
 export const updateMedicationBrand = defineOfflineMutation({
   key: 'medication.brand.update',
   describe: (vars: SaveBrandVars) => `Edit brand ${vars.name}`,
-  recordIds: vars => [vars.id, vars.activeIngredientId],
+  recordIds: vars => [vars.id],
+  dependsOn: vars => [vars.activeIngredientId],
   send: (vars, ctx) =>
     saBaiAPIEndpointsMedicationBrandsUpdatePatchEndpoint1({
       ...apiConfig,
@@ -379,8 +383,10 @@ function stockRecord(vars: CreateStockVars): MedicationStockLine {
 
 export const createMedicationStock = defineOfflineMutation({
   key: 'medication.stock.create',
+  creates: true,
   describe: (vars: CreateStockVars) => `New stock ${vars.brandName} × ${vars.quantity} at ${vars.location}`,
-  recordIds: vars => [vars.id, vars.medicationBrandId],
+  recordIds: vars => [vars.id],
+  dependsOn: vars => [vars.medicationBrandId],
   send: (vars, ctx) =>
     saBaiAPIEndpointsMedicationStockCreatePostEndpoint({
       ...apiConfig,

@@ -45,14 +45,21 @@ The REST API is the only read and write path; offline support is in the client
   (at most every 30 minutes) and from *Download for offline use*.
 - **Writes**: a write that cannot reach the server goes into the **outbox**
   (IndexedDB) and is replayed in order when the connection is back. The UI is
-  updated at once by editing the query cache. Replayed writes carry
-  `If-Unmodified-Since` (the server's `Date` from this device's last successful
-  response before the write was made); a `412` puts the item in *conflict*,
-  another `4xx` *rejects* it, and later writes for the same record wait behind
-  it. `/settings/sync` lists pending items and offers *Overwrite* (resend
-  without the header), *Retry* and *Discard*. Discarding a waiting change also
-  takes it off the screen at once, offline too (each item keeps the cached data
-  its edit replaced; the other waiting changes are applied again on top).
+  updated at once by editing the query cache. Every write, sent at once or
+  replayed, carries `If-Unmodified-Since`: the server time at which the cached
+  data it was made from was fetched (the form's data, e.g. the patient record
+  for a patient edit). The server answers `412` when someone else changed that
+  record since. Sent at once, a `412` undoes the edit, reloads the record and
+  asks to check it and save again; replayed, it puts the item in *conflict*.
+  Another `4xx` *rejects* the item. A server error (`5xx`) stops the run and it
+  is tried again later; after 5 such runs in a row the item is rejected. A
+  later write for the same record, or one that needs a record a failed write
+  creates (a vitals record for a registration that was rejected), waits behind
+  it; writes to other records (the same visit's eyesight) go ahead.
+  `/settings/sync` lists pending items and offers *Overwrite* (resend without
+  the header), *Retry* (also *Retry all*) and *Discard*. Discarding a waiting
+  created record takes it off the screen at once, offline too; other discarded
+  changes go with the next refresh from the server.
 - **Per user**: each queued write belongs to the staff user who made it and is
   only sent while they are signed in. If someone else signs in on the device
   (e.g. after a session expired; a `401` during replay sends the user to the
@@ -62,18 +69,23 @@ The REST API is the only read and write path; offline support is in the client
 - **Connection**: decided by real request outcomes (fetch failure, timeout,
   `502/503/504` from the proxy), not `navigator.onLine`, plus a probe of
   `/api/healthcheck` while offline or while writes are waiting.
-- **Sign-out** warns about the user's unsent writes, then deletes them and the
-  saved cache (they hold patient data). Other users' parked writes stay.
+- **Sign-out** warns about the user's unsent writes, then deletes them, the
+  saved cache and cached patient photos (they hold patient data), in every
+  open tab. Other users' parked writes stay.
 
 To make a write work offline:
 
 1. Define it once at module top level in `app/offline/mutations/<domain>.ts`
    with `defineOfflineMutation({ key, describe, send, optimistic, onSuccess, recordIds })`,
-   and import that file from `app/offline/mutations/index.ts`.
+   and import that file from `app/offline/mutations/index.ts`. `recordIds` are
+   the records it creates or changes; add `dependsOn` for records that must
+   exist first (the visit of a vitals record), `baseQueries` for the query the
+   form shows (what the conflict check is based on) and, for a create,
+   `revert` to take it off the cache by id when it is discarded.
 2. Put everything `send` needs in `vars` (they are stored as JSON). For a create,
    generate the id on the client with `uuidv7()` and send it in the body (the
    API's create endpoints accept it and are idempotent on it).
-3. In `send`, spread `...requestOptions(ctx)` into the SDK call so replays carry
+3. In `send`, spread `...requestOptions(ctx)` into the SDK call so it carries
    `If-Unmodified-Since`.
 4. Write `optimistic` as idempotent, immutable cache edits by id (upsert/remove)
    into every query a following screen reads.

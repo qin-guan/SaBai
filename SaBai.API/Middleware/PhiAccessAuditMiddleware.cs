@@ -62,14 +62,25 @@ public sealed class PhiAccessAuditMiddleware(RequestDelegate next)
                 || path.StartsWith("/faces/", StringComparison.OrdinalIgnoreCase)
             );
 
-        if (!isRead && !isFaceSearch)
+        var entityType = MatchEntityType(path);
+        if (entityType is null)
         {
             return;
         }
 
-        var entityType = MatchEntityType(path);
-        if (entityType is null)
+        // A resent create answered with the existing record: the response discloses it.
+        if (!isRead && !isFaceSearch)
         {
+            if (ClientIds.ReplayedRecord(context) is { } replayed)
+            {
+                await audit.RecordAsync(
+                    AuditAction.Read,
+                    entityType: replayed.EntityType,
+                    entityId: replayed.EntityId,
+                    ct: context.RequestAborted
+                );
+            }
+
             return;
         }
 

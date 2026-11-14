@@ -108,13 +108,13 @@ function recordLink(entry: AuditLogEntry) {
   if (!type)
     return undefined
   if (type === 'Patient') {
-    const id = Number(entry.entityId)
-    return entry.action !== 'Deleted' && Number.isInteger(id) && id > 0 ? paths.patientDetail(id) : undefined
+    const id = entry.entityId
+    return entry.action !== 'Deleted' && isUuid(id) ? paths.patientDetail(id) : undefined
   }
   if (type === 'Visit' || type === 'ClinicalFile') {
     const patientField = entry.changes.find(c => c.field === 'PatientId')
-    const patientId = Number(patientField?.new ?? patientField?.old)
-    return Number.isInteger(patientId) && patientId > 0 ? paths.patientDetail(patientId) : undefined
+    const patientId = patientField?.new ?? patientField?.old
+    return isUuid(patientId) ? paths.patientDetail(patientId) : undefined
   }
   if (type === 'MedicationStock' || type === 'StockChange')
     return paths.medicationStock()

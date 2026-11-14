@@ -11,7 +11,7 @@ import { saveDental } from '~/offline/mutations/visitRecords'
  * The dental station's consultation for one visit. Loads any saved
  * consultation and saves the whole form back with a single PUT.
  */
-const props = defineProps<{ visitId: string, patientName?: string }>()
+const props = defineProps<{ visitId: string, patientId?: string, patientName?: string }>()
 
 const SECTIONS = [
   { id: 'dental-history', title: 'Dental History', tab: 'Dental History' },
@@ -65,6 +65,7 @@ async function submit() {
     const outcome = await saveMutation.mutateAsync({
       id: data.value?.id ?? uuidv7(),
       visitId: props.visitId,
+      patientId: props.patientId,
       patientName: props.patientName,
       recordedAt: new Date().toISOString(),
       fields: toDentalRequest(values),

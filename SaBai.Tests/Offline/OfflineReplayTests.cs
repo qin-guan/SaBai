@@ -1,6 +1,8 @@
 using System.Net.Http.Json;
 using System.Text.Json;
+using SaBai.API.Domain;
 using SaBai.Tests.Support;
+using AuditLogResponse = SaBai.API.Endpoints.AuditLogs.List.Get.Response;
 
 namespace SaBai.Tests.Offline;
 
@@ -258,6 +260,197 @@ public sealed class OfflineReplayTests(AppFixture fixture)
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.Conflict);
+    }
+
+    [Test]
+    public async Task Update_AfterOtherUserChangedOnlyTags_ReturnsPreconditionFailed()
+    {
+        // Arrange
+        var admin = fixture.CreateApiClient();
+        await admin.LoginAsync();
+        var doctor = fixture.CreateApiClient();
+        await doctor.LoginAsync(ClinicApi.DoctorEmail);
+        var villageId = await ClinicSetup.CreateVillageAsync(admin);
+        var (patientId, _) = await ClinicSetup.RegisterPatientAsync(admin, villageId);
+        var queuedAt = DateTimeOffset.UtcNow.AddMinutes(-5);
+        (await doctor.PatchAsJsonAsync(
+            $"/patients/{patientId}",
+            new { tags = new[] { $"Follow-Up {ClinicSetup.Suffix()}" } },
+            ApiJson.Options
+        )).EnsureSuccessStatusCode();
+
+        // Act
+        using var request = new HttpRequestMessage(HttpMethod.Patch, $"/patients/{patientId}")
+        {
+            Content = JsonContent.Create(new { contactNo = "012 345 678" }, options: ApiJson.Options),
+        };
+        request.Headers.IfUnmodifiedSince = queuedAt;
+        var response = await admin.SendAsync(request);
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
+
+        // Assert
+        await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.PreconditionFailed);
+        await Assert.That(body.GetProperty("recordType").GetString()).IsEqualTo("Patient");
+    }
+
+    [Test]
+    public async Task Update_OtherUsersEditInTheSameSecondAsTheHeader_ReturnsPreconditionFailed()
+    {
+        // Arrange
+        var admin = fixture.CreateApiClient();
+        await admin.LoginAsync();
+        var doctor = fixture.CreateApiClient();
+        await doctor.LoginAsync(ClinicApi.DoctorEmail);
+        var villageId = await ClinicSetup.CreateVillageAsync(admin);
+        var edited = await doctor.PatchAsJsonAsync(
+            $"/village-codes/{villageId}",
+            new { name = $"Renamed {ClinicSetup.Suffix()}" },
+            ApiJson.Options
+        );
+        edited.EnsureSuccessStatusCode();
+        var changedAt = (await edited.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options))
+            .GetProperty("updatedAt")
+            .GetDateTimeOffset();
+        // HTTP dates have whole seconds: the header names the second the other edit happened in.
+        var sameSecond = DateTimeOffset.FromUnixTimeSeconds(changedAt.ToUnixTimeSeconds());
+
+        // Act
+        using var request = new HttpRequestMessage(HttpMethod.Patch, $"/village-codes/{villageId}")
+        {
+            Content = JsonContent.Create(new { name = $"Mine {ClinicSetup.Suffix()}" }, options: ApiJson.Options),
+        };
+        request.Headers.IfUnmodifiedSince = sameSecond;
+        var response = await admin.SendAsync(request);
+
+        // Assert
+        await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.PreconditionFailed);
+    }
+
+    [Test]
+    public async Task CreateVitals_Resent_RecordsAReadInTheAuditLog()
+    {
+        // Arrange
+        var client = fixture.CreateApiClient();
+        await client.LoginAsync();
+        var villageId = await ClinicSetup.CreateVillageAsync(client);
+        var (_, visitId) = await ClinicSetup.RegisterPatientAsync(client, villageId);
+        var id = Guid.CreateVersion7();
+        var request = new { id, visitId, temperature = 36.6m };
+        (await client.PostAsJsonAsync("/vitals", request, ApiJson.Options)).EnsureSuccessStatusCode();
+
+        // Act
+        var resent = await client.PostAsJsonAsync("/vitals", request, ApiJson.Options);
+        var log = await client.GetFromJsonAsync<AuditLogResponse>(
+            $"/audit-logs?entityType=Vitals&entityId={id}&action=Read",
+            ApiJson.Options
+        );
+
+        // Assert
+        await Assert.That(resent.StatusCode).IsEqualTo(HttpStatusCode.Created);
+        var read = log!.Entries.Single();
+        await Assert.That(read.Action).IsEqualTo(AuditAction.Read);
+        await Assert.That(read.Request).IsEqualTo("POST /vitals");
+    }
+
+    [Test]
+    public async Task RegisterPatient_ResentForAnotherRegistration_ReturnsConflict()
+    {
+        // Arrange
+        var client = fixture.CreateApiClient();
+        await client.LoginAsync();
+        var villageId = await ClinicSetup.CreateVillageAsync(client);
+        var patientId = Guid.CreateVersion7();
+        (await client.PostAsJsonAsync(
+            "/patients",
+            Registration(villageId, patientId, Guid.CreateVersion7(), Guid.CreateVersion7()),
+            ApiJson.Options
+        )).EnsureSuccessStatusCode();
+
+        // Act: the same patient id with a visit it never opened, and without a visit for someone else.
+        var otherVisit = await client.PostAsJsonAsync(
+            "/patients",
+            Registration(villageId, patientId, Guid.CreateVersion7(), Guid.CreateVersion7()),
+            ApiJson.Options
+        );
+        var otherPerson = await client.PostAsJsonAsync(
+            "/patients",
+            new
+            {
+                id = patientId,
+                name = $"Someone else {ClinicSetup.Suffix()}",
+                gender = "male",
+                dateOfBirth = new DateTimeOffset(1980, 1, 1, 0, 0, 0, TimeSpan.Zero),
+                drugAllergy = "None",
+                villageCodeId = villageId,
+            },
+            ApiJson.Options
+        );
+        var visits = await client.GetFromJsonAsync<JsonElement>(
+            $"/patients/{patientId}/visits",
+            ApiJson.Options
+        );
+
+        // Assert
+        await Assert.That(otherVisit.StatusCode).IsEqualTo(HttpStatusCode.Conflict);
+        await Assert.That(otherPerson.StatusCode).IsEqualTo(HttpStatusCode.Conflict);
+        await Assert.That(visits.GetProperty("visits").GetArrayLength()).IsEqualTo(1);
+    }
+
+    [Test]
+    public async Task CreateVisit_DatedInTheFuture_IsDatedNow()
+    {
+        // Arrange
+        var client = fixture.CreateApiClient();
+        await client.LoginAsync();
+        var villageId = await ClinicSetup.CreateVillageAsync(client);
+        var (patientId, _) = await ClinicSetup.RegisterPatientAsync(client, villageId);
+        var past = DateTimeOffset.UtcNow.AddHours(-2);
+
+        // Act
+        var future = await client.PostAsJsonAsync(
+            "/visits",
+            new { patientId, villageCodeId = villageId, date = DateTimeOffset.UtcNow.AddDays(3) },
+            ApiJson.Options
+        );
+        var earlier = await client.PostAsJsonAsync(
+            "/visits",
+            new { patientId, villageCodeId = villageId, date = past },
+            ApiJson.Options
+        );
+        var futureDate = (await future.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options))
+            .GetProperty("date")
+            .GetDateTimeOffset();
+        var earlierDate = (await earlier.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options))
+            .GetProperty("date")
+            .GetDateTimeOffset();
+
+        // Assert
+        await Assert.That(future.StatusCode).IsEqualTo(HttpStatusCode.Created);
+        await Assert.That(futureDate <= DateTimeOffset.UtcNow.AddMinutes(1)).IsTrue();
+        await Assert.That(Math.Abs((earlierDate - past).TotalSeconds) < 1).IsTrue();
+    }
+
+    [Test]
+    public async Task CreateVitals_SentTwiceAtOnce_BothSucceedWithOneRecord()
+    {
+        // Arrange
+        var client = fixture.CreateApiClient();
+        await client.LoginAsync();
+        var villageId = await ClinicSetup.CreateVillageAsync(client);
+        var (_, visitId) = await ClinicSetup.RegisterPatientAsync(client, villageId);
+        var id = Guid.CreateVersion7();
+        var request = new { id, visitId, temperature = 36.6m };
+
+        // Act: a resend while the first request is still being saved.
+        var responses = await Task.WhenAll(
+            client.PostAsJsonAsync("/vitals", request, ApiJson.Options),
+            client.PostAsJsonAsync("/vitals", request, ApiJson.Options)
+        );
+        var saved = await client.GetFromJsonAsync<JsonElement>($"/visits/{visitId}/vitals", ApiJson.Options);
+
+        // Assert
+        await Assert.That(responses.All(x => x.StatusCode == HttpStatusCode.Created)).IsTrue();
+        await Assert.That(ClinicSetup.ReadGuid(saved, "id")).IsEqualTo(id);
     }
 
     private static async Task<Guid> CreateStockAsync(HttpClient client, int quantity)

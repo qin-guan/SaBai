@@ -1,6 +1,7 @@
 using FastEndpoints;
 using SaBai.API.Auth;
 using SaBai.API.Data;
+using SaBai.API.Domain;
 using SaBai.API.Endpoints.Faces;
 using SaBai.API.FaceRecognition;
 
@@ -30,6 +31,11 @@ public sealed class Endpoint(AppDbContext db, FaceAnalyzer analyzer, FaceStore s
             ct
         );
 
+        if (!await BiometricConsent.IsGrantedAsync(db, patient.Id, ct))
+        {
+            throw new ForbiddenException(BiometricConsent.MissingMessage);
+        }
+
         var image = await FaceImages.LoadAsync(this, req.Image, nameof(req.Image), ct);
         ThrowIfAnyErrors();
 
@@ -49,6 +55,14 @@ public sealed class Endpoint(AppDbContext db, FaceAnalyzer analyzer, FaceStore s
             face.Embedding,
             ct
         );
+
+        // Consent withdrawn while this request was analysing the image: the withdrawal has
+        // already deleted the patient's faces, so remove the one just stored too.
+        if (!await BiometricConsent.IsGrantedAsync(db, patient.Id, ct))
+        {
+            await store.DeleteFaceAsync(stored.FaceId, ct);
+            throw new ForbiddenException(BiometricConsent.MissingMessage);
+        }
 
         patient.LatestFaceId = stored.FaceId.ToString();
         await db.SaveChangesAsync(ct);

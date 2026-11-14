@@ -39,7 +39,9 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
         if (await db.Eyesights.AnyAsync(x => x.VisitId == req.VisitId, ct))
         {
-            throw new ConflictException("Eyesight already exists for this visit.");
+            throw new ConflictException(
+                "Vision was already recorded for this visit, perhaps on another device. Open the visit's vision record to change it."
+            );
         }
 
         var eyesight = new global::SaBai.API.Domain.Eyesight
@@ -66,7 +68,9 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                     is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation }
             )
         {
-            throw new ConflictException("Eyesight already exists for this visit.");
+            throw new ConflictException(
+                "Vision was already recorded for this visit, perhaps on another device. Open the visit's vision record to change it."
+            );
         }
 
         await Send.CreatedAtAsync<Get.Endpoint>(

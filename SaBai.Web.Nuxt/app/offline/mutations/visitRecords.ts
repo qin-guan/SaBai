@@ -105,6 +105,10 @@ function definedFields<T extends object>(changes: T): Partial<T> {
   return Object.fromEntries(Object.entries(changes).filter(([, value]) => value != null)) as Partial<T>
 }
 
+/** A station record needs its visit and (when the screen knows it) its patient on the server first. */
+const stationDependsOn = (vars: { visitId: string, patientId?: string }) =>
+  [vars.visitId, ...(vars.patientId ? [vars.patientId] : [])]
+
 const refreshAfterSave = async (queryClient: QueryClient, visitKey: readonly unknown[]) => {
   await Promise.all([
     queryClient.invalidateQueries({ queryKey: visitKey }),
@@ -121,6 +125,8 @@ export interface SaveVitalsVars {
   /** The visit's vitals record id: the cached one for an edit, a new `uuidv7()` for a create. */
   id: string
   visitId: string
+  /** The visit's patient, when the screen knows it (see `dependsOn`). */
+  patientId?: string
   /** Shown in the pending-changes list. */
   patientName?: string
   recordedAt: string
@@ -164,8 +170,10 @@ const afterVitalsSave = (saved: VisitVitals, vars: SaveVitalsVars, queryClient: 
 
 export const createVitals = defineOfflineMutation({
   key: 'vitals.create',
+  creates: true,
   describe: describeVitals,
-  recordIds: (vars: SaveVitalsVars) => [vars.id, vars.visitId],
+  recordIds: (vars: SaveVitalsVars) => [vars.id],
+  dependsOn: stationDependsOn,
   send: (vars: SaveVitalsVars, ctx) =>
     saBaiAPIEndpointsVitalsCreatePostEndpoint({
       ...apiConfig,
@@ -179,7 +187,10 @@ export const createVitals = defineOfflineMutation({
 export const updateVitals = defineOfflineMutation({
   key: 'vitals.update',
   describe: describeVitals,
-  recordIds: (vars: SaveVitalsVars) => [vars.id, vars.visitId],
+  recordIds: (vars: SaveVitalsVars) => [vars.id],
+  dependsOn: stationDependsOn,
+  // The form shows the visit's saved vitals.
+  baseQueries: vars => [queryKeys.vitals(vars.visitId)],
   send: (vars: SaveVitalsVars, ctx) =>
     saBaiAPIEndpointsVitalsUpdateByVisitPatchEndpoint({
       ...apiConfig,
@@ -198,6 +209,8 @@ export type EyesightFields = Omit<SaBaiAPIEndpointsEyesightCreatePostRequest, 'i
 export interface SaveEyesightVars {
   id: string
   visitId: string
+  /** The visit's patient, when the screen knows it (see `dependsOn`). */
+  patientId?: string
   patientName?: string
   recordedAt: string
   fields: EyesightFields
@@ -234,8 +247,10 @@ const afterEyesightSave = (saved: VisitEyesight, vars: SaveEyesightVars, queryCl
 
 export const createEyesight = defineOfflineMutation({
   key: 'eyesight.create',
+  creates: true,
   describe: describeEyesight,
-  recordIds: (vars: SaveEyesightVars) => [vars.id, vars.visitId],
+  recordIds: (vars: SaveEyesightVars) => [vars.id],
+  dependsOn: stationDependsOn,
   send: (vars: SaveEyesightVars, ctx) =>
     saBaiAPIEndpointsEyesightCreatePostEndpoint({
       ...apiConfig,
@@ -249,7 +264,10 @@ export const createEyesight = defineOfflineMutation({
 export const updateEyesight = defineOfflineMutation({
   key: 'eyesight.update',
   describe: describeEyesight,
-  recordIds: (vars: SaveEyesightVars) => [vars.id, vars.visitId],
+  recordIds: (vars: SaveEyesightVars) => [vars.id],
+  dependsOn: stationDependsOn,
+  // The form shows the visit's saved eyesight.
+  baseQueries: vars => [queryKeys.eyesight(vars.visitId)],
   send: (vars: SaveEyesightVars, ctx) =>
     saBaiAPIEndpointsEyesightUpdateByVisitPatchEndpoint({
       ...apiConfig,
@@ -269,6 +287,8 @@ export interface SaveDentalVars {
   /** The visit's dental record id: the cached one when there is one, otherwise a new `uuidv7()`. */
   id: string
   visitId: string
+  /** The visit's patient, when the screen knows it (see `dependsOn`). */
+  patientId?: string
   patientName?: string
   recordedAt: string
   fields: DentalFields
@@ -288,7 +308,9 @@ function applyDental(vars: SaveDentalVars, queryClient: QueryClient) {
 export const saveDental = defineOfflineMutation({
   key: 'dental.save',
   describe: (vars: SaveDentalVars) => `Dental consultation for ${vars.patientName ?? 'patient'}`,
-  recordIds: (vars: SaveDentalVars) => [vars.id, vars.visitId],
+  recordIds: (vars: SaveDentalVars) => [vars.id],
+  dependsOn: stationDependsOn,
+  baseQueries: vars => [queryKeys.dental(vars.visitId)],
   send: (vars: SaveDentalVars, ctx) =>
     saBaiAPIEndpointsDentalUpsertByVisitPutEndpoint({
       ...apiConfig,
@@ -315,6 +337,8 @@ export interface CreateConsultVars {
   /** Client-chosen ids: the create endpoint is idempotent on them. */
   id: string
   visitId: string
+  /** The visit's patient, when the screen knows it (see `dependsOn`). */
+  patientId?: string
   patientName?: string
   /** Who writes the consult, for the optimistic copy. */
   doctorId: string
@@ -359,8 +383,10 @@ function upsertConsult(queryClient: QueryClient, consult: VisitConsult) {
 
 export const createConsult = defineOfflineMutation({
   key: 'consults.create',
+  creates: true,
   describe: (vars: CreateConsultVars) => `Consult for ${vars.patientName ?? 'patient'}`,
-  recordIds: (vars: CreateConsultVars) => [vars.id, vars.visitId, ...vars.diagnoses.map(d => d.id)],
+  recordIds: (vars: CreateConsultVars) => [vars.id, ...vars.diagnoses.map(d => d.id)],
+  dependsOn: stationDependsOn,
   send: (vars: CreateConsultVars, ctx) =>
     saBaiAPIEndpointsConsultsCreatePostEndpoint({
       ...apiConfig,
@@ -380,6 +406,10 @@ export const createConsult = defineOfflineMutation({
   optimistic: (vars, queryClient) => {
     upsertConsult(queryClient, consultRecord(vars))
     markJourneyDone(queryClient, vars.visitId, 'consult', vars.date)
+  },
+  revert: (vars, queryClient) => {
+    queryClient.setQueryData<VisitConsult[]>(queryKeys.consults(vars.visitId), old => old?.filter(c => c.id !== vars.id))
+    queryClient.removeQueries({ queryKey: queryKeys.consult(vars.id), exact: true })
   },
   onSuccess: async (saved, vars, queryClient) => {
     upsertConsult(queryClient, saved as VisitConsult)

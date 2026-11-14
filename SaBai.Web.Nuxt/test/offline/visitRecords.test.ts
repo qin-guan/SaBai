@@ -95,7 +95,12 @@ describe('visit record mutations', () => {
     expect(queryClient.getQueryData(queryKeys.consult('c-1'))).toMatchObject({ id: 'c-1', doctorNickname: 'Dr A' })
   })
 
-  it('lists the ids a write touches so later writes queue behind it', () => {
-    expect(createVitals.recordIds!(vitalsVars({}, 'v-1'))).toEqual(['v-1', 'visit-1'])
+  it('writes its own record and depends on the visit (and patient, when known)', () => {
+    expect(createVitals.recordIds!(vitalsVars({}, 'v-1'))).toEqual(['v-1'])
+    expect(createVitals.creates).toBe(true)
+    expect(createVitals.dependsOn!(vitalsVars({}, 'v-1'))).toEqual(['visit-1'])
+    // With the patient known, a waiting or failed registration holds it back too.
+    expect(createVitals.dependsOn!({ ...vitalsVars({}, 'v-1'), patientId: 'p-1' })).toEqual(['visit-1', 'p-1'])
+    expect(updateVitals.baseQueries!(vitalsVars({}, 'v-1'))).toEqual([queryKeys.vitals('visit-1')])
   })
 })

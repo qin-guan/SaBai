@@ -205,7 +205,7 @@ public sealed class FileEdgeTests(AppFixture fixture)
 
     private static ByteArrayContent FilePart(string text)
     {
-        var bytes = new ByteArrayContent(System.Text.Encoding.UTF8.GetBytes(text));
+        var bytes = new ByteArrayContent(System.Text.Encoding.UTF8.GetBytes($"%PDF-1.7 {text}"));
         bytes.Headers.ContentType = new MediaTypeHeaderValue("application/pdf");
         return bytes;
     }

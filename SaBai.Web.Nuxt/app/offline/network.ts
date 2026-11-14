@@ -59,18 +59,22 @@ export function isAbortError(error: unknown): boolean {
  * How a replayed (queued) write failed:
  * - `stop`: try again later and keep the order (network failure, timeout,
  *   401 signed out, 408, 429).
- * - `conflict`: 412, the record was changed by someone else after this device
- *   last heard from the server.
- * - `rejected`: the server refused it (any other 4xx, a 5xx that is not a
- *   gateway error, or an error thrown by the mutation's own code). Needs a person.
+ * - `server`: the server failed (a 5xx that is not a gateway error, e.g. its
+ *   database restarting): try again later; the outbox gives up on the item
+ *   after a few such runs.
+ * - `conflict`: 412, the record was changed by someone else after the data
+ *   this write was made from was fetched.
+ * - `rejected`: the server refused it (any other 4xx, or an error thrown by
+ *   the mutation's own code). Needs a person.
  */
-export type ReplayFailure = 'stop' | 'conflict' | 'rejected'
+export type ReplayFailure = 'stop' | 'server' | 'conflict' | 'rejected'
 
 export function classifyReplayError(error: unknown): ReplayFailure {
   if (isNetworkError(error) || isAbortError(error)) return 'stop'
   const status = getApiErrorStatus(error)
   if (status === 412) return 'conflict'
   if (status === 401 || status === 408 || status === 429) return 'stop'
+  if (status !== undefined && status >= 500) return 'server'
   return 'rejected'
 }
 

@@ -11,7 +11,7 @@ import type {
   SaBaiAPIEndpointsVillageCodesListGetResponse,
 } from '@sabai/sdk/types'
 import { defineOfflineMutation, requestOptions } from '~/offline/defineOfflineMutation'
-import { registerOfflinePrefetch } from '~/offline/prefetch'
+import { CLINIC_STAFF_ROLES, registerOfflinePrefetch } from '~/offline/prefetch'
 import { apiConfig, queryKeys } from '~/utils/api'
 import { getApiErrorStatus } from '~/utils/apiErrors'
 
@@ -58,7 +58,7 @@ registerOfflinePrefetch('village-codes', async (queryClient) => {
       queryFn: ({ signal }) => fetchVillageCodes(includeHidden, signal),
     }),
   ))
-})
+}, { roles: CLINIC_STAFF_ROLES })
 
 // ── Cache edits ──────────────────────────────────────────────────────────
 
@@ -126,6 +126,7 @@ const afterSave = async (saved: VillageCode, _vars: unknown, queryClient: QueryC
 
 export const createVillageCode = defineOfflineMutation({
   key: 'villageCodes.create',
+  creates: true,
   describe: (vars: SaveVillageCodeVars) => `New village code ${vars.code} (${vars.name})`,
   recordIds: vars => [vars.id],
   send: (vars, ctx) => {
@@ -141,6 +142,7 @@ export const createVillageCode = defineOfflineMutation({
     return saBaiAPIEndpointsVillageCodesCreatePostEndpoint({ ...apiConfig, ...requestOptions(ctx), body }).unwrap()
   },
   optimistic: (vars, queryClient) => upsertVillageCode(queryClient, optimisticRecord(queryClient, vars)),
+  revert: (vars, queryClient) => removeVillageCode(queryClient, vars.id),
   onSuccess: afterSave,
 })
 

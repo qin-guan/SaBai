@@ -21,6 +21,22 @@ public sealed class FaceRecognitionOptions
     /// <summary>File name of the ArcFace recognition model inside <see cref="ModelsDirectory"/>.</summary>
     public string RecognizerModel { get; set; } = "w600k_r50.onnx";
 
+    /// <summary>
+    /// Expected SHA-256 (hex) of <see cref="DetectorModel"/>; the file is checked before it is loaded.
+    /// Defaults to buffalo_l's <c>det_10g.onnx</c>. Required when <see cref="AutoDownloadModels"/> is on;
+    /// empty skips the check for operator-provided files.
+    /// </summary>
+    public string DetectorModelSha256 { get; set; } =
+        "5838f7fe053675b1c7a08b633df49e7af5495cee0493c7dcf6697200b85b5b91";
+
+    /// <summary>
+    /// Expected SHA-256 (hex) of <see cref="RecognizerModel"/>; the file is checked before it is loaded.
+    /// Defaults to buffalo_l's <c>w600k_r50.onnx</c>. Required when <see cref="AutoDownloadModels"/> is on;
+    /// empty skips the check for operator-provided files.
+    /// </summary>
+    public string RecognizerModelSha256 { get; set; } =
+        "4c06341c33c2ca1f86781dab0e829f88ad5b64be9fba56e56bc9ebdefc619e43";
+
     /// <summary>Download missing models from <see cref="ModelPackUrl"/> on first use.</summary>
     public bool AutoDownloadModels { get; set; } = true;
 

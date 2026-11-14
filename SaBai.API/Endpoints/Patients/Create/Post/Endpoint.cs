@@ -122,12 +122,16 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             .OrderBy(x => x.Date)
             .Select(x => new { x.Id, x.Date, VitalsId = (Guid?)x.Vitals!.Id })
             .ToListAsync(ct);
-        if (req.VisitId is { } visitId && visits.All(x => x.Id != visitId))
+        // Only the same registration may be answered this way: it names the visit it opened
+        // (or, without one, the same person), otherwise the id belongs to someone else.
+        var sameRegistration = req.VisitId is { } visitId
+            ? visits.Any(x => x.Id == visitId)
+            : string.Equals(patient.Name, req.Name.Trim(), StringComparison.OrdinalIgnoreCase)
+                && req.DateOfBirth is { } dateOfBirth
+                && patient.DateOfBirth.UtcDateTime.Date == dateOfBirth.UtcDateTime.Date;
+        if (!sameRegistration)
         {
-            if (await db.Visits.AnyAsync(x => x.Id == visitId, ct))
-            {
-                throw new ConflictException($"Id {visitId} is already used by another record.");
-            }
+            throw new ConflictException($"Id {patient.Id} is already used by another record.");
         }
 
         var visit = visits.FirstOrDefault(x => x.Id == req.VisitId) ?? visits.FirstOrDefault();

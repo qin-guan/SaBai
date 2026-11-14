@@ -18,7 +18,7 @@ const { patient, visits, selectedVisitId, selectedVisit, isLoading } = usePatien
     choose-message="Please choose a visit to record a dental consultation."
   >
     <template #default="{ visit, patient: p }">
-      <DentalForm :key="visit.id" :visit-id="visit.id" :patient-name="p.name" />
+      <DentalForm :key="visit.id" :visit-id="visit.id" :patient-id="p.id" :patient-name="p.name" />
     </template>
   </StationPage>
 </template>

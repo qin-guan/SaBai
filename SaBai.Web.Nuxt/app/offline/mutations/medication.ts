@@ -22,7 +22,7 @@ import type {
   SaBaiAPIEndpointsMedicationStockWithBrandGetResponse,
 } from '@sabai/sdk/types'
 import { defineOfflineMutation, requestOptions } from '~/offline/defineOfflineMutation'
-import { registerOfflinePrefetch } from '~/offline/prefetch'
+import { CLINIC_STAFF_ROLES, registerOfflinePrefetch } from '~/offline/prefetch'
 import { apiConfig, queryKeys } from '~/utils/api'
 import { getApiErrorStatus } from '~/utils/apiErrors'
 import {
@@ -76,7 +76,7 @@ registerOfflinePrefetch('medication', async (queryClient) => {
     queryClient.fetchQuery({ queryKey: queryKeys.medicationBrandsWithIngredient(), queryFn: ({ signal }) => fetchMedicationBrandsWithIngredient(signal) }),
     queryClient.fetchQuery({ queryKey: queryKeys.medicationStock(), queryFn: ({ signal }) => fetchMedicationStock(signal) }),
   ])
-})
+}, { roles: CLINIC_STAFF_ROLES })
 
 // ── Cache edits ──────────────────────────────────────────────────────────
 

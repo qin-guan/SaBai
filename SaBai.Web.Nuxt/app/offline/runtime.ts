@@ -31,6 +31,8 @@ let onUnauthorized: () => void = () => {}
 
 /** The signed-in staff user, as far as the offline layer knows (see `setOfflineUser`). */
 let currentUser: OutboxUser | undefined
+/** Their staff roles: what the offline download fetches for them. */
+let currentRoles: readonly string[] = []
 const userListeners = new Set<(user: OutboxUser | undefined) => void>()
 
 // The session query survives a change of user: it is how the new user is known.
@@ -141,7 +143,8 @@ export function setOfflineUser(user: OutboxUser | null): void {
   currentUser = user ?? undefined
   if (previous === currentUser?.id) return
   if (user && runtime) {
-    claimQueryCache(runtime.queryClient, user.id, isSessionQuery)
+    // Someone else's cache was dropped: download this user's working set afresh.
+    if (claimQueryCache(runtime.queryClient, user.id, isSessionQuery)) resetPrefetchState()
     reapplyQueuedEdits(runtime.queryClient, ownOutboxItems(), getOfflineMutation)
   }
   for (const listener of userListeners) listener(currentUser)
@@ -176,13 +179,14 @@ export function mutateOffline<TVars, TResult>(
  * while online, downloads the offline working set if it has not been
  * downloaded recently.
  */
-export function startOfflineSync(user: OutboxUser): void {
+export function startOfflineSync(user: OutboxUser, roles: readonly string[] = []): void {
   if (!runtime) return
   setOfflineUser(user)
+  currentRoles = roles
   const { outbox, connectivity, queryClient } = runtime
   if (connectivity.getState().offline) return
   if (outbox.sendableCount() > 0 && !outbox.isReplaying()) void replayOutbox()
-  void maybeRunOfflinePrefetch(queryClient)
+  void maybeRunOfflinePrefetch(queryClient, { roles: currentRoles })
 }
 
 /**
@@ -227,7 +231,7 @@ export async function discardOutboxItem(id: string): Promise<void> {
 
 /** "Download for offline use". */
 export function downloadForOffline() {
-  return runOfflinePrefetch(getOfflineRuntime().queryClient)
+  return runOfflinePrefetch(getOfflineRuntime().queryClient, { roles: currentRoles })
 }
 
 /** Device time (ms) of the last successful API response. */
@@ -248,4 +252,5 @@ export async function clearOfflineData(): Promise<void> {
   resetPrefetchState()
   releaseQueryCache()
   setOfflineUser(null)
+  currentRoles = []
 }

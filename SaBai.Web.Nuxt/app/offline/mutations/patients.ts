@@ -26,7 +26,7 @@ import type {
   SaBaiAPIEndpointsVisitsCreatePostResponse,
 } from '@sabai/sdk/types'
 import { defineOfflineMutation, requestOptions } from '~/offline/defineOfflineMutation'
-import { registerOfflinePrefetch } from '~/offline/prefetch'
+import { CLINIC_STAFF_ROLES, registerOfflinePrefetch } from '~/offline/prefetch'
 import { apiConfig, queryKeys } from '~/utils/api'
 import { uuidv7 } from '~/utils/uuid'
 
@@ -110,21 +110,18 @@ export function patientsToPrefetch(
     .map(p => p.id)
 }
 
-registerOfflinePrefetch('patients', async (queryClient) => {
-  const [, latest] = await Promise.all([
-    queryClient.fetchQuery({ queryKey: queryKeys.patientsList(), queryFn: ({ signal }) => fetchPatientsList(signal) }),
-    queryClient.fetchQuery({ queryKey: queryKeys.patientsWithLatestVisit(), queryFn: ({ signal }) => fetchPatientsWithLatestVisit(signal) }),
-    queryClient.fetchQuery({ queryKey: queryKeys.tags(), queryFn: ({ signal }) => fetchTags(signal) }),
-  ])
+/** Runs `fetchOne` for each of the recently seen patients, a few at a time; throws if any failed. */
+async function prefetchRecentPatients(queryClient: QueryClient, what: string, fetchOne: (id: string) => Promise<unknown>) {
+  const latest = await queryClient.ensureQueryData({
+    queryKey: queryKeys.patientsWithLatestVisit(),
+    queryFn: ({ signal }) => fetchPatientsWithLatestVisit(signal),
+  })
   const queue = patientsToPrefetch(latest.patients)
   let failures = 0
   async function worker() {
     for (let id = queue.shift(); id; id = queue.shift()) {
       try {
-        await Promise.all([
-          queryClient.fetchQuery({ queryKey: queryKeys.patient(id), queryFn: ({ signal }) => fetchPatient(id, signal) }),
-          queryClient.fetchQuery({ queryKey: queryKeys.patientVisits(id), queryFn: ({ signal }) => fetchPatientVisits(id, signal) }),
-        ])
+        await fetchOne(id)
       }
       catch {
         failures++
@@ -132,8 +129,24 @@ registerOfflinePrefetch('patients', async (queryClient) => {
     }
   }
   await Promise.all(Array.from({ length: PREFETCH_CONCURRENCY }, worker))
-  if (failures > 0) throw new Error(`${failures} patient records could not be downloaded.`)
+  if (failures > 0) throw new Error(`${failures} ${what} could not be downloaded.`)
+}
+
+registerOfflinePrefetch('patients', async (queryClient) => {
+  await Promise.all([
+    queryClient.fetchQuery({ queryKey: queryKeys.patientsList(), queryFn: ({ signal }) => fetchPatientsList(signal) }),
+    queryClient.fetchQuery({ queryKey: queryKeys.patientsWithLatestVisit(), queryFn: ({ signal }) => fetchPatientsWithLatestVisit(signal) }),
+    queryClient.fetchQuery({ queryKey: queryKeys.tags(), queryFn: ({ signal }) => fetchTags(signal) }),
+  ])
+  await prefetchRecentPatients(queryClient, 'patient records', id =>
+    queryClient.fetchQuery({ queryKey: queryKeys.patient(id), queryFn: ({ signal }) => fetchPatient(id, signal) }))
 })
+
+// Visits (with their station journey) are clinical: not for the referral desk.
+registerOfflinePrefetch('patient-visits', queryClient =>
+  prefetchRecentPatients(queryClient, 'patient visit lists', id =>
+    queryClient.fetchQuery({ queryKey: queryKeys.patientVisits(id), queryFn: ({ signal }) => fetchPatientVisits(id, signal) })),
+{ roles: CLINIC_STAFF_ROLES })
 
 // Staff names for the referral "PN member" picker.
 registerOfflinePrefetch('staff-users', async (queryClient) => {

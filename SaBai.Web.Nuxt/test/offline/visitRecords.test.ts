@@ -97,5 +97,7 @@ describe('visit record mutations', () => {
 
   it('lists the ids a write touches so later writes queue behind it', () => {
     expect(createVitals.recordIds!(vitalsVars({}, 'v-1'))).toEqual(['v-1', 'visit-1'])
+    // With the patient known, a waiting or failed registration holds it back too.
+    expect(createVitals.recordIds!({ ...vitalsVars({}, 'v-1'), patientId: 'p-1' })).toEqual(['v-1', 'visit-1', 'p-1'])
   })
 })

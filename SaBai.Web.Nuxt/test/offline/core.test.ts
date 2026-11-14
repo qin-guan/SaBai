@@ -172,6 +172,23 @@ describe('offline prefetch', () => {
     expect(second).toHaveBeenCalledTimes(1)
   })
 
+  it('skips prefetches limited to roles the user does not have', async () => {
+    const clinical = vi.fn(async () => {})
+    const everyone = vi.fn(async () => {})
+    registerOfflinePrefetch('test-0', clinical, { roles: ['admin', 'member'] })
+    registerOfflinePrefetch('test-1', everyone)
+    for (let i = 2; i < 6; i++) registerOfflinePrefetch(`test-${i}`, async () => {})
+    const qc = newQueryClient()
+
+    await runOfflinePrefetch(qc, { roles: ['pn'] })
+    expect(clinical).not.toHaveBeenCalled()
+    expect(everyone).toHaveBeenCalledTimes(1)
+
+    await runOfflinePrefetch(qc, { roles: ['member'] })
+    expect(clinical).toHaveBeenCalledTimes(1)
+    registerOfflinePrefetch('test-0', async () => {})
+  })
+
   it('maybeRun skips a run within the interval', async () => {
     for (let i = 0; i < 6; i++) registerOfflinePrefetch(`test-${i}`, async () => {})
     const qc = newQueryClient()

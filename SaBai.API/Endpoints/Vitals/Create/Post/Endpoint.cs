@@ -34,7 +34,9 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
         if (await db.Vitals.AnyAsync(x => x.VisitId == req.VisitId, ct))
         {
-            throw new ConflictException("Vitals already exist for this visit.");
+            throw new ConflictException(
+                "Vitals were already recorded for this visit, perhaps on another device. Open the visit's vitals to change them."
+            );
         }
 
         var vitals = new global::SaBai.API.Domain.Vitals
@@ -65,7 +67,9 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                     is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation }
             )
         {
-            throw new ConflictException("Vitals already exist for this visit.");
+            throw new ConflictException(
+                "Vitals were already recorded for this visit, perhaps on another device. Open the visit's vitals to change them."
+            );
         }
 
         await Send.CreatedAtAsync<Get.Endpoint>(

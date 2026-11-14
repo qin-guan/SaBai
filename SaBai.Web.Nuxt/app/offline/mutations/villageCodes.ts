@@ -11,7 +11,7 @@ import type {
   SaBaiAPIEndpointsVillageCodesListGetResponse,
 } from '@sabai/sdk/types'
 import { defineOfflineMutation, requestOptions } from '~/offline/defineOfflineMutation'
-import { registerOfflinePrefetch } from '~/offline/prefetch'
+import { CLINIC_STAFF_ROLES, registerOfflinePrefetch } from '~/offline/prefetch'
 import { apiConfig, queryKeys } from '~/utils/api'
 import { getApiErrorStatus } from '~/utils/apiErrors'
 
@@ -58,7 +58,7 @@ registerOfflinePrefetch('village-codes', async (queryClient) => {
       queryFn: ({ signal }) => fetchVillageCodes(includeHidden, signal),
     }),
   ))
-})
+}, { roles: CLINIC_STAFF_ROLES })
 
 // ── Cache edits ──────────────────────────────────────────────────────────
 

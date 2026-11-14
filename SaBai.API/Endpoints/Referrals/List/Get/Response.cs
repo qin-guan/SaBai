@@ -21,5 +21,15 @@ public sealed record Response(
     Guid VillageCodeId,
     string VillageCode,
     string VillageColorHex,
-    IReadOnlyList<string> Tags
+    IReadOnlyList<string> Tags,
+    Guid? ReferredToId,
+    decimal? AmountPaidUsd,
+    int? AmountPaidRiels,
+    Guid? MemberWhoPaidId,
+    bool IsReimbursed,
+    decimal? ReimbursedUsd,
+    int? ReimbursedRiels,
+    DateTimeOffset? ReimbursedAt,
+    Guid? ReimbursedByUserId,
+    string? ReimbursementNotes
 );

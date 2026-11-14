@@ -81,7 +81,13 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Get.Response>
                 x.DoctorsUpdated,
                 x.AmountPaidUsd,
                 x.AmountPaidRiels,
-                x.MemberWhoPaidId
+                x.MemberWhoPaidId,
+                x.IsReimbursed,
+                x.ReimbursedUsd,
+                x.ReimbursedRiels,
+                x.ReimbursedAt,
+                x.ReimbursedByUserId,
+                x.ReimbursementNotes
             ))
             .FirstAsync(ct);
 

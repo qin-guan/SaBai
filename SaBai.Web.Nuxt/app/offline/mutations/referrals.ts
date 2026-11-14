@@ -9,10 +9,13 @@ import {
   saBaiAPIEndpointsReferralsGetEndpoint,
   saBaiAPIEndpointsReferralsListByConsultGetEndpoint,
   saBaiAPIEndpointsReferralsListGetEndpoint,
+  saBaiAPIEndpointsReferralsReimburseBillsPostEndpoint,
+  saBaiAPIEndpointsReferralsRepayPnPostEndpoint,
   saBaiAPIEndpointsReferralsUpdateBoothPatchEndpoint,
   saBaiAPIEndpointsReferralsUpdateMoneyPatchEndpoint,
   saBaiAPIEndpointsReferralsUpdateOutcomePatchEndpoint,
   saBaiAPIEndpointsReferralsUpdatePartyPatchEndpoint,
+  saBaiAPIEndpointsReferralsUpdateReimbursementPatchEndpoint,
   saBaiAPIEndpointsReferralsUpdateStatePatchEndpoint,
 } from '@sabai/sdk/clients'
 import type {
@@ -98,28 +101,55 @@ export type ReferralPatch = Partial<Pick<ReferralDetail,
   | 'referredToId' | 'memberInChargeId' | 'guardiansContacted' | 'classOfService'
   | 'descriptionOfService' | 'patientSummaryFromScreening' | 'remarksAtBooth'
   | 'memberOnRunId' | 'presentAtReferralParty' | 'referralPartyResults' | 'followUp' | 'doctorsUpdated'
-  | 'amountPaidUsd' | 'amountPaidRiels' | 'memberWhoPaidId'>>
+  | 'amountPaidUsd' | 'amountPaidRiels' | 'memberWhoPaidId'
+  | 'isReimbursed' | 'reimbursedUsd' | 'reimbursedRiels' | 'reimbursedAt' | 'reimbursedByUserId' | 'reimbursementNotes'>>
 
 const CONSULT_REFERRALS_KEY = ['referrals', 'consult'] as const
+
+const LIST_PATCH_KEYS = [
+  'referralState',
+  'referralOutcome',
+  'referredToId',
+  'amountPaidUsd',
+  'amountPaidRiels',
+  'memberWhoPaidId',
+  'isReimbursed',
+  'reimbursedUsd',
+  'reimbursedRiels',
+  'reimbursedAt',
+  'reimbursedByUserId',
+  'reimbursementNotes',
+] as const
 
 /** Sets `patch` on the referral wherever it is cached (detail, list row, consult list). */
 function patchReferral(queryClient: QueryClient, id: string, patch: ReferralPatch) {
   queryClient.setQueryData<ReferralDetail>(queryKeys.referral(id), old => old && { ...old, ...patch })
 
-  const listPatch: Partial<Pick<ReferralListEntry, 'referralState' | 'referralOutcome'>> = {}
-  if (patch.referralState !== undefined) listPatch.referralState = patch.referralState
-  if (patch.referralOutcome !== undefined) listPatch.referralOutcome = patch.referralOutcome
+  const listPatch: Partial<ReferralListEntry> = {}
+  for (const key of LIST_PATCH_KEYS) {
+    if (patch[key] !== undefined)
+      (listPatch as Record<string, unknown>)[key] = patch[key]
+  }
   if (Object.keys(listPatch).length === 0) return
   queryClient.setQueryData<ReferralListEntry[]>(queryKeys.referrals(), old =>
     old?.map(r => (r.id === id ? { ...r, ...listPatch } : r)))
-  queryClient.setQueriesData<ConsultReferral[]>({ queryKey: CONSULT_REFERRALS_KEY }, old =>
-    old?.map(r => (r.id === id ? { ...r, ...listPatch } : r)))
+  if (listPatch.referralState !== undefined || listPatch.referralOutcome !== undefined) {
+    const consultPatch: Partial<Pick<ConsultReferral, 'referralState' | 'referralOutcome'>> = {}
+    if (listPatch.referralState !== undefined) consultPatch.referralState = listPatch.referralState
+    if (listPatch.referralOutcome !== undefined) consultPatch.referralOutcome = listPatch.referralOutcome
+    queryClient.setQueriesData<ConsultReferral[]>({ queryKey: CONSULT_REFERRALS_KEY }, old =>
+      old?.map(r => (r.id === id ? { ...r, ...consultPatch } : r)))
+  }
 }
 
 /** The server's answer replaces the cached detail; the list is refreshed. */
 function afterPatch(updated: Partial<ReferralDetail> & { id: string }, queryClient: QueryClient) {
-  const { id, referralState, referralOutcome } = updated
-  patchReferral(queryClient, id, { referralState, referralOutcome })
+  const listPatch: ReferralPatch = {}
+  for (const key of LIST_PATCH_KEYS) {
+    if (updated[key] !== undefined)
+      (listPatch as Record<string, unknown>)[key] = updated[key]
+  }
+  patchReferral(queryClient, updated.id, listPatch)
   return queryClient.invalidateQueries({ queryKey: queryKeys.referrals() })
 }
 
@@ -218,6 +248,16 @@ export const createReferral = defineOfflineMutation({
       villageCode: c.villageCode,
       villageColorHex: c.villageColorHex,
       tags: [],
+      referredToId: null,
+      amountPaidUsd: null,
+      amountPaidRiels: null,
+      memberWhoPaidId: null,
+      isReimbursed: false,
+      reimbursedUsd: null,
+      reimbursedRiels: null,
+      reimbursedAt: null,
+      reimbursedByUserId: null,
+      reimbursementNotes: null,
     }
     queryClient.setQueryData<ReferralListEntry[]>(queryKeys.referrals(), old => {
       const current = old?.find(r => r.id === vars.id)
@@ -233,7 +273,6 @@ export const createReferral = defineOfflineMutation({
       patientHasPoorCard: false,
       patientHasBS2Card: false,
       patientHasSabaiCard: false,
-      referredToId: null,
       memberInChargeId: null,
       guardiansContacted: null,
       classOfService: null,
@@ -245,9 +284,6 @@ export const createReferral = defineOfflineMutation({
       referralPartyResults: null,
       followUp: false,
       doctorsUpdated: false,
-      amountPaidUsd: null,
-      amountPaidRiels: null,
-      memberWhoPaidId: null,
     })
   },
   onSuccess: async (_created, vars, queryClient) => {
@@ -423,6 +459,187 @@ export const updateReferralMoney = defineOfflineMutation({
     memberWhoPaidId: vars.memberWhoPaidId,
   }),
   onSuccess: afterFullPatch,
+})
+
+export interface UpdateReferralReimbursementVars extends Labelled {
+  isReimbursed: boolean
+  reimbursementNotes?: string | null
+  reimbursedUsd?: number | null
+  reimbursedRiels?: number | null
+}
+
+export const updateReferralReimbursement = defineOfflineMutation({
+  key: 'referrals.reimbursement',
+  describe: (vars: UpdateReferralReimbursementVars) =>
+    `${vars.isReimbursed ? 'Reimburse' : 'Update reimbursement'} referral bill${forPatient(vars)}`,
+  recordIds: vars => [vars.id],
+  baseQueries: vars => [queryKeys.referral(vars.id)],
+  send: (vars, ctx) =>
+    saBaiAPIEndpointsReferralsUpdateReimbursementPatchEndpoint({
+      ...apiConfig,
+      ...requestOptions(ctx),
+      path: { id: vars.id },
+      body: {
+        isReimbursed: vars.isReimbursed,
+        reimbursementNotes: vars.reimbursementNotes ?? null,
+        reimbursedUsd: vars.reimbursedUsd ?? null,
+        reimbursedRiels: vars.reimbursedRiels ?? null,
+      },
+    }).unwrap(),
+  optimistic: (vars, queryClient) => {
+    const existing = queryClient.getQueryData<ReferralDetail>(queryKeys.referral(vars.id))
+      ?? queryClient.getQueryData<ReferralListEntry[]>(queryKeys.referrals())?.find(r => r.id === vars.id)
+    const hasPartial = vars.reimbursedUsd !== undefined || vars.reimbursedRiels !== undefined
+    let nextUsd = existing?.reimbursedUsd ?? null
+    let nextRiels = existing?.reimbursedRiels ?? null
+    let nextDone = vars.isReimbursed
+
+    if (vars.isReimbursed && !hasPartial) {
+      nextUsd = existing?.amountPaidUsd ?? null
+      nextRiels = existing?.amountPaidRiels ?? null
+    }
+    else if (!vars.isReimbursed && !hasPartial) {
+      nextUsd = null
+      nextRiels = null
+    }
+    else {
+      if (vars.reimbursedUsd !== undefined)
+        nextUsd = vars.reimbursedUsd && vars.reimbursedUsd > 0 ? vars.reimbursedUsd : null
+      if (vars.reimbursedRiels !== undefined)
+        nextRiels = vars.reimbursedRiels && vars.reimbursedRiels > 0 ? vars.reimbursedRiels : null
+      const paidUsd = existing?.amountPaidUsd ?? 0
+      const paidRiels = existing?.amountPaidRiels ?? 0
+      const hasPaid = paidUsd > 0 || paidRiels > 0
+      nextDone = vars.isReimbursed || (hasPaid && (nextUsd ?? 0) >= paidUsd && (nextRiels ?? 0) >= paidRiels)
+    }
+
+    const hasAnyReimbursed = nextDone || (nextUsd ?? 0) > 0 || (nextRiels ?? 0) > 0
+    patchReferral(queryClient, vars.id, {
+      isReimbursed: nextDone,
+      reimbursedUsd: nextUsd,
+      reimbursedRiels: nextRiels,
+      reimbursedAt: hasAnyReimbursed ? new Date().toISOString() : null,
+      reimbursementNotes: vars.reimbursementNotes?.trim() || null,
+    })
+  },
+  onSuccess: afterFullPatch,
+})
+
+export interface ReimburseReferralBillsVars {
+  referralIds: string[]
+  isReimbursed: boolean
+  reimbursementNotes?: string | null
+  label?: string
+}
+
+export const reimburseReferralBills = defineOfflineMutation({
+  key: 'referrals.reimburseBills',
+  describe: (vars: ReimburseReferralBillsVars) =>
+    vars.label
+      ?? `${vars.isReimbursed ? 'Reimburse' : 'Mark pending'} ${vars.referralIds.length} referral bill${vars.referralIds.length === 1 ? '' : 's'}`,
+  recordIds: vars => vars.referralIds,
+  send: (vars, ctx) =>
+    saBaiAPIEndpointsReferralsReimburseBillsPostEndpoint({
+      ...apiConfig,
+      ...requestOptions(ctx),
+      body: {
+        referralIds: vars.referralIds,
+        isReimbursed: vars.isReimbursed,
+        reimbursementNotes: vars.reimbursementNotes ?? null,
+      },
+    }).unwrap(),
+  optimistic: (vars, queryClient) => {
+    const now = vars.isReimbursed ? new Date().toISOString() : null
+    const notes = vars.reimbursementNotes !== undefined
+      ? (vars.reimbursementNotes?.trim() || null)
+      : undefined
+    const list = queryClient.getQueryData<ReferralListEntry[]>(queryKeys.referrals())
+    for (const id of vars.referralIds) {
+      const existing = queryClient.getQueryData<ReferralDetail>(queryKeys.referral(id))
+        ?? list?.find(r => r.id === id)
+      patchReferral(queryClient, id, {
+        isReimbursed: vars.isReimbursed,
+        reimbursedUsd: vars.isReimbursed ? (existing?.amountPaidUsd ?? null) : null,
+        reimbursedRiels: vars.isReimbursed ? (existing?.amountPaidRiels ?? null) : null,
+        reimbursedAt: now,
+        ...(notes !== undefined ? { reimbursementNotes: notes } : !vars.isReimbursed ? { reimbursementNotes: null } : {}),
+      })
+    }
+  },
+  onSuccess: async (res, vars, queryClient) => {
+    for (const id of vars.referralIds) {
+      patchReferral(queryClient, id, {
+        isReimbursed: res.isReimbursed,
+        reimbursedAt: res.reimbursedAt,
+        reimbursedByUserId: res.reimbursedByUserId,
+        ...(res.reimbursementNotes !== undefined ? { reimbursementNotes: res.reimbursementNotes } : {}),
+      })
+    }
+    await queryClient.invalidateQueries({ queryKey: queryKeys.referrals() })
+  },
+})
+
+export interface RepayPnBillsVars {
+  memberWhoPaidId: string
+  amountUsd: number | null
+  amountRiels: number | null
+  reimbursementNotes?: string | null
+  label?: string
+}
+
+export const repayPnBills = defineOfflineMutation({
+  key: 'referrals.repayPn',
+  describe: (vars: RepayPnBillsVars) => vars.label ?? 'Repay PN referral bills',
+  recordIds: vars => [vars.memberWhoPaidId],
+  send: (vars, ctx) =>
+    saBaiAPIEndpointsReferralsRepayPnPostEndpoint({
+      ...apiConfig,
+      ...requestOptions(ctx),
+      body: {
+        memberWhoPaidId: vars.memberWhoPaidId,
+        amountUsd: vars.amountUsd,
+        amountRiels: vars.amountRiels,
+        reimbursementNotes: vars.reimbursementNotes ?? null,
+      },
+    }).unwrap(),
+  optimistic: (vars, queryClient) => {
+    const list = queryClient.getQueryData<ReferralListEntry[]>(queryKeys.referrals())
+    if (!list) return
+    const pending = list
+      .filter(r => r.memberWhoPaidId === vars.memberWhoPaidId && !r.isReimbursed)
+      .sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id))
+
+    let remainingUsd = vars.amountUsd ?? 0
+    let remainingRiels = vars.amountRiels ?? 0
+    const now = new Date().toISOString()
+    const notes = vars.reimbursementNotes?.trim() || null
+
+    for (const r of pending) {
+      const paidUsd = r.amountPaidUsd ?? 0
+      const paidRiels = r.amountPaidRiels ?? 0
+      const curUsd = r.reimbursedUsd ?? 0
+      const curRiels = r.reimbursedRiels ?? 0
+      const applyUsd = Math.min(Math.max(0, paidUsd - curUsd), remainingUsd)
+      const applyRiels = Math.min(Math.max(0, paidRiels - curRiels), remainingRiels)
+      if (applyUsd <= 0 && applyRiels <= 0) continue
+
+      const nextUsd = Math.round((curUsd + applyUsd) * 100) / 100
+      const nextRiels = curRiels + applyRiels
+      remainingUsd = Math.round((remainingUsd - applyUsd) * 100) / 100
+      remainingRiels -= applyRiels
+
+      patchReferral(queryClient, r.id, {
+        reimbursedUsd: nextUsd > 0 ? nextUsd : null,
+        reimbursedRiels: nextRiels > 0 ? nextRiels : null,
+        isReimbursed: nextUsd >= paidUsd && nextRiels >= paidRiels,
+        reimbursedAt: now,
+        ...(notes ? { reimbursementNotes: notes } : {}),
+      })
+    }
+  },
+  onSuccess: async (_res, _vars, queryClient) => {
+    await queryClient.invalidateQueries({ queryKey: queryKeys.referrals() })
+  },
 })
 
 // ── Referral partners: writes ────────────────────────────────────────────

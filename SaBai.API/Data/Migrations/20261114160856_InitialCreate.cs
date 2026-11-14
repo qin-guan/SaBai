@@ -5,7 +5,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace SaBai.API.Data.Migrations
+namespace SaBai.API.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
@@ -85,8 +85,8 @@ namespace SaBai.API.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Version = table.Column<int>(type: "integer", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
                     Name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     UnitOfMeasurement = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     FallBelow = table.Column<int>(type: "integer", nullable: false),
@@ -104,12 +104,12 @@ namespace SaBai.API.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Version = table.Column<int>(type: "integer", nullable: false),
                     Name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     Remarks = table.Column<string>(type: "text", nullable: true),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedByUserId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -144,47 +144,6 @@ namespace SaBai.API.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "SyncConflicts",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Table = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    RecordId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Field = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    PreviousValue = table.Column<string>(type: "text", nullable: true),
-                    IncomingValue = table.Column<string>(type: "text", nullable: true),
-                    WinningValue = table.Column<string>(type: "text", nullable: true),
-                    IncomingUserId = table.Column<Guid>(type: "uuid", nullable: true),
-                    OccurredAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    ResolvedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    ResolvedByUserId = table.Column<Guid>(type: "uuid", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_SyncConflicts", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "SyncRejections",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Table = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    RecordId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Operation = table.Column<string>(type: "character varying(16)", maxLength: 16, nullable: false),
-                    PayloadJson = table.Column<string>(type: "text", nullable: false),
-                    Reason = table.Column<string>(type: "text", nullable: false),
-                    UserId = table.Column<Guid>(type: "uuid", nullable: true),
-                    OccurredAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    ResolvedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    ResolvedByUserId = table.Column<Guid>(type: "uuid", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_SyncRejections", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Tags",
                 columns: table => new
                 {
@@ -203,13 +162,13 @@ namespace SaBai.API.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Version = table.Column<int>(type: "integer", nullable: false),
                     Code = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     Name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     ColorHex = table.Column<string>(type: "character varying(7)", maxLength: 7, nullable: false),
                     IsVisible = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedByUserId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -242,8 +201,8 @@ namespace SaBai.API.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Version = table.Column<int>(type: "integer", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
                     Name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     ActiveIngredientId = table.Column<Guid>(type: "uuid", nullable: false),
                     Remarks = table.Column<string>(type: "text", nullable: true)
@@ -395,8 +354,8 @@ namespace SaBai.API.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Version = table.Column<int>(type: "integer", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
                     Number = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     VillageCodeId = table.Column<Guid>(type: "uuid", nullable: true),
@@ -430,8 +389,8 @@ namespace SaBai.API.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Version = table.Column<int>(type: "integer", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
                     MedicationBrandId = table.Column<Guid>(type: "uuid", nullable: false),
                     Quantity = table.Column<int>(type: "integer", nullable: false),
                     Expiry = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
@@ -478,8 +437,8 @@ namespace SaBai.API.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Version = table.Column<int>(type: "integer", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
                     PatientId = table.Column<Guid>(type: "uuid", nullable: true),
                     FileName = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     StoredFileName = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
@@ -527,13 +486,12 @@ namespace SaBai.API.Data.Migrations
                 name: "PatientTags",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     PatientId = table.Column<Guid>(type: "uuid", nullable: false),
                     TagId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PatientTags", x => x.Id);
+                    table.PrimaryKey("PK_PatientTags", x => new { x.PatientId, x.TagId });
                     table.ForeignKey(
                         name: "FK_PatientTags_Patients_PatientId",
                         column: x => x.PatientId,
@@ -553,8 +511,8 @@ namespace SaBai.API.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Version = table.Column<int>(type: "integer", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
                     PatientId = table.Column<Guid>(type: "uuid", nullable: false),
                     VillageCodeId = table.Column<Guid>(type: "uuid", nullable: false),
                     Date = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
@@ -582,8 +540,8 @@ namespace SaBai.API.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Version = table.Column<int>(type: "integer", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
                     StockId = table.Column<Guid>(type: "uuid", nullable: false),
                     Field = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
                     PreviousValue = table.Column<string>(type: "text", nullable: false),
@@ -613,8 +571,8 @@ namespace SaBai.API.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Version = table.Column<int>(type: "integer", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
                     Date = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     PastMedicalHistory = table.Column<string>(type: "text", nullable: true),
                     Consultation = table.Column<string>(type: "text", nullable: true),
@@ -647,7 +605,6 @@ namespace SaBai.API.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Version = table.Column<int>(type: "integer", nullable: false),
                     VisitId = table.Column<Guid>(type: "uuid", nullable: false),
                     PreviousDentalVisit = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: true),
                     PreviousDentalTreatment = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: true),
@@ -699,6 +656,7 @@ namespace SaBai.API.Data.Migrations
                     Remarks = table.Column<string>(type: "text", nullable: true),
                     ImageFileId = table.Column<Guid>(type: "uuid", nullable: true),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
                     RecordedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
@@ -724,8 +682,8 @@ namespace SaBai.API.Data.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     RecordedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    Version = table.Column<int>(type: "integer", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
                     VisitId = table.Column<Guid>(type: "uuid", nullable: false),
                     LeftEyeDegree = table.Column<string>(type: "text", nullable: true),
                     RightEyeDegree = table.Column<string>(type: "text", nullable: true),
@@ -754,8 +712,8 @@ namespace SaBai.API.Data.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     RecordedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    Version = table.Column<int>(type: "integer", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
                     VisitId = table.Column<Guid>(type: "uuid", nullable: false),
                     Height = table.Column<decimal>(type: "numeric(5,2)", precision: 5, scale: 2, nullable: true),
                     Weight = table.Column<decimal>(type: "numeric(5,2)", precision: 5, scale: 2, nullable: true),
@@ -787,8 +745,8 @@ namespace SaBai.API.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Version = table.Column<int>(type: "integer", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
                     Details = table.Column<string>(type: "text", nullable: false),
                     Category = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
                     CodingSystem = table.Column<string>(type: "text", nullable: true),
@@ -812,8 +770,8 @@ namespace SaBai.API.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Version = table.Column<int>(type: "integer", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
                     ConsultId = table.Column<Guid>(type: "uuid", nullable: false),
                     MedicationBrandId = table.Column<Guid>(type: "uuid", nullable: false),
                     DosageInstructions = table.Column<string>(type: "text", nullable: false),
@@ -853,8 +811,8 @@ namespace SaBai.API.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Version = table.Column<int>(type: "integer", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
                     ReferredFor = table.Column<string>(type: "text", nullable: false),
                     ReferralNotes = table.Column<string>(type: "text", nullable: true),
                     ReferralState = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
@@ -875,7 +833,13 @@ namespace SaBai.API.Data.Migrations
                     DoctorsUpdated = table.Column<bool>(type: "boolean", nullable: false),
                     AmountPaidUsd = table.Column<decimal>(type: "numeric(10,2)", precision: 10, scale: 2, nullable: true),
                     AmountPaidRiels = table.Column<int>(type: "integer", nullable: true),
-                    MemberWhoPaidId = table.Column<Guid>(type: "uuid", nullable: true)
+                    MemberWhoPaidId = table.Column<Guid>(type: "uuid", nullable: true),
+                    IsReimbursed = table.Column<bool>(type: "boolean", nullable: false),
+                    ReimbursedUsd = table.Column<decimal>(type: "numeric(10,2)", precision: 10, scale: 2, nullable: true),
+                    ReimbursedRiels = table.Column<int>(type: "integer", nullable: true),
+                    ReimbursedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    ReimbursedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
+                    ReimbursementNotes = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -910,6 +874,12 @@ namespace SaBai.API.Data.Migrations
                         principalTable: "StaffUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Referrals_StaffUsers_ReimbursedByUserId",
+                        column: x => x.ReimbursedByUserId,
+                        principalTable: "StaffUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -917,8 +887,8 @@ namespace SaBai.API.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Version = table.Column<int>(type: "integer", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
                     VitalsId = table.Column<Guid>(type: "uuid", nullable: false),
                     GrossMotor = table.Column<string>(type: "text", nullable: true),
                     RedReflex = table.Column<string>(type: "text", nullable: true),
@@ -946,8 +916,8 @@ namespace SaBai.API.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Version = table.Column<int>(type: "integer", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
                     VitalsId = table.Column<Guid>(type: "uuid", nullable: false),
                     Pubarche = table.Column<bool>(type: "boolean", nullable: true),
                     PubarcheAge = table.Column<int>(type: "integer", nullable: true),
@@ -1152,12 +1122,6 @@ namespace SaBai.API.Data.Migrations
                 column: "VillageCodeId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PatientTags_PatientId_TagId",
-                table: "PatientTags",
-                columns: new[] { "PatientId", "TagId" },
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_PatientTags_TagId",
                 table: "PatientTags",
                 column: "TagId");
@@ -1205,6 +1169,11 @@ namespace SaBai.API.Data.Migrations
                 column: "ReferredToId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Referrals_ReimbursedByUserId",
+                table: "Referrals",
+                column: "ReimbursedByUserId");
+
+            migrationBuilder.CreateIndex(
                 name: "EmailIndex",
                 table: "StaffUsers",
                 column: "NormalizedEmail",
@@ -1230,26 +1199,6 @@ namespace SaBai.API.Data.Migrations
                 name: "IX_StockChanges_UserId",
                 table: "StockChanges",
                 column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_SyncConflicts_ResolvedAt",
-                table: "SyncConflicts",
-                column: "ResolvedAt");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_SyncConflicts_Table_RecordId",
-                table: "SyncConflicts",
-                columns: new[] { "Table", "RecordId" });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_SyncRejections_ResolvedAt",
-                table: "SyncRejections",
-                column: "ResolvedAt");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_SyncRejections_Table_RecordId",
-                table: "SyncRejections",
-                columns: new[] { "Table", "RecordId" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Tags_NormalizedName",
@@ -1347,12 +1296,6 @@ namespace SaBai.API.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "StaffUserTags");
-
-            migrationBuilder.DropTable(
-                name: "SyncConflicts");
-
-            migrationBuilder.DropTable(
-                name: "SyncRejections");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

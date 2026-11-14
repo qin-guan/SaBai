@@ -27,6 +27,7 @@ export const paths = {
   },
   consultPdf: (consultId: string | number) => `/api/consults/${consultId}/pdf`,
   referrals: () => "/referrals",
+  referralBills: () => "/referrals/bills",
   referralsDetail: (referralId: string | number) => `/referrals/${referralId}`,
   medicationStock: () => "/medication-stock",
   medicationBrands: () => "/medication-brands",

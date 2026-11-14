@@ -36,6 +36,16 @@ const sampleReferral: ReferralListItem = {
   createdAt: '2026-11-10T08:00:00Z',
   consultDate: '2026-11-10T07:45:00Z',
   tags: [],
+  referredToId: null,
+  amountPaidUsd: null,
+  amountPaidRiels: null,
+  memberWhoPaidId: null,
+  isReimbursed: false,
+  reimbursedUsd: null,
+  reimbursedRiels: null,
+  reimbursedAt: null,
+  reimbursedByUserId: null,
+  reimbursementNotes: null,
 }
 
 describe('referral constants & options', () => {

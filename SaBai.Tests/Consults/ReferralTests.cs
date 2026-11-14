@@ -351,6 +351,147 @@ public sealed class ReferralTests(AppFixture fixture)
         await Assert.That(res.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
     }
 
+    [Test]
+    public async Task UpdateReimbursement_MarksAndUnmarksBill_AndListIncludesFields()
+    {
+        // Arrange
+        var client = fixture.CreateApiClient();
+        await client.LoginAsync();
+        var suffix = ClinicSetup.Suffix();
+        var (consultId, _) = await CreateConsultAsync(client, $"Reimburse {suffix}");
+        var created = await client.PostAsJsonAsync(
+            "/referrals",
+            new { consultId, referredFor = $"lab {suffix}" },
+            ApiJson.Options
+        );
+        created.EnsureSuccessStatusCode();
+        var id = ClinicSetup.ReadGuid(
+            await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
+            "id"
+        );
+        await client.PatchAsJsonAsync(
+            $"/referrals/{id}/money",
+            new { id, amountPaidUsd = 15.00m, amountPaidRiels = 20000 },
+            ApiJson.Options
+        );
+
+        // Act - mark reimbursed
+        var markRes = await client.PatchAsJsonAsync(
+            $"/referrals/{id}/reimbursement",
+            new { id, isReimbursed = true, reimbursementNotes = "Settled in cash" },
+            ApiJson.Options
+        );
+        var markBody = await markRes.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
+
+        // Assert - marked
+        await Assert.That(markRes.StatusCode).IsEqualTo(HttpStatusCode.OK);
+        await Assert.That(markBody.GetProperty("isReimbursed").GetBoolean()).IsTrue();
+        await Assert.That(markBody.GetProperty("reimbursedAt").ValueKind).IsNotEqualTo(JsonValueKind.Null);
+        await Assert.That(markBody.GetProperty("reimbursementNotes").GetString()).IsEqualTo("Settled in cash");
+
+        // Act - list includes payment & reimbursement fields
+        var listRes = await client.GetAsync("/referrals");
+        var listItems = await listRes.Content.ReadFromJsonAsync<List<JsonElement>>(ApiJson.Options);
+        var item = listItems!.First(x => ClinicSetup.ReadGuid(x, "id") == id);
+
+        await Assert.That(item.GetProperty("amountPaidUsd").GetDecimal()).IsEqualTo(15.00m);
+        await Assert.That(item.GetProperty("amountPaidRiels").GetInt32()).IsEqualTo(20000);
+        await Assert.That(item.GetProperty("isReimbursed").GetBoolean()).IsTrue();
+
+        // Act - unmark
+        var unmarkRes = await client.PatchAsJsonAsync(
+            $"/referrals/{id}/reimbursement",
+            new { id, isReimbursed = false, reimbursementNotes = (string?)null },
+            ApiJson.Options
+        );
+        var unmarkBody = await unmarkRes.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
+        await Assert.That(unmarkRes.StatusCode).IsEqualTo(HttpStatusCode.OK);
+        await Assert.That(unmarkBody.GetProperty("isReimbursed").GetBoolean()).IsFalse();
+        await Assert.That(unmarkBody.GetProperty("reimbursedAt").ValueKind).IsEqualTo(JsonValueKind.Null);
+    }
+
+    [Test]
+    public async Task ReimburseBills_BulkUpdatesMultipleReferrals()
+    {
+        // Arrange
+        var client = fixture.CreateApiClient();
+        await client.LoginAsync();
+        var suffix = ClinicSetup.Suffix();
+        var (consult1, _) = await CreateConsultAsync(client, $"Bulk1 {suffix}");
+        var (consult2, _) = await CreateConsultAsync(client, $"Bulk2 {suffix}");
+
+        var r1 = await client.PostAsJsonAsync("/referrals", new { consultId = consult1, referredFor = $"x1 {suffix}" }, ApiJson.Options);
+        var r2 = await client.PostAsJsonAsync("/referrals", new { consultId = consult2, referredFor = $"x2 {suffix}" }, ApiJson.Options);
+        var id1 = ClinicSetup.ReadGuid(await r1.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options), "id");
+        var id2 = ClinicSetup.ReadGuid(await r2.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options), "id");
+
+        // Act
+        var bulkRes = await client.PostAsJsonAsync(
+            "/referrals/bills/reimburse",
+            new { referralIds = new[] { id1, id2 }, isReimbursed = true, reimbursementNotes = "Batch #1" },
+            ApiJson.Options
+        );
+        var bulkBody = await bulkRes.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
+
+        // Assert
+        await Assert.That(bulkRes.StatusCode).IsEqualTo(HttpStatusCode.OK);
+        await Assert.That(bulkBody.GetProperty("updatedCount").GetInt32()).IsEqualTo(2);
+        await Assert.That(bulkBody.GetProperty("isReimbursed").GetBoolean()).IsTrue();
+    }
+
+    [Test]
+    public async Task PartialRepayment_BillAndPnLumpSum_AllocatesFifo()
+    {
+        // Arrange
+        var client = fixture.CreateApiClient();
+        await client.LoginAsync();
+        var suffix = ClinicSetup.Suffix();
+
+        var meRes = await client.GetAsync("/auth/whoami");
+        var meBody = await meRes.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
+        var memberId = ClinicSetup.ReadGuid(meBody.GetProperty("user"), "id");
+
+        var (c1, _) = await CreateConsultAsync(client, $"Partial1 {suffix}");
+        var (c2, _) = await CreateConsultAsync(client, $"Partial2 {suffix}");
+
+        var r1 = await client.PostAsJsonAsync("/referrals", new { consultId = c1, referredFor = $"p1 {suffix}" }, ApiJson.Options);
+        var r2 = await client.PostAsJsonAsync("/referrals", new { consultId = c2, referredFor = $"p2 {suffix}" }, ApiJson.Options);
+        var id1 = ClinicSetup.ReadGuid(await r1.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options), "id");
+        var id2 = ClinicSetup.ReadGuid(await r2.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options), "id");
+
+        await client.PatchAsJsonAsync($"/referrals/{id1}/money", new { id = id1, amountPaidUsd = 20.00m, amountPaidRiels = 0, memberWhoPaidId = memberId }, ApiJson.Options);
+        await client.PatchAsJsonAsync($"/referrals/{id2}/money", new { id = id2, amountPaidUsd = 30.00m, amountPaidRiels = 0, memberWhoPaidId = memberId }, ApiJson.Options);
+
+        // Act 1: partial repayment on bill 1 ($5 out of $20)
+        var partialRes = await client.PatchAsJsonAsync(
+            $"/referrals/{id1}/reimbursement",
+            new { id = id1, isReimbursed = false, reimbursedUsd = 5.00m, reimbursementNotes = "Part 1" },
+            ApiJson.Options
+        );
+        var partialBody = await partialRes.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
+        await Assert.That(partialRes.StatusCode).IsEqualTo(HttpStatusCode.OK);
+        await Assert.That(partialBody.GetProperty("isReimbursed").GetBoolean()).IsFalse();
+        await Assert.That(partialBody.GetProperty("reimbursedUsd").GetDecimal()).IsEqualTo(5.00m);
+
+        // Act 2: lump-sum partial repayment of $25 to the PN ($15 finishes bill 1, $10 goes to bill 2)
+        var repayRes = await client.PostAsJsonAsync(
+            "/referrals/bills/repay-pn",
+            new { memberWhoPaidId = memberId, amountUsd = 25.00m, amountRiels = 0, reimbursementNotes = "EOD cash" },
+            ApiJson.Options
+        );
+        var repayBody = await repayRes.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
+        await Assert.That(repayRes.StatusCode).IsEqualTo(HttpStatusCode.OK);
+        await Assert.That(repayBody.GetProperty("updatedCount").GetInt32()).IsEqualTo(2);
+        await Assert.That(repayBody.GetProperty("appliedUsd").GetDecimal()).IsEqualTo(25.00m);
+
+        var b1 = await (await client.GetAsync($"/referrals/{id1}")).Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
+        var b2 = await (await client.GetAsync($"/referrals/{id2}")).Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
+        await Assert.That(b1.GetProperty("isReimbursed").GetBoolean()).IsTrue();
+        await Assert.That(b1.GetProperty("reimbursedUsd").GetDecimal()).IsEqualTo(20.00m);
+        await Assert.That(b2.GetProperty("isReimbursed").GetBoolean()).IsFalse();
+        await Assert.That(b2.GetProperty("reimbursedUsd").GetDecimal()).IsEqualTo(10.00m);
+    }
+
     private static async Task<(Guid ConsultId, Guid VisitId)> CreateConsultAsync(
         HttpClient client,
         string patientName

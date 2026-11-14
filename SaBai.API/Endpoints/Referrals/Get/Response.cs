@@ -45,5 +45,11 @@ public sealed record Response(
     // Money section
     decimal? AmountPaidUsd,
     int? AmountPaidRiels,
-    Guid? MemberWhoPaidId
+    Guid? MemberWhoPaidId,
+    bool IsReimbursed,
+    decimal? ReimbursedUsd,
+    int? ReimbursedRiels,
+    DateTimeOffset? ReimbursedAt,
+    Guid? ReimbursedByUserId,
+    string? ReimbursementNotes
 );

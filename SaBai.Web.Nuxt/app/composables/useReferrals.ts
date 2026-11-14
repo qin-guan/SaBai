@@ -5,17 +5,23 @@ import {
   fetchReferral,
   fetchReferrals,
   fetchReferralsByConsult,
+  reimburseReferralBills,
+  repayPnBills,
   updateReferralBooth,
   updateReferralMoney,
   updateReferralOutcome,
   updateReferralParty,
+  updateReferralReimbursement,
   updateReferralState,
   type CreateReferralContext,
   type ReferralDetail,
+  type ReimburseReferralBillsVars,
+  type RepayPnBillsVars,
   type UpdateReferralBoothVars,
   type UpdateReferralMoneyVars,
   type UpdateReferralOutcomeVars,
   type UpdateReferralPartyVars,
+  type UpdateReferralReimbursementVars,
   type UpdateReferralStateVars,
 } from '~/offline/mutations/referrals'
 import type { OfflineMutationDef } from '~/offline/defineOfflineMutation'
@@ -140,4 +146,29 @@ export function useUpdateReferralParty() {
  */
 export function useUpdateReferralMoney() {
   return useOfflineWrite(updateReferralMoney, (input: UpdateReferralMoneyInput) => input)
+}
+
+export type UpdateReferralReimbursementInput = UpdateReferralReimbursementVars
+export type ReimburseReferralBillsInput = ReimburseReferralBillsVars
+export type RepayPnBillsInput = RepayPnBillsVars
+
+/**
+ * Marks a single referral bill as reimbursed or pending reimbursement.
+ */
+export function useUpdateReferralReimbursement() {
+  return useOfflineWrite(updateReferralReimbursement, (input: UpdateReferralReimbursementInput) => input)
+}
+
+/**
+ * Bulk marks multiple referral bills as reimbursed or pending reimbursement.
+ */
+export function useReimburseReferralBills() {
+  return useOfflineWrite(reimburseReferralBills, (input: ReimburseReferralBillsInput) => input)
+}
+
+/**
+ * Applies a full or partial lump-sum repayment to a PN member's pending bills (FIFO).
+ */
+export function useRepayPnBills() {
+  return useOfflineWrite(repayPnBills, (input: RepayPnBillsInput) => input)
 }

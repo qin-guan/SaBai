@@ -478,6 +478,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             entity.Property(x => x.GuardiansContacted).HasConversion<string>().HasMaxLength(32);
             entity.Property(x => x.ClassOfService).HasConversion<string>().HasMaxLength(32);
             entity.Property(x => x.AmountPaidUsd).HasPrecision(10, 2);
+            entity.Property(x => x.ReimbursedUsd).HasPrecision(10, 2);
+            entity.Property(x => x.ReimbursementNotes).HasMaxLength(500);
             entity
                 .HasOne(x => x.Consult)
                 .WithMany(x => x.Referrals)
@@ -502,6 +504,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
                 .HasOne(x => x.MemberWhoPaid)
                 .WithMany()
                 .HasForeignKey(x => x.MemberWhoPaidId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity
+                .HasOne(x => x.ReimbursedByUser)
+                .WithMany()
+                .HasForeignKey(x => x.ReimbursedByUserId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 

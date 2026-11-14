@@ -50,12 +50,20 @@ The REST API is the only read and write path; offline support is in the client
   response before the write was made); a `412` puts the item in *conflict*,
   another `4xx` *rejects* it, and later writes for the same record wait behind
   it. `/settings/sync` lists pending items and offers *Overwrite* (resend
-  without the header), *Retry* and *Discard*.
+  without the header), *Retry* and *Discard*. Discarding a waiting change also
+  takes it off the screen at once, offline too (each item keeps the cached data
+  its edit replaced; the other waiting changes are applied again on top).
+- **Per user**: each queued write belongs to the staff user who made it and is
+  only sent while they are signed in. If someone else signs in on the device
+  (e.g. after a session expired; a `401` during replay sends the user to the
+  login page), the cached data of the previous user is dropped and their
+  writes stay parked — listed on `/settings/sync`, discardable by an admin —
+  until they sign in again.
 - **Connection**: decided by real request outcomes (fetch failure, timeout,
   `502/503/504` from the proxy), not `navigator.onLine`, plus a probe of
   `/api/healthcheck` while offline or while writes are waiting.
-- **Sign-out** warns about unsent writes, then deletes the outbox and the saved
-  cache (they hold patient data).
+- **Sign-out** warns about the user's unsent writes, then deletes them and the
+  saved cache (they hold patient data). Other users' parked writes stay.
 
 To make a write work offline:
 

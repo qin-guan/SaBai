@@ -70,7 +70,7 @@ export function useSendBroadcast() {
 export function useDeleteBroadcast() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (id: number) =>
+    mutationFn: (id: string) =>
       saBaiAPIEndpointsBroadcastsDeleteDeleteEndpoint({
         ...apiConfig,
         path: { id },
@@ -88,7 +88,7 @@ export function useDeleteBroadcast() {
 export function usePublishBroadcast() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (id: number) =>
+    mutationFn: (id: string) =>
       saBaiAPIEndpointsBroadcastsPublishPostEndpoint({
         ...apiConfig,
         path: { id },

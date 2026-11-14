@@ -59,8 +59,8 @@ const { data, isLoading, isError, error, hasNextPage, fetchNextPage, isFetchingN
 const entries = computed(() => data.value?.pages.flatMap(p => p.entries) ?? [])
 const { data: staff } = useStaffUsersList()
 
-const expanded = ref(new Set<number>())
-function toggle(id: number) {
+const expanded = ref(new Set<string>())
+function toggle(id: string) {
   const next = new Set(expanded.value)
   if (!next.delete(id))
     next.add(id)

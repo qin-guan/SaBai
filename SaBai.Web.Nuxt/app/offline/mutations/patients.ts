@@ -348,7 +348,7 @@ function optimisticPatient(vars: RegisterPatientVars): { detail: PatientDetail, 
   return { detail, visit }
 }
 
-function applyRegistration(queryClient: QueryClient, vars: RegisterPatientVars) {
+function applyRegistration(vars: RegisterPatientVars, queryClient: QueryClient) {
   const { detail, visit } = optimisticPatient(vars)
   insertPatient(queryClient, detail, visit.villageColorHex, visit.journey)
   upsertVisit(queryClient, visit, true)
@@ -404,7 +404,7 @@ export interface UpdatePatientVars extends PatientFields {
   id: string
 }
 
-function applyUpdate(queryClient: QueryClient, vars: UpdatePatientVars) {
+function applyUpdate(vars: UpdatePatientVars, queryClient: QueryClient) {
   const tags = normalizeTags(vars.tags)
   patchPatient(queryClient, vars.id, (row) => {
     const name = vars.name.trim()

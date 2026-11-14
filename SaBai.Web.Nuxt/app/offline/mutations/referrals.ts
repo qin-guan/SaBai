@@ -194,8 +194,9 @@ export const createReferral = defineOfflineMutation({
     const existing = queryClient.getQueryData<ConsultReferral[]>(queryKeys.referralsByConsult(vars.consultId))
       ?.find(r => r.id === vars.id)
     const created = existing ?? optimisticReferral(vars, new Date().toISOString())
+    // A consult made offline has no cached list yet; start one.
     queryClient.setQueryData<ConsultReferral[]>(queryKeys.referralsByConsult(vars.consultId), old =>
-      upsertById(old, created))
+      upsertById(old ?? [], created))
 
     const c = vars.context
     if (!c) return

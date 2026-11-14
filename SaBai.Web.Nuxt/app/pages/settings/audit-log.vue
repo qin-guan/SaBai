@@ -141,7 +141,7 @@ function filterByEntity(entry: AuditLogEntry) {
   <div>
     <PageHeader
       title="Audit Log"
-      description="Every record created, changed or deleted, staff sign-ins, and who viewed, exported or disclosed patient data (HIPAA access log). Newest first."
+      description="Every record created, changed or deleted, staff sign-ins, and who viewed, exported or disclosed patient data. Newest first."
       :breadcrumbs="[{ label: 'Home', to: '/' }, { label: 'Settings', to: paths.settings() }, { label: 'Audit Log' }]"
     />
 

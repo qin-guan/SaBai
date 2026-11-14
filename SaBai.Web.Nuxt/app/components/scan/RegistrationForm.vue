@@ -4,6 +4,8 @@ import { useQueryClient } from '@tanstack/vue-query'
 import { toast } from 'vue-sonner'
 import { newRegisterPatientVars, pendingDisplayId, registerPatient } from '~/offline/mutations/patients'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
 
 /** Registers a new patient with the captured photo, in the selected village. */
 const image = defineModel<string | null>('image', { required: true })
@@ -19,6 +21,22 @@ const { selectedVillageCodeId, selectedVillage } = useVillageCode()
 const queryClient = useQueryClient()
 const { mutateAsync, isPending: isSaving } = useOfflineMutation(registerPatient)
 const { remember } = useRecentPatients()
+// Consents the patient gave at the desk, recorded with the registration. Never pre-ticked and
+// not kept in the draft: each one is staff confirming what this patient agreed to.
+const consentTypes = Object.keys(CONSENT_LABELS) as ConsentType[]
+const noConsents = (): Record<ConsentType, boolean> => ({
+  NoticeOfPrivacyPractices: false,
+  BiometricFaceRecognition: false,
+  ClinicalDataSharing: false,
+})
+const consents = ref(noConsents())
+const allConsentsTicked = computed(() => consentTypes.every(t => consents.value[t]))
+function setAllConsents(granted: boolean) {
+  for (const t of consentTypes)
+    consents.value[t] = granted
+}
+const consentPatientId = ref<string | null>(null)
+const recordConsent = useRecordConsent(consentPatientId)
 const lastCreated = ref<{ id: string, name: string, displayId: string, visitId: string, pendingCardNumber: boolean } | null>(null)
 const blankJourney: Journey = {
   vitals: false,
@@ -81,6 +99,22 @@ async function submit() {
 
   remember(vars.id)
 
+  // Recorded before the face is enrolled, which the API only allows with face recognition
+  // consent. Offline they queue behind the registration.
+  consentPatientId.value = vars.id
+  const consentsFailed: string[] = []
+  for (const type of consentTypes.filter(t => consents.value[t])) {
+    try {
+      await recordConsent.mutateAsync({ consentType: type, granted: true })
+    }
+    catch (error) {
+      console.error(`Error recording ${type} consent:`, error)
+      consentsFailed.push(CONSENT_LABELS[type])
+    }
+  }
+  if (consentsFailed.length)
+    toast.error(`Patient created, but these consents were not recorded: ${consentsFailed.join(', ')}. Record them under "Privacy & disclosures" on the patient page.`)
+
   // Best-effort: the patient already exists, so a failure here must not discard the registration.
   // The photo and face enrolment need the server, which does not know a queued patient yet.
   if (outcome.queued) {
@@ -109,6 +143,7 @@ async function submit() {
   }
   image.value = null
   form.value = blankPatientForm()
+  consents.value = noConsents()
   draft.clear(form.value)
   errors.value = {}
 }
@@ -162,6 +197,31 @@ useKeyShortcut('Escape', () => emit('match'))
     <form ref="formEl" novalidate @submit.prevent="submit"
     @keydown.enter="enterMovesToNextField">
       <PatientFields v-model="form" :errors="errors" />
+      <fieldset class="mt-3 border border-border">
+        <legend class="sr-only">
+          Consents given by the patient
+        </legend>
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-border px-3 py-1.5">
+          <p class="font-semibold">
+            Patient consents to
+          </p>
+          <Button type="button" size="sm" variant="outline" @click="setAllConsents(!allConsentsTicked)">
+            {{ allConsentsTicked ? 'Clear all' : 'Tick all' }}
+          </Button>
+        </div>
+        <div class="grid grid-cols-1 divide-y divide-border sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+          <div v-for="t in consentTypes" :key="t" class="flex min-h-9 items-center gap-2 px-3 py-1.5 touch:min-h-11">
+            <Checkbox :id="`rc-${t}`" v-model="consents[t]" />
+            <Label :for="`rc-${t}`" class="flex-1 cursor-pointer">{{ CONSENT_LABELS[t] }}</Label>
+          </div>
+        </div>
+        <p
+          v-if="!consents.BiometricFaceRecognition"
+          class="border-t border-border px-3 py-1.5 text-xs text-muted-foreground touch:text-sm"
+        >
+          Without face recognition consent the photo is saved, but the patient cannot be matched by face.
+        </p>
+      </fieldset>
       <SaveBar>
         <Button type="submit" variant="success" :disabled="isSaving">
           <PhUserPlus aria-hidden="true" />

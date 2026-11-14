@@ -22,7 +22,7 @@ const route = useRoute()
 
 /** The section you are in, named in the app bar on phones (where the search box shrinks to an icon). */
 const sectionName = computed(() =>
-  [...ALL_NAV_ITEMS, ...SUB_PAGES].find(item => isNavItemActive(item, route))?.name ?? "Sa'Bai",
+  [...SUB_PAGES, ...ALL_NAV_ITEMS].find(item => isNavItemActive(item, route))?.name ?? "Sa'Bai",
 )
 
 function onKeydown(event: KeyboardEvent) {

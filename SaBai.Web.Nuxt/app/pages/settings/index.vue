@@ -1,22 +1,12 @@
 <script setup lang="ts">
-import { PhArrowsClockwise, PhBell, PhCaretRight, PhClockCounterClockwise, PhHospital, PhMapPin, PhUserCircle, PhUserGear } from '@phosphor-icons/vue'
+import { PhCaretRight } from '@phosphor-icons/vue'
 
 useHead({ title: "Settings · Sa'Bai" })
 
 const { isAdmin } = useCurrentUser()
-const settingsItems = computed(() => [
-  { name: 'Village Codes', href: paths.settingsVillageCodes(), icon: PhMapPin, description: 'Manage village codes.' },
-  { name: 'Referral Partners', href: paths.settingsReferralPartners(), icon: PhHospital, description: 'Manage partner clinics and hospitals for patient referrals.' },
-  { name: 'Notifications', href: paths.settingsNotifications(), icon: PhBell, description: 'Send clinic-wide broadcasts and push notifications to staff devices.' },
-  ...(isAdmin.value
-    ? [
-        { name: 'Staff Users', href: paths.settingsUsers(), icon: PhUserGear, description: 'Add staff, assign roles, reset passwords and two-factor, lock accounts.' },
-        { name: 'Audit Log', href: paths.settingsAuditLog(), icon: PhClockCounterClockwise, description: 'Who changed which record, and when staff signed in.' },
-      ]
-    : []),
-  { name: 'Sync', href: paths.settingsSync(), icon: PhArrowsClockwise, description: 'Changes saved on this device, conflicts, and downloading data for offline use.' },
-  { name: 'My Account', href: paths.account(), icon: PhUserCircle, description: 'Change your password and set up two-factor authentication.' },
-])
+const settingsItems = computed(() =>
+  [...SETTINGS_PAGES, MY_ACCOUNT_PAGE].filter(item => !item.adminOnly || isAdmin.value),
+)
 </script>
 
 <template>

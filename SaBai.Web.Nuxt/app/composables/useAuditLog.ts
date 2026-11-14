@@ -34,7 +34,7 @@ export const AUDIT_ACTION_LABELS: Record<AuditAction, string> = {
   Disclosed: "Disclosed",
 };
 
-/** Actions that record who looked at or released patient data (HIPAA access log), not data changes. */
+/** Actions that record who looked at or released patient data (HIPAA access accounting), not data changes. */
 export const PHI_ACCESS_ACTIONS: AuditAction[] = ["Read", "Exported", "Disclosed"];
 
 /** Start of a local `yyyy-mm-dd` day as an ISO instant, optionally a number of days later. */

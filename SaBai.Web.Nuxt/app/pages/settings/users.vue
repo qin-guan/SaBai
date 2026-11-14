@@ -237,8 +237,8 @@ function lockedLabel(user: StaffUser) {
               <TableCell data-stack="actions">
                 <div class="flex flex-wrap justify-end gap-1">
                   <Button size="sm" variant="outline" as-child>
-                    <NuxtLink :to="paths.settingsAuditLog({ userId: user.id })" :aria-label="`Activity for ${user.nickname}`">
-                      <PhClockCounterClockwise aria-hidden="true" /> Activity
+                    <NuxtLink :to="paths.settingsAuditLog({ userId: user.id })" :aria-label="`Audit log for ${user.nickname}`">
+                      <PhClockCounterClockwise aria-hidden="true" /> Audit log
                     </NuxtLink>
                   </Button>
                   <Button size="sm" variant="outline" :aria-label="`Edit ${user.nickname}`" @click="open('edit', user)">

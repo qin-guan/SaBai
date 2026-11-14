@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PhSignOut, PhUserCircle } from '@phosphor-icons/vue'
+import { PhCaretRight, PhSignOut, PhUserCircle } from '@phosphor-icons/vue'
 import {
   Sidebar,
   SidebarContent,
@@ -9,8 +9,12 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   useSidebar,
 } from '@/components/ui/sidebar'
 
@@ -22,7 +26,31 @@ const GROUPS = [
   { label: 'Stations', items: STATION_NAV_ITEMS },
   { label: 'Pharmacy & admin', items: ADMIN_NAV_ITEMS },
 ]
-const { isMobile, setOpenMobile } = useSidebar()
+const { isMobile, setOpenMobile, state } = useSidebar()
+const { user, isAdmin } = useCurrentUser()
+
+/** The pages nested under an entry that this user may open. */
+const childrenOf = (item: NavItem) => (item.children ?? []).filter(child => !child.adminOnly || isAdmin.value)
+
+// Nested pages are hidden while the desktop sidebar is collapsed to icons; the
+// parent's icon then stands for its whole section.
+const iconsOnly = computed(() => !isMobile.value && state.value === 'collapsed')
+const isParentActive = (item: NavItem) =>
+  iconsOnly.value || !childrenOf(item).length ? isInNavSection(item, route) : route.path === item.href
+
+// A section opens when you are in it, and can be opened or closed by hand.
+const openSections = ref(new Set<string>())
+watch(() => route.path, () => {
+  for (const item of ADMIN_NAV_ITEMS) {
+    if (item.children && isInNavSection(item, route))
+      openSections.value.add(item.href)
+  }
+}, { immediate: true })
+function toggleSection(item: NavItem) {
+  if (!openSections.value.delete(item.href))
+    openSections.value.add(item.href)
+}
+const subMenuId = (item: NavItem) => `nav-sub-${item.href.replace(/\W+/g, '-')}`
 
 // Close the mobile drawer after navigating.
 watch(() => route.fullPath, () => {
@@ -31,7 +59,6 @@ watch(() => route.fullPath, () => {
 })
 
 const signOut = useSignOut()
-const { user } = useCurrentUser()
 </script>
 
 <template>
@@ -53,17 +80,45 @@ const { user } = useCurrentUser()
             <SidebarMenuItem v-for="item in group.items" :key="item.href">
               <SidebarMenuButton
                 as-child
-                :is-active="isNavItemActive(item, route)"
+                :is-active="isParentActive(item)"
                 :tooltip="item.name"
               >
                 <NuxtLink
                   :to="item.href"
-                  :aria-current="isNavItemActive(item, route) ? 'page' : undefined"
+                  :aria-current="isParentActive(item) ? 'page' : undefined"
                 >
                   <component :is="item.icon" aria-hidden="true" />
                   <span class="flex-1">{{ item.name }}</span>
                 </NuxtLink>
               </SidebarMenuButton>
+              <template v-if="childrenOf(item).length">
+                <SidebarMenuAction
+                  :aria-expanded="openSections.has(item.href)"
+                  :aria-controls="subMenuId(item)"
+                  :aria-label="`${openSections.has(item.href) ? 'Hide' : 'Show'} pages under ${item.name}`"
+                  @click="toggleSection(item)"
+                >
+                  <PhCaretRight
+                    weight="bold"
+                    class="transition-transform motion-reduce:transition-none"
+                    :class="openSections.has(item.href) && 'rotate-90'"
+                    aria-hidden="true"
+                  />
+                </SidebarMenuAction>
+                <SidebarMenuSub v-show="openSections.has(item.href)" :id="subMenuId(item)">
+                  <SidebarMenuSubItem v-for="child in childrenOf(item)" :key="child.href">
+                    <SidebarMenuSubButton as-child :is-active="isNavItemActive(child, route)">
+                      <NuxtLink
+                        :to="child.href"
+                        :aria-current="isNavItemActive(child, route) ? 'page' : undefined"
+                      >
+                        <component :is="child.icon" aria-hidden="true" />
+                        <span>{{ child.navLabel ?? child.name }}</span>
+                      </NuxtLink>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                </SidebarMenuSub>
+              </template>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroupContent>

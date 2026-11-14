@@ -45,7 +45,7 @@ useHead({ title: () => `${patient.value?.name ?? 'Patient'} · Sa'Bai` })
         <template #actions>
           <Button v-if="isAdmin" as-child variant="outline">
             <NuxtLink :to="paths.settingsAuditLog({ entityType: 'Patient', entityId: patient.id })">
-              <PhClockCounterClockwise aria-hidden="true" /> Change history
+              <PhClockCounterClockwise aria-hidden="true" /> Audit log
             </NuxtLink>
           </Button>
           <StartVisitButton :patient-id="patient.id" :name="patient.name" />

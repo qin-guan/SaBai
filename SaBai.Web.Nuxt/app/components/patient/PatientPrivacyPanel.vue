@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PhClockCounterClockwise, PhPlus } from '@phosphor-icons/vue'
+import { PhPlus } from '@phosphor-icons/vue'
 import { toast } from 'vue-sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -8,11 +8,12 @@ import { Textarea } from '@/components/ui/textarea'
 
 /**
  * HIPAA controls on a patient record: privacy consents (notice of privacy
- * practices, face recognition, data sharing), the accounting of disclosures to
- * outside parties, and, for admins, a link to who has accessed this record.
+ * practices, face recognition, data sharing) and the accounting of disclosures
+ * to outside parties. Who viewed or changed the record is in the audit log,
+ * linked from the patient banner.
  */
 const props = defineProps<{ patientId: string }>()
-const { user, isAdmin } = useCurrentUser()
+const { user } = useCurrentUser()
 const roles = computed(() => user.value?.roles)
 const showDisclosures = computed(() => canViewDisclosures(roles.value))
 const canRecord = computed(() => canRecordDisclosures(roles.value))
@@ -62,16 +63,6 @@ const types = Object.keys(CONSENT_LABELS) as ConsentType[]
 
 <template>
   <AppPanel title="Privacy & disclosures" description="HIPAA consents and accounting of disclosures" collapsible collapse-key="patient-privacy">
-    <template v-if="isAdmin" #headerActions>
-      <Button as-child size="sm" variant="outline">
-        <NuxtLink :to="paths.settingsAuditLog({ entityType: 'Patient', entityId: patientId })">
-          <PhClockCounterClockwise aria-hidden="true" />
-          <span class="max-sm:hidden">Who accessed this record</span>
-          <span class="sm:hidden">Access log</span>
-        </NuxtLink>
-      </Button>
-    </template>
-
     <h3 class="mb-1 text-xs font-bold text-chrome uppercase tracking-wide">
       Consents
     </h3>

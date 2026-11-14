@@ -1,5 +1,5 @@
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-import { currentStation, logicalBackTarget, patientTargetFor } from '~/utils/navigation'
+import { ADMIN_NAV_ITEMS, currentStation, isInNavSection, isNavItemActive, logicalBackTarget, patientTargetFor, SUB_PAGES } from '~/utils/navigation'
 
 type Route = Pick<RouteLocationNormalizedLoaded, 'path' | 'query' | 'meta'>
 
@@ -72,5 +72,27 @@ describe('paths.consultsDetail', () => {
     expect(paths.consultsDetail(42, 7)).toBe('/consults/42?visit=7')
     expect(paths.consultsDetail(42, undefined, 15)).toBe('/consults/42?consult=15')
     expect(paths.consultsDetail(42, 7, 15)).toBe('/consults/42?visit=7&consult=15')
+  })
+})
+
+describe('nested pages', () => {
+  const settings = ADMIN_NAV_ITEMS.find(item => item.href === '/settings')!
+  const stock = ADMIN_NAV_ITEMS.find(item => item.href === '/medication-stock')!
+
+  it('counts a nested page as part of its parent section', () => {
+    expect(isInNavSection(settings, route('/settings/audit-log'))).toBe(true)
+    expect(isInNavSection(stock, route('/medication-brands'))).toBe(true)
+    expect(isInNavSection(stock, route('/orders'))).toBe(false)
+  })
+
+  it('marks the nested page itself, ignoring audit log filters', () => {
+    const auditLog = settings.children!.find(item => item.name === 'Audit Log')!
+    expect(isNavItemActive(auditLog, route('/settings/audit-log', { entityType: 'Patient' }))).toBe(true)
+    expect(isNavItemActive(auditLog, route('/settings/users'))).toBe(false)
+  })
+
+  it('makes every nested page searchable', () => {
+    for (const child of [...settings.children!, ...stock.children!])
+      expect(SUB_PAGES).toContain(child)
   })
 })

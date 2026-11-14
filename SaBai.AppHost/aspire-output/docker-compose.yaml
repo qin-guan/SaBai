@@ -29,6 +29,9 @@ services:
       - "aspire"
   postgres:
     image: "docker.io/library/postgres:18.3"
+    command:
+      - "-c"
+      - "wal_level=logical"
     environment:
       POSTGRES_HOST_AUTH_METHOD: "scram-sha-256"
       POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
@@ -136,12 +139,41 @@ services:
         condition: "service_started"
     networks:
       - "aspire"
+  powersync:
+    image: "journeyapps/powersync-service:latest"
+    command:
+      - "start"
+      - "-r"
+      - "unified"
+      - "-c"
+      - "/config/service.yaml"
+    environment:
+      PS_SOURCE_PG_URI: "postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/sabai"
+      PS_STORAGE_PG_URI: "postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/powersync"
+      PS_JWKS_URI: "http://api:${API_PORT}/.well-known/jwks.json"
+    ports:
+      - "8089:8080"
+    expose:
+      - "8080"
+    volumes:
+      - type: "bind"
+        source: "./SaBai.AppHost/powersync"
+        target: "/config"
+        read_only: true
+    depends_on:
+      postgres:
+        condition: "service_started"
+      api:
+        condition: "service_started"
+    networks:
+      - "aspire"
   frontend:
     build:
       context: "."
       dockerfile: "SaBai.Web.Nuxt/Dockerfile"
     environment:
       NUXT_API_URL: "http://api:${API_PORT}"
+      NUXT_POWERSYNC_URL: "http://powersync:8080"
       PORT: "3000"
       HOSTNAME: "0.0.0.0"
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://compose-dashboard:18889"
@@ -153,6 +185,8 @@ services:
       - "3000"
     depends_on:
       api:
+        condition: "service_started"
+      powersync:
         condition: "service_started"
     networks:
       - "aspire"

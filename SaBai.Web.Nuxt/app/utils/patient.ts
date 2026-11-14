@@ -99,3 +99,64 @@ export function parseDrugAllergies(drugAllergy: string | null | undefined): stri
     });
 }
 
+export type TagMatchMode = "any" | "all";
+
+/** Case-insensitive check for whether `tag` is in `selectedTags`. */
+export function hasTagSelected(selectedTags: readonly string[] | null | undefined, tag: string): boolean {
+  const needle = tag.trim().toLowerCase();
+  if (!needle || !selectedTags || selectedTags.length === 0)
+    return false;
+  return selectedTags.some(t => t.trim().toLowerCase() === needle);
+}
+
+/** Case-insensitively toggles `tag` in `selectedTags` and returns the updated array. */
+export function toggleTagSelection(selectedTags: readonly string[] | null | undefined, tag: string): string[] {
+  const trimmed = tag.trim();
+  if (!trimmed)
+    return [...(selectedTags ?? [])];
+  const current = [...(selectedTags ?? [])];
+  const needle = trimmed.toLowerCase();
+  const idx = current.findIndex(t => t.trim().toLowerCase() === needle);
+  if (idx >= 0) {
+    current.splice(idx, 1);
+    return current;
+  }
+  return [...current, trimmed];
+}
+
+/**
+ * Matches an item's tags against `selectedTags` using `'any'` (OR) or `'all'` (AND).
+ * Returns true when no tags are selected.
+ */
+export function matchesTags(
+  itemTags: readonly string[] | null | undefined,
+  selectedTags: readonly string[] | null | undefined,
+  mode: TagMatchMode = "any",
+): boolean {
+  if (!selectedTags || selectedTags.length === 0)
+    return true;
+  const normalizedSelected = selectedTags.map(t => t.trim().toLowerCase()).filter(Boolean);
+  if (normalizedSelected.length === 0)
+    return true;
+  const normalizedItem = new Set((itemTags ?? []).map(t => t.trim().toLowerCase()).filter(Boolean));
+  return mode === "all"
+    ? normalizedSelected.every(t => normalizedItem.has(t))
+    : normalizedSelected.some(t => normalizedItem.has(t));
+}
+
+/** Collects unique tags across one or more tag lists (case-insensitive deduplication, sorted). */
+export function collectUniqueTags(lists: readonly (readonly string[] | null | undefined)[]): string[] {
+  const seen = new Map<string, string>();
+  for (const list of lists) {
+    for (const raw of list ?? []) {
+      const trimmed = raw.trim();
+      if (!trimmed)
+        continue;
+      const key = trimmed.toLowerCase();
+      if (!seen.has(key))
+        seen.set(key, trimmed);
+    }
+  }
+  return [...seen.values()].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+}
+

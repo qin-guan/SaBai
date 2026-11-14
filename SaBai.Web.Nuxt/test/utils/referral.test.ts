@@ -122,9 +122,19 @@ describe('matchesReferral filtering', () => {
     expect(matchesReferral(sampleReferral, { villageCodeId: 99 })).toBe(false)
   })
 
-  it('filters by referralState', () => {
+  it('filters by referralState and multiselect referralStates', () => {
     expect(matchesReferral(sampleReferral, { referralState: 'New' })).toBe(true)
     expect(matchesReferral(sampleReferral, { referralState: 'Completed' })).toBe(false)
+    expect(matchesReferral(sampleReferral, { referralStates: ['New', 'Seen'] })).toBe(true)
+    expect(matchesReferral(sampleReferral, { referralStates: ['Completed', 'Outgoing'] })).toBe(false)
+  })
+
+  it('filters by patient tags (any and all modes) and matches tags in search', () => {
+    const withTags: ReferralListItem = { ...sampleReferral, tags: ['Diabetic', 'Follow-Up'] }
+    expect(matchesReferral(withTags, { tags: ['diabetic', 'Pediatric'], tagMatchMode: 'any' })).toBe(true)
+    expect(matchesReferral(withTags, { tags: ['diabetic', 'Pediatric'], tagMatchMode: 'all' })).toBe(false)
+    expect(matchesReferral(withTags, { tags: ['diabetic', 'follow-up'], tagMatchMode: 'all' })).toBe(true)
+    expect(matchesReferral(withTags, { search: 'Follow-Up' })).toBe(true)
   })
 
   it('supports Khmer numerals and zero-width spaces', () => {

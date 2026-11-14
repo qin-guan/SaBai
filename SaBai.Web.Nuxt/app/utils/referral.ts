@@ -1,13 +1,15 @@
 import type { Option } from './options'
 import { cleanKhmerText, matchesSearchText } from './khmer'
-import { calculateAge, formatPatientCode } from './patient'
+import { calculateAge, formatPatientCode, matchesTags, type TagMatchMode } from './patient'
 import type {
   SaBaiAPIDomainReferralStateKey,
   SaBaiAPIEndpointsReferralsGetResponse,
   SaBaiAPIEndpointsReferralsListGetResponse,
 } from '@sabai/sdk/types'
 
-export type ReferralListItem = SaBaiAPIEndpointsReferralsListGetResponse
+export type ReferralListItem = SaBaiAPIEndpointsReferralsListGetResponse & {
+  tags?: string[]
+}
 
 export const GUARDIANS_CONTACTED = ['Yes', 'No', 'NotApplicable'] as const
 export type GuardiansContacted = (typeof GUARDIANS_CONTACTED)[number]
@@ -136,10 +138,13 @@ export interface ReferralFilterOptions {
   search?: string
   villageCodeId?: number | null
   referralState?: SaBaiAPIDomainReferralStateKey | null
+  referralStates?: readonly SaBaiAPIDomainReferralStateKey[] | null
+  tags?: readonly string[] | null
+  tagMatchMode?: TagMatchMode
 }
 
 /**
- * Filters a referral against search query, village, and state.
+ * Filters a referral against search query, village, state(s), and patient tags.
  * Supports Khmer script and numeral normalization.
  */
 export function matchesReferral(item: ReferralListItem, filters: ReferralFilterOptions): boolean {
@@ -147,6 +152,12 @@ export function matchesReferral(item: ReferralListItem, filters: ReferralFilterO
     return false
 
   if (filters.referralState && item.referralState !== filters.referralState)
+    return false
+
+  if (filters.referralStates && filters.referralStates.length > 0 && !filters.referralStates.includes(item.referralState))
+    return false
+
+  if (!matchesTags(item.tags, filters.tags, filters.tagMatchMode ?? 'any'))
     return false
 
   const needle = cleanKhmerText(filters.search ?? '')
@@ -163,6 +174,7 @@ export function matchesReferral(item: ReferralListItem, filters: ReferralFilterO
     item.referralNotes ?? '',
     item.referralOutcome ?? '',
     REFERRAL_STATE_LABELS[item.referralState] ?? item.referralState,
+    ...(item.tags ?? []),
   ]
 
   return targets.some(target => matchesSearchText(target, needle))

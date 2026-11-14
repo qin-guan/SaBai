@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { PhCaretRight, PhScan } from '@phosphor-icons/vue'
 import { useIntervalFn } from '@vueuse/core'
-import type { StationKey } from '~/utils/journey'
+import type { PatientJourneyStatus, StationKey } from '~/utils/journey'
+import type { TagMatchMode } from '~/utils/patient'
 import type { StationThroughput } from '~/utils/waitTime'
 import { Button } from '@/components/ui/button'
 
@@ -32,6 +33,31 @@ const { data, isLoading, isError } = usePatientsWithLatestVisit()
 type Row = NonNullable<typeof data.value>['patients'][number]
 
 const allPatients = computed(() => data.value?.patients ?? [])
+
+const selectedTags = ref<string[]>([])
+const tagMatchMode = ref<TagMatchMode>('any')
+const selectedStatuses = ref<PatientJourneyStatus[]>([])
+
+const availablePatientTags = computed(() =>
+  collectUniqueTags(allPatients.value.map(p => p.tags)),
+)
+
+const hasActiveFilters = computed(() =>
+  selectedTags.value.length > 0 || selectedStatuses.value.length > 0,
+)
+
+function clearFilters() {
+  selectedTags.value = []
+  selectedStatuses.value = []
+}
+
+const filteredPatients = computed(() =>
+  allPatients.value.filter(
+    p =>
+      matchesTags(p.tags, selectedTags.value, tagMatchMode.value) &&
+      matchesPatientStatus(p.lastVisitJourney, selectedStatuses.value),
+  ),
+)
 
 /** How many patients each station still has to see. */
 const waitingCounts = computed(() => {
@@ -67,7 +93,7 @@ const waitingRows = computed(() => {
   const s = station.value
   if (!s)
     return []
-  return allPatients.value
+  return filteredPatients.value
     .filter(p => p.lastVisitJourney && isWaitingFor(p.lastVisitJourney, s))
     .sort((a, b) => new Date(a.lastVisitDate!).getTime() - new Date(b.lastVisitDate!).getTime())
 })
@@ -80,7 +106,7 @@ const otherRows = computed(() => {
   const s = station.value
   if (!s)
     return []
-  return allPatients.value
+  return filteredPatients.value
     .filter(p => !(p.lastVisitJourney && isWaitingFor(p.lastVisitJourney, s)))
     .sort((a, b) => Number(isDoneAtStation(b, s)) - Number(isDoneAtStation(a, s)))
 })
@@ -110,17 +136,25 @@ const stationCards = computed(() => [
 const sections = computed(() => {
   const s = station.value
   if (!s) {
+    const countLabel = isLoading.value
+      ? undefined
+      : filteredPatients.value.length !== allPatients.value.length
+        ? `${filteredPatients.value.length} of ${allPatients.value.length}`
+        : `${allPatients.value.length}`
+
     return [
       {
         key: 'all',
         title: 'All patients',
-        description: isLoading.value ? undefined : `${allPatients.value.length}`,
+        description: countLabel,
         collapsible: false,
         defaultOpen: true,
         arrivedLabel: 'Last visit',
-        rows: allPatients.value,
-        emptyMessage: 'No patients found. Register a patient from Scan Face.',
-        showScanFaceEmptyAction: true,
+        rows: filteredPatients.value,
+        emptyMessage: hasActiveFilters.value
+          ? 'No patients match the selected filters.'
+          : 'No patients found. Register a patient from Scan Face.',
+        showScanFaceEmptyAction: !hasActiveFilters.value,
       },
     ]
   }
@@ -150,7 +184,9 @@ const sections = computed(() => {
       defaultOpen: true,
       arrivedLabel: 'Arrived',
       rows: waitingRows.value,
-      emptyMessage: `Nobody is waiting for ${label}.`,
+      emptyMessage: hasActiveFilters.value
+        ? `No patients waiting for ${label} match the selected filters.`
+        : `Nobody is waiting for ${label}.`,
       showScanFaceEmptyAction: false,
     },
   ]
@@ -164,7 +200,9 @@ const sections = computed(() => {
       defaultOpen: waitingCount === 0,
       arrivedLabel: 'Last visit',
       rows: otherRows.value,
-      emptyMessage: 'No other patients.',
+      emptyMessage: hasActiveFilters.value
+        ? 'No other patients match the selected filters.'
+        : 'No other patients.',
       showScanFaceEmptyAction: false,
     })
   }
@@ -195,11 +233,11 @@ function waited(date: string | null) {
 
 /*
  * One grid for the heading and every row, so columns line up:
- *   phone   photo | patient (meta below)     | ›     journey on its own line
- *   tablet  photo | patient (meta below)     | journey | ›
- *   laptop  photo | patient | allergies | ID | age | arrived | journey | ›
+ *   phone   photo | patient (meta & tags below) | ›     journey on its own line
+ *   tablet  photo | patient (meta & tags below) | journey | ›
+ *   laptop  photo | patient | tags | allergies | ID | age | arrived | journey | ›
  */
-const gridCols = 'md:grid-cols-[2rem_minmax(0,1fr)_minmax(15rem,22rem)_1rem] lg:grid-cols-[2rem_minmax(8rem,1fr)_minmax(6rem,11rem)_minmax(5.5rem,8rem)_3.75rem_8.5rem_minmax(16rem,22rem)_1rem]'
+const gridCols = 'md:grid-cols-[2rem_minmax(0,1fr)_minmax(15rem,22rem)_1rem] lg:grid-cols-[2rem_minmax(7rem,1fr)_minmax(6rem,11rem)_minmax(5.5rem,9rem)_minmax(4.5rem,6.5rem)_3.5rem_7.5rem_minmax(15rem,21rem)_1rem]'
 </script>
 
 <template>
@@ -246,6 +284,31 @@ const gridCols = 'md:grid-cols-[2rem_minmax(0,1fr)_minmax(15rem,22rem)_1rem] lg:
       </NuxtLink>
     </nav>
 
+    <!-- Inline multiselect filter bar for tags and visit journey statuses -->
+    <div class="flex flex-wrap items-center justify-between gap-2 border border-border bg-card p-2">
+      <div class="flex flex-wrap items-center gap-2">
+        <TagFilter
+          v-model="selectedTags"
+          v-model:match-mode="tagMatchMode"
+          :available-tags="availablePatientTags"
+        />
+        <StatusFilter
+          v-model="selectedStatuses"
+          :options="PATIENT_JOURNEY_STATUS_OPTIONS"
+          label="Status"
+        />
+      </div>
+      <Button
+        v-if="hasActiveFilters"
+        variant="ghost"
+        size="sm"
+        class="text-xs touch:h-10"
+        @click="clearFilters"
+      >
+        Reset
+      </Button>
+    </div>
+
     <AppPanel
       v-for="section in sections"
       :key="section.key"
@@ -257,39 +320,73 @@ const gridCols = 'md:grid-cols-[2rem_minmax(0,1fr)_minmax(15rem,22rem)_1rem] lg:
     >
       <StateMessage v-if="isError" kind="error" message="Patients could not be loaded. Check the connection and reload." />
       <StateMessage v-else-if="isLoading" kind="loading" message="Loading patients..." />
-      <div v-else-if="section.rows.length === 0" class="flex flex-col items-center gap-2 px-3 py-10 text-center">
-        <p class="text-xs text-muted-foreground touch:text-sm" role="status">
-          {{ section.emptyMessage }}
-        </p>
-        <div v-if="section.showScanFaceEmptyAction" class="flex flex-wrap justify-center gap-2">
-          <Button as-child size="sm" variant="outline">
-            <NuxtLink :to="paths.scanFace()">
-              <PhScan aria-hidden="true" /> Open Scan Face
-            </NuxtLink>
-          </Button>
-        </div>
-      </div>
       <template v-else>
-        <!-- Column headings (tablet and up); rows share the same grid. -->
+        <!-- Column headings (tablet and up) with in-table tag & status filter dropdowns -->
         <div
-          class="sticky top-[var(--app-header-h)] z-[2] hidden gap-x-3 border-b border-input bg-band px-3 py-1 text-xs font-semibold text-chrome md:grid"
+          v-if="section.rows.length > 0 || hasActiveFilters"
+          class="sticky top-[var(--app-header-h)] z-[2] hidden items-center gap-x-3 border-b border-input bg-band px-3 py-1 text-xs font-semibold text-chrome md:grid"
           :class="gridCols"
-          aria-hidden="true"
         >
           <span />
-          <span>Patient</span>
+          <span class="flex items-center gap-3">
+            <span>Patient</span>
+            <TagFilter
+              v-model="selectedTags"
+              v-model:match-mode="tagMatchMode"
+              :available-tags="availablePatientTags"
+              variant="header"
+              label="Tags"
+              class="lg:hidden"
+            />
+          </span>
+          <span class="hidden lg:block">
+            <TagFilter
+              v-model="selectedTags"
+              v-model:match-mode="tagMatchMode"
+              :available-tags="availablePatientTags"
+              variant="header"
+              label="Tags"
+            />
+          </span>
           <span class="hidden lg:block">Allergies</span>
           <span class="hidden lg:block">ID</span>
           <span class="hidden lg:block">Age / sex</span>
           <span class="hidden lg:block">{{ section.arrivedLabel }}</span>
-          <span>Journey</span>
+          <span>
+            <StatusFilter
+              v-model="selectedStatuses"
+              :options="PATIENT_JOURNEY_STATUS_OPTIONS"
+              variant="header"
+              label="Journey"
+              align="end"
+            />
+          </span>
           <span />
         </div>
-        <ul class="divide-y divide-border">
+
+        <div v-if="section.rows.length === 0" class="flex flex-col items-center gap-2 px-3 py-10 text-center">
+          <p class="text-xs text-muted-foreground touch:text-sm" role="status">
+            {{ section.emptyMessage }}
+          </p>
+          <div v-if="hasActiveFilters" class="flex flex-wrap justify-center gap-2">
+            <Button size="sm" variant="outline" @click="clearFilters">
+              Clear filters
+            </Button>
+          </div>
+          <div v-else-if="section.showScanFaceEmptyAction" class="flex flex-wrap justify-center gap-2">
+            <Button as-child size="sm" variant="outline">
+              <NuxtLink :to="paths.scanFace()">
+                <PhScan aria-hidden="true" /> Open Scan Face
+              </NuxtLink>
+            </Button>
+          </div>
+        </div>
+
+        <ul v-else class="divide-y divide-border">
           <li v-for="patient in section.rows" :key="patient.id">
             <!--
               The whole row opens the patient (the name's link stretches over
-              it); the journey tiles sit above that and open their own station.
+              it); the tag badges and journey tiles sit above that (z-[1]).
             -->
             <div
               class="group relative grid grid-cols-[2.5rem_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1.5 px-3 py-2 hover:bg-accent/60 has-[a.row-link:focus-visible]:bg-accent md:py-1.5 lg:py-1"
@@ -321,8 +418,21 @@ const gridCols = 'md:grid-cols-[2rem_minmax(0,1fr)_minmax(15rem,22rem)_1rem] lg:
                     </template>
                   </span>
                 </p>
+                <div v-if="patient.tags?.length" class="mt-1 lg:hidden">
+                  <PatientTagBadges
+                    v-model:selected-tags="selectedTags"
+                    :tags="patient.tags"
+                  />
+                </div>
               </div>
 
+              <span class="hidden min-w-0 lg:block">
+                <PatientTagBadges
+                  v-model:selected-tags="selectedTags"
+                  :tags="patient.tags"
+                  show-empty
+                />
+              </span>
               <span class="hidden min-w-0 lg:block">
                 <AllergyFlag :allergy="patient.drugAllergy" />
               </span>
@@ -348,7 +458,7 @@ const gridCols = 'md:grid-cols-[2rem_minmax(0,1fr)_minmax(15rem,22rem)_1rem] lg:
                 aria-hidden="true"
               />
 
-              <div class="relative z-[1] col-span-3 min-w-0 md:col-span-1 md:col-start-3 md:row-start-1 lg:col-start-7">
+              <div class="relative z-[1] col-span-3 min-w-0 md:col-span-1 md:col-start-3 md:row-start-1 lg:col-start-8">
                 <JourneyTracker
                   v-if="patient.lastVisitJourney && patient.lastVisitId"
                   :journey="patient.lastVisitJourney"
@@ -361,7 +471,7 @@ const gridCols = 'md:grid-cols-[2rem_minmax(0,1fr)_minmax(15rem,22rem)_1rem] lg:
               </div>
 
               <PhCaretRight
-                class="hidden size-4 text-muted-foreground group-hover:text-primary md:col-start-4 md:block lg:col-start-8"
+                class="hidden size-4 text-muted-foreground group-hover:text-primary md:col-start-4 md:block lg:col-start-9"
                 aria-hidden="true"
               />
             </div>

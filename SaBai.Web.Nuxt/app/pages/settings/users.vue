@@ -16,6 +16,8 @@ import {
   saBaiAPIEndpointsAuthUsersResetTwoFactorPostEndpoint,
   saBaiAPIEndpointsAuthUsersUnlockPostEndpoint,
 } from '@sabai/sdk/clients'
+import type { StaffUserStatus } from '~/composables/useStaffUsers'
+import type { TagMatchMode } from '~/utils/patient'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -28,11 +30,33 @@ const { data, isLoading, isError } = useStaffUsersList()
 const { user: me } = useCurrentUser()
 
 const filter = ref('')
-const tagFilter = ref('')
+const selectedTags = ref<string[]>([])
+const tagMatchMode = ref<TagMatchMode>('any')
+const selectedStatuses = ref<StaffUserStatus[]>([])
+
+const availableStaffTags = computed(() =>
+  collectUniqueTags((data.value ?? []).map(u => u.tags)),
+)
+
+const hasActiveFilters = computed(
+  () =>
+    !!filter.value ||
+    selectedTags.value.length > 0 ||
+    selectedStatuses.value.length > 0,
+)
+
+function clearFilters() {
+  filter.value = ''
+  selectedTags.value = []
+  selectedStatuses.value = []
+}
+
 const users = computed(() => {
   const q = cleanKhmerText(filter.value)
-  const all = (data.value ?? []).filter(u =>
-    !tagFilter.value || (u.tags ?? []).some(t => t.toLowerCase() === tagFilter.value.toLowerCase()),
+  const all = (data.value ?? []).filter(
+    u =>
+      matchesTags(u.tags, selectedTags.value, tagMatchMode.value) &&
+      matchesStaffUserStatus(u, selectedStatuses.value),
   )
   if (!q)
     return all
@@ -90,11 +114,12 @@ function lockedLabel(user: StaffUser) {
 </script>
 
 <template>
-  <div>
+  <div class="flex flex-col gap-3">
     <PageHeader
       title="Staff Users"
       description="Accounts that can sign in to this clinic deployment."
       :breadcrumbs="[{ label: 'Home', to: '/' }, { label: 'Settings', to: paths.settings() }, { label: 'Staff Users' }]"
+      class="mb-0!"
     >
       <template #actions>
         <Input v-model="filter" type="search" placeholder="Filter by name, username, role, tag…" aria-label="Filter staff users" class="w-56 max-sm:w-full" />
@@ -104,123 +129,164 @@ function lockedLabel(user: StaffUser) {
       </template>
     </PageHeader>
 
-    <TagFilter v-model="tagFilter" class="mb-3" />
+    <div class="flex flex-wrap items-center justify-between gap-2 border border-border bg-card p-2">
+      <div class="flex flex-wrap items-center gap-2">
+        <TagFilter
+          v-model="selectedTags"
+          v-model:match-mode="tagMatchMode"
+          :available-tags="availableStaffTags"
+        />
+        <StatusFilter
+          v-model="selectedStatuses"
+          :options="STAFF_USER_STATUS_OPTIONS"
+          label="Status"
+        />
+      </div>
+      <Button
+        v-if="hasActiveFilters"
+        variant="ghost"
+        size="sm"
+        class="text-xs touch:h-10"
+        @click="clearFilters"
+      >
+        Reset
+      </Button>
+    </div>
 
     <AppPanel title="Staff" flush>
       <StateMessage v-if="isLoading" kind="loading" message="Loading staff users..." />
       <StateMessage v-else-if="isError" kind="error" message="Unable to load staff users." />
-      <StateMessage v-else-if="users.length === 0" message="No staff users match." />
-      <Table v-else class="grid-table stack-table">
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Username</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Roles</TableHead>
-            <TableHead>Tags</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead class="text-right">
-              Actions
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          <TableRow v-for="user in users" :key="user.id">
-            <TableCell data-label="Name" class="font-semibold">
-              {{ user.nickname }}
-              <span v-if="user.id === me?.id" class="font-normal text-muted-foreground">(you)</span>
-            </TableCell>
-            <TableCell data-label="Username" class="font-mono">
-              {{ user.userName }}
-            </TableCell>
-            <TableCell data-label="Email">
-              {{ user.email ?? '—' }}
-            </TableCell>
-            <TableCell data-label="Roles">
-              <span class="flex flex-wrap gap-1">
-                <Badge
-                  v-for="role in user.roles"
-                  :key="role"
-                  variant="outline"
-                  :class="role === ADMIN_ROLE && 'border-chrome/40 bg-band text-chrome'"
-                >
-                  {{ role }}
-                </Badge>
-              </span>
-            </TableCell>
-            <TableCell data-label="Tags">
-              <span v-if="user.tags?.length" class="flex flex-wrap gap-1">
-                <Badge
-                  v-for="tag in user.tags"
-                  :key="tag"
-                  variant="secondary"
-                >
-                  {{ tag }}
-                </Badge>
-              </span>
-              <span v-else class="text-muted-foreground">—</span>
-            </TableCell>
-            <TableCell data-label="Status">
-              <span class="flex flex-wrap gap-1">
-                <Badge v-if="user.isLocked" variant="outline" class="border-destructive/40 bg-destructive-subtle text-destructive">
-                  <PhLock aria-hidden="true" /> {{ lockedLabel(user) }}
-                </Badge>
-                <Badge v-else-if="!user.hasPassword" variant="outline" class="border-warning-border bg-warning-subtle text-warning">
-                  Needs password
-                </Badge>
-                <Badge v-else variant="outline" class="border-success/40 bg-success-subtle text-success">
-                  Active
-                </Badge>
-                <Badge v-if="user.twoFactorEnabled" variant="outline" title="Two-factor authentication is on">
-                  <PhShieldCheck aria-hidden="true" /> 2FA
-                </Badge>
-              </span>
-            </TableCell>
-            <TableCell data-stack="actions">
-              <div class="flex flex-wrap justify-end gap-1">
-                <Button size="sm" variant="outline" as-child>
-                  <NuxtLink :to="paths.settingsAuditLog({ userId: user.id })" :aria-label="`Activity for ${user.nickname}`">
-                    <PhClockCounterClockwise aria-hidden="true" /> Activity
-                  </NuxtLink>
-                </Button>
-                <Button size="sm" variant="outline" :aria-label="`Edit ${user.nickname}`" @click="open('edit', user)">
-                  <PhPencilSimple aria-hidden="true" /> Edit
-                </Button>
-                <Button size="sm" variant="outline" :aria-label="`Set password for ${user.nickname}`" @click="open('password', user)">
-                  <PhKey aria-hidden="true" /> Password
-                </Button>
-                <Button
-                  v-if="user.twoFactorEnabled"
-                  size="sm"
-                  variant="outline"
-                  :aria-label="`Reset two-factor for ${user.nickname}`"
-                  @click="open('reset-2fa', user)"
-                >
-                  <PhShieldSlash aria-hidden="true" /> Reset 2FA
-                </Button>
-                <Button
-                  v-if="user.isLocked"
-                  size="sm"
-                  variant="outline"
-                  :aria-label="`Unlock ${user.nickname}`"
-                  @click="open('unlock', user)"
-                >
-                  <PhLockOpen aria-hidden="true" /> Unlock
-                </Button>
-                <Button
-                  v-else-if="user.id !== me?.id"
-                  size="sm"
-                  variant="destructive"
-                  :aria-label="`Lock ${user.nickname}`"
-                  @click="open('lock', user)"
-                >
-                  <PhLock aria-hidden="true" /> Lock
-                </Button>
-              </div>
-            </TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
+      <template v-else>
+        <Table class="grid-table stack-table">
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Username</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Roles</TableHead>
+              <TableHead>
+                <TagFilter
+                  v-model="selectedTags"
+                  v-model:match-mode="tagMatchMode"
+                  :available-tags="availableStaffTags"
+                  variant="header"
+                  label="Tags"
+                />
+              </TableHead>
+              <TableHead>
+                <StatusFilter
+                  v-model="selectedStatuses"
+                  :options="STAFF_USER_STATUS_OPTIONS"
+                  variant="header"
+                  label="Status"
+                />
+              </TableHead>
+              <TableHead class="text-right">
+                Actions
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody v-if="users.length > 0">
+            <TableRow v-for="user in users" :key="user.id">
+              <TableCell data-label="Name" class="font-semibold">
+                {{ user.nickname }}
+                <span v-if="user.id === me?.id" class="font-normal text-muted-foreground">(you)</span>
+              </TableCell>
+              <TableCell data-label="Username" class="font-mono">
+                {{ user.userName }}
+              </TableCell>
+              <TableCell data-label="Email">
+                {{ user.email ?? '—' }}
+              </TableCell>
+              <TableCell data-label="Roles">
+                <span class="flex flex-wrap gap-1">
+                  <Badge
+                    v-for="role in user.roles"
+                    :key="role"
+                    variant="outline"
+                    :class="role === ADMIN_ROLE && 'border-chrome/40 bg-band text-chrome'"
+                  >
+                    {{ role }}
+                  </Badge>
+                </span>
+              </TableCell>
+              <TableCell data-label="Tags">
+                <PatientTagBadges
+                  v-model:selected-tags="selectedTags"
+                  :tags="user.tags"
+                  show-empty
+                />
+              </TableCell>
+              <TableCell data-label="Status">
+                <span class="flex flex-wrap gap-1">
+                  <Badge v-if="user.isLocked" variant="outline" class="border-destructive/40 bg-destructive-subtle text-destructive">
+                    <PhLock aria-hidden="true" /> {{ lockedLabel(user) }}
+                  </Badge>
+                  <Badge v-else-if="!user.hasPassword" variant="outline" class="border-warning-border bg-warning-subtle text-warning">
+                    Needs password
+                  </Badge>
+                  <Badge v-else variant="outline" class="border-success/40 bg-success-subtle text-success">
+                    Active
+                  </Badge>
+                  <Badge v-if="user.twoFactorEnabled" variant="outline" title="Two-factor authentication is on">
+                    <PhShieldCheck aria-hidden="true" /> 2FA
+                  </Badge>
+                </span>
+              </TableCell>
+              <TableCell data-stack="actions">
+                <div class="flex flex-wrap justify-end gap-1">
+                  <Button size="sm" variant="outline" as-child>
+                    <NuxtLink :to="paths.settingsAuditLog({ userId: user.id })" :aria-label="`Activity for ${user.nickname}`">
+                      <PhClockCounterClockwise aria-hidden="true" /> Activity
+                    </NuxtLink>
+                  </Button>
+                  <Button size="sm" variant="outline" :aria-label="`Edit ${user.nickname}`" @click="open('edit', user)">
+                    <PhPencilSimple aria-hidden="true" /> Edit
+                  </Button>
+                  <Button size="sm" variant="outline" :aria-label="`Set password for ${user.nickname}`" @click="open('password', user)">
+                    <PhKey aria-hidden="true" /> Password
+                  </Button>
+                  <Button
+                    v-if="user.twoFactorEnabled"
+                    size="sm"
+                    variant="outline"
+                    :aria-label="`Reset two-factor for ${user.nickname}`"
+                    @click="open('reset-2fa', user)"
+                  >
+                    <PhShieldSlash aria-hidden="true" /> Reset 2FA
+                  </Button>
+                  <Button
+                    v-if="user.isLocked"
+                    size="sm"
+                    variant="outline"
+                    :aria-label="`Unlock ${user.nickname}`"
+                    @click="open('unlock', user)"
+                  >
+                    <PhLockOpen aria-hidden="true" /> Unlock
+                  </Button>
+                  <Button
+                    v-else-if="user.id !== me?.id"
+                    size="sm"
+                    variant="destructive"
+                    :aria-label="`Lock ${user.nickname}`"
+                    @click="open('lock', user)"
+                  >
+                    <PhLock aria-hidden="true" /> Lock
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+        <div v-if="users.length === 0" class="flex flex-col items-center gap-2 px-3 py-10 text-center">
+          <p class="text-xs text-muted-foreground touch:text-sm" role="status">
+            No staff users match.
+          </p>
+          <Button v-if="hasActiveFilters" size="sm" variant="outline" @click="clearFilters">
+            Clear filters
+          </Button>
+        </div>
+      </template>
     </AppPanel>
 
     <StaffUserDialog v-if="mode === 'edit'" :user="active" @close="close" />

@@ -16,10 +16,34 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var referrals = await db
+        var rows = await db
             .Referrals.AsNoTracking()
             .OrderByDescending(x => x.CreatedAt)
             .ThenByDescending(x => x.Id)
+            .Select(x => new
+            {
+                x.Id,
+                x.ReferredFor,
+                x.ReferralNotes,
+                x.ReferralState,
+                x.ReferralOutcome,
+                x.ConsultId,
+                x.CreatedAt,
+                ConsultDate = x.Consult.Date,
+                x.Consult.DoctorId,
+                x.Consult.Visit.PatientId,
+                PatientName = x.Consult.Visit.Patient.Name,
+                HasPhoto = x.Consult.Visit.Patient.PhotoStoredFileName != null,
+                x.Consult.Visit.VillageCodeId,
+                VillageCode = x.Consult.Visit.VillageCode.Code,
+                VillageColorHex = x.Consult.Visit.VillageCode.ColorHex,
+            })
+            .ToListAsync(ct);
+
+        var patientIds = rows.Select(x => x.PatientId).Distinct().ToArray();
+        var tagsByPatient = await TagSync.LoadPatientTagsBulkAsync(db, patientIds, ct);
+
+        var referrals = rows
             .Select(x => new Response(
                 x.Id,
                 x.ReferredFor,
@@ -28,16 +52,17 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
                 x.ReferralOutcome,
                 x.ConsultId,
                 x.CreatedAt,
-                x.Consult.Date,
-                x.Consult.DoctorId,
-                x.Consult.Visit.PatientId,
-                x.Consult.Visit.Patient.Name,
-                x.Consult.Visit.Patient.PhotoStoredFileName != null,
-                x.Consult.Visit.VillageCodeId,
-                x.Consult.Visit.VillageCode.Code,
-                x.Consult.Visit.VillageCode.ColorHex
+                x.ConsultDate,
+                x.DoctorId,
+                x.PatientId,
+                x.PatientName,
+                x.HasPhoto,
+                x.VillageCodeId,
+                x.VillageCode,
+                x.VillageColorHex,
+                tagsByPatient[x.PatientId].ToList()
             ))
-            .ToListAsync(ct);
+            .ToList();
 
         await Send.OkAsync(referrals, ct);
     }

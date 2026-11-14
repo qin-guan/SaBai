@@ -1,4 +1,4 @@
-import { isWaitingFor, journeySteps, nextStep, requiredProgress } from "~/utils/journey";
+import { isWaitingFor, journeySteps, matchesPatientStatus, nextStep, requiredProgress } from "~/utils/journey";
 import type { Journey } from "~/utils/journey";
 
 const blank: Journey = {
@@ -72,3 +72,21 @@ describe("isWaitingFor", () => {
     expect(isWaitingFor(j({ pharmacyOrders: 1, pharmacyPending: 1 }), "pharmacy")).toBe(true);
   });
 });
+
+describe("matchesPatientStatus", () => {
+  it("matches all journeys when no status filter is selected", () => {
+    expect(matchesPatientStatus(null, [])).toBe(true);
+    expect(matchesPatientStatus(blank, [])).toBe(true);
+  });
+
+  it("matches no-visit, in-progress, complete, and station waiting statuses", () => {
+    expect(matchesPatientStatus(null, ["no-visit"])).toBe(true);
+    expect(matchesPatientStatus(blank, ["no-visit"])).toBe(false);
+    expect(matchesPatientStatus(blank, ["in-progress"])).toBe(true);
+    expect(matchesPatientStatus(blank, ["waiting:vitals"])).toBe(true);
+    expect(matchesPatientStatus(j({ vitals: true, vision: true, consult: true }), ["complete"])).toBe(true);
+    expect(matchesPatientStatus(j({ vitals: true, vision: true, consult: true }), ["in-progress"])).toBe(false);
+    expect(matchesPatientStatus(null, ["complete", "no-visit"])).toBe(true);
+  });
+});
+

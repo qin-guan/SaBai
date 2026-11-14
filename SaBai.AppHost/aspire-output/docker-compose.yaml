@@ -29,6 +29,9 @@ services:
       - "aspire"
   postgres:
     image: "docker.io/library/postgres:18.3"
+    command:
+      - "-c"
+      - "wal_level=logical"
     environment:
       POSTGRES_HOST_AUTH_METHOD: "scram-sha-256"
       POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
@@ -44,23 +47,6 @@ services:
         read_only: false
     networks:
       - "aspire"
-  pgadmin:
-    image: "docker.io/dpage/pgadmin4:9.15.0"
-    environment:
-      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
-      PGADMIN_CONFIG_SERVER_MODE: "False"
-      PGADMIN_DEFAULT_EMAIL: "admin@domain.com"
-      PGADMIN_DEFAULT_PASSWORD: "admin"
-    ports:
-      - "5050:80"
-    expose:
-      - "80"
-    networks:
-      - "aspire"
-    configs:
-      - source: "pgadmin__pgadmin4_servers.json"
-        target: "/pgadmin4/servers.json"
-        mode: 0644
   fs:
     image: "rustfs/rustfs:latest"
     environment:
@@ -136,12 +122,41 @@ services:
         condition: "service_started"
     networks:
       - "aspire"
+  powersync:
+    image: "journeyapps/powersync-service:latest"
+    command:
+      - "start"
+      - "-r"
+      - "unified"
+      - "-c"
+      - "/config/service.yaml"
+    environment:
+      PS_SOURCE_PG_URI: "postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/sabai"
+      PS_STORAGE_PG_URI: "postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/powersync"
+      PS_JWKS_URI: "http://api:${API_PORT}/.well-known/jwks.json"
+    ports:
+      - "8089:8080"
+    expose:
+      - "8080"
+    volumes:
+      - type: "bind"
+        target: "/config"
+        source: "${POWERSYNC_BINDMOUNT_0}"
+        read_only: false
+    depends_on:
+      api:
+        condition: "service_started"
+      postgres:
+        condition: "service_started"
+    networks:
+      - "aspire"
   frontend:
     build:
       context: "."
       dockerfile: "SaBai.Web.Nuxt/Dockerfile"
     environment:
       NUXT_API_URL: "http://api:${API_PORT}"
+      NUXT_POWERSYNC_URL: "http://powersync:8080"
       PORT: "3000"
       HOSTNAME: "0.0.0.0"
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://compose-dashboard:18889"
@@ -153,6 +168,8 @@ services:
       - "3000"
     depends_on:
       api:
+        condition: "service_started"
+      powersync:
         condition: "service_started"
     networks:
       - "aspire"
@@ -168,6 +185,3 @@ volumes:
     driver: "local"
   fs-logs:
     driver: "local"
-configs:
-  pgadmin__pgadmin4_servers.json:
-    content: "{\n  \"Servers\": {\n    \"1\": {\n      \"Name\": \"postgres\",\n      \"Group\": \"Servers\",\n      \"Host\": \"postgres\",\n      \"Port\": 5432,\n      \"Username\": \"postgres\",\n      \"SSLMode\": \"prefer\",\n      \"MaintenanceDB\": \"postgres\",\n      \"PasswordExecCommand\": \"echo \\u00278R834zjqYbSDw4bx~q7!RA\\u0027\"\n    }\n  }\n}"

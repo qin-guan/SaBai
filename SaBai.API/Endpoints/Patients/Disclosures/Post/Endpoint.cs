@@ -56,13 +56,3 @@ public sealed class Endpoint(AppDbContext db, AuditTrail audit, TimeProvider clo
         );
     }
 }
-
-public sealed record Request(int PatientId, string Recipient, string Purpose, string? Description);
-
-public sealed record Response(
-    int Id,
-    int PatientId,
-    string Recipient,
-    string Purpose,
-    DateTimeOffset DisclosedAt
-);

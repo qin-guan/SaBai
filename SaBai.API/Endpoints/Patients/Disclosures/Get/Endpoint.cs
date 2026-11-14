@@ -37,16 +37,3 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
         await Send.OkAsync(new Response(items), ct);
     }
 }
-
-public sealed record Request(int PatientId);
-
-public sealed record Item(
-    int Id,
-    string Recipient,
-    string Purpose,
-    string? Description,
-    DateTimeOffset DisclosedAt,
-    Guid DisclosedByUserId
-);
-
-public sealed record Response(IReadOnlyList<Item> Disclosures);

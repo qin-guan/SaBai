@@ -56,19 +56,3 @@ public sealed class Endpoint(AppDbContext db, TimeProvider clock) : Endpoint<Req
         );
     }
 }
-
-public sealed record Request(
-    int PatientId,
-    ConsentType ConsentType,
-    bool Granted,
-    string? Notes
-);
-
-public sealed record Response(
-    int Id,
-    int PatientId,
-    ConsentType ConsentType,
-    bool Granted,
-    DateTimeOffset RecordedAt,
-    DateTimeOffset? RevokedAt
-);

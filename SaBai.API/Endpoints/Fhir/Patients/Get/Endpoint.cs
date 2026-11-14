@@ -40,5 +40,3 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request>
         );
     }
 }
-
-public sealed record Request(int Id);

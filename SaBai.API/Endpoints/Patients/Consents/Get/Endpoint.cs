@@ -46,17 +46,3 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
         await Send.OkAsync(new Response(items), ct);
     }
 }
-
-public sealed record Request(int PatientId);
-
-public sealed record Item(
-    int Id,
-    ConsentType ConsentType,
-    bool Granted,
-    DateTimeOffset RecordedAt,
-    DateTimeOffset? RevokedAt,
-    Guid RecordedByUserId,
-    string? Notes
-);
-
-public sealed record Response(IReadOnlyList<Item> Consents);

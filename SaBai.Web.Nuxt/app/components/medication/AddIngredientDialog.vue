@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { PhFloppyDisk } from '@phosphor-icons/vue'
-import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { toast } from 'vue-sonner'
-import { saBaiAPIEndpointsMedicationIngredientsCreatePostEndpoint } from '@sabai/sdk/clients'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
@@ -10,33 +8,10 @@ const emit = defineEmits<{ close: [] }>()
 const form = ref({ name: '', unitOfMeasurement: '', fallBelow: '', remarks: '' })
 const fallBelowError = ref<string | null>(null)
 const formEl = ref<HTMLFormElement>()
+const isSaving = ref(false)
 
-const queryClient = useQueryClient()
-const create = useMutation({
-  mutationFn: () =>
-    saBaiAPIEndpointsMedicationIngredientsCreatePostEndpoint({
-      ...apiConfig,
-      body: {
-        name: form.value.name,
-        unitOfMeasurement: form.value.unitOfMeasurement,
-        fallBelow: Number(form.value.fallBelow),
-        remarks: form.value.remarks,
-      },
-      throwOnError: true,
-    }).unwrap(),
-  onSuccess: () => {
-    toast.success('Successfully created!')
-    queryClient.invalidateQueries({ queryKey: queryKeys.medicationIngredients() })
-    emit('close')
-  },
-  onError: (err) => {
-    console.error(err)
-    toast.error(getApiErrorMessage(err, 'An error has occurred.'))
-  },
-})
-
-function submit() {
-  if (create.isPending.value)
+async function submit() {
+  if (isSaving.value)
     return
   const n = Number(form.value.fallBelow)
   fallBelowError.value = form.value.fallBelow === '' ? 'Missing Fall below!' : n < 1 ? 'Please input only positive values.' : null
@@ -44,7 +19,32 @@ function submit() {
     focusFirstInvalid(formEl.value)
     return
   }
-  create.mutate()
+
+  isSaving.value = true
+  try {
+    const db = getPowerSyncInstance()
+    await db.execute(
+      `INSERT INTO medication_active_ingredients (id, name, unit_of_measurement, fall_below, remarks, version)
+       VALUES (?, ?, ?, ?, ?, 1)`,
+      [
+        uuidv7(),
+        form.value.name.trim(),
+        form.value.unitOfMeasurement.trim(),
+        n,
+        form.value.remarks.trim() || null,
+      ],
+    )
+    await refreshPendingCrudCount()
+    toast.success('Successfully created!')
+    emit('close')
+  }
+  catch (err) {
+    console.error(err)
+    toast.error('An error has occurred.')
+  }
+  finally {
+    isSaving.value = false
+  }
 }
 
 useSaveShortcut(submit)
@@ -70,8 +70,8 @@ useSaveShortcut(submit)
       <Button variant="outline" @click="emit('close')">
         Cancel
       </Button>
-      <Button type="submit" form="add-ingredient-form" variant="success" :disabled="create.isPending.value">
-        <PhFloppyDisk aria-hidden="true" /> {{ create.isPending.value ? 'Saving...' : 'Save' }}
+      <Button type="submit" form="add-ingredient-form" variant="success" :disabled="isSaving">
+        <PhFloppyDisk aria-hidden="true" /> {{ isSaving ? 'Saving...' : 'Save' }}
       </Button>
     </template>
   </AppDialog>

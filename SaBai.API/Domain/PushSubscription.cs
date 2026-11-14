@@ -6,7 +6,7 @@ namespace SaBai.API.Domain;
 /// </summary>
 public sealed class StaffPushSubscription
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; } = Guid.CreateVersion7();
 
     public Guid StaffUserId { get; set; }
 

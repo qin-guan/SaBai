@@ -60,7 +60,7 @@ public sealed class ReferralPartnerTests(AppFixture fixture)
             ApiJson.Options
         );
         referralRes.EnsureSuccessStatusCode();
-        var referralId = ClinicSetup.ReadInt(
+        var referralId = ClinicSetup.ReadGuid(
             await referralRes.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
             "id"
         );

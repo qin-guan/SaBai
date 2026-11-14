@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea'
  * practices, face recognition, data sharing), the accounting of disclosures to
  * outside parties, and, for admins, a link to who has accessed this record.
  */
-const props = defineProps<{ patientId: number }>()
+const props = defineProps<{ patientId: string }>()
 const { user, isAdmin } = useCurrentUser()
 const roles = computed(() => user.value?.roles)
 const showDisclosures = computed(() => canViewDisclosures(roles.value))

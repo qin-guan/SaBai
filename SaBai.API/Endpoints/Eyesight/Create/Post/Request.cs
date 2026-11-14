@@ -3,7 +3,7 @@ namespace SaBai.API.Endpoints.Eyesight.Create.Post;
 /// <summary>Eyesight readings to record against a visit.</summary>
 public sealed record Request
 {
-    public int VisitId { get; init; }
+    public Guid VisitId { get; init; }
 
     public string? LeftEyeDegree { get; init; }
 

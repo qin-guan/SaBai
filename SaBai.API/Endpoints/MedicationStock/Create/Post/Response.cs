@@ -4,8 +4,8 @@ namespace SaBai.API.Endpoints.MedicationStock.Create.Post;
 
 /// <summary>Created medication stock lot.</summary>
 public sealed record Response(
-    int Id,
-    int MedicationBrandId,
+    Guid Id,
+    Guid MedicationBrandId,
     int Quantity,
     DateTimeOffset Expiry,
     string Location,

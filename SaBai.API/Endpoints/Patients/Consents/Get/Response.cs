@@ -3,7 +3,7 @@ using SaBai.API.Domain;
 namespace SaBai.API.Endpoints.Patients.Consents.Get;
 
 public sealed record Item(
-    int Id,
+    Guid Id,
     ConsentType ConsentType,
     bool Granted,
     DateTimeOffset RecordedAt,

@@ -44,7 +44,7 @@ public sealed class PatientUnhappyTests(AppFixture fixture)
                 name = $"Patient {ClinicSetup.Suffix()}",
                 gender = "female",
                 drugAllergy = "None",
-                villageCodeId = 99999999,
+                villageCodeId = ClinicSetup.MissingId,
                 dateOfBirth = new DateTimeOffset(1991, 3, 4, 0, 0, 0, TimeSpan.Zero),
             },
             ApiJson.Options
@@ -87,7 +87,7 @@ public sealed class PatientUnhappyTests(AppFixture fixture)
         await client.LoginAsync();
 
         // Act
-        var response = await client.GetAsync("/patients/99999999");
+        var response = await client.GetAsync($"/patients/{ClinicSetup.MissingId}");
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.NotFound);
@@ -102,7 +102,7 @@ public sealed class PatientUnhappyTests(AppFixture fixture)
 
         // Act
         var response = await client.PatchAsJsonAsync(
-            "/patients/99999999",
+            $"/patients/{ClinicSetup.MissingId}",
             new { name = "Missing" },
             ApiJson.Options
         );

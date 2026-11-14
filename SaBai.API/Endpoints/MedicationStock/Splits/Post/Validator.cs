@@ -7,7 +7,7 @@ public sealed class Validator : Validator<Request>
 {
     public Validator()
     {
-        RuleFor(x => x.Id).GreaterThan(0);
+        RuleFor(x => x.Id).NotEmpty();
         RuleFor(x => x.Splits).NotNull().Must(x => x is { Count: >= 2 and <= 10 });
         RuleForEach(x => x.Splits)
             .ChildRules(split =>

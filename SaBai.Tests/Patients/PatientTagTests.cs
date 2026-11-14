@@ -35,7 +35,7 @@ public sealed class PatientTagTests(AppFixture fixture)
         );
         await Assert.That(createRes.StatusCode).IsEqualTo(HttpStatusCode.Created);
         var created = await createRes.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
-        var patientId = created.GetProperty("id").GetInt32();
+        var patientId = created.GetProperty("id").GetGuid();
         var createdTags = created
             .GetProperty("tags")
             .EnumerateArray()
@@ -51,7 +51,7 @@ public sealed class PatientTagTests(AppFixture fixture)
         var listedIds = listBody
             .GetProperty("patients")
             .EnumerateArray()
-            .Select(x => x.GetProperty("id").GetInt32())
+            .Select(x => x.GetProperty("id").GetGuid())
             .ToList();
         await Assert.That(listedIds).Contains(patientId);
 

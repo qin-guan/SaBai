@@ -14,6 +14,7 @@ const station = computed(() => patientTargetFor(route))
 const stationName = computed(() => (station.value === 'patient' ? 'record' : stationLabel(station.value)))
 
 const image = ref<string | null>(null)
+const { isOnline } = useSyncState()
 const search = useFaceSearch(image)
 const matches = computed(() => search.data.value ?? [])
 const { remember } = useRecentPatients()
@@ -23,16 +24,22 @@ function closeOnLink(event: MouseEvent) {
     emit('close')
 }
 
-async function open(patientId: number, target: PatientLinkTarget | undefined = station.value) {
-  remember(patientId)
+async function open(patientId: string | number, target: PatientLinkTarget | undefined = station.value) {
+  const id = String(patientId)
+  remember(id)
   emit('close')
-  await navigateTo(patientLinkFor(target, patientId))
+  await navigateTo(patientLinkFor(target, id))
 }
 </script>
 
 <template>
   <AppDialog title="Find patient by face" size="md" @close="emit('close')">
     <div class="flex flex-col gap-3">
+      <StateMessage
+        v-if="!isOnline"
+        kind="warning"
+        message="Face search requires an internet connection. Use Universal Search (Ctrl+K) to find patients offline."
+      />
       <WebcamCapture v-model="image" :size="280" />
 
       <StateMessage v-if="search.isLoading.value" kind="loading" message="Searching for matches…" />
@@ -71,7 +78,7 @@ async function open(patientId: number, target: PatientLinkTarget | undefined = s
           </div>
           <!-- Each journey tile opens that station for the visit; close on any link click. -->
           <div class="pl-[3.75rem]" @click="closeOnLink">
-            <MatchVisits :patient-id="match.id" />
+            <MatchVisits :patient-id="String(match.id)" />
           </div>
         </li>
       </ol>

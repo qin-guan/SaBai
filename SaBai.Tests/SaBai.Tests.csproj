@@ -8,14 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.12" />
     <PackageReference Include="TUnit.Aspire" Version="1.7*" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference
-      Include="..\SaBai.AppHost\SaBai.AppHost.csproj"
-      IsAspireProjectResource="false"
-    />
+    <ProjectReference Include="..\SaBai.AppHost\SaBai.AppHost.csproj" IsAspireProjectResource="false" />
     <ProjectReference Include="..\SaBai.API\SaBai.API.csproj" />
   </ItemGroup>
 

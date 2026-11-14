@@ -1,20 +1,72 @@
 /// <reference lib="webworker" />
+import { ExpirationPlugin } from 'workbox-expiration'
+import { cleanupOutdatedCaches, createHandlerBoundToURL, precacheAndRoute } from 'workbox-precaching'
+import { NavigationRoute, registerRoute } from 'workbox-routing'
+import { CacheFirst, StaleWhileRevalidate } from 'workbox-strategies'
 import { notificationTargetUrl, parsePushPayload } from '../utils/pushPayload'
 
 /**
- * Service worker for the installed app (PWA). Its job is notifications: it
- * shows a notification for every Web Push message, also while the app is
- * closed, and opens the app on the right page when one is tapped.
- *
- * It has no `fetch` handler and caches nothing, so pages, the `/api` proxy and
- * the session cookie behave exactly as they do without it.
+ * Service worker for the offline-first PWA:
+ * 1. Precaches the app shell, fonts, and WASM SQLite runtime via Workbox.
+ * 2. Serves cached app routes when offline (excluding `/api` and `/powersync`).
+ * 3. Caches patient photos (`StaleWhileRevalidate`) and static fonts (`CacheFirst`).
+ * 4. Handles Web Push notifications and notification clicks.
  */
-declare const self: ServiceWorkerGlobalScope
+declare const self: ServiceWorkerGlobalScope & {
+  __WB_MANIFEST: Array<{ url: string; revision: string | null }>
+}
 
-// A new version takes over at once: there is no cache to keep consistent.
-self.addEventListener('install', () => {
-  void self.skipWaiting()
+cleanupOutdatedCaches()
+precacheAndRoute(self.__WB_MANIFEST ?? [])
+
+// SPA navigation fallback to the precached shell, never intercepting API or PowerSync.
+try {
+  registerRoute(
+    new NavigationRoute(createHandlerBoundToURL('/index.html'), {
+      denylist: [/^\/api\//, /^\/powersync\//],
+    }),
+  )
+} catch {
+  // In dev mode without a precached /index.html, navigation falls through to network.
+}
+
+// Cache fonts & static icons/images.
+registerRoute(
+  ({ request }) => request.destination === 'font' || request.destination === 'style',
+  new CacheFirst({
+    cacheName: 'sabai-static-assets',
+    plugins: [
+      new ExpirationPlugin({
+        maxEntries: 80,
+        maxAgeSeconds: 30 * 24 * 60 * 60,
+      }),
+    ],
+  }),
+)
+
+// Cache patient photos & uploaded file previews for offline viewing.
+registerRoute(
+  ({ url, request }) =>
+    request.method === 'GET'
+    && (/^\/api\/patients\/[^/]+\/photo$/.test(url.pathname)
+      || /^\/api\/files\/[^/]+\/content$/.test(url.pathname)),
+  new StaleWhileRevalidate({
+    cacheName: 'sabai-patient-media',
+    plugins: [
+      new ExpirationPlugin({
+        maxEntries: 250,
+        maxAgeSeconds: 7 * 24 * 60 * 60,
+      }),
+    ],
+  }),
+)
+
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') {
+    void self.skipWaiting()
+  }
 })
+
 self.addEventListener('activate', (event) => {
   event.waitUntil(self.clients.claim())
 })

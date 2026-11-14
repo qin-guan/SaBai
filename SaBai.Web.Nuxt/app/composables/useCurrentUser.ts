@@ -9,14 +9,54 @@ export type StaffUser = SaBaiAPIEndpointsAuthUserResponse & { tags?: string[] };
 
 export const ADMIN_ROLE = "admin";
 
+const CACHED_USER_KEY = "sabai.cachedUser";
+
+function readCachedUser(): StaffUser | null {
+  if (typeof localStorage === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(CACHED_USER_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as StaffUser;
+  } catch {
+    return null;
+  }
+}
+
+function writeCachedUser(user: StaffUser | null) {
+  if (typeof localStorage === "undefined") return;
+  try {
+    if (user) {
+      localStorage.setItem(CACHED_USER_KEY, JSON.stringify(user));
+    } else {
+      localStorage.removeItem(CACHED_USER_KEY);
+    }
+  } catch {
+    // ignore storage quota errors
+  }
+}
+
 /** Signed-in user query. A 401 here is handled by the route middleware, not the global redirect. */
 export function currentUserQueryOptions() {
   return {
     queryKey: queryKeys.currentUser(),
-    queryFn: ({ signal }: { signal?: AbortSignal }) =>
-      saBaiAPIEndpointsAuthWhoAmIGetEndpoint({ ...apiConfig, signal })
-        .unwrap()
-        .then((x) => x.user),
+    queryFn: async ({ signal }: { signal?: AbortSignal }) => {
+      try {
+        const user = await saBaiAPIEndpointsAuthWhoAmIGetEndpoint({ ...apiConfig, signal })
+          .unwrap()
+          .then((x) => x.user);
+        writeCachedUser(user);
+        return user;
+      } catch (error) {
+        if (isUnauthorizedError(error)) {
+          writeCachedUser(null);
+          throw error;
+        }
+        // Offline / network failure: keep working with the last signed-in staff user.
+        const cached = readCachedUser();
+        if (cached) return cached;
+        throw error;
+      }
+    },
     // Roles change rarely; the API re-checks the session on every request anyway.
     staleTime: 5 * 60 * 1000,
     retry: false,
@@ -30,9 +70,16 @@ export function currentUserQueryOptions() {
  */
 export async function loadCurrentUser(queryClient: QueryClient): Promise<StaffUser | null> {
   try {
-    return await queryClient.ensureQueryData(currentUserQueryOptions());
+    const user = await queryClient.ensureQueryData(currentUserQueryOptions());
+    if (user && import.meta.client) {
+      const nuxtApp = useNuxtApp();
+      (nuxtApp.$connectPowerSync as (() => void) | undefined)?.();
+    }
+    return user;
   } catch (error) {
     if (isUnauthorizedError(error)) return null;
+    const cached = readCachedUser();
+    if (cached) return cached;
     throw error;
   }
 }
@@ -56,7 +103,16 @@ export function useCurrentUser() {
  */
 export function useSignOut() {
   const queryClient = useQueryClient();
-  return async () => {
+  return async (options?: { force?: boolean }) => {
+    const pending = await refreshPendingCrudCount();
+    if (pending > 0 && !options?.force) {
+      const { toast } = await import("vue-sonner");
+      toast.error(
+        `You have ${pending} unsynced offline change(s). Connect to sync before signing out.`,
+      );
+      return;
+    }
+
     // Notifications belong to the person signed in: stop them on this device
     // (while the session can still say so) before it is handed to someone else.
     await stopPushOnThisDevice().catch(console.error);
@@ -64,6 +120,13 @@ export function useSignOut() {
       await saBaiAPIEndpointsAuthLogoutPostEndpoint({ ...apiConfig, throwOnError: true });
     } catch (error) {
       console.error(error);
+    }
+    writeCachedUser(null);
+    try {
+      const db = getPowerSyncInstance();
+      await db.disconnectAndClear();
+    } catch {
+      // ignore if PowerSync is not initialized
     }
     // Drafts and recent patients hold patient data; don't leave them on a shared device.
     clearAllFormDrafts();

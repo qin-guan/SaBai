@@ -2,7 +2,7 @@ namespace SaBai.API.Endpoints.Patients.SearchByFace.Post;
 
 /// <summary>A patient that matched the search photo, with the best similarity seen.</summary>
 public sealed record PatientFaceMatch(
-    int Id,
+    Guid Id,
     string Name,
     string DisplayId,
     string? VillageCode,

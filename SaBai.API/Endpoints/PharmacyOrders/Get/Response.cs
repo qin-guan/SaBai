@@ -10,7 +10,7 @@ public sealed record PatientHeader(string DisplayId, string Name, string? Villag
 
 /// <summary>One visit's pending orders and diagnoses.</summary>
 public sealed record VisitBundle(
-    int VisitId,
+    Guid VisitId,
     DateTimeOffset VisitDate,
     IReadOnlyList<PharmacyOrderItem> Orders,
     IReadOnlyList<DiagnosisItem> Diagnoses
@@ -18,7 +18,7 @@ public sealed record VisitBundle(
 
 /// <summary>A pending medication order waiting to be dispensed.</summary>
 public sealed record PharmacyOrderItem(
-    int OrderId,
+    Guid OrderId,
     string MedicationName,
     int Quantity,
     bool IsLowStock,

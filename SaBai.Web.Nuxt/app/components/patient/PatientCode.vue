@@ -2,8 +2,9 @@
 /** Patient display code (e.g. "PC0012") with the village colour swatch. */
 const props = defineProps<{
   villageCode: string | null
-  villageColorHex: string | null
-  id: number
+  villageColorHex?: string | null
+  id: string | number
+  displayId?: string | null
 }>()
 </script>
 
@@ -16,6 +17,6 @@ const props = defineProps<{
       :title="props.villageCode ?? undefined"
       aria-hidden="true"
     />
-    <span class="truncate">{{ formatPatientCode(props.villageCode, props.id) }}</span>
+    <span class="truncate">{{ props.displayId ?? formatPatientCode(props.villageCode, props.id) }}</span>
   </span>
 </template>

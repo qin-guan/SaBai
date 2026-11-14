@@ -2,8 +2,8 @@ namespace SaBai.API.Endpoints.Files.Update.Patch;
 
 /// <summary>Clinical file after a metadata update.</summary>
 public sealed record Response(
-    int Id,
-    int? PatientId,
+    Guid Id,
+    Guid? PatientId,
     string FileName,
     string StoredFileName,
     string Description,

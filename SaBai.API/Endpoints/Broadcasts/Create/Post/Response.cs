@@ -4,7 +4,7 @@ namespace SaBai.API.Endpoints.Broadcasts.Create.Post;
 
 /// <summary>Created broadcast that has not yet been published.</summary>
 public sealed record Response(
-    int Id,
+    Guid Id,
     string Title,
     string Body,
     BroadcastSeverity Severity,

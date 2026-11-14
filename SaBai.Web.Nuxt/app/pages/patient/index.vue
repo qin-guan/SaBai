@@ -410,7 +410,7 @@ const gridCols = 'md:grid-cols-[2rem_minmax(0,1fr)_minmax(15rem,22rem)_1rem] lg:
                 </p>
                 <!-- Below laptop width the columns fold into one meta line. -->
                 <p class="flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground lg:hidden touch:text-[0.8125rem]">
-                  <PatientCode :village-code="patient.villageCode" :village-color-hex="patient.villageColorHex" :id="patient.id" />
+                  <PatientCode :village-code="patient.villageCode" :village-color-hex="patient.villageColorHex" :id="patient.number ?? patient.id" />
                   <span>{{ calculateAge(patient.dateOfBirth) }} y <span class="capitalize">{{ patient.gender }}</span></span>
                   <span v-if="patient.lastVisitDate" class="tabular-nums">
                     {{ dateOf(patient.lastVisitDate) }}<template v-if="waited(patient.lastVisitDate)">
@@ -438,9 +438,9 @@ const gridCols = 'md:grid-cols-[2rem_minmax(0,1fr)_minmax(15rem,22rem)_1rem] lg:
               </span>
               <span
                 class="hidden min-w-0 truncate text-xs text-muted-foreground lg:block"
-                :title="formatPatientCode(patient.villageCode, patient.id)"
+                :title="formatPatientCode(patient.villageCode, patient.number ?? patient.id)"
               >
-                <PatientCode :village-code="patient.villageCode" :village-color-hex="patient.villageColorHex" :id="patient.id" />
+                <PatientCode :village-code="patient.villageCode" :village-color-hex="patient.villageColorHex" :id="patient.number ?? patient.id" />
               </span>
               <span class="hidden truncate text-xs whitespace-nowrap lg:block">
                 {{ calculateAge(patient.dateOfBirth) }} y <span class="text-muted-foreground">{{ patient.gender === 'female' ? 'F' : 'M' }}</span>

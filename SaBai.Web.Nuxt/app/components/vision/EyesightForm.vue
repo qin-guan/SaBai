@@ -1,13 +1,7 @@
 <script setup lang="ts">
 import { PhFloppyDisk } from '@phosphor-icons/vue'
-import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { toast } from 'vue-sonner'
 import type { z } from 'zod'
-import {
-  saBaiAPIEndpointsEyesightCreatePostEndpoint,
-  saBaiAPIEndpointsEyesightUpdateByVisitPatchEndpoint,
-} from '@sabai/sdk/clients'
-import type { SaBaiAPIEndpointsEyesightCreatePostRequest } from '@sabai/sdk/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -17,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea'
  * glasses, comments). Acuity/pinhole fields validate after first blur and then
  * live, so errors show before Save and clear once the input is valid.
  */
-const props = defineProps<{ visitId: number }>()
+const props = defineProps<{ visitId: string }>()
 
 type Key = keyof EyesightFormValues
 
@@ -98,23 +92,9 @@ const errors = computed(() => {
   return result
 })
 
-const queryClient = useQueryClient()
-const create = useMutation({
-  mutationFn: (body: SaBaiAPIEndpointsEyesightCreatePostRequest) =>
-    saBaiAPIEndpointsEyesightCreatePostEndpoint({ ...apiConfig, body, throwOnError: true }).unwrap(),
-})
-const update = useMutation({
-  mutationFn: (body: SaBaiAPIEndpointsEyesightCreatePostRequest) =>
-    saBaiAPIEndpointsEyesightUpdateByVisitPatchEndpoint({
-      ...apiConfig,
-      path: { visitId: props.visitId },
-      body,
-      throwOnError: true,
-    }).unwrap(),
-})
-const saving = computed(() => create.isPending.value || update.isPending.value)
+const saving = ref(false)
 
-function submit() {
+async function submit() {
   if (saving.value || isLoading.value)
     return
   touched.value = new Set(Object.keys(VALIDATORS) as Key[])
@@ -128,33 +108,73 @@ function submit() {
   }
 
   const data = { ...form.value }
-  const body: SaBaiAPIEndpointsEyesightCreatePostRequest = {
-    visitId: props.visitId,
-    leftEyeDegree: data.leftEyeDegree || undefined,
-    rightEyeDegree: data.rightEyeDegree || undefined,
-    leftEyePinhole: data.leftEyePinhole || undefined,
-    rightEyePinhole: data.rightEyePinhole || undefined,
-    leftAstigmatism: data.leftAstigmatism || undefined,
-    rightAstigmatism: data.rightAstigmatism || undefined,
-    leftPrescribedGlassesDegree: data.leftPrescribedGlassesDegree || undefined,
-    rightPrescribedGlassesDegree: data.rightPrescribedGlassesDegree || undefined,
-    comments: data.comments || undefined,
+  const now = new Date().toISOString()
+  saving.value = true
+  try {
+    const db = getPowerSyncInstance()
+    const existingId = eyesight.value?.id ? String(eyesight.value.id) : null
+    if (!existingId) {
+      await db.execute(
+        `INSERT INTO eyesights (
+          id, visit_id, recorded_at, left_eye_degree, right_eye_degree,
+          left_eye_pinhole, right_eye_pinhole, left_astigmatism, right_astigmatism,
+          left_prescribed_glasses_degree, right_prescribed_glasses_degree, comments,
+          version, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)`,
+        [
+          uuidv7(),
+          props.visitId,
+          now,
+          data.leftEyeDegree || null,
+          data.rightEyeDegree || null,
+          data.leftEyePinhole || null,
+          data.rightEyePinhole || null,
+          data.leftAstigmatism || null,
+          data.rightAstigmatism || null,
+          data.leftPrescribedGlassesDegree || null,
+          data.rightPrescribedGlassesDegree || null,
+          data.comments || null,
+          now,
+        ],
+      )
+    }
+    else {
+      await db.execute(
+        `UPDATE eyesights
+         SET left_eye_degree = ?, right_eye_degree = ?,
+             left_eye_pinhole = ?, right_eye_pinhole = ?,
+             left_astigmatism = ?, right_astigmatism = ?,
+             left_prescribed_glasses_degree = ?, right_prescribed_glasses_degree = ?,
+             comments = ?, updated_at = ?
+         WHERE id = ?`,
+        [
+          data.leftEyeDegree || null,
+          data.rightEyeDegree || null,
+          data.leftEyePinhole || null,
+          data.rightEyePinhole || null,
+          data.leftAstigmatism || null,
+          data.rightAstigmatism || null,
+          data.leftPrescribedGlassesDegree || null,
+          data.rightPrescribedGlassesDegree || null,
+          data.comments || null,
+          now,
+          existingId,
+        ],
+      )
+    }
+    await refreshPendingCrudCount()
+    serviceTimer.saved()
+    toast.success('Vision record saved!')
+    load(data)
+    draft.clear(data)
   }
-  const callbacks = {
-    onSuccess: () => {
-      serviceTimer.saved()
-      queryClient.invalidateQueries({ queryKey: queryKeys.eyesight(props.visitId) })
-      // Refresh the journey bars and station backlogs.
-      queryClient.invalidateQueries({ queryKey: queryKeys.patients() })
-      toast.success('Vision record saved successfully!')
-      load(data)
-      draft.clear(data)
-    },
-    onError: (error: unknown) => toast.error(getApiErrorMessage(error, 'Failed to save vision record.')),
+  catch (error) {
+    console.error('Error saving vision record:', error)
+    toast.error('Failed to save vision record.')
   }
-  if (!eyesight.value)
-    create.mutate(body, callbacks)
-  else update.mutate(body, callbacks)
+  finally {
+    saving.value = false
+  }
 }
 
 useSaveShortcut(submit)

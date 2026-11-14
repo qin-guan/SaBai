@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { PhFloppyDisk } from '@phosphor-icons/vue'
-import type { PatientDetail } from '~/composables/usePatientData'
+import type { LocalPatientSummary } from '~/db/types'
 import { Button } from '@/components/ui/button'
 
 /**
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
  * the form in progress. The patient record edits the same fields inline
  * (<PatientDetailsForm>).
  */
-const props = defineProps<{ patient: PatientDetail }>()
+const props = defineProps<{ patient: LocalPatientSummary }>()
 const emit = defineEmits<{ close: [] }>()
 
 const formEl = ref<HTMLFormElement>()

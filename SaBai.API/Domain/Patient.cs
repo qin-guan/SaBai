@@ -1,10 +1,23 @@
 namespace SaBai.API.Domain;
 
-public sealed class Patient
+public sealed class Patient : ISyncEntity
 {
-    public int Id { get; set; }
+    /// <summary>UUIDv7 key. Created by the client (possibly offline) or by the server.</summary>
+    public Guid Id { get; set; } = Guid.CreateVersion7();
 
-    public int? VillageCodeId { get; set; }
+    public int Version { get; set; } = 1;
+
+    public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+
+    /// <summary>
+    /// Human-readable patient number printed on cards (shown as <c>VillageCode + Number:0000</c>).
+    /// Assigned by Postgres (identity) when the row is first written on the server, so a patient
+    /// registered offline has no number until it syncs. Patients from before the move to UUID
+    /// keys keep their old integer id here.
+    /// </summary>
+    public int Number { get; set; }
+
+    public Guid? VillageCodeId { get; set; }
 
     public VillageCode? VillageCode { get; set; }
 
@@ -52,18 +65,18 @@ public sealed class Patient
 
     public ICollection<PatientTag> PatientTags { get; set; } = [];
 
-    public static string FormatDisplayId(string? villageCode, int id) =>
-        string.IsNullOrWhiteSpace(villageCode) ? id.ToString("D4") : $"{villageCode}{id:0000}";
+    public static string FormatDisplayId(string? villageCode, int number) =>
+        string.IsNullOrWhiteSpace(villageCode) ? number.ToString("D4") : $"{villageCode}{number:0000}";
 
     public static string FormatFilterString(
         string? villageCode,
-        int id,
+        int number,
         string? contactNo,
         string name
     )
     {
-        var display = FormatDisplayId(villageCode, id);
-        var compact = string.IsNullOrWhiteSpace(villageCode) ? id.ToString() : $"{villageCode}{id}";
+        var display = FormatDisplayId(villageCode, number);
+        var compact = string.IsNullOrWhiteSpace(villageCode) ? number.ToString() : $"{villageCode}{number}";
         return $"{display} {compact} {contactNo} {name}";
     }
 }

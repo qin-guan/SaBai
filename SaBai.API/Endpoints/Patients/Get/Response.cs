@@ -4,7 +4,7 @@ namespace SaBai.API.Endpoints.Patients.Get;
 
 /// <summary>A patient, including display id and latest visit.</summary>
 public sealed record Response(
-    int Id,
+    Guid Id,
     string Name,
     string? IdentificationNumber,
     string? ContactNo,
@@ -15,12 +15,12 @@ public sealed record Response(
     bool HasBS2Card,
     bool HasSabaiCard,
     bool ToGetReport,
-    int? VillageCodeId,
+    Guid? VillageCodeId,
     string? VillageCode,
     string DisplayId,
     string FilterString,
     DateTimeOffset? LastVisitDate,
-    int? LastVisitId,
+    Guid? LastVisitId,
     bool HasPhoto,
     bool HasFace,
     IReadOnlyList<string> Tags

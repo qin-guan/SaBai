@@ -10,6 +10,7 @@ type Mode = 'matching' | 'registering'
 const image = ref<string | null>(null)
 const mode = ref<Mode>('matching')
 const { selectedVillage, isLoading } = useVillageCode()
+const { isOnline } = useSyncState()
 useKeyShortcut('n', () => { mode.value = 'registering' }, { enabled: () => mode.value === 'matching' && !image.value })
 useHead({ title: "Scan Face · Sa'Bai" })
 </script>
@@ -17,6 +18,12 @@ useHead({ title: "Scan Face · Sa'Bai" })
 <template>
   <div>
     <PageHeader title="Scan Face" :breadcrumbs="[{ label: 'Home', to: '/' }, { label: 'Scan Face' }]" />
+    <StateMessage
+      v-if="!isOnline"
+      kind="warning"
+      class="mb-3"
+      message="You are offline. Face matching requires an internet connection, but patient search and registration still work locally."
+    />
     <StateMessage
       v-if="!isLoading && !selectedVillage"
       kind="warning"

@@ -3,7 +3,7 @@ namespace SaBai.API.Endpoints.Vitals.UpdateByVisit.Patch;
 /// <summary>Partial vitals update for a visit. Omitted measurements are left unchanged, and the visit cannot be changed.</summary>
 public sealed record Request
 {
-    public int VisitId { get; init; }
+    public Guid VisitId { get; init; }
 
     public decimal? Height { get; init; }
 

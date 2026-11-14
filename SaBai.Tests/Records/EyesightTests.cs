@@ -107,7 +107,7 @@ public sealed class EyesightTests(AppFixture fixture)
         await client.LoginAsync();
 
         // Act
-        var response = await client.GetAsync("/eyesight/99999999");
+        var response = await client.GetAsync($"/eyesight/{ClinicSetup.MissingId}");
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.NotFound);
@@ -126,7 +126,7 @@ public sealed class EyesightTests(AppFixture fixture)
             ApiJson.Options
         );
         created.EnsureSuccessStatusCode();
-        var id = ClinicSetup.ReadInt(
+        var id = ClinicSetup.ReadGuid(
             await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
             "id"
         );
@@ -140,7 +140,7 @@ public sealed class EyesightTests(AppFixture fixture)
         await Assert.That(fetched.StatusCode).IsEqualTo(HttpStatusCode.NotFound);
     }
 
-    private static async Task<(int PatientId, int VisitId)> RegisterAsync(HttpClient client)
+    private static async Task<(Guid PatientId, Guid VisitId)> RegisterAsync(HttpClient client)
     {
         var suffix = ClinicSetup.Suffix();
         var villageId = await ClinicSetup.CreateVillageAsync(client, $"E{suffix}");

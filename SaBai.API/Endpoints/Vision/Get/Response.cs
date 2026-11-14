@@ -11,7 +11,7 @@ public sealed record Response(
 
 /// <summary>Patient identity shown with a vision record.</summary>
 public sealed record PatientResponse(
-    int Id,
+    Guid Id,
     string Name,
     string DisplayId,
     Gender Gender,
@@ -20,8 +20,8 @@ public sealed record PatientResponse(
 
 /// <summary>Prescribed glasses degrees for a visit.</summary>
 public sealed record GlassesResponse(
-    int Id,
-    int VisitId,
+    Guid Id,
+    Guid VisitId,
     string? LeftGlassesDegree,
     string? RightGlassesDegree,
     string? Notes

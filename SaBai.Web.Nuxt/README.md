@@ -27,9 +27,18 @@ pnpm dev
 | `app/components/ui` | shadcn-vue components (Lyra). Imported explicitly. |
 | `app/components/app` | Building blocks: `AppPanel`, `PageHeader`, `FormField`, `ChoiceGroup`, `AppDialog`, `SaveBar`… |
 | `app/components/patient` | Patient banner, journey tracker, visit selector, station page frame, inline details form and edit dialog. |
-| `app/composables` | Vue Query data hooks over `@sabai/sdk/clients`, village selection, shortcuts. |
-| `app/service-worker` | Service worker of the installed app: push notifications. |
-| `app/utils` | Framework-free logic ported from SaBai.Web (formatting, vitals, splits, eyesight, dental mapping). |
+| `app/composables` | PowerSync local SQLite reactive queries (`useLocalQuery`), online-only API hooks, village selection, shortcuts. |
+| `app/db` | PowerSync local SQLite schema (`schema.ts`), upload connector (`connector.ts`), and local clinical types (`types.ts`). |
+| `app/service-worker` | Service worker of the installed PWA: Workbox app-shell precaching, SPA offline navigation, runtime asset caching, and Web Push. |
+| `app/utils` | Framework-free logic ported from SaBai.Web (UUIDv7 generator, formatting, vitals, splits, eyesight, dental mapping). |
+
+## Offline-first sync (PowerSync + PWA)
+
+`SaBai.Web.Nuxt` keeps a full local SQLite copy of all clinical tables on the device via **PowerSync** (`@powersync/web` + `@journeyapps/wa-sqlite`) and precaches the app shell (`sw.ts` with Workbox `injectManifest`).
+
+- **Reads & writes**: Patient registration, visits, vitals, vision, consults, referrals, village codes, and medication stock read from and write to local SQLite immediately with client-generated **UUIDv7** IDs (`app/utils/uuid.ts`), even when offline.
+- **Sync & conflict resolution**: Pending local mutations (`ps_crud`) are uploaded to `POST /api/sync/upload` when online. The backend (`SyncUploadProcessor`) enforces idempotency, natural-key upserts for 1:1 station records, optimistic concurrency conflict logging (`SyncConflict`), and business-rule rejection logging (`SyncRejection`). Staff can inspect sync status, pending writes, conflicts, rejections, and duplicate patient merges at `/settings/sync`.
+- **Proxy**: Nitro proxies `/api/*` to `NUXT_API_URL` (`SaBai.API`) and `/powersync/*` to `NUXT_POWERSYNC_URL` (self-hosted `powersync-service`).
 
 Auth is an HttpOnly session cookie (`sabai.auth`) set by the API's
 `POST /auth/login` (ASP.NET Core Identity) and passed through the `/api` proxy,

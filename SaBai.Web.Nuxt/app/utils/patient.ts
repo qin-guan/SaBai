@@ -1,15 +1,16 @@
 import { cleanKhmerText, matchesSearchText, normalizeForSearch } from "./khmer";
 
-/** Formats a patient id as a zero-padded, 4-digit string, e.g. 12 → "0012". */
-export function formatPatientId(id: number) {
-  return id.toString().padStart(4, "0");
+/** Formats a patient id/number as a zero-padded, 4-digit string, e.g. 12 → "0012". */
+export function formatPatientId(id: string | number) {
+  if (typeof id === "number") return id.toString().padStart(4, "0");
+  return /^\d+$/.test(id) ? id.padStart(4, "0") : id.slice(0, 8);
 }
 
 /**
  * Builds the display code for a patient, for example "PC0012". Falls back to the
  * zero-padded id alone when the patient has no village (no visits yet).
  */
-export function formatPatientCode(villageCode: string | null | undefined, id: number) {
+export function formatPatientCode(villageCode: string | null | undefined, id: string | number) {
   return `${villageCode ?? ""}${formatPatientId(id)}`;
 }
 
@@ -42,12 +43,12 @@ export function toDateInputValue(dateOfBirth: Date | string) {
 
 /** Matches a patient against free-text search on id, name or identification number (including Khmer script and numerals). */
 export function patientMatches(
-  patient: { id: number; name: string; identificationNumber?: string | null },
+  patient: { id: string | number; number?: number; displayId?: string | null; name: string; identificationNumber?: string | null },
   search: string,
 ) {
   if (!cleanKhmerText(search)) return false;
   return (
-    matchesSearchText(patient.id.toString(), search) ||
+    matchesSearchText(patient.displayId ?? patient.number?.toString() ?? patient.id.toString(), search) ||
     matchesSearchText(patient.name, search) ||
     matchesSearchText(patient.identificationNumber, search)
   );

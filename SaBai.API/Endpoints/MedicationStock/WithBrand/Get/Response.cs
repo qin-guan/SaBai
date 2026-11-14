@@ -7,8 +7,8 @@ namespace SaBai.API.Endpoints.MedicationStock.WithBrand.Get;
 /// whose ingredient's total active quantity is at or below the ingredient's <c>FallBelow</c>.
 /// </summary>
 public sealed record Response(
-    int Id,
-    int MedicationBrandId,
+    Guid Id,
+    Guid MedicationBrandId,
     int Quantity,
     DateTimeOffset Expiry,
     string Location,
@@ -16,7 +16,7 @@ public sealed record Response(
     string? Remarks,
     string BrandName,
     string IngredientName,
-    int IngredientId,
+    Guid IngredientId,
     int FallBelow,
     bool IsLowStock
 );

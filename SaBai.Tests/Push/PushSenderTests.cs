@@ -20,7 +20,7 @@ public class PushSenderTests
 
     private static readonly StaffPushSubscription Device = new()
     {
-        Id = 7,
+        Id = Guid.CreateVersion7(),
         Endpoint = "https://fcm.googleapis.com/fcm/send/device-1",
         P256dhKey =
             "BJjWYdY98l44WgyWfb56xewn_tGYTsk4groBBbEI5_3v8oksOOJjFo4QrYp5FI6ZPvL_5KavTUeto2e8dOmKe9w",

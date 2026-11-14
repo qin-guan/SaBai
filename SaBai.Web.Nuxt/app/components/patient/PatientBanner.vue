@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { PatientDetail } from '~/composables/usePatientData'
+import type { LocalPatientSummary } from '~/db/types'
 import { Badge } from '@/components/ui/badge'
 
 /**
@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
  * flagged in red.
  */
 const props = defineProps<{
-  patient: PatientDetail
+  patient: LocalPatientSummary
   /** Link the name here (the patient record, from station screens). */
   to?: string
 }>()
@@ -47,7 +47,7 @@ const cards = computed(() =>
             ID
           </dt>
           <dd class="font-mono font-semibold">
-            {{ formatPatientCode(props.patient.villageCode, props.patient.id) }}
+            {{ props.patient.displayId }}
           </dd>
         </div>
         <div class="flex gap-1">

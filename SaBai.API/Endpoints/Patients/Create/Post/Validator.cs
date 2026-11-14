@@ -14,7 +14,7 @@ public sealed class Validator : Validator<Request>
         RuleFor(x => x.Gender).NotNull().IsInEnum();
         RuleFor(x => x.DateOfBirth).NotNull();
         RuleFor(x => x.DrugAllergy).NotEmpty();
-        RuleFor(x => x.VillageCodeId).GreaterThan(0);
+        RuleFor(x => x.VillageCodeId).NotEmpty();
         RuleForEach(x => x.Tags)
             .Must(t => string.IsNullOrWhiteSpace(t) || t.Trim().Length <= TagSync.MaxTagLength)
             .WithMessage($"Tags must be {TagSync.MaxTagLength} characters or fewer.");

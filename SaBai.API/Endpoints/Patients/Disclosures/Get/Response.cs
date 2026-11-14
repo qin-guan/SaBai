@@ -1,7 +1,7 @@
 namespace SaBai.API.Endpoints.Patients.Disclosures.Get;
 
 public sealed record Item(
-    int Id,
+    Guid Id,
     string Recipient,
     string Purpose,
     string? Description,

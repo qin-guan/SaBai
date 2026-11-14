@@ -23,7 +23,7 @@ public sealed record Request
     public DateTimeOffset? To { get; init; }
 
     /// <summary>Paging cursor: return entries older than this id (the previous page's <c>nextBefore</c>).</summary>
-    public int? Before { get; init; }
+    public Guid? Before { get; init; }
 
     /// <summary>Page size, 1–200. Defaults to 50.</summary>
     public int? Take { get; init; }

@@ -20,7 +20,8 @@ import { formatPatientCode, formatPatientId } from './patient'
  */
 
 export interface SearchablePatient {
-  id: number
+  id: string | number
+  number?: number
   name: string
   identificationNumber?: string | null
   contactNo?: string | null
@@ -64,7 +65,13 @@ export function buildPatientIndex(patients: SearchablePatient[]) {
       identificationNumber: normalizeKhmerDigits(cleanKhmerText(p.identificationNumber)),
       villageCode: normalizeKhmerDigits(cleanKhmerText(p.villageCode)),
       tags: (p.tags ?? []).join(' '),
-      ids: [String(p.id), formatPatientId(p.id), formatPatientCode(p.villageCode, p.id), p.displayId ?? ''].join(' '),
+      ids: [
+        String(p.id),
+        formatPatientId(p.id),
+        formatPatientCode(p.villageCode, p.id),
+        ...(p.number !== undefined ? [String(p.number), formatPatientId(p.number), formatPatientCode(p.villageCode, p.number)] : []),
+        p.displayId ?? '',
+      ].join(' '),
       // Phone numbers are typed without spaces/dashes (and may use Khmer numerals).
       digits: normalizeKhmerDigits(p.contactNo ?? '').replace(/\D/g, ''),
     })),

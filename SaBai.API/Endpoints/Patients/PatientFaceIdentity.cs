@@ -9,13 +9,13 @@ public static class PatientFaceIdentity
 {
     private const string Prefix = "patient:";
 
-    public static string ForPatient(int patientId) => $"{Prefix}{patientId}";
+    public static string ForPatient(Guid patientId) => $"{Prefix}{patientId}";
 
-    public static bool TryParse(string? personId, out int patientId)
+    public static bool TryParse(string? personId, out Guid patientId)
     {
-        patientId = 0;
+        patientId = Guid.Empty;
         return personId is not null
             && personId.StartsWith(Prefix, StringComparison.Ordinal)
-            && int.TryParse(personId.AsSpan(Prefix.Length), out patientId);
+            && Guid.TryParse(personId.AsSpan(Prefix.Length), out patientId);
     }
 }

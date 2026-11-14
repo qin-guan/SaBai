@@ -26,7 +26,7 @@ const { form, saved, changedSteps, isDirty, isSaving, isAdult, moneyErrors, draf
 useSaveShortcut(save, { enabled: () => !!form.value })
 
 // Tells the list which row to return focus to (Esc / back).
-const lastOpened = useState<number | null>('referrals:last-opened', () => null)
+const lastOpened = useState<string | null>('referrals:last-opened', () => null)
 watch(referralId, (id) => { lastOpened.value = id }, { immediate: true })
 
 const names = {
@@ -89,7 +89,7 @@ const unsavedLabel = computed(() => changedSteps.value.map(s => REFERRAL_PART_LA
             {{ referral.patientName }}
           </p>
           <p class="text-xs touch:text-sm">
-            <PatientCode :village-code="referral.villageCode" :village-color-hex="referral.villageColorHex" :id="referral.patientId" />
+            <PatientCode :village-code="referral.villageCode" :village-color-hex="referral.villageColorHex" :id="referral.patientNumber" />
           </p>
         </div>
       </section>

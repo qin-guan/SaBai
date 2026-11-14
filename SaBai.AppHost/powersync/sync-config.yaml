@@ -1,0 +1,335 @@
+config:
+  edition: 3
+
+streams:
+  clinic:
+    auto_subscribe: true
+    queries:
+      - >
+        SELECT
+          "Id" AS id,
+          "Version" AS version,
+          "UpdatedAt" AS updated_at,
+          "Code" AS code,
+          "Name" AS name,
+          "ColorHex" AS color_hex,
+          "IsVisible" AS is_visible,
+          "CreatedAt" AS created_at
+        FROM "VillageCodes"
+      - >
+        SELECT
+          "Id" AS id,
+          "UserName" AS user_name,
+          "Nickname" AS nickname,
+          "CreatedAt" AS created_at
+        FROM "StaffUsers"
+      - >
+        SELECT
+          "Id" AS id,
+          "Version" AS version,
+          "UpdatedAt" AS updated_at,
+          "Number" AS number,
+          "VillageCodeId" AS village_code_id,
+          "Name" AS name,
+          "IdentificationNumber" AS identification_number,
+          "ContactNo" AS contact_no,
+          "Gender" AS gender,
+          "DateOfBirth" AS date_of_birth,
+          "DrugAllergy" AS drug_allergy,
+          "HasPoorCard" AS has_poor_card,
+          "HasBS2Card" AS has_bs2_card,
+          "HasSabaiCard" AS has_sabai_card,
+          "ToGetReport" AS to_get_report,
+          "PatientImagePublicId" AS patient_image_public_id,
+          "RekognitionFaceId" AS rekognition_face_id,
+          "CreatedAt" AS created_at
+        FROM "Patients"
+      - >
+        SELECT
+          "Id" AS id,
+          "Version" AS version,
+          "UpdatedAt" AS updated_at,
+          "PatientId" AS patient_id,
+          "VillageCodeId" AS village_code_id,
+          "Date" AS date,
+          "Status" AS status
+        FROM "Visits"
+      - >
+        SELECT
+          "Id" AS id,
+          "Version" AS version,
+          "UpdatedAt" AS updated_at,
+          "RecordedAt" AS recorded_at,
+          "VisitId" AS visit_id,
+          "Height" AS height,
+          "Weight" AS weight,
+          "Temperature" AS temperature,
+          "Systolic" AS systolic,
+          "Diastolic" AS diastolic,
+          "HeartRate" AS heart_rate,
+          "HemocueCount" AS hemocue_count,
+          "DiabetesMellitus" AS diabetes_mellitus,
+          "UrineTest" AS urine_test,
+          "BloodGlucoseNonFasting" AS blood_glucose_non_fasting,
+          "BloodGlucoseFasting" AS blood_glucose_fasting,
+          "Hba1c" AS hba1c,
+          "Others" AS others
+        FROM "Vitals"
+      - >
+        SELECT
+          "Id" AS id,
+          "Version" AS version,
+          "UpdatedAt" AS updated_at,
+          "VitalsId" AS vitals_id,
+          "Pubarche" AS pubarche,
+          "PubarcheAge" AS pubarche_age,
+          "Thelarche" AS thelarche,
+          "ThelarcheAge" AS thelarche_age,
+          "Menarche" AS menarche,
+          "MenarcheAge" AS menarche_age,
+          "VoiceChange" AS voice_change,
+          "VoiceChangeAge" AS voice_change_age,
+          "TesticularGrowth" AS testicular_growth,
+          "TesticularGrowthAge" AS testicular_growth_age,
+          "AdditionalNotes" AS additional_notes
+        FROM "PubertyAssessments"
+      - >
+        SELECT
+          "Id" AS id,
+          "Version" AS version,
+          "UpdatedAt" AS updated_at,
+          "VitalsId" AS vitals_id,
+          "GrossMotor" AS gross_motor,
+          "RedReflex" AS red_reflex,
+          "Scoliosis" AS scoliosis,
+          "Pallor" AS pallor,
+          "OralCavity" AS oral_cavity,
+          "Heart" AS heart,
+          "Abdomen" AS abdomen,
+          "Lungs" AS lungs,
+          "HernialOrifices" AS hernial_orifices
+        FROM "ChildVitals"
+      - >
+        SELECT
+          "Id" AS id,
+          "Version" AS version,
+          "UpdatedAt" AS updated_at,
+          "RecordedAt" AS recorded_at,
+          "VisitId" AS visit_id,
+          "LeftEyeDegree" AS left_eye_degree,
+          "RightEyeDegree" AS right_eye_degree,
+          "LeftEyePinhole" AS left_eye_pinhole,
+          "RightEyePinhole" AS right_eye_pinhole,
+          "LeftAstigmatism" AS left_astigmatism,
+          "RightAstigmatism" AS right_astigmatism,
+          "Comments" AS comments,
+          "LeftPrescribedGlassesDegree" AS left_prescribed_glasses_degree,
+          "RightPrescribedGlassesDegree" AS right_prescribed_glasses_degree
+        FROM "Eyesights"
+      - >
+        SELECT
+          "Id" AS id,
+          "Version" AS version,
+          "UpdatedAt" AS updated_at,
+          "RecordedAt" AS recorded_at,
+          "VisitId" AS visit_id,
+          "PreviousDentalVisit" AS previous_dental_visit,
+          "PreviousDentalTreatment" AS previous_dental_treatment,
+          "Toothache" AS toothache,
+          "Extraction" AS extraction,
+          "DentalTrauma" AS dental_trauma,
+          "CurrentToothache" AS current_toothache,
+          "ToothSensitivity" AS tooth_sensitivity,
+          "BleedingGums" AS bleeding_gums,
+          "BrushingFrequency" AS brushing_frequency,
+          "FluorideToothpaste" AS fluoride_toothpaste,
+          "SugarConsumption" AS sugar_consumption,
+          "OtherDentalHistory" AS other_dental_history,
+          "ChiefComplaint" AS chief_complaint,
+          "FacialSymmetry" AS facial_symmetry,
+          "FacialSwelling" AS facial_swelling,
+          "Lymphadenopathy" AS lymphadenopathy,
+          "MouthOpening" AS mouth_opening,
+          "OralHygiene" AS oral_hygiene,
+          "Plaque" AS plaque,
+          "Calculus" AS calculus,
+          "GingivalCondition" AS gingival_condition,
+          "Caries" AS caries,
+          "MissingTeeth" AS missing_teeth,
+          "FracturedTeeth" AS fractured_teeth,
+          "MucosalLesions" AS mucosal_lesions,
+          "Malocclusion" AS malocclusion,
+          "Diagnoses" AS diagnoses,
+          "FluorideDone" AS fluoride_done,
+          "FluorideDate" AS fluoride_date,
+          "FluorideOperator" AS fluoride_operator,
+          "FluorideToothNumbers" AS fluoride_tooth_numbers,
+          "SealantDone" AS sealant_done,
+          "SealantDate" AS sealant_date,
+          "SealantOperator" AS sealant_operator,
+          "SealantToothNumbers" AS sealant_tooth_numbers,
+          "SdfDone" AS sdf_done,
+          "SdfDate" AS sdf_date,
+          "SdfOperator" AS sdf_operator,
+          "SdfToothNumbers" AS sdf_tooth_numbers,
+          "ScalingDone" AS scaling_done,
+          "ScalingDate" AS scaling_date,
+          "ScalingOperator" AS scaling_operator,
+          "ScalingToothNumbers" AS scaling_tooth_numbers,
+          "ReferredFor" AS referred_for,
+          "ReferralPriority" AS referral_priority,
+          "ReferralNotes" AS referral_notes,
+          "RecommendedFacility" AS recommended_facility,
+          "Remarks" AS remarks,
+          "ImageFileId" AS image_file_id
+        FROM "DentalConsults"
+      - >
+        SELECT
+          "Id" AS id,
+          "Version" AS version,
+          "UpdatedAt" AS updated_at,
+          "Date" AS date,
+          "PastMedicalHistory" AS past_medical_history,
+          "Consultation" AS consultation,
+          "TreatmentPlan" AS treatment_plan,
+          "ReferredFor" AS referred_for,
+          "ReferralNotes" AS referral_notes,
+          "Remarks" AS remarks,
+          "DoctorId" AS doctor_id,
+          "VisitId" AS visit_id
+        FROM "Consults"
+      - >
+        SELECT
+          "Id" AS id,
+          "Version" AS version,
+          "UpdatedAt" AS updated_at,
+          "Details" AS details,
+          "Category" AS category,
+          "CodingSystem" AS coding_system,
+          "Code" AS code,
+          "CodeDisplay" AS code_display,
+          "ConsultId" AS consult_id
+        FROM "Diagnoses"
+      - >
+        SELECT
+          "Id" AS id,
+          "Version" AS version,
+          "UpdatedAt" AS updated_at,
+          "Name" AS name,
+          "Remarks" AS remarks,
+          "IsActive" AS is_active,
+          "CreatedAt" AS created_at
+        FROM "ReferralPartners"
+      - >
+        SELECT
+          "Id" AS id,
+          "Version" AS version,
+          "UpdatedAt" AS updated_at,
+          "ReferredFor" AS referred_for,
+          "ReferralNotes" AS referral_notes,
+          "ReferralState" AS referral_state,
+          "ReferralOutcome" AS referral_outcome,
+          "ConsultId" AS consult_id,
+          "CreatedAt" AS created_at,
+          "ReferredToId" AS referred_to_id,
+          "MemberInChargeId" AS member_in_charge_id,
+          "GuardiansContacted" AS guardians_contacted,
+          "ClassOfService" AS class_of_service,
+          "DescriptionOfService" AS description_of_service,
+          "PatientSummaryFromScreening" AS patient_summary_from_screening,
+          "RemarksAtBooth" AS remarks_at_booth,
+          "MemberOnRunId" AS member_on_run_id,
+          "PresentAtReferralParty" AS present_at_referral_party,
+          "ReferralPartyResults" AS referral_party_results,
+          "FollowUp" AS follow_up,
+          "DoctorsUpdated" AS doctors_updated,
+          "AmountPaidUsd" AS amount_paid_usd,
+          "AmountPaidRiels" AS amount_paid_riels,
+          "MemberWhoPaidId" AS member_who_paid_id
+        FROM "Referrals"
+      - >
+        SELECT
+          "Id" AS id,
+          "Name" AS name,
+          "NormalizedName" AS normalized_name,
+          "CreatedAt" AS created_at
+        FROM "Tags"
+      - >
+        SELECT
+          "Id" AS id,
+          "PatientId" AS patient_id,
+          "TagId" AS tag_id
+        FROM "PatientTags"
+      - >
+        SELECT
+          "Id" AS id,
+          "Version" AS version,
+          "UpdatedAt" AS updated_at,
+          "Name" AS name,
+          "UnitOfMeasurement" AS unit_of_measurement,
+          "FallBelow" AS fall_below,
+          "Remarks" AS remarks,
+          "RxNormCode" AS rx_norm_code,
+          "AtcCode" AS atc_code
+        FROM "MedicationActiveIngredients"
+      - >
+        SELECT
+          "Id" AS id,
+          "Version" AS version,
+          "UpdatedAt" AS updated_at,
+          "Name" AS name,
+          "ActiveIngredientId" AS active_ingredient_id,
+          "Remarks" AS remarks
+        FROM "MedicationBrands"
+      - >
+        SELECT
+          "Id" AS id,
+          "Version" AS version,
+          "UpdatedAt" AS updated_at,
+          "MedicationBrandId" AS medication_brand_id,
+          "Quantity" AS quantity,
+          "Expiry" AS expiry,
+          "Location" AS location,
+          "StockStatus" AS stock_status,
+          "Remarks" AS remarks
+        FROM "MedicationStocks"
+      - >
+        SELECT
+          "Id" AS id,
+          "Version" AS version,
+          "UpdatedAt" AS updated_at,
+          "StockId" AS stock_id,
+          "Field" AS field,
+          "PreviousValue" AS previous_value,
+          "NewValue" AS new_value,
+          "UserId" AS user_id,
+          "CreatedAt" AS created_at
+        FROM "StockChanges"
+      - >
+        SELECT
+          "Id" AS id,
+          "Version" AS version,
+          "UpdatedAt" AS updated_at,
+          "ConsultId" AS consult_id,
+          "MedicationBrandId" AS medication_brand_id,
+          "DosageInstructions" AS dosage_instructions,
+          "Remarks" AS remarks,
+          "Status" AS status,
+          "Quantity" AS quantity,
+          "ApprovedById" AS approved_by_id,
+          "ApprovedAt" AS approved_at,
+          "CreatedAt" AS created_at
+        FROM "Orders"
+      - >
+        SELECT
+          "Id" AS id,
+          "Version" AS version,
+          "UpdatedAt" AS updated_at,
+          "PatientId" AS patient_id,
+          "FileName" AS file_name,
+          "StoredFileName" AS stored_file_name,
+          "Description" AS description,
+          "SizeBytes" AS size_bytes,
+          "IsDeleted" AS is_deleted,
+          "CreatedAt" AS created_at
+        FROM "Files"

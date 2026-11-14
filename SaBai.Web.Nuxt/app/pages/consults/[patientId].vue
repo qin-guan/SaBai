@@ -4,12 +4,12 @@ const { patient, visits, selectedVisitId, selectedVisit, isLoading } = usePatien
 
 const route = useRoute()
 const requestedConsultId = computed(() => {
-  const raw = typeof route.query.consult === 'string' ? Number(route.query.consult) : Number.NaN
-  return Number.isInteger(raw) && raw > 0 ? raw : null
+  const raw = typeof route.query.consult === 'string' ? route.query.consult.trim() : ''
+  return raw.length > 0 ? raw : null
 })
 const { data: requestedConsult, isLoading: isConsultLoading } = useConsult(requestedConsultId)
 
-const appliedConsultId = ref<number | null>(null)
+const appliedConsultId = ref<string | null>(null)
 watch(
   [requestedConsult, visits],
   ([consult, visitList]) => {

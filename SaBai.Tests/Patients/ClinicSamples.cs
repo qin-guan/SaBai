@@ -35,7 +35,7 @@ internal static class ClinicSamples
 
     public static async Task<CreatePatientResponse> RegisterAsync(
         HttpClient client,
-        int villageCodeId,
+        Guid villageCodeId,
         string name,
         string? identificationNumber = null,
         bool withVitals = false

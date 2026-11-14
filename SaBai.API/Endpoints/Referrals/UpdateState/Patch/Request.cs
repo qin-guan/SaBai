@@ -5,7 +5,7 @@ namespace SaBai.API.Endpoints.Referrals.UpdateState.Patch;
 /// <summary>New referral state. An omitted outcome is not overwritten.</summary>
 public sealed record Request
 {
-    public int Id { get; init; }
+    public Guid Id { get; init; }
 
     public ReferralState? ReferralState { get; init; }
 

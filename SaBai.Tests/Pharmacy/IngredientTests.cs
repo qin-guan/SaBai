@@ -28,7 +28,7 @@ public sealed class IngredientTests(AppFixture fixture)
             },
             ApiJson.Options
         );
-        var id = ClinicSetup.ReadInt(
+        var id = ClinicSetup.ReadGuid(
             await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
             "id"
         );
@@ -91,7 +91,7 @@ public sealed class IngredientTests(AppFixture fixture)
 
         // Act
         var response = await client.PutAsJsonAsync(
-            "/medication-ingredients/99999999",
+            $"/medication-ingredients/{ClinicSetup.MissingId}",
             new
             {
                 name,
@@ -155,7 +155,7 @@ public sealed class IngredientTests(AppFixture fixture)
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.Unauthorized);
     }
 
-    private static async Task<int> CreateIngredientAsync(HttpClient client, string name)
+    private static async Task<Guid> CreateIngredientAsync(HttpClient client, string name)
     {
         var response = await client.PostAsJsonAsync(
             "/medication-ingredients",
@@ -168,13 +168,13 @@ public sealed class IngredientTests(AppFixture fixture)
             ApiJson.Options
         );
         response.EnsureSuccessStatusCode();
-        return ClinicSetup.ReadInt(
+        return ClinicSetup.ReadGuid(
             await response.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
             "id"
         );
     }
 
-    private static async Task CreateBrandAsync(HttpClient client, string name, int ingredientId)
+    private static async Task CreateBrandAsync(HttpClient client, string name, Guid ingredientId)
     {
         var response = await client.PostAsJsonAsync(
             "/medication-brands",
@@ -189,7 +189,7 @@ public sealed class IngredientTests(AppFixture fixture)
         response.EnsureSuccessStatusCode();
     }
 
-    private static IngredientItem Find(string body, int id)
+    private static IngredientItem Find(string body, Guid id)
     {
         var ingredients =
             JsonSerializer.Deserialize<List<IngredientItem>>(body, ApiJson.Options)
@@ -198,5 +198,5 @@ public sealed class IngredientTests(AppFixture fixture)
             ?? throw new InvalidOperationException($"Ingredient {id} was not listed: {body}");
     }
 
-    private sealed record IngredientItem(int Id, string Name);
+    private sealed record IngredientItem(Guid Id, string Name);
 }

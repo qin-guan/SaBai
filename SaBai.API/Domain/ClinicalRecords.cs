@@ -1,13 +1,17 @@
 namespace SaBai.API.Domain;
 
-public sealed class Vitals
+public sealed class Vitals : ISyncEntity
 {
     /// <summary>When the record was first saved; stamped by <c>AppDbContext</c>. Null for records from before it was tracked.</summary>
     public DateTimeOffset? RecordedAt { get; set; }
 
-    public int Id { get; set; }
+    public Guid Id { get; set; } = Guid.CreateVersion7();
 
-    public int VisitId { get; set; }
+    public int Version { get; set; } = 1;
+
+    public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+
+    public Guid VisitId { get; set; }
 
     public Visit Visit { get; set; } = null!;
 
@@ -43,14 +47,18 @@ public sealed class Vitals
     public ChildVitals? ChildVitals { get; set; }
 }
 
-public sealed class Eyesight
+public sealed class Eyesight : ISyncEntity
 {
     /// <summary>When the record was first saved; stamped by <c>AppDbContext</c>. Null for records from before it was tracked.</summary>
     public DateTimeOffset? RecordedAt { get; set; }
 
-    public int Id { get; set; }
+    public Guid Id { get; set; } = Guid.CreateVersion7();
 
-    public int VisitId { get; set; }
+    public int Version { get; set; } = 1;
+
+    public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+
+    public Guid VisitId { get; set; }
 
     public Visit Visit { get; set; } = null!;
 
@@ -74,11 +82,15 @@ public sealed class Eyesight
     public string? RightPrescribedGlassesDegree { get; set; }
 }
 
-public sealed class PubertyAssessment
+public sealed class PubertyAssessment : ISyncEntity
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; } = Guid.CreateVersion7();
 
-    public int VitalsId { get; set; }
+    public int Version { get; set; } = 1;
+
+    public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+
+    public Guid VitalsId { get; set; }
 
     public Vitals Vitals { get; set; } = null!;
 
@@ -106,11 +118,15 @@ public sealed class PubertyAssessment
     public string? AdditionalNotes { get; set; }
 }
 
-public sealed class ChildVitals
+public sealed class ChildVitals : ISyncEntity
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; } = Guid.CreateVersion7();
 
-    public int VitalsId { get; set; }
+    public int Version { get; set; } = 1;
+
+    public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+
+    public Guid VitalsId { get; set; }
 
     public Vitals Vitals { get; set; } = null!;
 

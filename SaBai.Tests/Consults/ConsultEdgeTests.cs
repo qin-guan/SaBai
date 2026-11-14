@@ -20,7 +20,7 @@ public sealed class ConsultEdgeTests(AppFixture fixture)
             "/consults",
             new
             {
-                visitId = 99999999,
+                visitId = ClinicSetup.MissingId,
                 diagnoses = new[] { new { details, category = "Respiratory" } },
             },
             ApiJson.Options
@@ -57,7 +57,7 @@ public sealed class ConsultEdgeTests(AppFixture fixture)
         await client.LoginAsync();
 
         // Act
-        var response = await client.GetAsync("/consults/99999999");
+        var response = await client.GetAsync($"/consults/{ClinicSetup.MissingId}");
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.NotFound);
@@ -72,7 +72,7 @@ public sealed class ConsultEdgeTests(AppFixture fixture)
 
         // Act
         var response = await client.PatchAsJsonAsync(
-            "/consults/99999999",
+            $"/consults/{ClinicSetup.MissingId}",
             new { consultation = "absent" },
             ApiJson.Options
         );
@@ -89,7 +89,7 @@ public sealed class ConsultEdgeTests(AppFixture fixture)
         await client.LoginAsync();
 
         // Act
-        var response = await client.DeleteAsync("/consults/99999999");
+        var response = await client.DeleteAsync($"/consults/{ClinicSetup.MissingId}");
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.NotFound);
@@ -165,7 +165,7 @@ public sealed class ConsultEdgeTests(AppFixture fixture)
             .IsTrue();
     }
 
-    private static async Task<(int PatientId, int VisitId)> RegisterAsync(HttpClient client)
+    private static async Task<(Guid PatientId, Guid VisitId)> RegisterAsync(HttpClient client)
     {
         var suffix = ClinicSetup.Suffix();
         var villageId = await ClinicSetup.CreateVillageAsync(client, $"C{suffix}");

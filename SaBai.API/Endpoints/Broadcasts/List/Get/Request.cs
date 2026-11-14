@@ -9,5 +9,5 @@ public sealed record Request
 
     public int? Limit { get; init; }
 
-    public int? Since { get; init; }
+    public Guid? Since { get; init; }
 }

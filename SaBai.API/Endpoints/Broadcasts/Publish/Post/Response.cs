@@ -4,7 +4,7 @@ namespace SaBai.API.Endpoints.Broadcasts.Publish.Post;
 
 /// <summary>Broadcast after a publish attempt. PublishedAt is set only once.</summary>
 public sealed record Response(
-    int Id,
+    Guid Id,
     string Title,
     string Body,
     BroadcastSeverity Severity,

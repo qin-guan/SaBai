@@ -1,29 +1,25 @@
 import { useQuery } from "@tanstack/vue-query";
 import type { MaybeRefOrGetter } from "vue";
-import { saBaiAPIEndpointsPatientsPhotoGetEndpoint } from "@sabai/sdk/clients";
 
 /**
- * Loads a patient's profile photo as an object URL. Photos sit behind bearer
- * auth, so an `<img src>` cannot fetch them directly.
+ * Loads a patient's profile photo as an object URL. Photos sit behind cookie
+ * auth, so an `<img src>` cannot fetch them directly; the Service Worker
+ * caches `/api/patients/:id/photo` with StaleWhileRevalidate for offline viewing.
  */
 export function usePatientPhoto(
-  patientId: MaybeRefOrGetter<number>,
+  patientId: MaybeRefOrGetter<string | number>,
   enabled: MaybeRefOrGetter<boolean> = true,
 ) {
   const { data } = useQuery({
-    queryKey: computed(() => queryKeys.patientPhoto(toValue(patientId))),
-    enabled: computed(() => toValue(enabled) && toValue(patientId) > 0),
+    queryKey: computed(() => ["patientPhoto", String(toValue(patientId))]),
+    enabled: computed(() => Boolean(toValue(enabled)) && Boolean(toValue(patientId))),
     staleTime: 5 * 60 * 1000,
     retry: false,
     queryFn: async () => {
-      const result = (await saBaiAPIEndpointsPatientsPhotoGetEndpoint({
-        ...apiConfig,
-        path: { id: toValue(patientId) },
-        responseType: "blob",
-        throwOnError: false,
-      })) as unknown as { status: number; data?: Blob | null };
-      if (result.status !== 200) return null;
-      return result.data ?? null;
+      const id = String(toValue(patientId));
+      const res = await fetch(`/api/patients/${id}/photo`, { credentials: "include" });
+      if (!res.ok) return null;
+      return await res.blob();
     },
   });
 

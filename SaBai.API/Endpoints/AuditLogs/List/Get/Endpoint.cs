@@ -61,7 +61,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
         if (req.Before is { } before)
         {
-            query = query.Where(x => x.Id < before);
+            query = query.Where(x => x.Id.CompareTo(before) < 0);
         }
 
         var take = req.Take ?? DefaultTake;
@@ -83,6 +83,6 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                 x.Request
             ))
             .ToList();
-        await Send.OkAsync(new Response(page, hasMore ? page[^1].Id : null), ct);
+        await Send.OkAsync(new Response(page, hasMore ? page[^1].Id : (Guid?)null), ct);
     }
 }

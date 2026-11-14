@@ -48,7 +48,7 @@ public sealed class GlassesTests(AppFixture fixture)
             "/glasses",
             new
             {
-                visitId = 99999999,
+                visitId = ClinicSetup.MissingId,
                 leftGlassesDegree = "6/12",
                 notes = "trial",
             },
@@ -92,7 +92,7 @@ public sealed class GlassesTests(AppFixture fixture)
             ApiJson.Options
         );
         created.EnsureSuccessStatusCode();
-        var id = ClinicSetup.ReadInt(
+        var id = ClinicSetup.ReadGuid(
             await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
             "id"
         );
@@ -114,7 +114,7 @@ public sealed class GlassesTests(AppFixture fixture)
         await Assert.That(cleared).IsTrue();
     }
 
-    private static async Task<(int PatientId, int VisitId)> RegisterAsync(HttpClient client)
+    private static async Task<(Guid PatientId, Guid VisitId)> RegisterAsync(HttpClient client)
     {
         var suffix = ClinicSetup.Suffix();
         var villageId = await ClinicSetup.CreateVillageAsync(client, $"G{suffix}");

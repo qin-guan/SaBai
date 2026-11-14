@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
  * opens vitals, confirming first if a visit was opened recently.
  */
 const props = withDefaults(defineProps<{
-  patientId: number
+  patientId: string
   name: string
   size?: 'default' | 'sm'
 }>(), { size: 'default' })

@@ -1,7 +1,7 @@
 namespace SaBai.API.Endpoints.Referrals.UpdateMoney.Patch;
 
 public sealed record Request(
-    int Id,
+    Guid Id,
     decimal? AmountPaidUsd,
     int? AmountPaidRiels,
     Guid? MemberWhoPaidId

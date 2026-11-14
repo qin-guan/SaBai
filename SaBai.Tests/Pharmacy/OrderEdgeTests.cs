@@ -21,7 +21,7 @@ public sealed class OrderEdgeTests(AppFixture fixture)
             "/orders",
             new
             {
-                consultId = 99999999,
+                consultId = ClinicSetup.MissingId,
                 medicationBrandId = brandId,
                 quantity = 1,
                 dosageInstructions = "1 tablet daily",
@@ -171,7 +171,7 @@ public sealed class OrderEdgeTests(AppFixture fixture)
         await client.LoginAsync(ClinicApi.PharmacistEmail);
 
         // Act
-        var response = await client.GetAsync("/orders/99999999");
+        var response = await client.GetAsync($"/orders/{ClinicSetup.MissingId}");
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.NotFound);
@@ -200,7 +200,7 @@ public sealed class OrderEdgeTests(AppFixture fixture)
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.Unauthorized);
     }
 
-    private static async Task<int> CreateBrandAsync(
+    private static async Task<Guid> CreateBrandAsync(
         HttpClient client,
         string suffix,
         string? name = null
@@ -217,7 +217,7 @@ public sealed class OrderEdgeTests(AppFixture fixture)
             ApiJson.Options
         );
         ingredient.EnsureSuccessStatusCode();
-        var ingredientId = ClinicSetup.ReadInt(
+        var ingredientId = ClinicSetup.ReadGuid(
             await ingredient.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
             "id"
         );
@@ -232,15 +232,15 @@ public sealed class OrderEdgeTests(AppFixture fixture)
             ApiJson.Options
         );
         brand.EnsureSuccessStatusCode();
-        return ClinicSetup.ReadInt(
+        return ClinicSetup.ReadGuid(
             await brand.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
             "id"
         );
     }
 
-    private static async Task<int> CreateStockAsync(
+    private static async Task<Guid> CreateStockAsync(
         HttpClient client,
-        int brandId,
+        Guid brandId,
         int quantity,
         string location
     )
@@ -258,23 +258,23 @@ public sealed class OrderEdgeTests(AppFixture fixture)
             ApiJson.Options
         );
         response.EnsureSuccessStatusCode();
-        return ClinicSetup.ReadInt(
+        return ClinicSetup.ReadGuid(
             await response.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
             "id"
         );
     }
 
-    private static async Task<int> CreateConsultIdAsync(HttpClient client)
+    private static async Task<Guid> CreateConsultIdAsync(HttpClient client)
     {
         var villageId = await ClinicSetup.CreateVillageAsync(client);
         var (_, visitId) = await ClinicSetup.RegisterPatientAsync(client, villageId);
         return await ClinicSetup.CreateConsultAsync(client, visitId);
     }
 
-    private static async Task<int> CreateOrderAsync(
+    private static async Task<Guid> CreateOrderAsync(
         HttpClient client,
-        int consultId,
-        int brandId,
+        Guid consultId,
+        Guid brandId,
         int quantity
     )
     {
@@ -290,13 +290,13 @@ public sealed class OrderEdgeTests(AppFixture fixture)
             ApiJson.Options
         );
         response.EnsureSuccessStatusCode();
-        return ClinicSetup.ReadInt(
+        return ClinicSetup.ReadGuid(
             await response.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
             "id"
         );
     }
 
-    private static StockLot FindLot(string body, int stockId)
+    private static StockLot FindLot(string body, Guid stockId)
     {
         var stocks =
             JsonSerializer.Deserialize<List<StockLot>>(body, ApiJson.Options)
@@ -305,5 +305,5 @@ public sealed class OrderEdgeTests(AppFixture fixture)
             ?? throw new InvalidOperationException($"Stock {stockId} was not listed: {body}");
     }
 
-    private sealed record StockLot(int Id, int Quantity, string Location);
+    private sealed record StockLot(Guid Id, int Quantity, string Location);
 }

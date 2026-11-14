@@ -19,13 +19,20 @@ import {
 } from '~/utils/referral'
 
 const sampleReferral: ReferralListItem = {
-  id: 1,
-  consultId: 10,
-  doctorId: '00000000-0000-0000-0000-000000000001',
-  patientId: 42,
+  id: '01930000-0000-7000-8000-000000000001',
+  consultId: '01930000-0000-7000-8000-000000000010',
+  visitId: '01930000-0000-7000-8000-000000000020',
+  patientId: '01930000-0000-7000-8000-000000000042',
   patientName: 'Sokha Chan',
+  patientNumber: 42,
+  patientDisplayId: 'SB0042',
+  patientDateOfBirth: '1990-01-01T00:00:00Z',
+  patientContactNo: '012345678',
+  patientHasPoorCard: false,
+  patientHasBS2Card: false,
+  patientHasSabaiCard: true,
   hasPhoto: true,
-  villageCodeId: 2,
+  villageCodeId: '01930000-0000-7000-8000-000000000002',
   villageCode: 'SB',
   villageColorHex: '#2563eb',
   referredFor: 'Diagnostic',
@@ -33,7 +40,26 @@ const sampleReferral: ReferralListItem = {
   referralState: 'New',
   referralOutcome: null,
   createdAt: '2026-11-10T08:00:00Z',
+  updatedAt: '2026-11-10T08:00:00Z',
   consultDate: '2026-11-10T07:45:00Z',
+  doctorId: '01930000-0000-7000-8000-000000000099',
+  doctorName: 'Dr. Lim',
+  doctorNickname: 'Dr. Lim',
+  referredToId: null,
+  memberInChargeId: null,
+  guardiansContacted: null,
+  classOfService: null,
+  descriptionOfService: null,
+  patientSummaryFromScreening: null,
+  remarksAtBooth: null,
+  memberOnRunId: null,
+  presentAtReferralParty: false,
+  referralPartyResults: null,
+  followUp: false,
+  doctorsUpdated: false,
+  amountPaidUsd: null,
+  amountPaidRiels: null,
+  memberWhoPaidId: null,
 }
 
 describe('referral constants & options', () => {
@@ -118,8 +144,8 @@ describe('matchesReferral filtering', () => {
   })
 
   it('filters by villageCodeId', () => {
-    expect(matchesReferral(sampleReferral, { villageCodeId: 2 })).toBe(true)
-    expect(matchesReferral(sampleReferral, { villageCodeId: 99 })).toBe(false)
+    expect(matchesReferral(sampleReferral, { villageCodeId: '01930000-0000-7000-8000-000000000002' })).toBe(true)
+    expect(matchesReferral(sampleReferral, { villageCodeId: '01930000-0000-7000-8000-000000000099' })).toBe(false)
   })
 
   it('filters by referralState and multiselect referralStates', () => {

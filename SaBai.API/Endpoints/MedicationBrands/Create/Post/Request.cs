@@ -5,7 +5,7 @@ public sealed record Request
 {
     public required string Name { get; init; }
 
-    public int ActiveIngredientId { get; init; }
+    public Guid ActiveIngredientId { get; init; }
 
     public required string Remarks { get; init; }
 }

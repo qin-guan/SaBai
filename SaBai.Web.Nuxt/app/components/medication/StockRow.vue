@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { PhArrowsSplit, PhFloppyDisk, PhPencilSimple, PhX } from '@phosphor-icons/vue'
-import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { toast } from 'vue-sonner'
-import { saBaiAPIEndpointsMedicationStockUpdatePatchEndpoint } from '@sabai/sdk/clients'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -17,6 +15,7 @@ const props = defineProps<{ item: MedicationStockRow }>()
 const emit = defineEmits<{ split: [item: MedicationStockRow] }>()
 
 const isEditing = ref(false)
+const isSaving = ref(false)
 const initial = () => ({
   location: props.item.location,
   stockStatus: props.item.stockStatus as string,
@@ -41,31 +40,9 @@ function cancel() {
   nextTick(() => (editButton.value?.$el as HTMLElement | undefined)?.focus())
 }
 
-const queryClient = useQueryClient()
-const update = useMutation({
-  mutationFn: () =>
-    saBaiAPIEndpointsMedicationStockUpdatePatchEndpoint({
-      ...apiConfig,
-      path: { id: props.item.id },
-      body: {
-        location: form.value.location,
-        stockStatus: form.value.stockStatus as StockStatus,
-        remarks: form.value.remarks,
-      },
-      throwOnError: true,
-    }).unwrap(),
-  onSuccess: () => {
-    toast.success('Successfully updated!')
-    queryClient.invalidateQueries({ queryKey: queryKeys.medicationStock() })
-    isEditing.value = false
-  },
-  onError: (err) => {
-    console.error(err)
-    toast.error(getApiErrorMessage(err, 'An error has occurred while updating the stock. Refresh and try again.'))
-  },
-})
-
-function save() {
+async function save() {
+  if (isSaving.value)
+    return
   locationError.value = form.value.location.trim() ? null : 'Missing Location!'
   if (locationError.value)
     return
@@ -73,7 +50,33 @@ function save() {
     toast.error('No fields changed!')
     return
   }
-  update.mutate()
+
+  isSaving.value = true
+  try {
+    const db = getPowerSyncInstance()
+    await db.execute(
+      `UPDATE medication_stocks
+       SET location = ?, stock_status = ?, remarks = ?, updated_at = ?
+       WHERE id = ?`,
+      [
+        form.value.location.trim(),
+        form.value.stockStatus,
+        form.value.remarks.trim() || null,
+        new Date().toISOString(),
+        props.item.id,
+      ],
+    )
+    await refreshPendingCrudCount()
+    toast.success('Successfully updated!')
+    isEditing.value = false
+  }
+  catch (err) {
+    console.error(err)
+    toast.error('An error has occurred while updating the stock. Refresh and try again.')
+  }
+  finally {
+    isSaving.value = false
+  }
 }
 
 function onKeydown(event: KeyboardEvent) {
@@ -128,7 +131,7 @@ function onKeydown(event: KeyboardEvent) {
       {{ item.quantity }}
     </TableCell>
     <TableCell data-label="Expiry" class="tabular-nums">
-      {{ new Date(item.expiry).toLocaleDateString() }}
+      {{ item.expiry ? new Date(item.expiry).toLocaleDateString() : '-' }}
     </TableCell>
     <TableCell data-label="State" class="min-w-32">
       <NativeSelect v-if="isEditing" v-model="form.stockStatus" :aria-label="`Status for ${item.brandName}`">
@@ -149,8 +152,8 @@ function onKeydown(event: KeyboardEvent) {
     <TableCell data-stack="actions">
       <div class="flex justify-end gap-1">
         <template v-if="isEditing">
-          <Button size="sm" variant="success" :disabled="update.isPending.value" @click="save">
-            <PhFloppyDisk aria-hidden="true" /> {{ update.isPending.value ? 'Saving…' : 'Save' }}
+          <Button size="sm" variant="success" :disabled="isSaving" @click="save">
+            <PhFloppyDisk aria-hidden="true" /> {{ isSaving ? 'Saving…' : 'Save' }}
           </Button>
           <Button size="sm" variant="outline" @click="cancel">
             <PhX aria-hidden="true" /> Cancel

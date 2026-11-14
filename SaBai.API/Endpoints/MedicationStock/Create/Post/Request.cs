@@ -5,7 +5,7 @@ namespace SaBai.API.Endpoints.MedicationStock.Create.Post;
 /// <summary>New stock lot. Quantity may be zero.</summary>
 public sealed record Request
 {
-    public int MedicationBrandId { get; init; }
+    public Guid MedicationBrandId { get; init; }
 
     public int Quantity { get; init; }
 

@@ -5,7 +5,7 @@ public sealed record Response(IReadOnlyList<Item> VillageCodes);
 
 /// <summary>A village code.</summary>
 public sealed record Item(
-    int Id,
+    Guid Id,
     string Code,
     string Name,
     string ColorHex,

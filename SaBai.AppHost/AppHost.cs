@@ -7,12 +7,14 @@ var builder = DistributedApplication.CreateBuilder(args);
 var qdrant = builder.AddQdrant("qdrant").WithDataVolume();
 var postgres = builder
     .AddPostgres("postgres")
+    .WithArgs("-c", "wal_level=logical")
     .WithDataVolume();
 if (!builder.ExecutionContext.IsPublishMode)
 {
     postgres.WithPgAdmin();
 }
 var db = postgres.AddDatabase("sabai");
+var psDb = postgres.AddDatabase("powersync-db", "powersync");
 
 var rustFsAccessKey = builder.AddParameter("rustFsAccessKey", "rustfsadmin");
 var rustFsSecretKey = builder.AddParameter("rustFsSecretKey", "rustfsadmin", secret: true);
@@ -93,21 +95,36 @@ else
     }
 }
 
+var apiHttp = api.GetEndpoint("http");
+
+var powersync = builder
+    .AddContainer("powersync", "journeyapps/powersync-service", "latest")
+    .WithBindMount("./powersync", "/config")
+    .WithArgs("start", "-r", "unified", "-c", "/config/service.yaml")
+    .WithHttpEndpoint(port: 8089, targetPort: 8080, name: "http")
+    .WithEnvironment("PS_SOURCE_PG_URI", db.Resource.UriExpression)
+    .WithEnvironment("PS_STORAGE_PG_URI", psDb.Resource.UriExpression)
+    .WithEnvironment("PS_JWKS_URI", ReferenceExpression.Create($"{apiHttp}/.well-known/jwks.json"))
+    .WaitFor(api)
+    .WaitFor(psDb);
+
 if (!builder.ExecutionContext.IsPublishMode)
 {
     builder
         .AddNextJsApp("frontend", "../SaBai.Web")
         .WithPnpm(false)
-        .WithEnvironment("API_URL", api.GetEndpoint("http"))
+        .WithEnvironment("API_URL", apiHttp)
         .WithHttpEndpoint(port: 3000, env: "PORT")
         .WaitFor(api);
 
     builder
         .AddJavaScriptApp("frontend-nuxt", "../SaBai.Web.Nuxt", "dev")
         .WithPnpm(false)
-        .WithEnvironment("NUXT_API_URL", api.GetEndpoint("http"))
+        .WithEnvironment("NUXT_API_URL", apiHttp)
+        .WithEnvironment("NUXT_POWERSYNC_URL", powersync.GetEndpoint("http"))
         .WithHttpEndpoint(port: 3300, env: "PORT")
-        .WaitFor(api);
+        .WaitFor(api)
+        .WaitFor(powersync);
 }
 
 if (builder.ExecutionContext.IsPublishMode)
@@ -154,15 +171,25 @@ if (builder.ExecutionContext.IsPublishMode)
         }
     );
 
+    powersync.PublishAsDockerComposeService(
+        (_, service) =>
+        {
+            service.Name = "powersync";
+            service.Ports = ["8089:8080"];
+        }
+    );
+
     // Build from the repo root so pnpm can resolve the SDK workspace package.
     var frontend = builder
         .AddDockerfile("frontend", "..", "SaBai.Web.Nuxt/Dockerfile")
-        .WithEnvironment("NUXT_API_URL", api.GetEndpoint("http"))
+        .WithEnvironment("NUXT_API_URL", apiHttp)
+        .WithEnvironment("NUXT_POWERSYNC_URL", powersync.GetEndpoint("http"))
         .WithEnvironment("PORT", "3000")
         .WithEnvironment("HOSTNAME", "0.0.0.0")
         .WithHttpEndpoint(port: 3000, targetPort: 3000)
         .WithOtlpExporter()
-        .WaitFor(api);
+        .WaitFor(api)
+        .WaitFor(powersync);
 
 
     frontend.PublishAsDockerComposeService(

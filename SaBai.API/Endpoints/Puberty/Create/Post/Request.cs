@@ -3,7 +3,7 @@ namespace SaBai.API.Endpoints.Puberty.Create.Post;
 /// <summary>Puberty assessment to record against vitals.</summary>
 public sealed record Request
 {
-    public int VitalsId { get; init; }
+    public Guid VitalsId { get; init; }
 
     public bool? Pubarche { get; init; }
 

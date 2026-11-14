@@ -85,7 +85,7 @@ public sealed class LargeClinicStressTests(AppFixture fixture)
             client.GetFromJsonAsync<WithLatestVisitResponse>("/patients/with-latest-visit", ApiJson.Options, ct)
         );
         var stress = body!.Patients.Where(x => x.VillageCodeId == data.VillageId).ToList();
-        var sample = stress.Single(x => x.Id == data.LastPatientId);
+        var sample = stress.Single(x => x.Id == data.PatientIds[^1]);
 
         // Assert
         await Assert.That(stress.Count).IsEqualTo(PatientCount);
@@ -114,7 +114,7 @@ public sealed class LargeClinicStressTests(AppFixture fixture)
         );
 
         // Assert
-        await Assert.That(byName!.Patients.Select(x => x.Id)).IsEquivalentTo(new[] { data.LastPatientId });
+        await Assert.That(byName!.Patients.Select(x => x.Id)).IsEquivalentTo(new[] { data.PatientIds[^1] });
         await Assert.That(byVillage!.Patients.Count).IsEqualTo(PatientCount);
         await Assert.That(nameElapsed).IsLessThan(TimeSpan.FromSeconds(5));
         await Assert.That(villageElapsed).IsLessThan(TimeSpan.FromSeconds(30));
@@ -127,7 +127,7 @@ public sealed class LargeClinicStressTests(AppFixture fixture)
         // Arrange
         var data = await SeedAsync(ct);
         var client = await ClientAsync();
-        var patientId = data.LastPatientId;
+        var patientId = data.PatientIds[^1];
 
         // Act: what opening one patient's record and a visit loads.
         var (visits, visitsElapsed) = await TimeAsync(() =>
@@ -170,7 +170,7 @@ public sealed class LargeClinicStressTests(AppFixture fixture)
         var random = new Random(42);
         var patientIds = Enumerable
             .Range(0, 200)
-            .Select(_ => data.FirstPatientId + random.Next(PatientCount))
+            .Select(_ => data.PatientIds[random.Next(data.PatientIds.Count)])
             .ToArray();
 
         // Act
@@ -238,7 +238,7 @@ public sealed class LargeClinicStressTests(AppFixture fixture)
         return (T)(await command.ExecuteScalarAsync(ct))!;
     }
 
-    private sealed record StressData(int VillageId, int FirstPatientId, int LastPatientId);
+    private sealed record StressData(Guid VillageId, IReadOnlyList<Guid> PatientIds);
 
     /// <summary>Seeds the stress clinic once per test session (and once per data volume).</summary>
     private async Task<StressData> SeedAsync(CancellationToken ct)
@@ -281,24 +281,23 @@ public sealed class LargeClinicStressTests(AppFixture fixture)
             await BulkLoadAsync(db, villageId, doctorId, ct);
         }
 
-        await using var range = new NpgsqlCommand(
-            """SELECT min("Id"), max("Id") FROM "Patients" WHERE "VillageCodeId" = @v""",
-            db
+        var patientIds = await ReadIdsAsync(
+            db,
+            """SELECT "Id" FROM "Patients" WHERE "VillageCodeId" = @v""",
+            villageId,
+            ct
         );
-        range.Parameters.AddWithValue("v", villageId);
-        await using var reader = await range.ExecuteReaderAsync(ct);
-        await reader.ReadAsync(ct);
-        return new StressData(villageId, reader.GetInt32(0), reader.GetInt32(1));
+        return new StressData(villageId, patientIds);
     }
 
-    private static async Task<int> EnsureVillageAsync(NpgsqlConnection db, CancellationToken ct)
+    private static async Task<Guid> EnsureVillageAsync(NpgsqlConnection db, CancellationToken ct)
     {
         await using var command = new NpgsqlCommand(
             """
             WITH found AS (SELECT "Id" FROM "VillageCodes" WHERE "Code" = @code),
             created AS (
-              INSERT INTO "VillageCodes" ("Code", "Name", "ColorHex", "IsVisible", "CreatedAt", "UpdatedAt")
-              SELECT @code, 'Stress test village', '#999999', false, now(), now()
+              INSERT INTO "VillageCodes" ("Id", "Version", "Code", "Name", "ColorHex", "IsVisible", "CreatedAt", "UpdatedAt")
+              SELECT @id, 1, @code, 'Stress test village', '#999999', false, now(), now()
               WHERE NOT EXISTS (SELECT 1 FROM found)
               RETURNING "Id"
             )
@@ -306,8 +305,9 @@ public sealed class LargeClinicStressTests(AppFixture fixture)
             """,
             db
         );
+        command.Parameters.AddWithValue("id", Guid.CreateVersion7());
         command.Parameters.AddWithValue("code", VillageCode);
-        return (int)(await command.ExecuteScalarAsync(ct))!;
+        return (Guid)(await command.ExecuteScalarAsync(ct))!;
     }
 
     /// <summary>
@@ -316,7 +316,7 @@ public sealed class LargeClinicStressTests(AppFixture fixture)
     /// a natural key (patient name; patient + visit date) to link the next.
     /// Table and column names come from the EF model so they follow mappings.
     /// </summary>
-    private static async Task BulkLoadAsync(NpgsqlConnection db, int villageId, Guid doctorId, CancellationToken ct)
+    private static async Task BulkLoadAsync(NpgsqlConnection db, Guid villageId, Guid doctorId, CancellationToken ct)
     {
         var stopwatch = Stopwatch.StartNew();
         await using var context = new AppDbContext(
@@ -332,6 +332,10 @@ public sealed class LargeClinicStressTests(AppFixture fixture)
             model,
             typeof(Patient),
             [
+                nameof(Patient.Id),
+                nameof(Patient.Version),
+                nameof(Patient.UpdatedAt),
+                nameof(Patient.Number),
                 nameof(Patient.Name),
                 nameof(Patient.VillageCodeId),
                 nameof(Patient.Gender),
@@ -347,8 +351,12 @@ public sealed class LargeClinicStressTests(AppFixture fixture)
             Enumerable.Range(0, PatientCount),
             async (w, i) =>
             {
+                await w.WriteAsync(Guid.CreateVersion7(), NpgsqlDbType.Uuid, ct);
+                await w.WriteAsync(1, NpgsqlDbType.Integer, ct);
+                await w.WriteAsync(now.AddYears(-3), NpgsqlDbType.TimestampTz, ct);
+                await w.WriteAsync(1_000_000 + i + 1, NpgsqlDbType.Integer, ct);
                 await w.WriteAsync(NameOf(i), NpgsqlDbType.Text, ct);
-                await w.WriteAsync(villageId, NpgsqlDbType.Integer, ct);
+                await w.WriteAsync(villageId, NpgsqlDbType.Uuid, ct);
                 await WriteEnumAsync(w, model, i % 2 == 0 ? Gender.Female : Gender.Male, ct);
                 await w.WriteAsync(now.AddYears(-5 - i % 70).AddDays(-(i % 365)), NpgsqlDbType.TimestampTz, ct);
                 await w.WriteAsync(i % 10 == 0 ? "Penicillin" : "None", NpgsqlDbType.Text, ct);
@@ -380,18 +388,21 @@ public sealed class LargeClinicStressTests(AppFixture fixture)
             db,
             model,
             typeof(Visit),
-            [nameof(Visit.PatientId), nameof(Visit.VillageCodeId), nameof(Visit.Date), nameof(Visit.Status)],
+            [nameof(Visit.Id), nameof(Visit.Version), nameof(Visit.UpdatedAt), nameof(Visit.PatientId), nameof(Visit.VillageCodeId), nameof(Visit.Date), nameof(Visit.Status)],
             visits,
             async (w, v) =>
             {
-                await w.WriteAsync(v.PatientId, NpgsqlDbType.Integer, ct);
-                await w.WriteAsync(villageId, NpgsqlDbType.Integer, ct);
+                await w.WriteAsync(Guid.CreateVersion7(), NpgsqlDbType.Uuid, ct);
+                await w.WriteAsync(1, NpgsqlDbType.Integer, ct);
+                await w.WriteAsync(v.Date, NpgsqlDbType.TimestampTz, ct);
+                await w.WriteAsync(v.PatientId, NpgsqlDbType.Uuid, ct);
+                await w.WriteAsync(villageId, NpgsqlDbType.Uuid, ct);
                 await w.WriteAsync(v.Date, NpgsqlDbType.TimestampTz, ct);
                 await w.WriteAsync(Visit.StartedStatus, NpgsqlDbType.Text, ct);
             },
             ct
         );
-        var visitRows = new List<(int Id, DateTimeOffset Date)>(visits.Count);
+        var visitRows = new List<(Guid Id, DateTimeOffset Date)>(visits.Count);
         await using (
             var command = new NpgsqlCommand(
                 """SELECT "Id", "Date" FROM "Visits" WHERE "VillageCodeId" = @v""",
@@ -404,7 +415,7 @@ public sealed class LargeClinicStressTests(AppFixture fixture)
             await using var reader = await command.ExecuteReaderAsync(ct);
             while (await reader.ReadAsync(ct))
             {
-                visitRows.Add((reader.GetInt32(0), reader.GetFieldValue<DateTimeOffset>(1)));
+                visitRows.Add((reader.GetGuid(0), reader.GetFieldValue<DateTimeOffset>(1)));
             }
         }
 
@@ -414,11 +425,14 @@ public sealed class LargeClinicStressTests(AppFixture fixture)
             db,
             model,
             typeof(Consult),
-            [nameof(Consult.VisitId), nameof(Consult.Date), nameof(Consult.DoctorId), nameof(Consult.Consultation), nameof(Consult.TreatmentPlan)],
+            [nameof(Consult.Id), nameof(Consult.Version), nameof(Consult.UpdatedAt), nameof(Consult.VisitId), nameof(Consult.Date), nameof(Consult.DoctorId), nameof(Consult.Consultation), nameof(Consult.TreatmentPlan)],
             visitRows,
             async (w, v) =>
             {
-                await w.WriteAsync(v.Id, NpgsqlDbType.Integer, ct);
+                await w.WriteAsync(Guid.CreateVersion7(), NpgsqlDbType.Uuid, ct);
+                await w.WriteAsync(1, NpgsqlDbType.Integer, ct);
+                await w.WriteAsync(v.Date.AddMinutes(40), NpgsqlDbType.TimestampTz, ct);
+                await w.WriteAsync(v.Id, NpgsqlDbType.Uuid, ct);
                 await w.WriteAsync(v.Date.AddMinutes(40), NpgsqlDbType.TimestampTz, ct);
                 await w.WriteAsync(doctorId, NpgsqlDbType.Uuid, ct);
                 await w.WriteAsync("Routine check-up; chest clear, no acute complaints.", NpgsqlDbType.Text, ct);
@@ -436,11 +450,14 @@ public sealed class LargeClinicStressTests(AppFixture fixture)
             db,
             model,
             typeof(Diagnosis),
-            [nameof(Diagnosis.ConsultId), nameof(Diagnosis.Details), nameof(Diagnosis.Category)],
+            [nameof(Diagnosis.Id), nameof(Diagnosis.Version), nameof(Diagnosis.UpdatedAt), nameof(Diagnosis.ConsultId), nameof(Diagnosis.Details), nameof(Diagnosis.Category)],
             consultIds,
             async (w, id) =>
             {
-                await w.WriteAsync(id, NpgsqlDbType.Integer, ct);
+                await w.WriteAsync(Guid.CreateVersion7(), NpgsqlDbType.Uuid, ct);
+                await w.WriteAsync(1, NpgsqlDbType.Integer, ct);
+                await w.WriteAsync(now, NpgsqlDbType.TimestampTz, ct);
+                await w.WriteAsync(id, NpgsqlDbType.Uuid, ct);
                 await w.WriteAsync("Upper respiratory tract infection", NpgsqlDbType.Text, ct);
                 await WriteEnumAsync(w, model, DiagnosisCategory.Respiratory, ct);
             },
@@ -450,11 +467,14 @@ public sealed class LargeClinicStressTests(AppFixture fixture)
             db,
             model,
             typeof(Eyesight),
-            [nameof(Eyesight.VisitId), nameof(Eyesight.RecordedAt), nameof(Eyesight.LeftEyeDegree), nameof(Eyesight.RightEyeDegree), nameof(Eyesight.Comments)],
+            [nameof(Eyesight.Id), nameof(Eyesight.Version), nameof(Eyesight.UpdatedAt), nameof(Eyesight.VisitId), nameof(Eyesight.RecordedAt), nameof(Eyesight.LeftEyeDegree), nameof(Eyesight.RightEyeDegree), nameof(Eyesight.Comments)],
             visitRows,
             async (w, v) =>
             {
-                await w.WriteAsync(v.Id, NpgsqlDbType.Integer, ct);
+                await w.WriteAsync(Guid.CreateVersion7(), NpgsqlDbType.Uuid, ct);
+                await w.WriteAsync(1, NpgsqlDbType.Integer, ct);
+                await w.WriteAsync(v.Date.AddMinutes(20), NpgsqlDbType.TimestampTz, ct);
+                await w.WriteAsync(v.Id, NpgsqlDbType.Uuid, ct);
                 await w.WriteAsync(v.Date.AddMinutes(20), NpgsqlDbType.TimestampTz, ct);
                 await w.WriteAsync("6/9", NpgsqlDbType.Text, ct);
                 await w.WriteAsync("6/12", NpgsqlDbType.Text, ct);
@@ -466,11 +486,13 @@ public sealed class LargeClinicStressTests(AppFixture fixture)
             db,
             model,
             typeof(DentalConsult),
-            [nameof(DentalConsult.VisitId), nameof(DentalConsult.RecordedAt), nameof(DentalConsult.UpdatedAt), nameof(DentalConsult.Diagnoses), nameof(DentalConsult.ChiefComplaint), nameof(DentalConsult.Toothache)],
+            [nameof(DentalConsult.Id), nameof(DentalConsult.Version), nameof(DentalConsult.VisitId), nameof(DentalConsult.RecordedAt), nameof(DentalConsult.UpdatedAt), nameof(DentalConsult.Diagnoses), nameof(DentalConsult.ChiefComplaint), nameof(DentalConsult.Toothache)],
             visitRows,
             async (w, v) =>
             {
-                await w.WriteAsync(v.Id, NpgsqlDbType.Integer, ct);
+                await w.WriteAsync(Guid.CreateVersion7(), NpgsqlDbType.Uuid, ct);
+                await w.WriteAsync(1, NpgsqlDbType.Integer, ct);
+                await w.WriteAsync(v.Id, NpgsqlDbType.Uuid, ct);
                 await w.WriteAsync(v.Date.AddMinutes(60), NpgsqlDbType.TimestampTz, ct);
                 await w.WriteAsync(v.Date.AddMinutes(60), NpgsqlDbType.TimestampTz, ct);
                 await w.WriteAsync(new List<string> { "Caries" }, NpgsqlDbType.Array | NpgsqlDbType.Text, ct);
@@ -488,15 +510,15 @@ public sealed class LargeClinicStressTests(AppFixture fixture)
         Console.WriteLine($"[stress] seeded {PatientCount} patients in {stopwatch.Elapsed.TotalSeconds:F1} s");
     }
 
-    private static async Task<List<int>> ReadIdsAsync(NpgsqlConnection db, string sql, int villageId, CancellationToken ct)
+    private static async Task<List<Guid>> ReadIdsAsync(NpgsqlConnection db, string sql, Guid villageId, CancellationToken ct)
     {
-        var ids = new List<int>();
+        var ids = new List<Guid>();
         await using var command = new NpgsqlCommand(sql, db);
         command.Parameters.AddWithValue("v", villageId);
         await using var reader = await command.ExecuteReaderAsync(ct);
         while (await reader.ReadAsync(ct))
         {
-            ids.Add(reader.GetInt32(0));
+            ids.Add(reader.GetGuid(0));
         }
         return ids;
     }

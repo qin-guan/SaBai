@@ -18,9 +18,9 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        if (req.VisitId < 1)
+        if (req.VisitId == Guid.Empty)
         {
-            throw new BadRequestException("visitId must be a positive integer.");
+            throw new BadRequestException("visitId is required.");
         }
 
         var visit = await db
@@ -77,7 +77,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
     private static PatientItem MapPatient(
         Patient patient,
         DateTimeOffset? lastVisitDate,
-        int? lastVisitId,
+        Guid? lastVisitId,
         IReadOnlyList<string> tags
     )
     {
@@ -96,8 +96,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             patient.ToGetReport,
             patient.VillageCodeId,
             code,
-            Patient.FormatDisplayId(code, patient.Id),
-            Patient.FormatFilterString(code, patient.Id, patient.ContactNo, patient.Name),
+            Patient.FormatDisplayId(code, patient.Number),
+            Patient.FormatFilterString(code, patient.Number, patient.ContactNo, patient.Name),
             lastVisitDate,
             lastVisitId,
             tags

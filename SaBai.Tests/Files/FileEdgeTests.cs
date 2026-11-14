@@ -14,7 +14,7 @@ public sealed class FileEdgeTests(AppFixture fixture)
         // Arrange
         var client = fixture.CreateApiClient();
         await client.LoginAsync(ClinicApi.PharmacistEmail);
-        using var content = Form(99999999, $"orphan-{ClinicSetup.Suffix()}.pdf", "orphan note");
+        using var content = Form(ClinicSetup.MissingId, $"orphan-{ClinicSetup.Suffix()}.pdf", "orphan note");
 
         // Act
         var response = await client.PostAsync("/files", content);
@@ -66,7 +66,7 @@ public sealed class FileEdgeTests(AppFixture fixture)
         await client.LoginAsync(ClinicApi.PharmacistEmail);
 
         // Act
-        var response = await client.GetAsync("/files/99999999");
+        var response = await client.GetAsync($"/files/{ClinicSetup.MissingId}");
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.NotFound);
@@ -173,16 +173,16 @@ public sealed class FileEdgeTests(AppFixture fixture)
         await Assert.That(listed!).IsEmpty();
     }
 
-    private static async Task<int> CreatePatientAsync(HttpClient client)
+    private static async Task<Guid> CreatePatientAsync(HttpClient client)
     {
         var villageId = await ClinicSetup.CreateVillageAsync(client);
         var (patientId, _) = await ClinicSetup.RegisterPatientAsync(client, villageId);
         return patientId;
     }
 
-    private static async Task<int> UploadAsync(
+    private static async Task<Guid> UploadAsync(
         HttpClient client,
-        int patientId,
+        Guid patientId,
         string fileName,
         string description
     )
@@ -191,10 +191,10 @@ public sealed class FileEdgeTests(AppFixture fixture)
         var response = await client.PostAsync("/files", content);
         response.EnsureSuccessStatusCode();
         var payload = await response.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
-        return ClinicSetup.ReadInt(payload[0], "id");
+        return ClinicSetup.ReadGuid(payload[0], "id");
     }
 
-    private static MultipartFormDataContent Form(int patientId, string fileName, string description)
+    private static MultipartFormDataContent Form(Guid patientId, string fileName, string description)
     {
         var content = new MultipartFormDataContent();
         content.Add(new StringContent(patientId.ToString()), "patientId");

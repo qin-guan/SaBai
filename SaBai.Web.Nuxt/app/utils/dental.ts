@@ -230,7 +230,7 @@ const fromBool = (value: boolean | null | undefined, yes: string, no: string) =>
 
 const toBool = (value: string, yes: string) => (value === "" ? null : value === yes);
 
-export function toDentalFormValues(data?: DentalResponse | null): DentalFormValues {
+export function toDentalFormValues(data?: Record<string, unknown> | null): DentalFormValues {
   const record = (data ?? {}) as Record<string, unknown>;
   const values: Record<string, unknown> = {};
   for (const name of YES_NO_NAMES) {

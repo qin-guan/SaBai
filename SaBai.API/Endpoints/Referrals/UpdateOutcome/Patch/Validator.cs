@@ -7,7 +7,7 @@ public sealed class Validator : Validator<Request>
 {
     public Validator()
     {
-        RuleFor(x => x.Id).GreaterThan(0);
+        RuleFor(x => x.Id).NotEmpty();
         RuleFor(x => x.ReferralOutcome).NotNull().MaximumLength(2000);
     }
 }

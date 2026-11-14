@@ -22,7 +22,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             ct
         );
 
-        if (req.PatientId is int patientId)
+        if (req.PatientId is Guid patientId)
         {
             await db
                 .Patients.AsNoTracking()
@@ -30,7 +30,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             visit.PatientId = patientId;
         }
 
-        if (req.VillageCodeId is int villageCodeId)
+        if (req.VillageCodeId is Guid villageCodeId)
         {
             await db
                 .VillageCodes.AsNoTracking()

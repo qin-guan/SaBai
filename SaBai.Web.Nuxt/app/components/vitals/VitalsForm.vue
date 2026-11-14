@@ -1,19 +1,13 @@
 <script setup lang="ts">
 import { PhFloppyDisk, PhWarning } from '@phosphor-icons/vue'
-import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { toast } from 'vue-sonner'
-import {
-  saBaiAPIEndpointsVitalsCreatePostEndpoint,
-  saBaiAPIEndpointsVitalsUpdateByVisitPatchEndpoint,
-} from '@sabai/sdk/clients'
-import type { SaBaiAPIDomainGenderKey, SaBaiAPIEndpointsVitalsCreatePostRequest } from '@sabai/sdk/types'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 
 const props = defineProps<{
-  visitId: number
+  visitId: string
   visitDate: string
-  patient: { dateOfBirth: string, gender: SaBaiAPIDomainGenderKey }
+  patient: { dateOfBirth: string, gender: string }
 }>()
 
 type NumberKey =
@@ -54,8 +48,8 @@ watch(
       for (const key of NUMBER_KEYS)
         values[key] = data[key] == null ? '' : String(data[key])
       values.diabetesMellitus = data.diabetesMellitus === true ? 'true' : data.diabetesMellitus === false ? 'false' : ''
-      values.urineTest = data.urineTest ?? ''
-      values.others = data.others ?? ''
+      values.urineTest = data.urineTest == null ? '' : String(data.urineTest)
+      values.others = data.others == null ? '' : String(data.others)
     }
     baseline.value = JSON.stringify(values)
     form.value = draft.resume(values)
@@ -83,37 +77,9 @@ const formEl = ref<HTMLFormElement>()
 // Times this form for the station wait estimate.
 const serviceTimer = useServiceTimer('vitals', formEl, () => form.value)
 
-const queryClient = useQueryClient()
-const onSuccess = () => {
-  serviceTimer.saved()
-  draft.clear(form.value)
-  queryClient.invalidateQueries({ queryKey: queryKeys.vitals(props.visitId) })
-  // Refresh the journey bars and station backlogs.
-  queryClient.invalidateQueries({ queryKey: queryKeys.patients() })
-  toast.success('Vitals saved successfully!')
-}
-const onError = (error: unknown) => toast.error(getApiErrorMessage(error, 'Failed to save vitals.'))
+const saving = ref(false)
 
-const create = useMutation({
-  mutationFn: (body: SaBaiAPIEndpointsVitalsCreatePostRequest) =>
-    saBaiAPIEndpointsVitalsCreatePostEndpoint({ ...apiConfig, body, throwOnError: true }).unwrap(),
-  onSuccess,
-  onError,
-})
-const update = useMutation({
-  mutationFn: (body: SaBaiAPIEndpointsVitalsCreatePostRequest) =>
-    saBaiAPIEndpointsVitalsUpdateByVisitPatchEndpoint({
-      ...apiConfig,
-      path: { visitId: props.visitId },
-      body,
-      throwOnError: true,
-    }).unwrap(),
-  onSuccess,
-  onError,
-})
-const saving = computed(() => create.isPending.value || update.isPending.value)
-
-function submit() {
+async function submit() {
   if (saving.value || isLoading.value)
     return
   if (!isDirty.value) {
@@ -121,29 +87,84 @@ function submit() {
     return
   }
   const data = form.value
-  // `null` marks an omitted/cleared measurement. The API expects JSON numbers.
-  // Note: the PATCH endpoint only applies non-null fields, so clearing an
-  // already-saved measurement cannot be persisted (same as SaBai.Web).
   const num = (v: string) => (v ? Number(v) : null)
-  const payload: SaBaiAPIEndpointsVitalsCreatePostRequest = {
-    visitId: props.visitId,
-    height: num(data.height),
-    weight: num(data.weight),
-    temperature: num(data.temperature),
-    systolic: num(data.systolic),
-    diastolic: num(data.diastolic),
-    heartRate: num(data.heartRate),
-    hemocueCount: num(data.hemocueCount),
-    diabetesMellitus: data.diabetesMellitus ? data.diabetesMellitus === 'true' : null,
-    urineTest: data.urineTest || null,
-    bloodGlucoseNonFasting: num(data.bloodGlucoseNonFasting),
-    bloodGlucoseFasting: num(data.bloodGlucoseFasting),
-    hba1c: num(data.hba1c),
-    others: data.others || null,
+  const diabetes = data.diabetesMellitus === 'true' ? 1 : data.diabetesMellitus === 'false' ? 0 : null
+  const urineTest = data.urineTest || null
+  const others = data.others || null
+  const now = new Date().toISOString()
+
+  saving.value = true
+  try {
+    const db = getPowerSyncInstance()
+    const existingId = vitalData.value?.id ? String(vitalData.value.id) : null
+    if (!existingId) {
+      await db.execute(
+        `INSERT INTO vitals (
+          id, visit_id, recorded_at, height, weight, temperature, systolic, diastolic,
+          heart_rate, hemocue_count, diabetes_mellitus, urine_test,
+          blood_glucose_non_fasting, blood_glucose_fasting, hba1c, others, version, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)`,
+        [
+          uuidv7(),
+          props.visitId,
+          now,
+          num(data.height),
+          num(data.weight),
+          num(data.temperature),
+          num(data.systolic),
+          num(data.diastolic),
+          num(data.heartRate),
+          num(data.hemocueCount),
+          diabetes,
+          urineTest,
+          num(data.bloodGlucoseNonFasting),
+          num(data.bloodGlucoseFasting),
+          num(data.hba1c),
+          others,
+          now,
+        ],
+      )
+    }
+    else {
+      await db.execute(
+        `UPDATE vitals
+         SET height = ?, weight = ?, temperature = ?, systolic = ?, diastolic = ?,
+             heart_rate = ?, hemocue_count = ?, diabetes_mellitus = ?, urine_test = ?,
+             blood_glucose_non_fasting = ?, blood_glucose_fasting = ?, hba1c = ?, others = ?,
+             updated_at = ?
+         WHERE id = ?`,
+        [
+          num(data.height),
+          num(data.weight),
+          num(data.temperature),
+          num(data.systolic),
+          num(data.diastolic),
+          num(data.heartRate),
+          num(data.hemocueCount),
+          diabetes,
+          urineTest,
+          num(data.bloodGlucoseNonFasting),
+          num(data.bloodGlucoseFasting),
+          num(data.hba1c),
+          others,
+          now,
+          existingId,
+        ],
+      )
+    }
+    await refreshPendingCrudCount()
+    serviceTimer.saved()
+    baseline.value = JSON.stringify(form.value)
+    draft.clear(form.value)
+    toast.success('Vitals saved!')
   }
-  if (!vitalData.value)
-    create.mutate(payload)
-  else update.mutate(payload)
+  catch (error) {
+    console.error('Error saving vitals:', error)
+    toast.error('Failed to save vitals.')
+  }
+  finally {
+    saving.value = false
+  }
 }
 
 useSaveShortcut(submit)
@@ -263,7 +284,7 @@ const diabetesLabelId = useId()
         collapsible
         collapse-key="growth-chart"
       >
-        <HeightWeightChart :age="patientAge" :height="chartHeight" :weight="chartWeight" :gender="props.patient.gender" />
+        <HeightWeightChart :age="patientAge" :height="chartHeight" :weight="chartWeight" :gender="props.patient.gender === 'female' ? 'female' : 'male'" />
       </AppPanel>
     </div>
 

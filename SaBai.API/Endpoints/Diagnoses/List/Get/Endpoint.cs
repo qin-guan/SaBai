@@ -17,9 +17,9 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, List<Response>
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
         var query = db.Diagnoses.AsNoTracking().AsQueryable();
-        if (req.ConsultId is > 0)
+        if (req.ConsultId is { } consultId && consultId != Guid.Empty)
         {
-            query = query.Where(x => x.ConsultId == req.ConsultId);
+            query = query.Where(x => x.ConsultId == consultId);
         }
 
         var diagnoses = await query

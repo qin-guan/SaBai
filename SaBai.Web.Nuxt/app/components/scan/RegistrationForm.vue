@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { PhMagnifyingGlass, PhUserPlus } from '@phosphor-icons/vue'
-import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { toast } from 'vue-sonner'
-import { saBaiAPIEndpointsPatientsCreatePostEndpoint } from '@sabai/sdk/clients'
 import { Button } from '@/components/ui/button'
 
 /** Registers a new patient with the captured photo, in the selected village. */
@@ -15,9 +13,9 @@ const draft = useFormDraft('register-patient', form)
 form.value = draft.resume(blankPatientForm())
 const errors = ref<Partial<Record<keyof PatientFormValues, string>>>({})
 const formEl = ref<HTMLFormElement>()
-const { selectedVillageCodeId } = useVillageCode()
+const { selectedVillageCodeId, selectedVillage } = useVillageCode()
 const { remember } = useRecentPatients()
-const lastCreated = ref<{ id: number, name: string, displayId: string, visitId: number } | null>(null)
+const lastCreated = ref<{ id: string, name: string, displayId: string, visitId: string } | null>(null)
 const blankJourney: Journey = {
   vitals: false,
   vision: false,
@@ -28,31 +26,10 @@ const blankJourney: Journey = {
   pharmacyPending: 0,
 }
 
-const queryClient = useQueryClient()
-const create = useMutation({
-  mutationFn: (values: PatientFormValues) =>
-    saBaiAPIEndpointsPatientsCreatePostEndpoint({
-      ...apiConfig,
-      body: {
-        name: values.name,
-        identificationNumber: values.identificationNumber,
-        contactNo: values.contactNo,
-        gender: values.gender as 'male' | 'female',
-        dateOfBirth: new Date(values.dateOfBirth).toISOString(),
-        drugAllergy: values.drugAllergy,
-        hasPoorCard: values.hasPoorCard,
-        hasBS2Card: values.hasBS2Card,
-        hasSabaiCard: values.hasSabaiCard,
-        toGetReport: false,
-        villageCodeId: selectedVillageCodeId.value!,
-        tags: values.tags,
-      } as never,
-      throwOnError: true,
-    }).unwrap(),
-})
+const isSaving = ref(false)
 
 async function submit() {
-  if (create.isPending.value)
+  if (isSaving.value)
     return
   errors.value = validatePatientForm(form.value)
   if (Object.keys(errors.value).length) {
@@ -68,35 +45,82 @@ async function submit() {
     return
   }
 
-  let patient
+  const patientId = uuidv7()
+  const visitId = uuidv7()
+  const now = new Date().toISOString()
+  const values = form.value
+  const villageCodeId = selectedVillageCodeId.value
+  const dob = new Date(values.dateOfBirth).toISOString()
+  const filterString = `${values.name} ${values.identificationNumber} ${values.contactNo}`.trim()
+
+  isSaving.value = true
   try {
-    patient = await create.mutateAsync(form.value)
+    const db = getPowerSyncInstance()
+    await db.writeTransaction(async (tx) => {
+      await tx.execute(
+        `INSERT INTO patients (
+          id, number, name, identification_number, contact_no, gender, date_of_birth,
+          drug_allergy, has_poor_card, has_bs2_card, has_sabai_card, to_get_report,
+          village_code_id, filter_string, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          patientId,
+          0,
+          values.name.trim(),
+          values.identificationNumber.trim() || null,
+          values.contactNo.trim() || null,
+          values.gender,
+          dob,
+          values.drugAllergy.trim() || 'None',
+          values.hasPoorCard ? 1 : 0,
+          values.hasBS2Card ? 1 : 0,
+          values.hasSabaiCard ? 1 : 0,
+          0,
+          villageCodeId,
+          filterString,
+          now,
+        ],
+      )
+      await tx.execute(
+        `INSERT INTO visits (id, patient_id, village_code_id, date, status)
+         VALUES (?, ?, ?, ?, ?)`,
+        [visitId, patientId, villageCodeId, now, 'Started'],
+      )
+    })
+    await syncLocalPatientTags(patientId, values.tags)
+    await refreshPendingCrudCount()
   }
   catch (error) {
     console.error('Error creating patient:', error)
-    toast.error(getApiErrorMessage(error, 'Failed to create patient. Please try again.'))
+    toast.error('Failed to create patient. Please try again.')
     return
   }
+  finally {
+    isSaving.value = false
+  }
 
-  remember(patient.id)
-  queryClient.invalidateQueries({ queryKey: queryKeys.patients() })
-  queryClient.invalidateQueries({ queryKey: queryKeys.tags() })
+  remember(patientId)
 
   // Best-effort: the patient already exists, so a failure here must not discard the registration.
-  try {
-    await setPatientPhotoAndFace(patient.id, image.value)
+  if (typeof navigator !== 'undefined' && !navigator.onLine) {
+    toast.warning('Patient created locally. Photo and face enrollment can be retried from the patient page once online.')
   }
-  catch (error) {
-    console.error('Error saving patient photo/face:', error)
-    toast.error('Patient created, but the photo or face could not be saved. You can retry from the patient page.')
+  else {
+    try {
+      await setPatientPhotoAndFace(patientId, image.value)
+    }
+    catch (error) {
+      console.error('Error saving patient photo/face:', error)
+      toast.error('Patient created, but the photo or face could not be saved. You can retry from the patient page.')
+    }
   }
 
-  toast.success('Patient created successfully!')
+  toast.success('Patient created!')
   lastCreated.value = {
-    id: patient.id,
-    name: patient.name,
-    displayId: patient.displayId,
-    visitId: patient.visitId,
+    id: patientId,
+    name: values.name.trim(),
+    displayId: `${selectedVillage.value?.code ?? ''}NEW`,
+    visitId,
   }
   image.value = null
   form.value = blankPatientForm()
@@ -152,9 +176,9 @@ useKeyShortcut('Escape', () => emit('match'))
     @keydown.enter="enterMovesToNextField">
       <PatientFields v-model="form" :errors="errors" />
       <SaveBar>
-        <Button type="submit" variant="success" :disabled="create.isPending.value">
+        <Button type="submit" variant="success" :disabled="isSaving">
           <PhUserPlus aria-hidden="true" />
-          {{ create.isPending.value ? 'Creating new patient...' : 'Create New Patient' }}
+          {{ isSaving ? 'Creating new patient...' : 'Create New Patient' }}
         </Button>
       </SaveBar>
     </form>

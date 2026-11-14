@@ -188,7 +188,7 @@ public sealed class PharmacyTests(AppFixture fixture)
             ApiJson.Options
         );
         consultResponse.EnsureSuccessStatusCode();
-        var consultId = ReadInt(
+        var consultId = ReadGuid(
             await consultResponse.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
             "id"
         );
@@ -321,7 +321,7 @@ public sealed class PharmacyTests(AppFixture fixture)
     private static async Task<BrandDto> CreateBrandAsync(
         HttpClient client,
         string name,
-        int ingredientId
+        Guid ingredientId
     )
     {
         var response = await client.PostAsJsonAsync(
@@ -338,7 +338,7 @@ public sealed class PharmacyTests(AppFixture fixture)
         return (await response.Content.ReadFromJsonAsync<BrandDto>(ApiJson.Options))!;
     }
 
-    private static async Task<int> StockQuantityAsync(HttpClient client, int stockId)
+    private static async Task<int> StockQuantityAsync(HttpClient client, Guid stockId)
     {
         var stocks = await client.GetFromJsonAsync<List<StockDto>>(
             "/medication-stock",
@@ -361,7 +361,7 @@ public sealed class PharmacyTests(AppFixture fixture)
             ApiJson.Options
         );
         village.EnsureSuccessStatusCode();
-        var villageId = ReadInt(
+        var villageId = ReadGuid(
             await village.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
             "id"
         );
@@ -383,18 +383,18 @@ public sealed class PharmacyTests(AppFixture fixture)
         );
         patient.EnsureSuccessStatusCode();
         var patientBody = await patient.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
-        var patientId = ReadInt(patientBody, "id");
+        var patientId = ReadGuid(patientBody, "id");
         var displayId =
             patientBody.TryGetProperty("displayId", out var display)
             && display.ValueKind == JsonValueKind.String
                 ? display.GetString()!
-                : Patient.FormatDisplayId(code, patientId);
-        return new VisitContext(patientId, ReadInt(patientBody, "visitId"), patientName, displayId);
+                : Patient.FormatDisplayId(code, 0);
+        return new VisitContext(patientId, ReadGuid(patientBody, "visitId"), patientName, displayId);
     }
 
-    private static int ReadInt(JsonElement element, string name)
+    private static Guid ReadGuid(JsonElement element, string name)
     {
-        if (element.TryGetProperty(name, out var value) && value.TryGetInt32(out var id))
+        if (element.TryGetProperty(name, out var value) && value.TryGetGuid(out var id))
         {
             return id;
         }
@@ -402,14 +402,14 @@ public sealed class PharmacyTests(AppFixture fixture)
         throw new InvalidOperationException($"Response did not include {name}: {element}");
     }
 
-    private sealed record IngredientDto(int Id, string Name);
+    private sealed record IngredientDto(Guid Id, string Name);
 
-    private sealed record BrandDto(int Id, string Name);
+    private sealed record BrandDto(Guid Id, string Name);
 
-    private sealed record StockDto(int Id, int Quantity, string Location);
+    private sealed record StockDto(Guid Id, int Quantity, string Location);
 
     private sealed record StockWithBrandDto(
-        int Id,
+        Guid Id,
         string Location,
         string BrandName,
         string IngredientName
@@ -417,11 +417,11 @@ public sealed class PharmacyTests(AppFixture fixture)
 
     private sealed record SplitDto(bool Success);
 
-    private sealed record OrderDto(int Id, OrderStatus Status, int Quantity);
+    private sealed record OrderDto(Guid Id, OrderStatus Status, int Quantity);
 
     private sealed record VisitContext(
-        int PatientId,
-        int VisitId,
+        Guid PatientId,
+        Guid VisitId,
         string PatientName,
         string DisplayId
     );

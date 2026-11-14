@@ -8,7 +8,7 @@ import type { Ref } from 'vue'
  * each to its own endpoint, so a save never overwrites someone else's edit to
  * another step. Unsaved input is kept as a draft like every clinical form.
  */
-export function useReferralForm(referral: Ref<ReferralDetail | undefined>, formEl: Ref<HTMLElement | undefined>) {
+export function useReferralForm(referral: Ref<ReferralDetail | null | undefined>, formEl: Ref<HTMLElement | undefined>) {
   const form = ref<ReferralFormValues>()
   /** What the server holds, per step; a step is changed when the form differs from it. */
   const saved = ref<ReferralFormValues>()
@@ -52,7 +52,7 @@ export function useReferralForm(referral: Ref<ReferralDetail | undefined>, formE
   const status = useUpdateReferralState()
   const isSaving = ref(false)
 
-  function send(step: ReferralFormPart, id: number, values: ReferralFormValues) {
+  function send(step: ReferralFormPart, id: string, values: ReferralFormValues) {
     const opts = { isAdult: isAdult.value }
     switch (step) {
       case 'status': return status.mutateAsync({ id, ...referralStepPayload('status', values, opts) })

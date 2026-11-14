@@ -10,7 +10,7 @@ export const CONSENT_LABELS: Record<ConsentType, string> = {
 }
 
 export interface PatientConsent {
-  id: number
+  id: string | number
   consentType: ConsentType
   granted: boolean
   recordedAt: string
@@ -20,7 +20,7 @@ export interface PatientConsent {
 }
 
 export interface PatientDisclosure {
-  id: number
+  id: string | number
   recipient: string
   purpose: string
   description: string | null
@@ -49,16 +49,16 @@ export function currentConsents(consents: readonly PatientConsent[]) {
   for (const c of consents) {
     const prev = latest.get(c.consentType)
     const newer = !prev || new Date(c.recordedAt) > new Date(prev.recordedAt)
-      || (c.recordedAt === prev.recordedAt && c.id > prev.id)
+      || (c.recordedAt === prev.recordedAt && String(c.id) > String(prev.id))
     if (newer)
       latest.set(c.consentType, c)
   }
   return latest
 }
 
-export function usePatientConsents(patientId: MaybeRefOrGetter<number | null>) {
+export function usePatientConsents(patientId: MaybeRefOrGetter<string | null>) {
   return useQuery({
-    queryKey: computed(() => ['patients', 'consents', toValue(patientId) ?? 0] as const),
+    queryKey: computed(() => ['patients', 'consents', toValue(patientId) ?? ''] as const),
     enabled: computed(() => !!toValue(patientId)),
     queryFn: ({ signal }) =>
       $fetch<{ consents: PatientConsent[] }>(`/api/patients/${toValue(patientId)}/consents`, {
@@ -68,7 +68,7 @@ export function usePatientConsents(patientId: MaybeRefOrGetter<number | null>) {
   })
 }
 
-export function useRecordConsent(patientId: MaybeRefOrGetter<number | null>) {
+export function useRecordConsent(patientId: MaybeRefOrGetter<string | null>) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (input: { consentType: ConsentType, granted: boolean, notes?: string }) =>
@@ -82,13 +82,13 @@ export function useRecordConsent(patientId: MaybeRefOrGetter<number | null>) {
         },
         credentials: 'same-origin',
       }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['patients', 'consents', toValue(patientId) ?? 0] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['patients', 'consents', toValue(patientId) ?? ''] }),
   })
 }
 
-export function usePatientDisclosures(patientId: MaybeRefOrGetter<number | null>, enabled: MaybeRefOrGetter<boolean>) {
+export function usePatientDisclosures(patientId: MaybeRefOrGetter<string | null>, enabled: MaybeRefOrGetter<boolean>) {
   return useQuery({
-    queryKey: computed(() => ['patients', 'disclosures', toValue(patientId) ?? 0] as const),
+    queryKey: computed(() => ['patients', 'disclosures', toValue(patientId) ?? ''] as const),
     enabled: computed(() => !!toValue(patientId) && toValue(enabled)),
     queryFn: ({ signal }) =>
       $fetch<{ disclosures: PatientDisclosure[] }>(`/api/patients/${toValue(patientId)}/disclosures`, {
@@ -98,7 +98,7 @@ export function usePatientDisclosures(patientId: MaybeRefOrGetter<number | null>
   })
 }
 
-export function useRecordDisclosure(patientId: MaybeRefOrGetter<number | null>) {
+export function useRecordDisclosure(patientId: MaybeRefOrGetter<string | null>) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (input: { recipient: string, purpose: string, description?: string }) =>

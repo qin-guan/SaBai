@@ -2,8 +2,8 @@ namespace SaBai.API.Endpoints.Vitals.Create.Post;
 
 /// <summary>Vitals recorded for a visit.</summary>
 public sealed record Response(
-    int Id,
-    int VisitId,
+    Guid Id,
+    Guid VisitId,
     decimal? Height,
     decimal? Weight,
     decimal? Temperature,

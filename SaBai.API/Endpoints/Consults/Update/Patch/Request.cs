@@ -3,7 +3,7 @@ namespace SaBai.API.Endpoints.Consults.Update.Patch;
 /// <summary>Partial text update. Omitted fields are left unchanged. Diagnoses and orders are not edited.</summary>
 public sealed record Request
 {
-    public int Id { get; init; }
+    public Guid Id { get; init; }
 
     public string? PastMedicalHistory { get; init; }
 

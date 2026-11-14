@@ -3,7 +3,7 @@ namespace SaBai.API.Endpoints.Vitals.Create.Post;
 /// <summary>Measurements to record against a visit.</summary>
 public sealed record Request
 {
-    public int VisitId { get; init; }
+    public Guid VisitId { get; init; }
 
     public decimal? Height { get; init; }
 

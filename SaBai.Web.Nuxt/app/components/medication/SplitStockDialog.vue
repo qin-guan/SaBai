@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { PhCheck, PhPlus, PhTrash } from '@phosphor-icons/vue'
-import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { toast } from 'vue-sonner'
-import { saBaiAPIEndpointsMedicationStockSplitsPostEndpoint } from '@sabai/sdk/clients'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
@@ -31,29 +29,10 @@ function addSplit() {
 }
 
 const total = computed(() => splits.value.reduce((sum, s) => sum + (Number.parseInt(s.quantity, 10) || 0), 0))
+const isSplitting = ref(false)
 
-const queryClient = useQueryClient()
-const split = useMutation({
-  mutationFn: (payload: SplitPayload[]) =>
-    saBaiAPIEndpointsMedicationStockSplitsPostEndpoint({
-      ...apiConfig,
-      path: { id: props.stock.id },
-      body: { splits: payload },
-      throwOnError: true,
-    }).unwrap(),
-  onSuccess: () => {
-    toast.success('Successfully split!')
-    queryClient.invalidateQueries({ queryKey: queryKeys.medicationStock() })
-    emit('close')
-  },
-  onError: (err) => {
-    console.error(err)
-    toast.error(getApiErrorMessage(err, 'An error occurred while splitting stock.'))
-  },
-})
-
-function submit() {
-  if (split.isPending.value)
+async function submit() {
+  if (isSplitting.value)
     return
   const payload: SplitPayload[] = splits.value.map(s => ({
     location: s.location,
@@ -62,9 +41,52 @@ function submit() {
     remarks: s.remarks || undefined,
   }))
   const result = validateSplits(payload, props.stock.quantity)
-  if (result.success)
-    split.mutate(payload)
-  else toast.error(result.message)
+  if (!result.success) {
+    toast.error(result.message)
+    return
+  }
+
+  isSplitting.value = true
+  try {
+    const db = getPowerSyncInstance()
+    const now = new Date().toISOString()
+    await db.writeTransaction(async (tx) => {
+      const first = payload[0]!
+      await tx.execute(
+        `UPDATE medication_stocks
+         SET location = ?, stock_status = ?, quantity = ?, remarks = ?, updated_at = ?
+         WHERE id = ?`,
+        [first.location.trim(), first.stockStatus, first.quantity, first.remarks ?? null, now, props.stock.id],
+      )
+      for (const s of payload.slice(1)) {
+        await tx.execute(
+          `INSERT INTO medication_stocks (
+            id, medication_brand_id, quantity, expiry, location, stock_status, remarks, version, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?)`,
+          [
+            uuidv7(),
+            props.stock.medicationBrandId,
+            s.quantity,
+            props.stock.expiry,
+            s.location.trim(),
+            s.stockStatus,
+            s.remarks ?? null,
+            now,
+          ],
+        )
+      }
+    })
+    await refreshPendingCrudCount()
+    toast.success('Successfully split!')
+    emit('close')
+  }
+  catch (err) {
+    console.error(err)
+    toast.error('An error occurred while splitting stock.')
+  }
+  finally {
+    isSplitting.value = false
+  }
 }
 
 useSaveShortcut(submit)
@@ -138,7 +160,7 @@ const parent = computed(() => [
       <Button variant="outline" @click="emit('close')">
         Cancel
       </Button>
-      <Button variant="success" :disabled="split.isPending.value" @click="submit">
+      <Button variant="success" :disabled="isSplitting" @click="submit">
         <PhCheck aria-hidden="true" /> Confirm
       </Button>
     </template>

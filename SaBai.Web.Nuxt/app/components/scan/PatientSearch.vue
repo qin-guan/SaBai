@@ -19,7 +19,7 @@ const MAX_RESULTS = 10
 const hits = computed(() =>
   searchIndex(index.value, debounced.value)
     .slice(0, MAX_RESULTS)
-    .map(r => byId.value.get(r.id as number))
+    .map(r => byId.value.get(String(r.id)))
     .filter(p => !!p),
 )
 const lastVisit = (date: string) => `Last visit ${formatVisitDate(date)}`
@@ -54,7 +54,7 @@ const lastVisit = (date: string) => `Last visit ${formatVisitDate(date)}`
                 {{ p!.name }}
               </NuxtLink>
               <p class="flex flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground touch:text-sm">
-                <PatientCode :id="p!.id" :village-code="p!.villageCode" :village-color-hex="p!.villageColorHex" />
+                <PatientCode :id="p!.number ?? p!.id" :village-code="p!.villageCode" :village-color-hex="p!.villageColorHex" />
                 <span aria-hidden="true">·</span>
                 <span>{{ calculateAge(p!.dateOfBirth) }} y <span class="capitalize">{{ p!.gender }}</span></span>
                 <template v-if="p!.tags?.length">

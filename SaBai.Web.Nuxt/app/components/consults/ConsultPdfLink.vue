@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { PhFilePdf } from '@phosphor-icons/vue'
+import { toast } from 'vue-sonner'
 import { Button } from '@/components/ui/button'
 import { paths } from '@/utils/paths'
 
 const props = withDefaults(
   defineProps<{
-    consultId: number
+    consultId: string | number
     variant?: 'default' | 'outline' | 'ghost' | 'secondary'
     size?: 'default' | 'sm' | 'icon'
     label?: string
@@ -18,6 +19,15 @@ const props = withDefaults(
     showLabel: true,
   },
 )
+
+const { isOnline } = useSyncState()
+
+function onClick(event: MouseEvent) {
+  if (!isOnline.value) {
+    event.preventDefault()
+    toast.warning('PDF reports require an internet connection.')
+  }
+}
 </script>
 
 <template>
@@ -31,8 +41,9 @@ const props = withDefaults(
       :href="paths.consultPdf(props.consultId)"
       target="_blank"
       rel="noopener noreferrer"
-      :title="`Open consult #${props.consultId} PDF report`"
-      :aria-label="`Open consult #${props.consultId} PDF report`"
+      :title="isOnline ? `Open consult PDF report` : 'PDF reports require an internet connection'"
+      :aria-label="`Open consult PDF report`"
+      @click="onClick"
     >
       <PhFilePdf
         class="size-4 shrink-0"

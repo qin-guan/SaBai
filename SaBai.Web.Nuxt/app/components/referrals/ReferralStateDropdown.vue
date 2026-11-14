@@ -5,7 +5,7 @@ import type { SaBaiAPIDomainReferralStateKey } from '@sabai/sdk/types'
 import { REFERRAL_STATE_OPTIONS, referralStateBadgeClass } from '@/utils/referral'
 
 const props = withDefaults(defineProps<{
-  referralId: number
+  referralId: string
   modelValue: SaBaiAPIDomainReferralStateKey
   disabled?: boolean
   /** Accessible name; name the patient when several appear on one screen. */

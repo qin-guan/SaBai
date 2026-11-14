@@ -18,12 +18,10 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, List<Response>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        if (req.BrandId is not > 0)
+        if (req.BrandId is not { } brandId || brandId == Guid.Empty)
         {
             throw new BadRequestException("brandId is required.");
         }
-
-        var brandId = req.BrandId.Value;
         var quantityRemaining =
             await db
                 .MedicationStocks.AsNoTracking()

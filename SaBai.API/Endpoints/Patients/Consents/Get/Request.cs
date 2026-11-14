@@ -1,3 +1,3 @@
 namespace SaBai.API.Endpoints.Patients.Consents.Get;
 
-public sealed record Request(int PatientId);
+public sealed record Request(Guid PatientId);

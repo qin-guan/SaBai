@@ -5,9 +5,9 @@ namespace SaBai.API.Endpoints.Dental;
 /// <summary>A visit's dental consultation.</summary>
 public sealed record DentalConsultResponse
 {
-    public required int Id { get; init; }
+    public required Guid Id { get; init; }
 
-    public required int VisitId { get; init; }
+    public required Guid VisitId { get; init; }
 
     public YesNoUnknown? PreviousDentalVisit { get; init; }
 
@@ -106,7 +106,7 @@ public sealed record DentalConsultResponse
     public string? Remarks { get; init; }
 
     /// <summary>Id of the consultation's image; fetch its bytes from <c>GET /files/{id}/content</c>.</summary>
-    public int? ImageFileId { get; init; }
+    public Guid? ImageFileId { get; init; }
 
     public required DateTimeOffset UpdatedAt { get; init; }
 

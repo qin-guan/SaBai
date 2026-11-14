@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using SaBai.API.Domain;
 
 namespace SaBai.API.Data;
@@ -61,6 +62,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<AuditLogEntry> AuditLogs => Set<AuditLogEntry>();
 
+    public DbSet<SyncConflict> SyncConflicts => Set<SyncConflict>();
+
+    public DbSet<SyncRejection> SyncRejections => Set<SyncRejection>();
+
     public DbSet<PatientConsent> PatientConsents => Set<PatientConsent>();
 
     public DbSet<DisclosureLog> DisclosureLogs => Set<DisclosureLog>();
@@ -74,6 +79,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
         StampRecordedAt();
+        StampSyncMetadata();
         return base.SaveChanges(acceptAllChangesOnSuccess);
     }
 
@@ -83,6 +89,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     )
     {
         StampRecordedAt();
+        StampSyncMetadata();
         return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
     }
 
@@ -139,9 +146,45 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         }
     }
 
+    private void StampSyncMetadata()
+    {
+        var now = DateTimeOffset.UtcNow;
+        foreach (var entry in ChangeTracker.Entries<ISyncEntity>())
+        {
+            if (entry.State == EntityState.Added)
+            {
+                if (entry.Entity.Version <= 0)
+                    entry.Entity.Version = 1;
+                if (entry.Entity.UpdatedAt == default)
+                    entry.Entity.UpdatedAt = now;
+            }
+            else if (entry.State == EntityState.Modified)
+            {
+                entry.Entity.Version++;
+                entry.Entity.UpdatedAt = now;
+            }
+        }
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        // Every clinic table is keyed by a UUIDv7 that the entity sets when it is constructed,
+        // or that a client chose while offline (see Sync/). EF must store it as given and never
+        // generate one: with a generated key, a new child reached through a navigation that
+        // already has a key would be taken for an existing row and UPDATEd instead of INSERTed.
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            if (
+                entityType.ClrType.Namespace != typeof(Patient).Namespace
+                || entityType.ClrType == typeof(StaffUser)
+            )
+                continue;
+            var key = entityType.FindPrimaryKey();
+            if (key is { Properties: [{ ClrType: var keyType } keyProperty] } && keyType == typeof(Guid))
+                keyProperty.ValueGenerated = Microsoft.EntityFrameworkCore.Metadata.ValueGenerated.Never;
+        }
 
         modelBuilder.Entity<StaffUser>(entity =>
         {
@@ -175,6 +218,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             entity.Property(x => x.LatestFaceId).HasColumnName("RekognitionFaceId");
             entity.HasIndex(x => x.Name);
             entity.HasIndex(x => x.IdentificationNumber);
+            // The card number is assigned by Postgres on the first server write, never by
+            // clients (they may be offline), and is never changed afterwards.
+            entity.Property(x => x.Number).UseIdentityByDefaultColumn();
+            entity.Property(x => x.Number).Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Ignore);
+            entity.HasIndex(x => x.Number).IsUnique();
             entity
                 .HasOne(x => x.VillageCode)
                 .WithMany(x => x.Patients)
@@ -468,6 +516,24 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             entity.HasIndex(x => x.UserId);
         });
 
+        modelBuilder.Entity<SyncConflict>(entity =>
+        {
+            entity.ToTable("SyncConflicts");
+            entity.Property(x => x.Table).HasMaxLength(100);
+            entity.Property(x => x.Field).HasMaxLength(100);
+            entity.HasIndex(x => x.ResolvedAt);
+            entity.HasIndex(x => new { x.Table, x.RecordId });
+        });
+
+        modelBuilder.Entity<SyncRejection>(entity =>
+        {
+            entity.ToTable("SyncRejections");
+            entity.Property(x => x.Table).HasMaxLength(100);
+            entity.Property(x => x.Operation).HasMaxLength(16);
+            entity.HasIndex(x => x.ResolvedAt);
+            entity.HasIndex(x => new { x.Table, x.RecordId });
+        });
+
         modelBuilder.Entity<PatientConsent>(entity =>
         {
             entity.Property(x => x.ConsentType).HasConversion<string>().HasMaxLength(64);
@@ -515,7 +581,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
         modelBuilder.Entity<PatientTag>(entity =>
         {
-            entity.HasKey(x => new { x.PatientId, x.TagId });
+            entity.HasKey(x => x.Id);
+            entity.HasIndex(x => new { x.PatientId, x.TagId }).IsUnique();
             entity
                 .HasOne(x => x.Patient)
                 .WithMany(x => x.PatientTags)

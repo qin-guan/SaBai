@@ -12,9 +12,9 @@ public enum ConsentType
 /// </summary>
 public sealed class PatientConsent
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; } = Guid.CreateVersion7();
 
-    public int PatientId { get; set; }
+    public Guid PatientId { get; set; }
 
     public Patient Patient { get; set; } = null!;
 
@@ -36,9 +36,9 @@ public sealed class PatientConsent
 /// </summary>
 public sealed class DisclosureLog
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; } = Guid.CreateVersion7();
 
-    public int PatientId { get; set; }
+    public Guid PatientId { get; set; }
 
     public Patient Patient { get; set; } = null!;
 

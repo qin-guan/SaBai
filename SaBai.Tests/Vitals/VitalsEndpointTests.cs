@@ -260,7 +260,7 @@ public sealed class VitalsEndpointTests(AppFixture fixture)
         await Assert.That(body.Patient.Name).IsEqualTo(seed.PatientName);
         await Assert
             .That(body.Patient.DisplayId)
-            .IsEqualTo($"{seed.VillageCode}{seed.PatientId:0000}");
+            .IsEqualTo(seed.DisplayId);
         await Assert.That(body.Patient.Gender).IsEqualTo(Gender.Male);
         await Assert.That(body.Vision).IsNotNull();
         await Assert.That(body.Vision!.VisitId).IsEqualTo(seed.VisitId);
@@ -297,16 +297,17 @@ public sealed class VitalsEndpointTests(AppFixture fixture)
                 hasPoorCard = false,
                 hasBS2Card = false,
                 hasSabaiCard = false,
-                villageCodeId = villageBody.GetProperty("id").GetInt32(),
+                villageCodeId = villageBody.GetProperty("id").GetGuid(),
             },
             ApiJson.Options
         );
         var patientBody = await ReadCreatedAsync(patient, "Create patient");
         return new Seed(
-            patientBody.GetProperty("id").GetInt32(),
-            patientBody.GetProperty("visitId").GetInt32(),
+            patientBody.GetProperty("id").GetGuid(),
+            patientBody.GetProperty("visitId").GetGuid(),
             code,
-            name
+            name,
+            patientBody.GetProperty("displayId").GetString()!
         );
     }
 
@@ -326,11 +327,11 @@ public sealed class VitalsEndpointTests(AppFixture fixture)
         return (await response.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options))!;
     }
 
-    private sealed record Seed(int PatientId, int VisitId, string VillageCode, string PatientName);
+    private sealed record Seed(Guid PatientId, Guid VisitId, string VillageCode, string PatientName, string DisplayId);
 
     private sealed record VitalsBody(
-        int Id,
-        int VisitId,
+        Guid Id,
+        Guid VisitId,
         decimal? Height,
         decimal? Weight,
         decimal? Temperature,
@@ -339,8 +340,8 @@ public sealed class VitalsEndpointTests(AppFixture fixture)
     );
 
     private sealed record EyesightBody(
-        int Id,
-        int VisitId,
+        Guid Id,
+        Guid VisitId,
         string? LeftEyeDegree,
         string? RightEyeDegree,
         string? LeftEyePinhole
@@ -353,7 +354,7 @@ public sealed class VitalsEndpointTests(AppFixture fixture)
     );
 
     private sealed record VisionPatient(
-        int Id,
+        Guid Id,
         string Name,
         string DisplayId,
         Gender Gender,
@@ -361,8 +362,8 @@ public sealed class VitalsEndpointTests(AppFixture fixture)
     );
 
     private sealed record GlassesBody(
-        int Id,
-        int VisitId,
+        Guid Id,
+        Guid VisitId,
         string? LeftGlassesDegree,
         string? RightGlassesDegree,
         string? Notes

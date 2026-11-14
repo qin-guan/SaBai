@@ -79,7 +79,7 @@ public sealed class FileTests(AppFixture fixture)
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
     }
 
-    private static async Task<int> CreatePatientAsync(HttpClient client, string suffix)
+    private static async Task<Guid> CreatePatientAsync(HttpClient client, string suffix)
     {
         var code = $"F{suffix.ToUpperInvariant()}";
         var village = await client.PostAsJsonAsync(
@@ -93,7 +93,7 @@ public sealed class FileTests(AppFixture fixture)
             ApiJson.Options
         );
         village.EnsureSuccessStatusCode();
-        var villageId = ReadInt(
+        var villageId = ReadGuid(
             await village.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
             "id"
         );
@@ -113,12 +113,12 @@ public sealed class FileTests(AppFixture fixture)
             ApiJson.Options
         );
         patient.EnsureSuccessStatusCode();
-        return ReadInt(await patient.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options), "id");
+        return ReadGuid(await patient.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options), "id");
     }
 
-    private static int ReadInt(JsonElement element, string name)
+    private static Guid ReadGuid(JsonElement element, string name)
     {
-        if (element.TryGetProperty(name, out var value) && value.TryGetInt32(out var id))
+        if (element.TryGetProperty(name, out var value) && value.TryGetGuid(out var id))
         {
             return id;
         }
@@ -126,5 +126,5 @@ public sealed class FileTests(AppFixture fixture)
         throw new InvalidOperationException($"Response did not include {name}: {element}");
     }
 
-    private sealed record FileDto(int Id, string FileName, bool IsDeleted);
+    private sealed record FileDto(Guid Id, string FileName, bool IsDeleted);
 }

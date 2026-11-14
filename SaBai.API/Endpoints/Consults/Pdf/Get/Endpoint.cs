@@ -31,7 +31,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request>
             .FirstOrNotFoundAsync(x => x.Id == req.Id, "Consult was not found.", ct);
 
         var code = consult.Visit.Patient.VillageCode?.Code ?? consult.Visit.VillageCode.Code;
-        var displayId = Patient.FormatDisplayId(code, consult.Visit.Patient.Id);
+        var displayId = Patient.FormatDisplayId(code, consult.Visit.Patient.Number);
         var bytes = PdfDocument.Create(
             new ConsultPdfContent(
                 displayId,

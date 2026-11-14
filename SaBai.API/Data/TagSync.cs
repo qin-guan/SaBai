@@ -93,7 +93,7 @@ public static class TagSync
             .StaffUserTags.Where(x => x.StaffUserId == staffUserId)
             .ToListAsync(ct);
 
-        var wantedExistingIds = wantedTags.Where(t => t.Id > 0).Select(t => t.Id).ToHashSet();
+        var wantedExistingIds = wantedTags.Where(t => db.Entry(t).State != EntityState.Added).Select(t => t.Id).ToHashSet();
         var toRemove = existing.Where(x => !wantedExistingIds.Contains(x.TagId)).ToList();
         if (toRemove.Count > 0)
         {
@@ -103,7 +103,7 @@ public static class TagSync
         var existingIds = existing.Select(x => x.TagId).ToHashSet();
         foreach (var tag in wantedTags)
         {
-            if (tag.Id == 0 || !existingIds.Contains(tag.Id))
+            if (db.Entry(tag).State == EntityState.Added || !existingIds.Contains(tag.Id))
             {
                 db.StaffUserTags.Add(new StaffUserTag { StaffUserId = staffUserId, Tag = tag });
             }
@@ -120,7 +120,7 @@ public static class TagSync
         var names = NormalizeNames(rawTags);
         var wantedTags = await ResolveTagsAsync(db, names, ct);
 
-        if (patient.Id == 0)
+        if (db.Entry(patient).State is EntityState.Added or EntityState.Detached)
         {
             foreach (var tag in wantedTags)
             {
@@ -134,7 +134,7 @@ public static class TagSync
             .PatientTags.Where(x => x.PatientId == patient.Id)
             .ToListAsync(ct);
 
-        var wantedExistingIds = wantedTags.Where(t => t.Id > 0).Select(t => t.Id).ToHashSet();
+        var wantedExistingIds = wantedTags.Where(t => db.Entry(t).State != EntityState.Added).Select(t => t.Id).ToHashSet();
         var toRemove = existing.Where(x => !wantedExistingIds.Contains(x.TagId)).ToList();
         if (toRemove.Count > 0)
         {
@@ -144,7 +144,7 @@ public static class TagSync
         var existingIds = existing.Select(x => x.TagId).ToHashSet();
         foreach (var tag in wantedTags)
         {
-            if (tag.Id == 0 || !existingIds.Contains(tag.Id))
+            if (db.Entry(tag).State == EntityState.Added || !existingIds.Contains(tag.Id))
             {
                 db.PatientTags.Add(new PatientTag { PatientId = patient.Id, Tag = tag });
             }
@@ -186,7 +186,7 @@ public static class TagSync
 
     public static async Task<IReadOnlyList<string>> LoadPatientTagsAsync(
         AppDbContext db,
-        int patientId,
+        Guid patientId,
         CancellationToken ct
     ) =>
         await db
@@ -196,15 +196,15 @@ public static class TagSync
             .Select(x => x.Tag.Name)
             .ToListAsync(ct);
 
-    public static async Task<ILookup<int, string>> LoadPatientTagsBulkAsync(
+    public static async Task<ILookup<Guid, string>> LoadPatientTagsBulkAsync(
         AppDbContext db,
-        IReadOnlyCollection<int> patientIds,
+        IReadOnlyCollection<Guid> patientIds,
         CancellationToken ct
     )
     {
         if (patientIds.Count == 0)
         {
-            return Enumerable.Empty<KeyValuePair<int, string>>().ToLookup(x => x.Key, x => x.Value);
+            return Enumerable.Empty<KeyValuePair<Guid, string>>().ToLookup(x => x.Key, x => x.Value);
         }
 
         var rows = await db

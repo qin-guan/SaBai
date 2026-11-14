@@ -106,7 +106,7 @@ const groups = computed<Group[]>(() => {
   }
   const patientHits = searchIndex(patientIndex.value, q)
     .slice(0, MAX_PATIENTS)
-    .map(r => patientsById.value.get(r.id as number))
+    .map(r => patientsById.value.get(String(r.id)))
     .filter((p): p is Patient => !!p)
   const pageHits = searchIndex(pageIndex, q)
     .slice(0, 5)
@@ -245,7 +245,7 @@ const resultSummary = computed(() => {
                       {{ item.patient.name }}
                     </p>
                     <p class="truncate text-xs text-muted-foreground touch:text-sm">
-                      <span class="font-mono">{{ formatPatientCode(item.patient.villageCode, item.patient.id) }}</span>
+                      <span class="font-mono">{{ item.patient.displayId || formatPatientCode(item.patient.villageCode, item.patient.number ?? item.patient.id) }}</span>
                       · {{ calculateAge(item.patient.dateOfBirth) }} y · <span class="capitalize">{{ item.patient.gender }}</span>
                       <template v-if="item.patient.identificationNumber">
                         · {{ item.patient.identificationNumber }}

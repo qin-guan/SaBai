@@ -5,11 +5,11 @@ public sealed record Response(IReadOnlyList<Item> Visits);
 
 /// <summary>A visit joined to its patient and village, with where it is in the clinic flow.</summary>
 public sealed record Item(
-    int Id,
+    Guid Id,
     DateTimeOffset Date,
-    int PatientId,
+    Guid PatientId,
     string PatientName,
-    int VillageCodeId,
+    Guid VillageCodeId,
     string VillageCode,
     string VillageName,
     string VillageColorHex,

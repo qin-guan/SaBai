@@ -36,10 +36,10 @@ const filters = useState('referrals:filters', () => ({
   tagMatchMode: 'any' as TagMatchMode,
   statuses: [] as SaBaiAPIDomainReferralStateKey[],
 }))
-const lastOpened = useState<number | null>('referrals:last-opened', () => null)
+const lastOpened = useState<string | null>('referrals:last-opened', () => null)
 
 const patientTagsById = computed(() => {
-  const map = new Map<number, string[]>()
+  const map = new Map<string, string[]>()
   for (const p of patientsData.value?.patients ?? []) {
     if (p.tags?.length)
       map.set(p.id, p.tags)
@@ -63,7 +63,7 @@ const availableReferralTags = computed(() =>
 const matching = computed(() => {
   const options = {
     search: filters.value.search,
-    villageCodeId: filters.value.villageId ? Number(filters.value.villageId) : null,
+    villageCodeId: filters.value.villageId || null,
     tags: filters.value.tags,
     tagMatchMode: filters.value.tagMatchMode,
     referralStates: filters.value.statuses,
@@ -359,7 +359,7 @@ const gridCols = 'md:grid-cols-[2rem_minmax(9rem,1fr)_minmax(0,2fr)_5.5rem_11rem
                   {{ r.patientName }}
                 </NuxtLink>
                 <p class="flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground touch:text-[0.8125rem]">
-                  <PatientCode :village-code="r.villageCode" :village-color-hex="r.villageColorHex" :id="r.patientId" />
+                  <PatientCode :village-code="r.villageCode" :village-color-hex="r.villageColorHex" :id="r.patientNumber" />
                   <span class="tabular-nums md:hidden">{{ shortDate(r.createdAt) }}</span>
                 </p>
                 <div v-if="r.tags?.length" class="mt-1 lg:hidden">

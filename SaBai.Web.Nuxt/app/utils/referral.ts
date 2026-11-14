@@ -1,13 +1,10 @@
 import type { Option } from './options'
 import { cleanKhmerText, matchesSearchText } from './khmer'
 import { calculateAge, formatPatientCode, matchesTags, type TagMatchMode } from './patient'
-import type {
-  SaBaiAPIDomainReferralStateKey,
-  SaBaiAPIEndpointsReferralsGetResponse,
-  SaBaiAPIEndpointsReferralsListGetResponse,
-} from '@sabai/sdk/types'
+import type { SaBaiAPIDomainReferralStateKey } from '@sabai/sdk/types'
+import type { LocalReferralItem } from '~/composables/useReferrals'
 
-export type ReferralListItem = SaBaiAPIEndpointsReferralsListGetResponse & {
+export type ReferralListItem = LocalReferralItem & {
   tags?: string[]
 }
 
@@ -44,29 +41,7 @@ export const ADULT_AGE = 18
 export const USD_AMOUNT_PATTERN = /^\d{1,8}(\.\d{1,2})?$/
 export const MAX_RIELS = 2_147_483_647
 
-export type ReferralDetail = SaBaiAPIEndpointsReferralsGetResponse & {
-  updatedAt?: string
-  patientDateOfBirth?: string
-  patientContactNo?: string | null
-  patientHasPoorCard?: boolean
-  patientHasBS2Card?: boolean
-  patientHasSabaiCard?: boolean
-  referredToId?: string | null
-  memberInChargeId?: string | null
-  guardiansContacted?: GuardiansContacted | null
-  classOfService?: ReferralServiceClass | null
-  descriptionOfService?: string | null
-  patientSummaryFromScreening?: string | null
-  remarksAtBooth?: string | null
-  memberOnRunId?: string | null
-  presentAtReferralParty?: boolean
-  referralPartyResults?: string | null
-  followUp?: boolean
-  doctorsUpdated?: boolean
-  amountPaidUsd?: number | string | null
-  amountPaidRiels?: number | null
-  memberWhoPaidId?: string | null
-}
+export type ReferralDetail = LocalReferralItem
 
 /**
  * Natural lifecycle order of referral states.
@@ -136,7 +111,7 @@ export function referralStateBadgeClass(state: SaBaiAPIDomainReferralStateKey): 
 
 export interface ReferralFilterOptions {
   search?: string
-  villageCodeId?: number | null
+  villageCodeId?: string | null
   referralState?: SaBaiAPIDomainReferralStateKey | null
   referralStates?: readonly SaBaiAPIDomainReferralStateKey[] | null
   tags?: readonly string[] | null
@@ -164,12 +139,11 @@ export function matchesReferral(item: ReferralListItem, filters: ReferralFilterO
   if (!needle)
     return true
 
-  const patientCode = formatPatientCode(item.villageCode, item.patientId)
   const targets = [
     item.patientName,
-    patientCode,
+    item.patientDisplayId,
     String(item.patientId),
-    item.villageCode,
+    item.villageCode ?? '',
     item.referredFor,
     item.referralNotes ?? '',
     item.referralOutcome ?? '',

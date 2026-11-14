@@ -4,8 +4,8 @@ namespace SaBai.API.Endpoints.Consults.Get;
 
 /// <summary>Consult with its visit, doctor nickname, and diagnoses.</summary>
 public sealed record Response(
-    int Id,
-    int VisitId,
+    Guid Id,
+    Guid VisitId,
     DateTimeOffset Date,
     string? PastMedicalHistory,
     string? Consultation,
@@ -41,8 +41,8 @@ public sealed record Response(
 
 /// <summary>Diagnosis recorded on a consult.</summary>
 public sealed record DiagnosisItem(
-    int Id,
-    int ConsultId,
+    Guid Id,
+    Guid ConsultId,
     string Details,
     DiagnosisCategory? Category
 );

@@ -4,8 +4,8 @@ namespace SaBai.API.Endpoints.Puberty.Create.Post;
 
 /// <summary>Puberty assessment recorded against vitals.</summary>
 public sealed record Response(
-    int Id,
-    int VitalsId,
+    Guid Id,
+    Guid VitalsId,
     bool? Pubarche,
     int? PubarcheAge,
     bool? Thelarche,

@@ -4,11 +4,13 @@ namespace SaBai.API.Domain;
 /// The dental station's consultation for a visit: history, chief complaint, clinical
 /// examination, diagnoses, treatment provided, referral and remarks. One per visit.
 /// </summary>
-public sealed class DentalConsult
+public sealed class DentalConsult : ISyncEntity
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; } = Guid.CreateVersion7();
 
-    public int VisitId { get; set; }
+    public int Version { get; set; } = 1;
+
+    public Guid VisitId { get; set; }
 
     public Visit Visit { get; set; } = null!;
 
@@ -129,7 +131,7 @@ public sealed class DentalConsult
     // 8. Image
 
     /// <summary>An uploaded image for the consultation (stored like any other file).</summary>
-    public int? ImageFileId { get; set; }
+    public Guid? ImageFileId { get; set; }
 
     public StoredFile? ImageFile { get; set; }
 

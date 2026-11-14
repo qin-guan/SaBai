@@ -2,7 +2,7 @@ namespace SaBai.API.Endpoints.VillageCodes.Create.Post;
 
 /// <summary>A newly created village code.</summary>
 public sealed record Response(
-    int Id,
+    Guid Id,
     string Code,
     string Name,
     string ColorHex,

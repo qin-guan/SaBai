@@ -94,7 +94,7 @@ public static class FhirMapper
             [
                 new Identifier(
                     PatientIdSystem,
-                    DomainPatient.FormatDisplayId(p.VillageCode?.Code, p.Id)
+                    DomainPatient.FormatDisplayId(p.VillageCode?.Code, p.Number)
                 ),
             ],
             Name = [new HumanName { Text = p.Name }],
@@ -180,7 +180,7 @@ public static class FhirMapper
                 : [new FhirEncounter.LocationComponent { Location = new ResourceReference { Display = visit.VillageCode.Name } }],
         };
 
-    public static IEnumerable<FhirObservation> ToFhirVitalsObservations(Vitals v, int patientId)
+    public static IEnumerable<FhirObservation> ToFhirVitalsObservations(Vitals v, Guid patientId)
     {
         var effective = v.RecordedAt?.ToString("O");
         var subject = new ResourceReference($"Patient/{patientId}");
@@ -258,7 +258,7 @@ public static class FhirMapper
     private static CodeableConcept VitalSignsCategory() =>
         new("http://terminology.hl7.org/CodeSystem/observation-category", "vital-signs", "Vital Signs");
 
-    public static FhirCondition ToFhirCondition(Diagnosis d, int patientId, int visitId)
+    public static FhirCondition ToFhirCondition(Diagnosis d, Guid patientId, Guid visitId)
     {
         var code = new CodeableConcept { Text = d.Details };
         if (!string.IsNullOrWhiteSpace(d.CodingSystem) && !string.IsNullOrWhiteSpace(d.Code))
@@ -280,7 +280,7 @@ public static class FhirMapper
         };
     }
 
-    public static FhirMedicationRequest ToFhirMedicationRequest(Order o, int patientId, int visitId)
+    public static FhirMedicationRequest ToFhirMedicationRequest(Order o, Guid patientId, Guid visitId)
     {
         var medConcept = new CodeableConcept
         {
@@ -311,7 +311,7 @@ public static class FhirMapper
         };
     }
 
-    public static FhirServiceRequest ToFhirServiceRequest(Referral r, int patientId, int visitId) =>
+    public static FhirServiceRequest ToFhirServiceRequest(Referral r, Guid patientId, Guid visitId) =>
         new()
         {
             Id = r.Id.ToString(),

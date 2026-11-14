@@ -3,7 +3,7 @@ using SaBai.API.Domain;
 namespace SaBai.API.Endpoints.Referrals.UpdateBooth.Patch;
 
 public sealed record Request(
-    int Id,
+    Guid Id,
     Guid? ReferredToId,
     Guid? MemberInChargeId,
     GuardiansContacted? GuardiansContacted,

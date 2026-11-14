@@ -47,6 +47,10 @@ public sealed class SyncUploadProcessor(AppDbContext db)
             ? uid
             : Guid.Empty;
         var isAdmin = user.IsInRole(StaffRoles.Admin);
+        // PN staff only work the referral desk: mirror the REST API, which lets them touch
+        // referrals, referral partners and tags but nothing else clinical.
+        var referralDeskOnly =
+            user.IsInRole(StaffRoles.Pn) && !isAdmin && !user.IsInRole(StaffRoles.Member);
 
         var applied = 0;
         var conflictsBefore = await db.SyncConflicts.CountAsync(ct);
@@ -67,6 +71,8 @@ public sealed class SyncUploadProcessor(AppDbContext db)
 
             try
             {
+                if (referralDeskOnly && !ReferralDeskTables.Contains(op.Type))
+                    throw new ForbiddenException($"PN staff cannot modify {op.Type}.");
                 await ApplyOpAsync(op, userId, isAdmin, ct);
                 await db.SaveChangesAsync(ct);
                 if (tx is not null)
@@ -116,6 +122,13 @@ public sealed class SyncUploadProcessor(AppDbContext db)
         return new SyncUploadResult(applied, Math.Max(0, conflictsAfter - conflictsBefore), rejections);
     }
 
+    private static readonly HashSet<string> ReferralDeskTables =
+    [
+        "referrals",
+        "referral_partners",
+        "tags",
+    ];
+
     private Task ApplyOpAsync(SyncCrudOp op, Guid userId, bool isAdmin, CancellationToken ct)
     {
         var verb = op.Op.ToUpperInvariant();
@@ -132,6 +145,9 @@ public sealed class SyncUploadProcessor(AppDbContext db)
             "consults" => ApplyConsultAsync(verb, op, userId, ct),
             "diagnoses" => ApplyDiagnosisAsync(verb, op, userId, ct),
             "referrals" => ApplyReferralAsync(verb, op, userId, ct),
+            "referral_partners" => ApplyReferralPartnerAsync(verb, op, userId, ct),
+            "tags" => ApplyTagAsync(verb, op, ct),
+            "patient_tags" => ApplyPatientTagAsync(verb, op, ct),
             "medication_active_ingredients" => ApplyIngredientAsync(verb, op, userId, ct),
             "medication_brands" => ApplyBrandAsync(verb, op, userId, ct),
             "medication_stocks" => ApplyStockAsync(verb, op, userId, ct),
@@ -683,6 +699,9 @@ public sealed class SyncUploadProcessor(AppDbContext db)
                     ConsultId = RequireGuid(d, "consult_id"),
                     Details = RequireString(d, "details"),
                     Category = ParseEnum<DiagnosisCategory>(GetString(d, "category")),
+                    CodingSystem = GetString(d, "coding_system"),
+                    Code = GetString(d, "code"),
+                    CodeDisplay = GetString(d, "code_display"),
                 }
             );
             return;
@@ -691,6 +710,9 @@ public sealed class SyncUploadProcessor(AppDbContext db)
         var logConflict = IsStale(op, d, row.Version);
         SetField(logConflict, "diagnoses", row.Id, "details", row.Details, GetString(d, "details") ?? row.Details, Has(d, "details"), v => row.Details = v, userId);
         SetField(logConflict, "diagnoses", row.Id, "category", row.Category, ParseEnum<DiagnosisCategory>(GetString(d, "category")), Has(d, "category"), v => row.Category = v, userId);
+        SetField(logConflict, "diagnoses", row.Id, "coding_system", row.CodingSystem, GetString(d, "coding_system"), Has(d, "coding_system"), v => row.CodingSystem = v, userId);
+        SetField(logConflict, "diagnoses", row.Id, "code", row.Code, GetString(d, "code"), Has(d, "code"), v => row.Code = v, userId);
+        SetField(logConflict, "diagnoses", row.Id, "code_display", row.CodeDisplay, GetString(d, "code_display"), Has(d, "code_display"), v => row.CodeDisplay = v, userId);
     }
 
     private async Task ApplyReferralAsync(
@@ -722,6 +744,21 @@ public sealed class SyncUploadProcessor(AppDbContext db)
                     ReferralState = ParseEnum<ReferralState>(GetString(d, "referral_state")) ?? ReferralState.New,
                     ReferralOutcome = GetString(d, "referral_outcome"),
                     CreatedAt = GetDateTimeOffset(d, "created_at") ?? DateTimeOffset.UtcNow,
+                    ReferredToId = GetGuid(d, "referred_to_id"),
+                    MemberInChargeId = GetGuid(d, "member_in_charge_id"),
+                    GuardiansContacted = ParseEnum<GuardiansContacted>(GetString(d, "guardians_contacted")),
+                    ClassOfService = ParseEnum<ReferralServiceClass>(GetString(d, "class_of_service")),
+                    DescriptionOfService = GetString(d, "description_of_service"),
+                    PatientSummaryFromScreening = GetString(d, "patient_summary_from_screening"),
+                    RemarksAtBooth = GetString(d, "remarks_at_booth"),
+                    MemberOnRunId = GetGuid(d, "member_on_run_id"),
+                    PresentAtReferralParty = GetBool(d, "present_at_referral_party") ?? false,
+                    ReferralPartyResults = GetString(d, "referral_party_results"),
+                    FollowUp = GetBool(d, "follow_up") ?? false,
+                    DoctorsUpdated = GetBool(d, "doctors_updated") ?? false,
+                    AmountPaidUsd = NonNegative(GetDecimal(d, "amount_paid_usd"), "amount_paid_usd"),
+                    AmountPaidRiels = NonNegative(GetInt(d, "amount_paid_riels"), "amount_paid_riels"),
+                    MemberWhoPaidId = GetGuid(d, "member_who_paid_id"),
                 }
             );
             return;
@@ -732,6 +769,144 @@ public sealed class SyncUploadProcessor(AppDbContext db)
         SetField(logConflict, "referrals", row.Id, "referral_notes", row.ReferralNotes, GetString(d, "referral_notes"), Has(d, "referral_notes"), v => row.ReferralNotes = v, userId);
         SetField(logConflict, "referrals", row.Id, "referral_state", row.ReferralState, ParseEnum<ReferralState>(GetString(d, "referral_state")) ?? row.ReferralState, Has(d, "referral_state"), v => row.ReferralState = v, userId);
         SetField(logConflict, "referrals", row.Id, "referral_outcome", row.ReferralOutcome, GetString(d, "referral_outcome"), Has(d, "referral_outcome"), v => row.ReferralOutcome = v, userId);
+
+        // Booth section
+        SetField(logConflict, "referrals", row.Id, "referred_to_id", row.ReferredToId, GetGuid(d, "referred_to_id"), Has(d, "referred_to_id"), v => row.ReferredToId = v, userId);
+        SetField(logConflict, "referrals", row.Id, "member_in_charge_id", row.MemberInChargeId, GetGuid(d, "member_in_charge_id"), Has(d, "member_in_charge_id"), v => row.MemberInChargeId = v, userId);
+        SetField(logConflict, "referrals", row.Id, "guardians_contacted", row.GuardiansContacted, ParseEnum<GuardiansContacted>(GetString(d, "guardians_contacted")), Has(d, "guardians_contacted"), v => row.GuardiansContacted = v, userId);
+        SetField(logConflict, "referrals", row.Id, "class_of_service", row.ClassOfService, ParseEnum<ReferralServiceClass>(GetString(d, "class_of_service")), Has(d, "class_of_service"), v => row.ClassOfService = v, userId);
+        SetField(logConflict, "referrals", row.Id, "description_of_service", row.DescriptionOfService, GetString(d, "description_of_service"), Has(d, "description_of_service"), v => row.DescriptionOfService = v, userId);
+        SetField(logConflict, "referrals", row.Id, "patient_summary_from_screening", row.PatientSummaryFromScreening, GetString(d, "patient_summary_from_screening"), Has(d, "patient_summary_from_screening"), v => row.PatientSummaryFromScreening = v, userId);
+        SetField(logConflict, "referrals", row.Id, "remarks_at_booth", row.RemarksAtBooth, GetString(d, "remarks_at_booth"), Has(d, "remarks_at_booth"), v => row.RemarksAtBooth = v, userId);
+
+        // Referral party section
+        SetField(logConflict, "referrals", row.Id, "member_on_run_id", row.MemberOnRunId, GetGuid(d, "member_on_run_id"), Has(d, "member_on_run_id"), v => row.MemberOnRunId = v, userId);
+        SetField(logConflict, "referrals", row.Id, "present_at_referral_party", row.PresentAtReferralParty, GetBool(d, "present_at_referral_party") ?? false, Has(d, "present_at_referral_party"), v => row.PresentAtReferralParty = v, userId);
+        SetField(logConflict, "referrals", row.Id, "referral_party_results", row.ReferralPartyResults, GetString(d, "referral_party_results"), Has(d, "referral_party_results"), v => row.ReferralPartyResults = v, userId);
+        SetField(logConflict, "referrals", row.Id, "follow_up", row.FollowUp, GetBool(d, "follow_up") ?? false, Has(d, "follow_up"), v => row.FollowUp = v, userId);
+        SetField(logConflict, "referrals", row.Id, "doctors_updated", row.DoctorsUpdated, GetBool(d, "doctors_updated") ?? false, Has(d, "doctors_updated"), v => row.DoctorsUpdated = v, userId);
+
+        // Money section
+        SetField(logConflict, "referrals", row.Id, "amount_paid_usd", row.AmountPaidUsd, NonNegative(GetDecimal(d, "amount_paid_usd"), "amount_paid_usd"), Has(d, "amount_paid_usd"), v => row.AmountPaidUsd = v, userId);
+        SetField(logConflict, "referrals", row.Id, "amount_paid_riels", row.AmountPaidRiels, NonNegative(GetInt(d, "amount_paid_riels"), "amount_paid_riels"), Has(d, "amount_paid_riels"), v => row.AmountPaidRiels = v, userId);
+        SetField(logConflict, "referrals", row.Id, "member_who_paid_id", row.MemberWhoPaidId, GetGuid(d, "member_who_paid_id"), Has(d, "member_who_paid_id"), v => row.MemberWhoPaidId = v, userId);
+    }
+
+    private async Task ApplyReferralPartnerAsync(
+        string verb,
+        SyncCrudOp op,
+        Guid userId,
+        CancellationToken ct
+    )
+    {
+        if (verb == "DELETE")
+        {
+            var existing = await db.ReferralPartners.FirstOrDefaultAsync(x => x.Id == op.Id, ct);
+            if (existing is not null)
+            {
+                // Keep referral history intact. The REST delete endpoint refuses (409) when a
+                // referral still points at the partner; an offline delete cannot be refused
+                // interactively, so deactivate it instead and let the row sync back as inactive.
+                if (await db.Referrals.AnyAsync(x => x.ReferredToId == existing.Id, ct))
+                    existing.IsActive = false;
+                else
+                    db.ReferralPartners.Remove(existing);
+            }
+            return;
+        }
+
+        var d = RequireData(op);
+        var row = await db.ReferralPartners.FirstOrDefaultAsync(x => x.Id == op.Id, ct);
+        if (row is null)
+        {
+            db.ReferralPartners.Add(
+                new ReferralPartner
+                {
+                    Id = op.Id,
+                    Name = RequireString(d, "name").Trim(),
+                    Remarks = GetString(d, "remarks"),
+                    IsActive = GetBool(d, "is_active") ?? true,
+                    CreatedAt = GetDateTimeOffset(d, "created_at") ?? DateTimeOffset.UtcNow,
+                }
+            );
+            return;
+        }
+
+        var logConflict = IsStale(op, d, row.Version);
+        SetField(logConflict, "referral_partners", row.Id, "name", row.Name, GetString(d, "name")?.Trim() ?? row.Name, Has(d, "name"), v => row.Name = v, userId);
+        SetField(logConflict, "referral_partners", row.Id, "remarks", row.Remarks, GetString(d, "remarks"), Has(d, "remarks"), v => row.Remarks = v, userId);
+        SetField(logConflict, "referral_partners", row.Id, "is_active", row.IsActive, GetBool(d, "is_active") ?? row.IsActive, Has(d, "is_active"), v => row.IsActive = v, userId);
+    }
+
+    /// <summary>
+    /// Tags are append-only and unique by normalized name. Two offline devices may both create
+    /// "Follow-up"; the second insert is a no-op here and its patient links are re-pointed at
+    /// the surviving tag by <see cref="ApplyPatientTagAsync"/> (which also receives the name).
+    /// </summary>
+    private async Task ApplyTagAsync(string verb, SyncCrudOp op, CancellationToken ct)
+    {
+        if (verb == "DELETE")
+            return; // Tags are shared vocabulary; unlinking happens via patient_tags.
+
+        var d = RequireData(op);
+        if (await db.Tags.AnyAsync(x => x.Id == op.Id, ct))
+            return;
+
+        var name = TagSync.NormalizeNames([RequireString(d, "name")]).FirstOrDefault()
+            ?? throw new BadRequestException("Tag name is required.");
+        var normalized = name.ToUpperInvariant();
+        if (await db.Tags.AnyAsync(x => x.NormalizedName == normalized, ct))
+            return;
+
+        db.Tags.Add(
+            new Tag
+            {
+                Id = op.Id,
+                Name = name,
+                NormalizedName = normalized,
+                CreatedAt = GetDateTimeOffset(d, "created_at") ?? DateTimeOffset.UtcNow,
+            }
+        );
+    }
+
+    private async Task ApplyPatientTagAsync(string verb, SyncCrudOp op, CancellationToken ct)
+    {
+        if (verb == "DELETE")
+        {
+            var existing = await db.PatientTags.FirstOrDefaultAsync(x => x.Id == op.Id, ct);
+            if (existing is not null)
+                db.PatientTags.Remove(existing);
+            return;
+        }
+
+        var d = RequireData(op);
+        if (await db.PatientTags.AnyAsync(x => x.Id == op.Id, ct))
+            return; // Links are immutable; re-tagging is delete + insert.
+
+        var patientId = RequireGuid(d, "patient_id");
+        var tagId = GetGuid(d, "tag_id");
+        var tag = tagId is { } tid ? await db.Tags.FirstOrDefaultAsync(x => x.Id == tid, ct) : null;
+        if (tag is null)
+        {
+            // The client's tag lost a same-name race (see ApplyTagAsync): resolve by name.
+            var name = GetString(d, "tag_name")
+                ?? throw new BadRequestException("tag_id was not found and no tag_name was sent.");
+            tag = (await TagSync.ResolveTagsAsync(db, TagSync.NormalizeNames([name]), ct)).FirstOrDefault()
+                ?? throw new BadRequestException("Tag name is required.");
+        }
+
+        if (await db.PatientTags.AnyAsync(x => x.PatientId == patientId && x.TagId == tag.Id, ct))
+            return; // Another device already linked this tag: keep one row.
+
+        db.PatientTags.Add(new PatientTag { Id = op.Id, PatientId = patientId, Tag = tag });
+    }
+
+    private static T? NonNegative<T>(T? value, string field)
+        where T : struct, IComparable<T>
+    {
+        if (value is { } v && v.CompareTo(default) < 0)
+            throw new BadRequestException($"{field} cannot be negative.");
+        return value;
     }
 
     private async Task ApplyIngredientAsync(
@@ -761,6 +936,8 @@ public sealed class SyncUploadProcessor(AppDbContext db)
                     UnitOfMeasurement = RequireString(d, "unit_of_measurement"),
                     FallBelow = GetInt(d, "fall_below") ?? 0,
                     Remarks = GetString(d, "remarks"),
+                    RxNormCode = GetString(d, "rx_norm_code"),
+                    AtcCode = GetString(d, "atc_code"),
                 }
             );
             return;
@@ -771,6 +948,8 @@ public sealed class SyncUploadProcessor(AppDbContext db)
         SetField(logConflict, "medication_active_ingredients", row.Id, "unit_of_measurement", row.UnitOfMeasurement, GetString(d, "unit_of_measurement") ?? row.UnitOfMeasurement, Has(d, "unit_of_measurement"), v => row.UnitOfMeasurement = v, userId);
         SetField(logConflict, "medication_active_ingredients", row.Id, "fall_below", row.FallBelow, GetInt(d, "fall_below") ?? row.FallBelow, Has(d, "fall_below"), v => row.FallBelow = v, userId);
         SetField(logConflict, "medication_active_ingredients", row.Id, "remarks", row.Remarks, GetString(d, "remarks"), Has(d, "remarks"), v => row.Remarks = v, userId);
+        SetField(logConflict, "medication_active_ingredients", row.Id, "rx_norm_code", row.RxNormCode, GetString(d, "rx_norm_code"), Has(d, "rx_norm_code"), v => row.RxNormCode = v, userId);
+        SetField(logConflict, "medication_active_ingredients", row.Id, "atc_code", row.AtcCode, GetString(d, "atc_code"), Has(d, "atc_code"), v => row.AtcCode = v, userId);
     }
 
     private async Task ApplyBrandAsync(string verb, SyncCrudOp op, Guid userId, CancellationToken ct)

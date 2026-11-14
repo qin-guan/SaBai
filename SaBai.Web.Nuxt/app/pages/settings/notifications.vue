@@ -81,6 +81,8 @@ async function handleSend() {
   }
 }
 
+useSaveShortcut(handleSend, { enabled: () => !sendMutation.isPending.value })
+
 // Delete confirmation dialog
 const activeToDelete = ref<BroadcastItem | null>(null)
 
@@ -124,7 +126,7 @@ function formatDateTime(iso: string) {
     <!-- Push system status banner -->
     <div
       v-if="config.data.value"
-      class="flex flex-wrap items-center justify-between gap-3 border border-border bg-card p-3 text-sm shadow-xs"
+      class="flex flex-wrap items-center justify-between gap-3 border border-border bg-card p-3 text-sm"
     >
       <div class="flex items-center gap-2">
         <Badge
@@ -149,7 +151,7 @@ function formatDateTime(iso: string) {
         <span v-else class="inline-flex items-center gap-1 text-xs text-muted-foreground">
           <PhBellSlash class="size-3.5" aria-hidden="true" /> This device is not subscribed
         </span>
-        <Button variant="ghost" size="sm" as-child class="h-7 text-xs">
+        <Button variant="ghost" size="sm" as-child>
           <NuxtLink :to="paths.account()">
             Device settings
           </NuxtLink>
@@ -179,7 +181,7 @@ function formatDateTime(iso: string) {
             <Badge
               v-if="severity === 'info'"
               variant="outline"
-              class="border-info/40 bg-info-subtle text-info"
+              class="border-band-border bg-accent text-accent-foreground"
             >
               <PhBell aria-hidden="true" /> Info notice
             </Badge>
@@ -222,6 +224,7 @@ function formatDateTime(iso: string) {
         <div class="flex flex-wrap items-center justify-between gap-2 pt-2">
           <p class="text-xs text-muted-foreground touch:text-sm">
             Notifications are sent to all staff devices and saved to clinic history.
+            <span class="hidden kb:inline"><ShortcutHint keys="Ctrl+S" /> to send</span>
           </p>
           <div class="flex items-center gap-2">
             <Button
@@ -248,7 +251,7 @@ function formatDateTime(iso: string) {
     <!-- Notification history table -->
     <AppPanel title="Notification history" flush>
       <template #actions>
-        <Button variant="ghost" size="sm" class="h-8 gap-1 text-xs" @click="() => refetch()">
+        <Button variant="ghost" size="sm" @click="() => refetch()">
           <PhArrowsClockwise aria-hidden="true" /> Refresh
         </Button>
       </template>
@@ -285,7 +288,11 @@ function formatDateTime(iso: string) {
               >
                 {{ item.severity }}
               </Badge>
-              <Badge v-else variant="outline" class="capitalize">
+              <Badge
+                v-else
+                variant="outline"
+                class="border-band-border bg-accent text-accent-foreground capitalize"
+              >
                 {{ item.severity }}
               </Badge>
             </TableCell>
@@ -322,7 +329,7 @@ function formatDateTime(iso: string) {
               <Button
                 variant="ghost"
                 size="sm"
-                class="size-8 p-0 text-muted-foreground hover:text-destructive"
+                class="size-8 p-0 text-muted-foreground hover:text-destructive touch:size-11"
                 aria-label="Delete notification"
                 @click="confirmDelete(item)"
               >

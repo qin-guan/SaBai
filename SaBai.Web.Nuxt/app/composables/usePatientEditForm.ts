@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/vue-query'
 import { toast } from 'vue-sonner'
 import type { LocalPatientSummary } from '~/db/types'
 import type { PatientFormValues } from '~/utils/patientForm'
+import { syncLocalPatientTags } from '~/composables/useTags'
 
 function toFormValues(patient: LocalPatientSummary): PatientFormValues {
   return {
@@ -15,6 +16,7 @@ function toFormValues(patient: LocalPatientSummary): PatientFormValues {
     hasPoorCard: patient.hasPoorCard,
     hasBS2Card: patient.hasBS2Card,
     hasSabaiCard: patient.hasSabaiCard,
+    tags: [...(patient.tags ?? [])],
   }
 }
 
@@ -95,6 +97,7 @@ export function usePatientEditForm(
           current.id,
         ],
       )
+      await syncLocalPatientTags(current.id, values.tags)
       await refreshPendingCrudCount()
     }
     catch (error) {
@@ -126,7 +129,7 @@ export function usePatientEditForm(
 
     baseline.value = JSON.stringify(form.value)
     draft.clear(form.value)
-    toast.success('Patient details updated!')
+    toast.success('Patient details updated successfully!')
     return true
   }
 

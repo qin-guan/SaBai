@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PhArrowLeft, PhCheck, PhFilePdf, PhFloppyDisk, PhPencilSimple, PhStethoscope, PhUser, PhX } from '@phosphor-icons/vue'
+import { PhFloppyDisk, PhPencilSimple, PhStethoscope, PhUser, PhX } from '@phosphor-icons/vue'
 import { toast } from 'vue-sonner'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -15,7 +15,7 @@ const updateOutcome = useUpdateReferralOutcome()
 
 const patientCode = computed(() => {
   if (!referral.value) return ''
-  return formatPatientCode(referral.value.villageCode, referral.value.patientId)
+  return referral.value.patientDisplayId
 })
 
 useHead({
@@ -31,6 +31,9 @@ function cancelEditingOutcome() {
   isEditingOutcome.value = false
   outcomeDraft.value = ''
 }
+
+useSaveShortcut(saveOutcome, { enabled: () => isEditingOutcome.value })
+useKeyShortcut('e', startEditingOutcome, { enabled: () => !!referral.value && !isEditingOutcome.value })
 
 function saveOutcome() {
   if (!referral.value || updateOutcome.isPending.value) return
@@ -108,9 +111,9 @@ function saveOutcome() {
             </Button>
 
             <Button as-child variant="outline" size="sm" class="touch:h-10">
-              <NuxtLink :to="paths.consultsDetail(referral.patientId)">
+              <NuxtLink :to="paths.consultsDetail(referral.patientId, undefined, referral.consultId)">
                 <PhStethoscope class="size-4" aria-hidden="true" />
-                <span>Consults</span>
+                <span>Consult</span>
               </NuxtLink>
             </Button>
 
@@ -125,8 +128,24 @@ function saveOutcome() {
         </div>
       </section>
 
+      <!-- Referral Workflow Accordion -->
+      <div class="divide-y divide-border overflow-hidden border border-border bg-card">
+        <ReferralAccordionSection title="Patient Details" default-open>
+          <ReferralOverviewSection :referral="referral" />
+        </ReferralAccordionSection>
+        <ReferralAccordionSection title="Referral Booth">
+          <ReferralBoothSection :key="referral.id" :referral="referral" />
+        </ReferralAccordionSection>
+        <ReferralAccordionSection title="Referral Party">
+          <ReferralPartySection :key="referral.id" :referral="referral" />
+        </ReferralAccordionSection>
+        <ReferralAccordionSection title="Money">
+          <ReferralMoneySection :key="referral.id" :referral="referral" />
+        </ReferralAccordionSection>
+      </div>
+
       <!-- Referral Details Card -->
-      <AppPanel title="Referral Information" flush>
+      <AppPanel title="Referral Status & Outcome" description="Care tracking and final outcome" flush>
         <dl class="divide-y divide-border text-xs touch:text-sm">
           <!-- Status -->
           <div class="grid grid-cols-1 gap-1.5 px-3 py-3 sm:grid-cols-[12rem_1fr] sm:items-center">
@@ -151,26 +170,6 @@ function saveOutcome() {
             </dd>
           </div>
 
-          <!-- Referred For -->
-          <div class="grid grid-cols-1 gap-1 px-3 py-3 sm:grid-cols-[12rem_1fr]">
-            <dt class="font-semibold text-muted-foreground">
-              Referred For
-            </dt>
-            <dd class="font-bold text-chrome">
-              {{ referral.referredFor }}
-            </dd>
-          </div>
-
-          <!-- Notes -->
-          <div class="grid grid-cols-1 gap-1 px-3 py-3 sm:grid-cols-[12rem_1fr]">
-            <dt class="font-semibold text-muted-foreground">
-              Referral Notes
-            </dt>
-            <dd class="text-foreground whitespace-pre-wrap">
-              {{ referral.referralNotes || 'No notes entered' }}
-            </dd>
-          </div>
-
           <!-- Outcome -->
           <div class="grid grid-cols-1 gap-1.5 px-3 py-3 sm:grid-cols-[12rem_1fr]">
             <dt class="font-semibold text-muted-foreground">
@@ -184,6 +183,7 @@ function saveOutcome() {
                   placeholder="Enter referral outcome from hospital / external clinic..."
                   aria-label="Referral outcome"
                   class="text-xs touch:text-base border-input"
+                  @keydown.esc.stop="cancelEditingOutcome"
                 />
                 <div class="flex items-center gap-2 max-sm:[&>*]:flex-1">
                   <Button
@@ -206,6 +206,9 @@ function saveOutcome() {
                     <PhX class="size-3.5" aria-hidden="true" />
                     <span>Cancel</span>
                   </Button>
+                  <span class="ml-auto hidden text-xs text-muted-foreground kb:inline">
+                    <ShortcutHint keys="Ctrl+S" /> save · <ShortcutHint keys="Esc" /> cancel
+                  </span>
                 </div>
               </div>
 
@@ -226,6 +229,7 @@ function saveOutcome() {
                 >
                   <PhPencilSimple class="size-3.5" aria-hidden="true" />
                   <span>Edit outcome</span>
+                  <ShortcutHint class="hidden kb:inline-flex" keys="E" />
                 </Button>
               </div>
             </dd>
@@ -244,27 +248,26 @@ function saveOutcome() {
                 </template>
               </span>
 
-              <ConsultPdfLink
-                :consult-id="referral.consultId"
-                variant="outline"
-                size="sm"
-                label="View Consult PDF"
-                class="max-sm:w-full touch:h-10"
-              />
+              <div class="flex flex-wrap items-center gap-2 max-sm:w-full max-sm:[&>*]:flex-1">
+                <Button as-child variant="outline" size="sm" class="touch:h-10">
+                  <NuxtLink :to="paths.consultsDetail(referral.patientId, undefined, referral.consultId)">
+                    <PhStethoscope class="size-3.5" aria-hidden="true" />
+                    <span>View Consult</span>
+                  </NuxtLink>
+                </Button>
+
+                <ConsultPdfLink
+                  :consult-id="referral.consultId"
+                  variant="outline"
+                  size="sm"
+                  label="View Consult PDF"
+                  class="touch:h-10"
+                />
+              </div>
             </dd>
           </div>
         </dl>
       </AppPanel>
-
-      <!-- Back link -->
-      <div class="mt-2">
-        <Button as-child variant="ghost" size="sm" class="touch:h-10">
-          <NuxtLink :to="paths.referrals()">
-            <PhArrowLeft class="size-4" aria-hidden="true" />
-            <span>Back to Referrals</span>
-          </NuxtLink>
-        </Button>
-      </div>
     </template>
   </div>
 </template>

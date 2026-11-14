@@ -11,7 +11,7 @@ public sealed class Endpoint(SyncUploadProcessor processor) : Endpoint<Request, 
     public override void Configure()
     {
         Post("/sync/upload");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.Admin, StaffRoles.Member, StaffRoles.Pn);
         Summary(s => s.Summary = "Apply a batch of offline PowerSync CRUD operations idempotently");
     }
 

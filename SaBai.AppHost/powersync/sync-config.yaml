@@ -205,8 +205,21 @@ streams:
           "UpdatedAt" AS updated_at,
           "Details" AS details,
           "Category" AS category,
+          "CodingSystem" AS coding_system,
+          "Code" AS code,
+          "CodeDisplay" AS code_display,
           "ConsultId" AS consult_id
         FROM "Diagnoses"
+      - >
+        SELECT
+          "Id" AS id,
+          "Version" AS version,
+          "UpdatedAt" AS updated_at,
+          "Name" AS name,
+          "Remarks" AS remarks,
+          "IsActive" AS is_active,
+          "CreatedAt" AS created_at
+        FROM "ReferralPartners"
       - >
         SELECT
           "Id" AS id,
@@ -217,8 +230,36 @@ streams:
           "ReferralState" AS referral_state,
           "ReferralOutcome" AS referral_outcome,
           "ConsultId" AS consult_id,
-          "CreatedAt" AS created_at
+          "CreatedAt" AS created_at,
+          "ReferredToId" AS referred_to_id,
+          "MemberInChargeId" AS member_in_charge_id,
+          "GuardiansContacted" AS guardians_contacted,
+          "ClassOfService" AS class_of_service,
+          "DescriptionOfService" AS description_of_service,
+          "PatientSummaryFromScreening" AS patient_summary_from_screening,
+          "RemarksAtBooth" AS remarks_at_booth,
+          "MemberOnRunId" AS member_on_run_id,
+          "PresentAtReferralParty" AS present_at_referral_party,
+          "ReferralPartyResults" AS referral_party_results,
+          "FollowUp" AS follow_up,
+          "DoctorsUpdated" AS doctors_updated,
+          "AmountPaidUsd" AS amount_paid_usd,
+          "AmountPaidRiels" AS amount_paid_riels,
+          "MemberWhoPaidId" AS member_who_paid_id
         FROM "Referrals"
+      - >
+        SELECT
+          "Id" AS id,
+          "Name" AS name,
+          "NormalizedName" AS normalized_name,
+          "CreatedAt" AS created_at
+        FROM "Tags"
+      - >
+        SELECT
+          "Id" AS id,
+          "PatientId" AS patient_id,
+          "TagId" AS tag_id
+        FROM "PatientTags"
       - >
         SELECT
           "Id" AS id,
@@ -227,7 +268,9 @@ streams:
           "Name" AS name,
           "UnitOfMeasurement" AS unit_of_measurement,
           "FallBelow" AS fall_below,
-          "Remarks" AS remarks
+          "Remarks" AS remarks,
+          "RxNormCode" AS rx_norm_code,
+          "AtcCode" AS atc_code
         FROM "MedicationActiveIngredients"
       - >
         SELECT

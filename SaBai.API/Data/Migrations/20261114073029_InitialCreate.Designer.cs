@@ -13,7 +13,7 @@ using SaBai.API.Data;
 namespace SaBai.API.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261113122745_InitialCreate")]
+    [Migration("20261114073029_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -563,6 +563,15 @@ namespace SaBai.API.Data.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
 
+                    b.Property<string>("Code")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CodeDisplay")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CodingSystem")
+                        .HasColumnType("text");
+
                     b.Property<Guid>("ConsultId")
                         .HasColumnType("uuid");
 
@@ -581,6 +590,40 @@ namespace SaBai.API.Data.Migrations
                     b.HasIndex("ConsultId");
 
                     b.ToTable("Diagnoses");
+                });
+
+            modelBuilder.Entity("SaBai.API.Domain.DisclosureLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("DisclosedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("DisclosedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Purpose")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("Recipient")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PatientId", "DisclosedAt");
+
+                    b.ToTable("DisclosureLogs");
                 });
 
             modelBuilder.Entity("SaBai.API.Domain.Eyesight", b =>
@@ -640,6 +683,9 @@ namespace SaBai.API.Data.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("AtcCode")
+                        .HasColumnType("text");
+
                     b.Property<int>("FallBelow")
                         .HasColumnType("integer");
 
@@ -649,6 +695,9 @@ namespace SaBai.API.Data.Migrations
                         .HasColumnType("character varying(255)");
 
                     b.Property<string>("Remarks")
+                        .HasColumnType("text");
+
+                    b.Property<string>("RxNormCode")
                         .HasColumnType("text");
 
                     b.Property<string>("UnitOfMeasurement")
@@ -892,6 +941,62 @@ namespace SaBai.API.Data.Migrations
                     b.ToTable("Patients");
                 });
 
+            modelBuilder.Entity("SaBai.API.Domain.PatientConsent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ConsentType")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<bool>("Granted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("RecordedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("RecordedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PatientId", "ConsentType");
+
+                    b.ToTable("PatientConsents");
+                });
+
+            modelBuilder.Entity("SaBai.API.Domain.PatientTag", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TagId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TagId");
+
+                    b.HasIndex("PatientId", "TagId")
+                        .IsUnique();
+
+                    b.ToTable("PatientTags");
+                });
+
             modelBuilder.Entity("SaBai.API.Domain.PubertyAssessment", b =>
                 {
                     b.Property<Guid>("Id")
@@ -952,16 +1057,58 @@ namespace SaBai.API.Data.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
+                    b.Property<int?>("AmountPaidRiels")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal?>("AmountPaidUsd")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<string>("ClassOfService")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
                     b.Property<Guid>("ConsultId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("DescriptionOfService")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("DoctorsUpdated")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("FollowUp")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("GuardiansContacted")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<Guid?>("MemberInChargeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("MemberOnRunId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("MemberWhoPaidId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("PatientSummaryFromScreening")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("PresentAtReferralParty")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("ReferralNotes")
                         .HasColumnType("text");
 
                     b.Property<string>("ReferralOutcome")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ReferralPartyResults")
                         .HasColumnType("text");
 
                     b.Property<string>("ReferralState")
@@ -971,6 +1118,12 @@ namespace SaBai.API.Data.Migrations
 
                     b.Property<string>("ReferredFor")
                         .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("ReferredToId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("RemarksAtBooth")
                         .HasColumnType("text");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
@@ -983,7 +1136,45 @@ namespace SaBai.API.Data.Migrations
 
                     b.HasIndex("ConsultId");
 
+                    b.HasIndex("MemberInChargeId");
+
+                    b.HasIndex("MemberOnRunId");
+
+                    b.HasIndex("MemberWhoPaidId");
+
+                    b.HasIndex("ReferredToId");
+
                     b.ToTable("Referrals");
+                });
+
+            modelBuilder.Entity("SaBai.API.Domain.ReferralPartner", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("Remarks")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ReferralPartners");
                 });
 
             modelBuilder.Entity("SaBai.API.Domain.StaffPushSubscription", b =>
@@ -1094,6 +1285,21 @@ namespace SaBai.API.Data.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("StaffUsers", (string)null);
+                });
+
+            modelBuilder.Entity("SaBai.API.Domain.StaffUserTag", b =>
+                {
+                    b.Property<Guid>("StaffUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TagId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("StaffUserId", "TagId");
+
+                    b.HasIndex("TagId");
+
+                    b.ToTable("StaffUserTags");
                 });
 
             modelBuilder.Entity("SaBai.API.Domain.StockChange", b =>
@@ -1275,6 +1481,32 @@ namespace SaBai.API.Data.Migrations
                     b.HasIndex("Table", "RecordId");
 
                     b.ToTable("SyncRejections", (string)null);
+                });
+
+            modelBuilder.Entity("SaBai.API.Domain.Tag", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("NormalizedName")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedName")
+                        .IsUnique();
+
+                    b.ToTable("Tags");
                 });
 
             modelBuilder.Entity("SaBai.API.Domain.VillageCode", b =>
@@ -1565,6 +1797,17 @@ namespace SaBai.API.Data.Migrations
                     b.Navigation("Consult");
                 });
 
+            modelBuilder.Entity("SaBai.API.Domain.DisclosureLog", b =>
+                {
+                    b.HasOne("SaBai.API.Domain.Patient", "Patient")
+                        .WithMany()
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Patient");
+                });
+
             modelBuilder.Entity("SaBai.API.Domain.Eyesight", b =>
                 {
                     b.HasOne("SaBai.API.Domain.Visit", "Visit")
@@ -1653,6 +1896,36 @@ namespace SaBai.API.Data.Migrations
                     b.Navigation("VillageCode");
                 });
 
+            modelBuilder.Entity("SaBai.API.Domain.PatientConsent", b =>
+                {
+                    b.HasOne("SaBai.API.Domain.Patient", "Patient")
+                        .WithMany()
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Patient");
+                });
+
+            modelBuilder.Entity("SaBai.API.Domain.PatientTag", b =>
+                {
+                    b.HasOne("SaBai.API.Domain.Patient", "Patient")
+                        .WithMany("PatientTags")
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SaBai.API.Domain.Tag", "Tag")
+                        .WithMany("Patients")
+                        .HasForeignKey("TagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Patient");
+
+                    b.Navigation("Tag");
+                });
+
             modelBuilder.Entity("SaBai.API.Domain.PubertyAssessment", b =>
                 {
                     b.HasOne("SaBai.API.Domain.Vitals", "Vitals")
@@ -1672,7 +1945,35 @@ namespace SaBai.API.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("SaBai.API.Domain.StaffUser", "MemberInCharge")
+                        .WithMany()
+                        .HasForeignKey("MemberInChargeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SaBai.API.Domain.StaffUser", "MemberOnRun")
+                        .WithMany()
+                        .HasForeignKey("MemberOnRunId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SaBai.API.Domain.StaffUser", "MemberWhoPaid")
+                        .WithMany()
+                        .HasForeignKey("MemberWhoPaidId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SaBai.API.Domain.ReferralPartner", "ReferredTo")
+                        .WithMany("Referrals")
+                        .HasForeignKey("ReferredToId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Consult");
+
+                    b.Navigation("MemberInCharge");
+
+                    b.Navigation("MemberOnRun");
+
+                    b.Navigation("MemberWhoPaid");
+
+                    b.Navigation("ReferredTo");
                 });
 
             modelBuilder.Entity("SaBai.API.Domain.StaffPushSubscription", b =>
@@ -1684,6 +1985,25 @@ namespace SaBai.API.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("StaffUser");
+                });
+
+            modelBuilder.Entity("SaBai.API.Domain.StaffUserTag", b =>
+                {
+                    b.HasOne("SaBai.API.Domain.StaffUser", "StaffUser")
+                        .WithMany("UserTags")
+                        .HasForeignKey("StaffUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SaBai.API.Domain.Tag", "Tag")
+                        .WithMany("StaffUsers")
+                        .HasForeignKey("TagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("StaffUser");
+
+                    b.Navigation("Tag");
                 });
 
             modelBuilder.Entity("SaBai.API.Domain.StockChange", b =>
@@ -1780,12 +2100,31 @@ namespace SaBai.API.Data.Migrations
                 {
                     b.Navigation("Files");
 
+                    b.Navigation("PatientTags");
+
                     b.Navigation("Visits");
+                });
+
+            modelBuilder.Entity("SaBai.API.Domain.ReferralPartner", b =>
+                {
+                    b.Navigation("Referrals");
+                });
+
+            modelBuilder.Entity("SaBai.API.Domain.StaffUser", b =>
+                {
+                    b.Navigation("UserTags");
                 });
 
             modelBuilder.Entity("SaBai.API.Domain.StockChange", b =>
                 {
                     b.Navigation("OrderItems");
+                });
+
+            modelBuilder.Entity("SaBai.API.Domain.Tag", b =>
+                {
+                    b.Navigation("Patients");
+
+                    b.Navigation("StaffUsers");
                 });
 
             modelBuilder.Entity("SaBai.API.Domain.VillageCode", b =>

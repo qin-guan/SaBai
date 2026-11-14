@@ -39,6 +39,7 @@ public sealed class Vitals : ISyncEntity
 
     public decimal? Hba1c { get; set; }
 
+    [PhiData]
     public string? Others { get; set; }
 
     public PubertyAssessment? Puberty { get; set; }
@@ -73,6 +74,7 @@ public sealed class Eyesight : ISyncEntity
 
     public string? RightAstigmatism { get; set; }
 
+    [PhiData]
     public string? Comments { get; set; }
 
     public string? LeftPrescribedGlassesDegree { get; set; }
@@ -112,6 +114,7 @@ public sealed class PubertyAssessment : ISyncEntity
 
     public int? TesticularGrowthAge { get; set; }
 
+    [PhiData]
     public string? AdditionalNotes { get; set; }
 }
 

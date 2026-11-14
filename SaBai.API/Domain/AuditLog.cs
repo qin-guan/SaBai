@@ -20,6 +20,15 @@ public enum AuditAction
 
     /// <summary>A staff user ended their session.</summary>
     SignedOut,
+
+    /// <summary>A staff user viewed or queried PHI.</summary>
+    Read,
+
+    /// <summary>PHI was exported (e.g. PDF, file download, or FHIR bundle).</summary>
+    Exported,
+
+    /// <summary>PHI was disclosed to an external party or system.</summary>
+    Disclosed,
 }
 
 /// <summary>

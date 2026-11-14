@@ -87,6 +87,7 @@ async function submit() {
         [visitId, patientId, villageCodeId, now, 'Started'],
       )
     })
+    await syncLocalPatientTags(patientId, values.tags)
     await refreshPendingCrudCount()
   }
   catch (error) {

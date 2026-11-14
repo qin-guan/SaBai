@@ -6,7 +6,7 @@
  * (shared clinic devices) — see clearAllFormDrafts().
  */
 export const DRAFT_PREFIX = 'sabai:draft:'
-export const DRAFT_TTL_MS = 24 * 60 * 60 * 1000
+export const DRAFT_TTL_MS = 15 * 60 * 1000
 
 export interface StoredDraft<T> {
   values: T
@@ -15,12 +15,12 @@ export interface StoredDraft<T> {
 
 export function readDraft<T>(key: string): StoredDraft<T> | null {
   try {
-    const raw = window.localStorage.getItem(DRAFT_PREFIX + key)
+    const raw = window.sessionStorage.getItem(DRAFT_PREFIX + key)
     if (!raw)
       return null
     const draft = JSON.parse(raw) as StoredDraft<T>
     if (!draft || typeof draft.savedAt !== 'number' || Date.now() - draft.savedAt > DRAFT_TTL_MS) {
-      window.localStorage.removeItem(DRAFT_PREFIX + key)
+      window.sessionStorage.removeItem(DRAFT_PREFIX + key)
       return null
     }
     return draft
@@ -32,7 +32,7 @@ export function readDraft<T>(key: string): StoredDraft<T> | null {
 
 export function writeDraft<T>(key: string, values: T) {
   try {
-    window.localStorage.setItem(DRAFT_PREFIX + key, JSON.stringify({ values, savedAt: Date.now() }))
+    window.sessionStorage.setItem(DRAFT_PREFIX + key, JSON.stringify({ values, savedAt: Date.now() }))
   }
   catch {
     // Storage full / unavailable: drafts are best-effort.
@@ -41,13 +41,18 @@ export function writeDraft<T>(key: string, values: T) {
 
 export function removeDraft(key: string) {
   try {
-    window.localStorage.removeItem(DRAFT_PREFIX + key)
+    window.sessionStorage.removeItem(DRAFT_PREFIX + key)
   }
   catch {}
 }
 
 export function clearAllFormDrafts() {
   try {
+    for (const key of Object.keys(window.sessionStorage)) {
+      if (key.startsWith(DRAFT_PREFIX))
+        window.sessionStorage.removeItem(key)
+    }
+    // Also purge any legacy localStorage drafts from earlier versions.
     for (const key of Object.keys(window.localStorage)) {
       if (key.startsWith(DRAFT_PREFIX))
         window.localStorage.removeItem(key)
@@ -58,6 +63,7 @@ export function clearAllFormDrafts() {
 
 export function clearRecentPatients() {
   try {
+    window.sessionStorage.removeItem('sabai:recent-patients')
     window.localStorage.removeItem('sabai:recent-patients')
   }
   catch {}

@@ -34,6 +34,7 @@ export interface LocalPatientSummary {
   lastVisitId: string | null
   lastVisitDate: string | null
   createdAt: string
+  tags: string[]
 }
 
 export interface LocalVisitSummary {

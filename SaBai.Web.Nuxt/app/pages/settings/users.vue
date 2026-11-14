@@ -34,7 +34,7 @@ const users = computed(() => {
   if (!q)
     return all
   return all.filter(u =>
-    [u.nickname, u.userName, u.email ?? '', ...u.roles].some(x => matchesSearchText(x, q)),
+    [u.nickname, u.userName, u.email ?? '', ...u.roles, ...(u.tags ?? [])].some(x => matchesSearchText(x, q)),
   )
 })
 
@@ -94,7 +94,7 @@ function lockedLabel(user: StaffUser) {
       :breadcrumbs="[{ label: 'Home', to: '/' }, { label: 'Settings', to: paths.settings() }, { label: 'Staff Users' }]"
     >
       <template #actions>
-        <Input v-model="filter" type="search" placeholder="Filter by name, username, role…" aria-label="Filter staff users" class="w-56 max-sm:w-full" />
+        <Input v-model="filter" type="search" placeholder="Filter by name, username, role, tag…" aria-label="Filter staff users" class="w-56 max-sm:w-full" />
         <Button @click="open('edit', null)">
           <PhPlus aria-hidden="true" /> New Staff User
         </Button>
@@ -112,6 +112,7 @@ function lockedLabel(user: StaffUser) {
             <TableHead>Username</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Roles</TableHead>
+            <TableHead>Tags</TableHead>
             <TableHead>Status</TableHead>
             <TableHead class="text-right">
               Actions
@@ -141,6 +142,18 @@ function lockedLabel(user: StaffUser) {
                   {{ role }}
                 </Badge>
               </span>
+            </TableCell>
+            <TableCell data-label="Tags">
+              <span v-if="user.tags?.length" class="flex flex-wrap gap-1">
+                <Badge
+                  v-for="tag in user.tags"
+                  :key="tag"
+                  variant="secondary"
+                >
+                  {{ tag }}
+                </Badge>
+              </span>
+              <span v-else class="text-muted-foreground">—</span>
             </TableCell>
             <TableCell data-label="Status">
               <span class="flex flex-wrap gap-1">

@@ -13,7 +13,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request>
     public override void Configure()
     {
         Post("/sync/conflicts/{Id}/resolve");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.Admin, StaffRoles.Member, StaffRoles.Pn);
         Summary(s => s.Summary = "Mark a sync conflict as reviewed/resolved");
     }
 

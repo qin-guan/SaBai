@@ -29,7 +29,8 @@ public sealed record PatientItem(
     string DisplayId,
     string FilterString,
     DateTimeOffset? LastVisitDate,
-    Guid? LastVisitId
+    Guid? LastVisitId,
+    IReadOnlyList<string> Tags
 );
 
 /// <summary>Vitals recorded for the visit, or null when none exist.</summary>

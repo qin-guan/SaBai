@@ -138,7 +138,10 @@ useHead({ title: () => `${patient.value?.name ?? 'Patient'} · Sa'Bai` })
           </AppPanel>
         </div>
 
-        <PatientDetailsForm :key="patient.id" :patient="patient" />
+        <div class="flex min-w-0 flex-col gap-3">
+          <PatientDetailsForm :key="patient.id" :patient="patient" />
+          <PatientPrivacyPanel :patient-id="patient.id" />
+        </div>
       </div>
     </template>
   </div>

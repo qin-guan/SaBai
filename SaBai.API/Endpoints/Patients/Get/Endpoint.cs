@@ -11,7 +11,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
     public override void Configure()
     {
         Get("/patients/{Id}");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.Admin, StaffRoles.Member, StaffRoles.Pn);
         Summary(s => s.Summary = "Get a patient");
     }
 
@@ -50,6 +50,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             .ThenByDescending(x => x.Id)
             .Select(x => new { x.Id, x.Date })
             .FirstOrDefaultAsync(ct);
+        var tags = await TagSync.LoadPatientTagsAsync(db, row.Id, ct);
 
         await Send.OkAsync(
             new Response(
@@ -71,7 +72,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                 lastVisit?.Date,
                 lastVisit?.Id,
                 row.PhotoStoredFileName != null,
-                row.LatestFaceId != null
+                row.LatestFaceId != null,
+                tags
             ),
             ct
         );

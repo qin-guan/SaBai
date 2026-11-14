@@ -56,7 +56,7 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<Response>
     public override void Configure()
     {
         Get("/sync/attention");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.Admin, StaffRoles.Member, StaffRoles.Pn);
         Summary(s => s.Summary = "List unresolved sync conflicts, rejections, and potential duplicate patients");
     }
 

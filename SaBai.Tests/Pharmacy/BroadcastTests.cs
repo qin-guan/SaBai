@@ -4,6 +4,7 @@ using SaBai.Tests.Support;
 namespace SaBai.Tests.Pharmacy;
 
 [ClassDataSource<AppFixture>(Shared = SharedType.PerTestSession)]
+[NotInParallel("Broadcasts")]
 public sealed class BroadcastTests(AppFixture fixture)
 {
     [Test]

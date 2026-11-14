@@ -241,6 +241,116 @@ public sealed class ReferralTests(AppFixture fixture)
         await Assert.That(body.GetProperty("referralOutcome").GetString()).IsEqualTo("booked");
     }
 
+    [Test]
+    public async Task ScopedSectionUpdates_DoNotOverwriteOtherSections()
+    {
+        // Arrange
+        var client = fixture.CreateApiClient();
+        await client.LoginAsync();
+        var suffix = ClinicSetup.Suffix();
+        var (consultId, _) = await CreateConsultAsync(client, $"Sections {suffix}");
+        var created = await client.PostAsJsonAsync(
+            "/referrals",
+            new { consultId, referredFor = $"cardiology {suffix}" },
+            ApiJson.Options
+        );
+        created.EnsureSuccessStatusCode();
+        var id = ClinicSetup.ReadGuid(
+            await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
+            "id"
+        );
+
+        var partnerCreated = await client.PostAsJsonAsync(
+            "/referral-partners",
+            new { name = $"Partner {suffix}", remarks = "Main hospital", isActive = true },
+            ApiJson.Options
+        );
+        partnerCreated.EnsureSuccessStatusCode();
+        var partnerId = (await partnerCreated.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options))
+            .GetProperty("id")
+            .GetGuid();
+
+        // Act: update booth, then party, then money independently
+        var boothRes = await client.PatchAsJsonAsync(
+            $"/referrals/{id}/booth",
+            new
+            {
+                id,
+                referredToId = partnerId,
+                guardiansContacted = "NotApplicable",
+                classOfService = "ChronicManagement",
+                descriptionOfService = "Echo",
+                patientSummaryFromScreening = "Shortness of breath",
+                remarksAtBooth = "Bring old ECG",
+            },
+            ApiJson.Options
+        );
+        var partyRes = await client.PatchAsJsonAsync(
+            $"/referrals/{id}/party",
+            new
+            {
+                id,
+                presentAtReferralParty = true,
+                referralPartyResults = "Normal sinus rhythm",
+                followUp = true,
+                doctorsUpdated = true,
+            },
+            ApiJson.Options
+        );
+        var moneyRes = await client.PatchAsJsonAsync(
+            $"/referrals/{id}/money",
+            new
+            {
+                id,
+                amountPaidUsd = 25.50m,
+                amountPaidRiels = 40000,
+            },
+            ApiJson.Options
+        );
+        var body = await moneyRes.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
+
+        // Assert
+        await Assert.That(boothRes.StatusCode).IsEqualTo(HttpStatusCode.OK);
+        await Assert.That(partyRes.StatusCode).IsEqualTo(HttpStatusCode.OK);
+        await Assert.That(moneyRes.StatusCode).IsEqualTo(HttpStatusCode.OK);
+        await Assert.That(body.GetProperty("referredToId").GetGuid()).IsEqualTo(partnerId);
+        await Assert.That(body.GetProperty("classOfService").GetString()).IsEqualTo("ChronicManagement");
+        await Assert.That(body.GetProperty("presentAtReferralParty").GetBoolean()).IsTrue();
+        await Assert.That(body.GetProperty("referralPartyResults").GetString()).IsEqualTo("Normal sinus rhythm");
+        await Assert.That(body.GetProperty("amountPaidUsd").GetDecimal()).IsEqualTo(25.50m);
+        await Assert.That(body.GetProperty("amountPaidRiels").GetInt32()).IsEqualTo(40000);
+    }
+
+    [Test]
+    public async Task UpdateMoney_NegativeAmount_ReturnsBadRequest()
+    {
+        // Arrange
+        var client = fixture.CreateApiClient();
+        await client.LoginAsync();
+        var suffix = ClinicSetup.Suffix();
+        var (consultId, _) = await CreateConsultAsync(client, $"MoneyBad {suffix}");
+        var created = await client.PostAsJsonAsync(
+            "/referrals",
+            new { consultId, referredFor = $"imaging {suffix}" },
+            ApiJson.Options
+        );
+        created.EnsureSuccessStatusCode();
+        var id = ClinicSetup.ReadGuid(
+            await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
+            "id"
+        );
+
+        // Act
+        var res = await client.PatchAsJsonAsync(
+            $"/referrals/{id}/money",
+            new { id, amountPaidUsd = -5m, amountPaidRiels = 1000 },
+            ApiJson.Options
+        );
+
+        // Assert
+        await Assert.That(res.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
+    }
+
     private static async Task<(Guid ConsultId, Guid VisitId)> CreateConsultAsync(
         HttpClient client,
         string patientName

@@ -18,7 +18,13 @@ export const paths = {
   dental: () => "/dental",
   dentalDetail: (patientId: string | number, visitId?: string | number) => withVisit(`/dental/${patientId}`, visitId),
   consults: () => "/consults",
-  consultsDetail: (patientId: string | number, visitId?: string | number) => withVisit(`/consults/${patientId}`, visitId),
+  consultsDetail: (patientId: string | number, visitId?: string | number, consultId?: string | number) => {
+    const query = new URLSearchParams();
+    if (visitId !== undefined) query.set("visit", String(visitId));
+    if (consultId !== undefined) query.set("consult", String(consultId));
+    const qs = query.toString();
+    return qs ? `/consults/${patientId}?${qs}` : `/consults/${patientId}`;
+  },
   consultPdf: (consultId: string | number) => `/api/consults/${consultId}/pdf`,
   referrals: () => "/referrals",
   referralsDetail: (referralId: string | number) => `/referrals/${referralId}`,
@@ -30,6 +36,7 @@ export const paths = {
   settingsSync: () => "/settings/sync",
   settingsNotifications: () => "/settings/notifications",
   settingsVillageCodes: () => "/settings/village-codes",
+  settingsReferralPartners: () => "/settings/referral-partners",
   settingsUsers: () => "/settings/users",
   /** The audit log, optionally filtered to one record's or one staff user's history. */
   settingsAuditLog: (filter?: { entityType?: string; entityId?: string | number; userId?: string }) => {

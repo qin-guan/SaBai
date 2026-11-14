@@ -24,5 +24,6 @@ public sealed record Response(
     Guid VisitId,
     Guid? VitalsId,
     bool HasPhoto,
-    bool HasFace
+    bool HasFace,
+    IReadOnlyList<string> Tags
 );

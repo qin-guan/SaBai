@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { LocalPatientSummary } from '~/db/types'
+import { Badge } from '@/components/ui/badge'
 
 /**
  * Patient banner ("storyboard"): who you are charting on, always at the top of
@@ -27,14 +28,19 @@ const cards = computed(() =>
     <div class="flex min-w-0 items-center gap-3 sm:flex-1">
     <PatientPhoto :patient-id="props.patient.id" :has-photo="props.patient.hasPhoto" :size="48" alt="" zoomable :name="props.patient.name" />
     <div class="min-w-0 flex-1">
-      <p class="text-base font-bold leading-snug break-words sm:text-lg">
-        <NuxtLink v-if="props.to" :to="props.to" class="hover:text-primary hover:underline" :title="`Open ${props.patient.name}'s record`">
-          {{ props.patient.name }}
-        </NuxtLink>
-        <template v-else>
-          {{ props.patient.name }}
-        </template>
-      </p>
+      <div class="flex flex-wrap items-center gap-2">
+        <p class="text-base font-bold leading-snug break-words sm:text-lg">
+          <NuxtLink v-if="props.to" :to="props.to" class="hover:text-primary hover:underline" :title="`Open ${props.patient.name}'s record`">
+            {{ props.patient.name }}
+          </NuxtLink>
+          <template v-else>
+            {{ props.patient.name }}
+          </template>
+        </p>
+        <Badge v-for="tag in props.patient.tags ?? []" :key="tag" variant="secondary">
+          {{ tag }}
+        </Badge>
+      </div>
       <dl class="mt-0.5 flex flex-wrap gap-x-4 gap-y-0.5 text-xs touch:text-sm">
         <div class="flex gap-1">
           <dt class="text-muted-foreground">

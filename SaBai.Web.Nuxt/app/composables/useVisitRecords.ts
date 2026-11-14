@@ -154,6 +154,7 @@ export function useVisitConsults(visitId: MaybeRefOrGetter<string>) {
           remarks: c.remarks,
           doctorId: c.doctor_id,
           doctorName: c.doctor_name,
+          doctorNickname: c.doctor_name,
           diagnoses: diagnoses.map(d => ({ id: d.id, details: d.details, category: d.category })),
           orders: orders.map(o => ({
             id: o.id,
@@ -180,6 +181,23 @@ export function useVisitConsults(visitId: MaybeRefOrGetter<string>) {
       return { consults }
     },
     { enabled: enabledFor(visitId), watchDeps: [() => toValue(visitId)] },
+  )
+}
+
+export function useConsult(consultId: MaybeRefOrGetter<string | null | undefined>) {
+  return useLocalQuery<{ id: string, visitId: string } | null>(
+    ['consults'],
+    async () => {
+      const cid = toValue(consultId)
+      if (!cid) return null
+      const db = getPowerSyncInstance()
+      const row = await db.getOptional<{ id: string, visit_id: string }>(
+        'SELECT id, visit_id FROM consults WHERE id = ? LIMIT 1',
+        [cid],
+      )
+      return row ? { id: row.id, visitId: row.visit_id } : null
+    },
+    { enabled: enabledFor(consultId), watchDeps: [() => toValue(consultId)] },
   )
 }
 

@@ -18,6 +18,11 @@ const sampleReferral: ReferralListItem = {
   patientName: 'Sokha Chan',
   patientNumber: 42,
   patientDisplayId: 'SB0042',
+  patientDateOfBirth: '1990-01-01T00:00:00Z',
+  patientContactNo: '012345678',
+  patientHasPoorCard: false,
+  patientHasBS2Card: false,
+  patientHasSabaiCard: true,
   hasPhoto: true,
   villageCodeId: '01930000-0000-7000-8000-000000000002',
   villageCode: 'SB',
@@ -27,9 +32,26 @@ const sampleReferral: ReferralListItem = {
   referralState: 'New',
   referralOutcome: null,
   createdAt: '2026-11-10T08:00:00Z',
+  updatedAt: '2026-11-10T08:00:00Z',
   consultDate: '2026-11-10T07:45:00Z',
+  doctorId: '01930000-0000-7000-8000-000000000099',
   doctorName: 'Dr. Lim',
   doctorNickname: 'Dr. Lim',
+  referredToId: null,
+  memberInChargeId: null,
+  guardiansContacted: null,
+  classOfService: null,
+  descriptionOfService: null,
+  patientSummaryFromScreening: null,
+  remarksAtBooth: null,
+  memberOnRunId: null,
+  presentAtReferralParty: false,
+  referralPartyResults: null,
+  followUp: false,
+  doctorsUpdated: false,
+  amountPaidUsd: null,
+  amountPaidRiels: null,
+  memberWhoPaidId: null,
 }
 
 describe('referral constants & options', () => {
@@ -128,5 +150,37 @@ describe('matchesReferral filtering', () => {
     expect(matchesReferral(sampleReferral, { search: 'SB០0៤២' })).toBe(true)
     // with zero width space
     expect(matchesReferral(sampleReferral, { search: 'Sokha\u200BChan' })).toBe(true)
+  })
+})
+
+import { calculateAge } from '../../app/utils/patient'
+import {
+  ADULT_AGE,
+  GUARDIANS_CONTACTED_LABELS,
+  MAX_RIELS,
+  REFERRAL_SERVICE_CLASS_LABELS,
+  USD_AMOUNT_PATTERN,
+} from '../../app/utils/referral'
+
+describe('referrals overhaul helpers', () => {
+  it('computes age as of the referral date for minor/adult guardian check', () => {
+    const dob = '2008-10-15T00:00:00Z'
+    expect(calculateAge(dob, '2026-10-14T00:00:00Z')).toBe(17)
+    expect(calculateAge(dob, '2026-10-15T00:00:00Z')).toBe(ADULT_AGE)
+  })
+
+  it('validates USD amounts up to 2 decimal places', () => {
+    expect(USD_AMOUNT_PATTERN.test('0')).toBe(true)
+    expect(USD_AMOUNT_PATTERN.test('25.50')).toBe(true)
+    expect(USD_AMOUNT_PATTERN.test('99999999.99')).toBe(true)
+    expect(USD_AMOUNT_PATTERN.test('12.345')).toBe(false)
+    expect(USD_AMOUNT_PATTERN.test('-5')).toBe(false)
+    expect(USD_AMOUNT_PATTERN.test('abc')).toBe(false)
+  })
+
+  it('exposes labels for service classes and guardians contacted and max riels', () => {
+    expect(REFERRAL_SERVICE_CLASS_LABELS.ImagingDiagnostics).toBe('Imaging/Diagnostics')
+    expect(GUARDIANS_CONTACTED_LABELS.NotApplicable).toBe('Not Applicable')
+    expect(MAX_RIELS).toBe(2_147_483_647)
   })
 })

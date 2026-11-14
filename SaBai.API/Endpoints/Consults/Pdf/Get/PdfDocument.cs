@@ -29,6 +29,8 @@ public static class PdfDocument
 
     static PdfDocument()
     {
+        QuestPDF.Settings.License = LicenseType.Community;
+
         var assembly = typeof(PdfDocument).Assembly;
         foreach (
             var resource in new[]

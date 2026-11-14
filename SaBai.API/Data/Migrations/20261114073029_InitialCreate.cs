@@ -90,11 +90,30 @@ namespace SaBai.API.Data.Migrations
                     Name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     UnitOfMeasurement = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     FallBelow = table.Column<int>(type: "integer", nullable: false),
-                    Remarks = table.Column<string>(type: "text", nullable: true)
+                    Remarks = table.Column<string>(type: "text", nullable: true),
+                    RxNormCode = table.Column<string>(type: "text", nullable: true),
+                    AtcCode = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_MedicationActiveIngredients", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ReferralPartners",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Version = table.Column<int>(type: "integer", nullable: false),
+                    Name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    Remarks = table.Column<string>(type: "text", nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ReferralPartners", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -163,6 +182,20 @@ namespace SaBai.API.Data.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_SyncRejections", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Tags",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
+                    NormalizedName = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Tags", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -334,6 +367,30 @@ namespace SaBai.API.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "StaffUserTags",
+                columns: table => new
+                {
+                    StaffUserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    TagId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StaffUserTags", x => new { x.StaffUserId, x.TagId });
+                    table.ForeignKey(
+                        name: "FK_StaffUserTags_StaffUsers_StaffUserId",
+                        column: x => x.StaffUserId,
+                        principalTable: "StaffUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_StaffUserTags_Tags_TagId",
+                        column: x => x.TagId,
+                        principalTable: "Tags",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Patients",
                 columns: table => new
                 {
@@ -394,6 +451,29 @@ namespace SaBai.API.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "DisclosureLogs",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    PatientId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Recipient = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    Purpose = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: true),
+                    DisclosedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    DisclosedByUserId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DisclosureLogs", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_DisclosureLogs_Patients_PatientId",
+                        column: x => x.PatientId,
+                        principalTable: "Patients",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Files",
                 columns: table => new
                 {
@@ -415,6 +495,55 @@ namespace SaBai.API.Data.Migrations
                         name: "FK_Files_Patients_PatientId",
                         column: x => x.PatientId,
                         principalTable: "Patients",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PatientConsents",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    PatientId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ConsentType = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
+                    Granted = table.Column<bool>(type: "boolean", nullable: false),
+                    RecordedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    RevokedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    RecordedByUserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Notes = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PatientConsents", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PatientConsents_Patients_PatientId",
+                        column: x => x.PatientId,
+                        principalTable: "Patients",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PatientTags",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    PatientId = table.Column<Guid>(type: "uuid", nullable: false),
+                    TagId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PatientTags", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PatientTags_Patients_PatientId",
+                        column: x => x.PatientId,
+                        principalTable: "Patients",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PatientTags_Tags_TagId",
+                        column: x => x.TagId,
+                        principalTable: "Tags",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -662,6 +791,9 @@ namespace SaBai.API.Data.Migrations
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     Details = table.Column<string>(type: "text", nullable: false),
                     Category = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
+                    CodingSystem = table.Column<string>(type: "text", nullable: true),
+                    Code = table.Column<string>(type: "text", nullable: true),
+                    CodeDisplay = table.Column<string>(type: "text", nullable: true),
                     ConsultId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
@@ -728,7 +860,22 @@ namespace SaBai.API.Data.Migrations
                     ReferralState = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
                     ReferralOutcome = table.Column<string>(type: "text", nullable: true),
                     ConsultId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    ReferredToId = table.Column<Guid>(type: "uuid", nullable: true),
+                    MemberInChargeId = table.Column<Guid>(type: "uuid", nullable: true),
+                    GuardiansContacted = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: true),
+                    ClassOfService = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: true),
+                    DescriptionOfService = table.Column<string>(type: "text", nullable: true),
+                    PatientSummaryFromScreening = table.Column<string>(type: "text", nullable: true),
+                    RemarksAtBooth = table.Column<string>(type: "text", nullable: true),
+                    MemberOnRunId = table.Column<Guid>(type: "uuid", nullable: true),
+                    PresentAtReferralParty = table.Column<bool>(type: "boolean", nullable: false),
+                    ReferralPartyResults = table.Column<string>(type: "text", nullable: true),
+                    FollowUp = table.Column<bool>(type: "boolean", nullable: false),
+                    DoctorsUpdated = table.Column<bool>(type: "boolean", nullable: false),
+                    AmountPaidUsd = table.Column<decimal>(type: "numeric(10,2)", precision: 10, scale: 2, nullable: true),
+                    AmountPaidRiels = table.Column<int>(type: "integer", nullable: true),
+                    MemberWhoPaidId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -737,6 +884,30 @@ namespace SaBai.API.Data.Migrations
                         name: "FK_Referrals_Consults_ConsultId",
                         column: x => x.ConsultId,
                         principalTable: "Consults",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Referrals_ReferralPartners_ReferredToId",
+                        column: x => x.ReferredToId,
+                        principalTable: "ReferralPartners",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Referrals_StaffUsers_MemberInChargeId",
+                        column: x => x.MemberInChargeId,
+                        principalTable: "StaffUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Referrals_StaffUsers_MemberOnRunId",
+                        column: x => x.MemberOnRunId,
+                        principalTable: "StaffUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Referrals_StaffUsers_MemberWhoPaidId",
+                        column: x => x.MemberWhoPaidId,
+                        principalTable: "StaffUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -899,6 +1070,11 @@ namespace SaBai.API.Data.Migrations
                 column: "ConsultId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_DisclosureLogs_PatientId_DisclosedAt",
+                table: "DisclosureLogs",
+                columns: new[] { "PatientId", "DisclosedAt" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Eyesights_VisitId",
                 table: "Eyesights",
                 column: "VisitId",
@@ -950,6 +1126,11 @@ namespace SaBai.API.Data.Migrations
                 column: "Status");
 
             migrationBuilder.CreateIndex(
+                name: "IX_PatientConsents_PatientId_ConsentType",
+                table: "PatientConsents",
+                columns: new[] { "PatientId", "ConsentType" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Patients_IdentificationNumber",
                 table: "Patients",
                 column: "IdentificationNumber");
@@ -969,6 +1150,17 @@ namespace SaBai.API.Data.Migrations
                 name: "IX_Patients_VillageCodeId",
                 table: "Patients",
                 column: "VillageCodeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PatientTags_PatientId_TagId",
+                table: "PatientTags",
+                columns: new[] { "PatientId", "TagId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PatientTags_TagId",
+                table: "PatientTags",
+                column: "TagId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PubertyAssessments_VitalsId",
@@ -993,6 +1185,26 @@ namespace SaBai.API.Data.Migrations
                 column: "ConsultId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Referrals_MemberInChargeId",
+                table: "Referrals",
+                column: "MemberInChargeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Referrals_MemberOnRunId",
+                table: "Referrals",
+                column: "MemberOnRunId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Referrals_MemberWhoPaidId",
+                table: "Referrals",
+                column: "MemberWhoPaidId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Referrals_ReferredToId",
+                table: "Referrals",
+                column: "ReferredToId");
+
+            migrationBuilder.CreateIndex(
                 name: "EmailIndex",
                 table: "StaffUsers",
                 column: "NormalizedEmail",
@@ -1003,6 +1215,11 @@ namespace SaBai.API.Data.Migrations
                 table: "StaffUsers",
                 column: "NormalizedUserName",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StaffUserTags_TagId",
+                table: "StaffUserTags",
+                column: "TagId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_StockChanges_StockId",
@@ -1033,6 +1250,12 @@ namespace SaBai.API.Data.Migrations
                 name: "IX_SyncRejections_Table_RecordId",
                 table: "SyncRejections",
                 columns: new[] { "Table", "RecordId" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tags_NormalizedName",
+                table: "Tags",
+                column: "NormalizedName",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_VillageCodes_Code",
@@ -1099,10 +1322,19 @@ namespace SaBai.API.Data.Migrations
                 name: "Diagnoses");
 
             migrationBuilder.DropTable(
+                name: "DisclosureLogs");
+
+            migrationBuilder.DropTable(
                 name: "Eyesights");
 
             migrationBuilder.DropTable(
                 name: "OrderItems");
+
+            migrationBuilder.DropTable(
+                name: "PatientConsents");
+
+            migrationBuilder.DropTable(
+                name: "PatientTags");
 
             migrationBuilder.DropTable(
                 name: "PubertyAssessments");
@@ -1112,6 +1344,9 @@ namespace SaBai.API.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "Referrals");
+
+            migrationBuilder.DropTable(
+                name: "StaffUserTags");
 
             migrationBuilder.DropTable(
                 name: "SyncConflicts");
@@ -1133,6 +1368,12 @@ namespace SaBai.API.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "Vitals");
+
+            migrationBuilder.DropTable(
+                name: "ReferralPartners");
+
+            migrationBuilder.DropTable(
+                name: "Tags");
 
             migrationBuilder.DropTable(
                 name: "Consults");

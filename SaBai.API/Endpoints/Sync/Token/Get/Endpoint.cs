@@ -13,7 +13,7 @@ public sealed class Endpoint(SyncTokenService tokens, IConfiguration configurati
     public override void Configure()
     {
         Get("/sync/token");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.Admin, StaffRoles.Member, StaffRoles.Pn);
         Summary(s => s.Summary = "Mint a short-lived PowerSync JWT for the signed-in staff user");
     }
 

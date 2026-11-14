@@ -176,4 +176,51 @@ public sealed class SyncUploadProcessorTests
         await Assert.That(expiresAt > DateTimeOffset.UtcNow).IsTrue();
         await Assert.That(jwks.Contains("sabai-sync-1")).IsTrue();
     }
+
+    [Test]
+    public async Task ReferralDeskAndPatientTags_SyncAndRespectPnScope()
+    {
+        await using var db = CreateDb();
+        var processor = new SyncUploadProcessor(db);
+        var member = StaffPrincipal(Guid.CreateVersion7());
+        var pnUser = StaffPrincipal(Guid.CreateVersion7(), StaffRoles.Pn);
+
+        var patientId = Guid.CreateVersion7();
+        var tagAId = Guid.CreateVersion7();
+        var tagBId = Guid.CreateVersion7();
+        var consultId = Guid.CreateVersion7();
+        var partnerId = Guid.CreateVersion7();
+        var referralId = Guid.CreateVersion7();
+
+        // Member registers patient + two offline tags with the same case-insensitive name
+        var memberOps = new[]
+        {
+            new SyncCrudOp("PUT", "patients", patientId, Json(new { name = "Tagged Patient", gender = "Female", date_of_birth = "1995-01-01T00:00:00Z" })),
+            new SyncCrudOp("PUT", "tags", tagAId, Json(new { name = "Follow-Up" })),
+            new SyncCrudOp("PUT", "tags", tagBId, Json(new { name = "follow-up" })),
+            new SyncCrudOp("PUT", "patient_tags", Guid.CreateVersion7(), Json(new { patient_id = patientId, tag_id = tagBId, tag_name = "follow-up" })),
+            new SyncCrudOp("PUT", "consults", consultId, Json(new { visit_id = Guid.CreateVersion7(), doctor_id = Guid.CreateVersion7(), date = DateTimeOffset.UtcNow.ToString("O") })),
+        };
+        var res1 = await processor.ProcessAsync(memberOps, member, CancellationToken.None);
+        await Assert.That(res1.Applied).IsEqualTo(5);
+        await Assert.That(await db.Tags.CountAsync()).IsEqualTo(1);
+        await Assert.That(await db.PatientTags.CountAsync()).IsEqualTo(1);
+
+        // PN user can create referral partner and update referral booth/party/money, but cannot edit patients
+        var pnOps = new[]
+        {
+            new SyncCrudOp("PUT", "referral_partners", partnerId, Json(new { name = "Provincial Hospital", is_active = true }), OpId: 1),
+            new SyncCrudOp("PUT", "referrals", referralId, Json(new { consult_id = consultId, referred_for = "Cardiology", referred_to_id = partnerId, class_of_service = "ChronicManagement", present_at_referral_party = true, amount_paid_usd = 15.5m }), OpId: 2),
+            new SyncCrudOp("PATCH", "patients", patientId, Json(new { name = "Unauthorized Edit" }), OpId: 3),
+        };
+        var res2 = await processor.ProcessAsync(pnOps, pnUser, CancellationToken.None);
+        await Assert.That(res2.Applied).IsEqualTo(2);
+        await Assert.That(res2.Rejections.Count).IsEqualTo(1);
+
+        var savedReferral = await db.Referrals.SingleAsync();
+        await Assert.That(savedReferral.ReferredToId).IsEqualTo(partnerId);
+        await Assert.That(savedReferral.ClassOfService).IsEqualTo(ReferralServiceClass.ChronicManagement);
+        await Assert.That(savedReferral.PresentAtReferralParty).IsTrue();
+        await Assert.That(savedReferral.AmountPaidUsd).IsEqualTo(15.5m);
+    }
 }

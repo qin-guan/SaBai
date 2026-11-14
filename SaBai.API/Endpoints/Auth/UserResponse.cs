@@ -18,6 +18,7 @@ public sealed record UserResponse(
     string? Email,
     string Nickname,
     IReadOnlyList<string> Roles,
+    IReadOnlyList<string> Tags,
     bool IsLocked,
     DateTimeOffset? LockoutEnd,
     bool TwoFactorEnabled,
@@ -25,13 +26,18 @@ public sealed record UserResponse(
     DateTimeOffset CreatedAt
 )
 {
-    public static UserResponse From(StaffUser user, IEnumerable<string> roles) =>
+    public static UserResponse From(
+        StaffUser user,
+        IEnumerable<string> roles,
+        IEnumerable<string>? tags = null
+    ) =>
         new(
             user.Id,
             user.UserName ?? "",
             user.Email,
             user.Nickname,
             roles.Order(StringComparer.Ordinal).ToList(),
+            (tags ?? []).Order(StringComparer.OrdinalIgnoreCase).ToList(),
             user.IsLockedOut(DateTimeOffset.UtcNow),
             user.IsLockedOut(DateTimeOffset.UtcNow) ? user.LockoutEnd : null,
             user.TwoFactorEnabled,
@@ -41,10 +47,12 @@ public sealed record UserResponse(
 
     public static async Task<UserResponse> FromAsync(
         StaffUser user,
-        UserManager<StaffUser> users
-    ) => From(user, await users.GetRolesAsync(user));
+        UserManager<StaffUser> users,
+        AppDbContext db,
+        CancellationToken ct = default
+    ) => From(user, await users.GetRolesAsync(user), await TagSync.LoadStaffUserTagsAsync(db, user.Id, ct));
 
-    /// <summary>Loads users with their roles in two queries instead of one per user.</summary>
+    /// <summary>Loads users with their roles and tags in bulk queries instead of per user.</summary>
     public static async Task<List<UserResponse>> ListAsync(
         AppDbContext db,
         IQueryable<StaffUser> query,
@@ -61,7 +69,8 @@ public sealed record UserResponse(
                 select new { userRole.UserId, role.Name }
             ).ToListAsync(ct)
         ).ToLookup(x => x.UserId, x => x.Name!);
+        var tags = await TagSync.LoadStaffUserTagsBulkAsync(db, ids, ct);
 
-        return users.Select(x => From(x, roles[x.Id])).ToList();
+        return users.Select(x => From(x, roles[x.Id], tags[x.Id])).ToList();
     }
 }

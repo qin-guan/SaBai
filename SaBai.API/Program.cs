@@ -80,11 +80,11 @@ builder
     .Services.AddIdentityCore<StaffUser>(options =>
     {
         options.User.RequireUniqueEmail = false; // optional; uniqueness enforced by an index
-        options.Password.RequiredLength = 8;
-        options.Password.RequireDigit = false;
-        options.Password.RequireLowercase = false;
-        options.Password.RequireUppercase = false;
-        options.Password.RequireNonAlphanumeric = false;
+        options.Password.RequiredLength = builder.Environment.IsDevelopment() ? 8 : 12;
+        options.Password.RequireDigit = !builder.Environment.IsDevelopment();
+        options.Password.RequireLowercase = !builder.Environment.IsDevelopment();
+        options.Password.RequireUppercase = !builder.Environment.IsDevelopment();
+        options.Password.RequireNonAlphanumeric = !builder.Environment.IsDevelopment();
         options.Lockout.AllowedForNewUsers = true;
         options.Lockout.MaxFailedAccessAttempts = 5;
         options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
@@ -103,7 +103,9 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.Cookie.Name = SessionCookieName;
     options.Cookie.HttpOnly = true;
     options.Cookie.SameSite = SameSiteMode.Lax;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
+        ? CookieSecurePolicy.SameAsRequest
+        : CookieSecurePolicy.Always;
     options.ExpireTimeSpan = TimeSpan.FromMinutes(auth.SessionLifetimeMinutes);
     options.SlidingExpiration = true;
     // An API answers with status codes instead of redirecting to a login page.
@@ -187,23 +189,27 @@ if (!push.IsEnabled)
     app.Logger.LogWarning("Push notifications are off: {Reason}", push.Problem);
 }
 
-app.MapOpenApi();
-
 app.MapDefaultEndpoints();
-app.MapScalarApiReference(options =>
-{
-    options.AddDocuments("v1");
-    options.OperationTitleSource = OperationTitleSource.Path;
-});
 
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
 {
+    app.MapOpenApi();
+    app.MapScalarApiReference(options =>
+    {
+        options.AddDocuments("v1");
+        options.OperationTitleSource = OperationTitleSource.Path;
+    });
+}
+else
+{
+    app.UseHsts();
     app.UseHttpsRedirection();
 }
 
 app.UseCors(webCorsPolicy);
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<PhiAccessAuditMiddleware>();
 app.UseFastEndpoints(config =>
 {
     config.Errors.UseProblemDetails();

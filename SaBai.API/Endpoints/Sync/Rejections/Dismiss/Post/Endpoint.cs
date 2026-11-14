@@ -13,7 +13,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request>
     public override void Configure()
     {
         Post("/sync/rejections/{Id}/dismiss");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.Admin, StaffRoles.Member, StaffRoles.Pn);
         Summary(s => s.Summary = "Dismiss a sync rejection after staff review");
     }
 

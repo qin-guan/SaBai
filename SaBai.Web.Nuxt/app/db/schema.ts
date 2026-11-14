@@ -216,10 +216,22 @@ const diagnoses = new Table(
     updated_at: column.text,
     details: column.text,
     category: column.text,
+    coding_system: column.text,
+    code: column.text,
+    code_display: column.text,
     consult_id: column.text,
   },
   { indexes: { consult: ['consult_id'] } },
 )
+
+const referral_partners = new Table({
+  version: column.integer,
+  updated_at: column.text,
+  name: column.text,
+  remarks: column.text,
+  is_active: column.integer,
+  created_at: column.text,
+})
 
 const referrals = new Table(
   {
@@ -231,8 +243,41 @@ const referrals = new Table(
     referral_outcome: column.text,
     consult_id: column.text,
     created_at: column.text,
+    referred_to_id: column.text,
+    member_in_charge_id: column.text,
+    guardians_contacted: column.text,
+    class_of_service: column.text,
+    description_of_service: column.text,
+    patient_summary_from_screening: column.text,
+    remarks_at_booth: column.text,
+    member_on_run_id: column.text,
+    present_at_referral_party: column.integer,
+    referral_party_results: column.text,
+    follow_up: column.integer,
+    doctors_updated: column.integer,
+    amount_paid_usd: column.real,
+    amount_paid_riels: column.integer,
+    member_who_paid_id: column.text,
   },
-  { indexes: { consult: ['consult_id'] } },
+  { indexes: { consult: ['consult_id'], partner: ['referred_to_id'] } },
+)
+
+const tags = new Table(
+  {
+    name: column.text,
+    normalized_name: column.text,
+    created_at: column.text,
+  },
+  { indexes: { normalized: ['normalized_name'] } },
+)
+
+const patient_tags = new Table(
+  {
+    patient_id: column.text,
+    tag_id: column.text,
+    tag_name: column.text,
+  },
+  { indexes: { patient: ['patient_id'], tag: ['tag_id'] } },
 )
 
 const medication_active_ingredients = new Table({
@@ -242,6 +287,8 @@ const medication_active_ingredients = new Table({
   unit_of_measurement: column.text,
   fall_below: column.integer,
   remarks: column.text,
+  rx_norm_code: column.text,
+  atc_code: column.text,
 })
 
 const medication_brands = new Table(
@@ -327,7 +374,10 @@ export const AppSchema = new Schema({
   dental_consults,
   consults,
   diagnoses,
+  referral_partners,
   referrals,
+  tags,
+  patient_tags,
   medication_active_ingredients,
   medication_brands,
   medication_stocks,

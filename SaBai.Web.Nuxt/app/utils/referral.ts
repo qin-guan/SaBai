@@ -6,6 +6,41 @@ import type { LocalReferralItem } from '~/composables/useReferrals'
 
 export type ReferralListItem = LocalReferralItem
 
+export const GUARDIANS_CONTACTED = ['Yes', 'No', 'NotApplicable'] as const
+export type GuardiansContacted = (typeof GUARDIANS_CONTACTED)[number]
+
+export const GUARDIANS_CONTACTED_LABELS: Record<GuardiansContacted, string> = {
+  Yes: 'Yes',
+  No: 'No',
+  NotApplicable: 'Not Applicable',
+}
+
+export const REFERRAL_SERVICE_CLASSES = [
+  'ChronicManagement',
+  'ImagingDiagnostics',
+  'DefinitiveTreatment',
+  'SymptomaticTreatment',
+] as const
+export type ReferralServiceClass = (typeof REFERRAL_SERVICE_CLASSES)[number]
+
+export const REFERRAL_SERVICE_CLASS_LABELS: Record<ReferralServiceClass, string> = {
+  ChronicManagement: 'Chronic Management',
+  ImagingDiagnostics: 'Imaging/Diagnostics',
+  DefinitiveTreatment: 'Definitive Treatment',
+  SymptomaticTreatment: 'Symptomatic Treatment',
+}
+
+export const REFERRAL_SERVICE_CLASS_OPTIONS: Option<ReferralServiceClass>[] = REFERRAL_SERVICE_CLASSES.map(c => ({
+  value: c,
+  label: REFERRAL_SERVICE_CLASS_LABELS[c],
+}))
+
+export const ADULT_AGE = 18
+export const USD_AMOUNT_PATTERN = /^\d{1,8}(\.\d{1,2})?$/
+export const MAX_RIELS = 2_147_483_647
+
+export type ReferralDetail = LocalReferralItem
+
 /**
  * Natural lifecycle order of referral states.
  */

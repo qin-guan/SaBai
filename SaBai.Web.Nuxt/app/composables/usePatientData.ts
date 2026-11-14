@@ -2,6 +2,10 @@ import type { MaybeRefOrGetter } from 'vue'
 import type { LocalPatientSummary, LocalPatientWithLatestVisit, LocalVisitSummary } from '~/db/types'
 import type { Journey } from '~/utils/journey'
 
+export type PatientDetail = LocalPatientSummary
+export type PatientListItem = LocalPatientSummary
+export type PatientWithLatestVisitItem = LocalPatientWithLatestVisit
+
 interface RawPatientRow {
   id: string
   number: number | null
@@ -57,14 +61,14 @@ function normalizeGender(raw: string | null | undefined): 'male' | 'female' | 'o
   return 'female'
 }
 
-function mapPatient(r: RawPatientRow): LocalPatientSummary {
+function mapPatient(r: RawPatientRow, tags: string[] = []): LocalPatientSummary {
   const num = Number(r.number ?? 0)
   const displayId = formatDisplayId(r.village_code, num)
   return {
     id: r.id,
     number: num,
     displayId,
-    filterString: `${displayId} ${r.name} ${r.identification_number ?? ''} ${r.contact_no ?? ''}`.toLowerCase(),
+    filterString: `${displayId} ${r.name} ${r.identification_number ?? ''} ${r.contact_no ?? ''} ${tags.join(' ')}`.toLowerCase(),
     villageCodeId: r.village_code_id,
     villageCode: r.village_code,
     villageColorHex: r.village_color_hex ?? undefined,
@@ -84,7 +88,31 @@ function mapPatient(r: RawPatientRow): LocalPatientSummary {
     lastVisitId: r.last_visit_id ?? null,
     lastVisitDate: r.last_visit_date ?? null,
     createdAt: r.created_at,
+    tags,
   }
+}
+
+async function loadTagsByPatient(): Promise<Map<string, string[]>> {
+  const db = getPowerSyncInstance()
+  const rows = await db.getAll<{ patient_id: string, name: string | null }>(
+    `SELECT pt.patient_id, COALESCE(t.name, pt.tag_name) AS name
+     FROM patient_tags pt
+     LEFT JOIN tags t ON t.id = pt.tag_id
+     ORDER BY COALESCE(t.name, pt.tag_name) ASC`,
+  )
+  const map = new Map<string, string[]>()
+  for (const r of rows) {
+    if (!r.name) continue
+    let list = map.get(r.patient_id)
+    if (!list) {
+      list = []
+      map.set(r.patient_id, list)
+    }
+    if (!list.includes(r.name)) {
+      list.push(r.name)
+    }
+  }
+  return map
 }
 
 function mapVisit(v: RawVisitJourneyRow): LocalVisitSummary {
@@ -143,16 +171,19 @@ const VISIT_JOURNEY_SQL = `
 /** All patients (used by the patients page and the global patient search). */
 export function usePatientsList() {
   return useLocalQuery<{ patients: LocalPatientSummary[] }>(
-    ['patients', 'village_codes'],
+    ['patients', 'village_codes', 'patient_tags', 'tags'],
     async () => {
       const db = getPowerSyncInstance()
-      const rows = await db.getAll<RawPatientRow>(
-        `SELECT p.*, vc.code AS village_code, vc.color_hex AS village_color_hex
-         FROM patients p
-         LEFT JOIN village_codes vc ON vc.id = p.village_code_id
-         ORDER BY p.created_at DESC`,
-      )
-      return { patients: rows.map(mapPatient) }
+      const [rows, tagsByPatient] = await Promise.all([
+        db.getAll<RawPatientRow>(
+          `SELECT p.*, vc.code AS village_code, vc.color_hex AS village_color_hex
+           FROM patients p
+           LEFT JOIN village_codes vc ON vc.id = p.village_code_id
+           ORDER BY p.created_at DESC`,
+        ),
+        loadTagsByPatient(),
+      ])
+      return { patients: rows.map(r => mapPatient(r, tagsByPatient.get(r.id) ?? [])) }
     },
   )
 }
@@ -160,18 +191,21 @@ export function usePatientsList() {
 /** Patients with their latest visit's village & journey (station worklists). */
 export function usePatientsWithLatestVisit() {
   return useLocalQuery<{ patients: LocalPatientWithLatestVisit[] }>(
-    ['patients', 'visits', 'village_codes', 'vitals', 'eyesights', 'dental_consults', 'consults', 'orders'],
+    ['patients', 'visits', 'village_codes', 'vitals', 'eyesights', 'dental_consults', 'consults', 'orders', 'patient_tags', 'tags'],
     async () => {
       const db = getPowerSyncInstance()
-      const rows = await db.getAll<RawPatientRow>(
-        `SELECT p.*, vc.code AS village_code, vc.color_hex AS village_color_hex
-         FROM patients p
-         LEFT JOIN village_codes vc ON vc.id = p.village_code_id
-         ORDER BY p.created_at DESC`,
-      )
-      const visitRows = await db.getAll<RawVisitJourneyRow>(
-        `${VISIT_JOURNEY_SQL} ORDER BY v.date DESC`,
-      )
+      const [rows, visitRows, tagsByPatient] = await Promise.all([
+        db.getAll<RawPatientRow>(
+          `SELECT p.*, vc.code AS village_code, vc.color_hex AS village_color_hex
+           FROM patients p
+           LEFT JOIN village_codes vc ON vc.id = p.village_code_id
+           ORDER BY p.created_at DESC`,
+        ),
+        db.getAll<RawVisitJourneyRow>(
+          `${VISIT_JOURNEY_SQL} ORDER BY v.date DESC`,
+        ),
+        loadTagsByPatient(),
+      ])
       const latestByPatient = new Map<string, LocalVisitSummary>()
       for (const row of visitRows) {
         if (!latestByPatient.has(row.patient_id)) {
@@ -180,7 +214,7 @@ export function usePatientsWithLatestVisit() {
       }
       return {
         patients: rows.map((r) => {
-          const patient = mapPatient(r)
+          const patient = mapPatient(r, tagsByPatient.get(r.id) ?? [])
           const latestVisit = latestByPatient.get(r.id) ?? null
           return {
             ...patient,
@@ -197,21 +231,33 @@ export function usePatientsWithLatestVisit() {
 
 export function usePatient(id: MaybeRefOrGetter<string | null>) {
   return useLocalQuery<LocalPatientSummary | null>(
-    ['patients', 'visits', 'village_codes'],
+    ['patients', 'visits', 'village_codes', 'patient_tags', 'tags'],
     async () => {
       const patientId = toValue(id)
       if (!patientId) return null
       const db = getPowerSyncInstance()
-      const row = await db.getOptional<RawPatientRow>(
-        `SELECT p.*, vc.code AS village_code, vc.color_hex AS village_color_hex,
-                (SELECT v.id FROM visits v WHERE v.patient_id = p.id ORDER BY v.date DESC LIMIT 1) AS last_visit_id,
-                (SELECT v.date FROM visits v WHERE v.patient_id = p.id ORDER BY v.date DESC LIMIT 1) AS last_visit_date
-         FROM patients p
-         LEFT JOIN village_codes vc ON vc.id = p.village_code_id
-         WHERE p.id = ?`,
-        [patientId],
-      )
-      return row ? mapPatient(row) : null
+      const [row, tagRows] = await Promise.all([
+        db.getOptional<RawPatientRow>(
+          `SELECT p.*, vc.code AS village_code, vc.color_hex AS village_color_hex,
+                  (SELECT v.id FROM visits v WHERE v.patient_id = p.id ORDER BY v.date DESC LIMIT 1) AS last_visit_id,
+                  (SELECT v.date FROM visits v WHERE v.patient_id = p.id ORDER BY v.date DESC LIMIT 1) AS last_visit_date
+           FROM patients p
+           LEFT JOIN village_codes vc ON vc.id = p.village_code_id
+           WHERE p.id = ?`,
+          [patientId],
+        ),
+        db.getAll<{ name: string | null }>(
+          `SELECT COALESCE(t.name, pt.tag_name) AS name
+           FROM patient_tags pt
+           LEFT JOIN tags t ON t.id = pt.tag_id
+           WHERE pt.patient_id = ?
+           ORDER BY COALESCE(t.name, pt.tag_name) ASC`,
+          [patientId],
+        ),
+      ])
+      if (!row) return null
+      const tags = tagRows.map(t => t.name).filter((n): n is string => Boolean(n))
+      return mapPatient(row, tags)
     },
     {
       enabled: computed(() => Boolean(toValue(id))),
@@ -241,11 +287,10 @@ export function usePatientVisits(id: MaybeRefOrGetter<string | null>) {
 }
 
 /** Extracts a UUID route param, returning null if missing. */
-export function useRouteId(param: string) {
+export function useRouteId(param = 'id') {
   const route = useRoute()
   return computed(() => {
-    const raw = route.params[param]
-    if (typeof raw !== 'string' || raw.trim().length === 0) return null
-    return raw.trim()
+    const raw = String(route.params[param] ?? '').trim()
+    return raw.length > 0 ? raw : null
   })
 }

@@ -5,7 +5,7 @@ import {
 } from "@sabai/sdk/clients";
 import type { SaBaiAPIEndpointsAuthUserResponse } from "@sabai/sdk/types";
 
-export type StaffUser = SaBaiAPIEndpointsAuthUserResponse;
+export type StaffUser = SaBaiAPIEndpointsAuthUserResponse & { tags?: string[] };
 
 export const ADMIN_ROLE = "admin";
 

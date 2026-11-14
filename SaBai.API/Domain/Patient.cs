@@ -21,16 +21,21 @@ public sealed class Patient : ISyncEntity
 
     public VillageCode? VillageCode { get; set; }
 
+    [PhiData]
     public required string Name { get; set; }
 
+    [PhiData]
     public string? IdentificationNumber { get; set; }
 
+    [PhiData]
     public string? ContactNo { get; set; }
 
     public Gender Gender { get; set; }
 
+    [PhiData]
     public DateTimeOffset DateOfBirth { get; set; }
 
+    [PhiData]
     public required string DrugAllergy { get; set; }
 
     public bool HasPoorCard { get; set; }
@@ -43,11 +48,13 @@ public sealed class Patient : ISyncEntity
 
     /// <summary>RustFS object key of the patient's profile photo, or null when none is set.
     /// Mapped to the legacy <c>PatientImagePublicId</c> column.</summary>
+    [PhiData]
     public string? PhotoStoredFileName { get; set; }
 
     /// <summary>Qdrant face id most recently enrolled for this patient, or null.
     /// Used only as a "has a face" flag; all faces live in the face store.
     /// Mapped to the legacy <c>RekognitionFaceId</c> column.</summary>
+    [PhiData]
     public string? LatestFaceId { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; }
@@ -55,6 +62,8 @@ public sealed class Patient : ISyncEntity
     public ICollection<Visit> Visits { get; set; } = [];
 
     public ICollection<StoredFile> Files { get; set; } = [];
+
+    public ICollection<PatientTag> PatientTags { get; set; } = [];
 
     public static string FormatDisplayId(string? villageCode, int number) =>
         string.IsNullOrWhiteSpace(villageCode) ? number.ToString("D4") : $"{villageCode}{number:0000}";

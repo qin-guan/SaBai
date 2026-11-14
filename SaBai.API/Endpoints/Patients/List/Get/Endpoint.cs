@@ -11,7 +11,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
     public override void Configure()
     {
         Get("/patients");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.Admin, StaffRoles.Member, StaffRoles.Pn);
         Summary(s => s.Summary = "List patients");
     }
 
@@ -28,6 +28,14 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
         {
             var code = req.VillageCode.Trim().ToLower();
             query = query.Where(x => x.VillageCode != null && x.VillageCode.Code.ToLower() == code);
+        }
+
+        if (!string.IsNullOrWhiteSpace(req.Tag))
+        {
+            var tag = req.Tag.Trim().ToUpperInvariant();
+            query = query.Where(x =>
+                db.PatientTags.Any(pt => pt.PatientId == x.Id && pt.Tag.NormalizedName == tag)
+            );
         }
 
         var rows = await query
@@ -52,7 +60,9 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                 x.LatestFaceId,
             })
             .ToListAsync(ct);
-        var latest = await LatestVisitsAsync([.. rows.Select(x => x.Id)], ct);
+        var patientIds = rows.Select(x => x.Id).ToArray();
+        var latest = await LatestVisitsAsync(patientIds, ct);
+        var tagsByPatient = await TagSync.LoadPatientTagsBulkAsync(db, patientIds, ct);
 
         var patients = rows.Select(x =>
             {
@@ -76,7 +86,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                     last?.Date,
                     last?.Id,
                     x.PhotoStoredFileName != null,
-                    x.LatestFaceId != null
+                    x.LatestFaceId != null,
+                    tagsByPatient[x.Id].ToList()
                 );
             })
             .ToList();

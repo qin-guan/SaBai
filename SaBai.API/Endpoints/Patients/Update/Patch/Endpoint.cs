@@ -102,6 +102,11 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             patient.VillageCodeId = villageCodeId;
         }
 
+        if (req.Tags is not null)
+        {
+            await TagSync.SyncPatientTagsAsync(db, patient, req.Tags, ct);
+        }
+
         await db.SaveChangesAsync(ct);
         await Send.OkAsync(await LoadAsync(patient.Id, ct), ct);
     }
@@ -141,6 +146,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             .ThenByDescending(x => x.Id)
             .Select(x => new { x.Id, x.Date })
             .FirstOrDefaultAsync(ct);
+        var tags = await TagSync.LoadPatientTagsAsync(db, row.Id, ct);
 
         return new Response(
             row.Id,
@@ -161,7 +167,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             lastVisit?.Date,
             lastVisit?.Id,
             row.PhotoStoredFileName != null,
-            row.LatestFaceId != null
+            row.LatestFaceId != null,
+            tags
         );
     }
 }

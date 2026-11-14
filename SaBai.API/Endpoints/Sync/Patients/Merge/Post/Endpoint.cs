@@ -53,6 +53,30 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             f.PatientId = target.Id;
         }
 
+        var consents = await db.PatientConsents.Where(c => c.PatientId == source.Id).ToListAsync(ct);
+        foreach (var c in consents)
+        {
+            c.PatientId = target.Id;
+        }
+
+        var disclosures = await db.DisclosureLogs.Where(d => d.PatientId == source.Id).ToListAsync(ct);
+        foreach (var d in disclosures)
+        {
+            d.PatientId = target.Id;
+        }
+
+        var targetTagIds = (
+            await db.PatientTags.Where(pt => pt.PatientId == target.Id).Select(pt => pt.TagId).ToListAsync(ct)
+        ).ToHashSet();
+        var sourceTags = await db.PatientTags.Where(pt => pt.PatientId == source.Id).ToListAsync(ct);
+        foreach (var pt in sourceTags)
+        {
+            if (targetTagIds.Add(pt.TagId))
+                pt.PatientId = target.Id;
+            else
+                db.PatientTags.Remove(pt);
+        }
+
         // Fill missing profile fields on target from source if target is blank.
         if (string.IsNullOrWhiteSpace(target.IdentificationNumber) && !string.IsNullOrWhiteSpace(source.IdentificationNumber))
             target.IdentificationNumber = source.IdentificationNumber;

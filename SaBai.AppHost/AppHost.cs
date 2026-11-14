@@ -8,23 +8,11 @@ var qdrant = builder.AddQdrant("qdrant").WithDataVolume();
 var postgres = builder
     .AddPostgres("postgres")
     .WithArgs("-c", "wal_level=logical")
-    .WithDataVolume()
-    .WithPgAdmin(pgAdmin =>
-    {
-        if (builder.ExecutionContext.IsPublishMode)
-        {
-            // WithPgAdmin excludes this development tool from publishing by default.
-            pgAdmin
-                .PublishAsContainer()
-                .PublishAsDockerComposeService(
-                    (_, service) =>
-                    {
-                        service.Name = "pgadmin";
-                        service.Ports = ["5050:80"];
-                    }
-                );
-        }
-    });
+    .WithDataVolume();
+if (!builder.ExecutionContext.IsPublishMode)
+{
+    postgres.WithPgAdmin();
+}
 var db = postgres.AddDatabase("sabai");
 var psDb = postgres.AddDatabase("powersync");
 

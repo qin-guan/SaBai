@@ -16,6 +16,12 @@ public sealed class MedicationActiveIngredient : ISyncEntity
 
     public string? Remarks { get; set; }
 
+    /// <summary>Optional RxNorm concept identifier for FHIR Medication interoperability.</summary>
+    public string? RxNormCode { get; set; }
+
+    /// <summary>Optional WHO ATC code for FHIR Medication interoperability.</summary>
+    public string? AtcCode { get; set; }
+
     public ICollection<MedicationBrand> Brands { get; set; } = [];
 }
 
@@ -108,8 +114,10 @@ public sealed class Order : ISyncEntity
 
     public MedicationBrand MedicationBrand { get; set; } = null!;
 
+    [PhiData]
     public required string DosageInstructions { get; set; }
 
+    [PhiData]
     public string? Remarks { get; set; }
 
     public OrderStatus Status { get; set; } = OrderStatus.Pending;

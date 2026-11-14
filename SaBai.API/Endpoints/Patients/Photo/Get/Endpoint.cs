@@ -41,9 +41,10 @@ public sealed class Endpoint(AppDbContext db, IAmazonS3 s3, RustFsSettings stora
                 ct
             );
 
-            var contentType = string.IsNullOrWhiteSpace(obj.Headers.ContentType)
-                ? "application/octet-stream"
-                : obj.Headers.ContentType;
+            // The key's extension was derived from the photo's bytes on upload.
+            var contentType = FileSignatures.ContentTypeOfStored(patient.PhotoStoredFileName);
+            HttpContext.Response.Headers.ContentSecurityPolicy =
+                FileSignatures.DownloadContentSecurityPolicy;
 
             await Send.StreamAsync(
                 obj.ResponseStream,

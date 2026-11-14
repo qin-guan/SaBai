@@ -26,9 +26,11 @@ public sealed class Endpoint(
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        if (req.Threshold is < -1 or > 1)
+        // A caller may ask for stricter matching than configured, never looser.
+        var configured = options.Value.MatchThreshold;
+        if (req.Threshold is { } requested && !(requested >= configured && requested <= 1))
         {
-            AddError(r => r.Threshold!, "Threshold must be between -1 and 1.");
+            AddError(r => r.Threshold!, $"Threshold must be between {configured} and 1.");
         }
 
         if (req.MaxMatches is < 1 or > 20)
@@ -39,7 +41,8 @@ public sealed class Endpoint(
         var image = await FaceImages.LoadAsync(this, req.Image, nameof(req.Image), ct);
         ThrowIfAnyErrors();
 
-        var threshold = req.Threshold ?? options.Value.MatchThreshold;
+        var threshold = req.Threshold ?? configured;
+        // The probe image and its embeddings stay in memory and are never stored.
         var faces = await analyzer.AnalyzeAsync(image!, ct);
 
         // Best similarity per patient across every detected face.
@@ -59,13 +62,16 @@ public sealed class Endpoint(
             }
         }
 
-        if (best.Count == 0)
+        // Only patients with a current biometric consent have embeddings; dropping any others
+        // here keeps a missed deletion from ever surfacing a non-consenting patient.
+        var consenting = await BiometricConsent.GrantedAsync(db, best.Keys, ct);
+        var ids = best.Keys.Where(consenting.Contains).ToArray();
+        if (ids.Length == 0)
         {
             await Send.OkAsync(new Response([]), ct);
             return;
         }
 
-        var ids = best.Keys.ToArray();
         var rows = await db
             .Patients.AsNoTracking()
             .Where(x => ids.Contains(x.Id))

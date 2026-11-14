@@ -7,7 +7,7 @@ namespace SaBai.API.Endpoints.Patients;
 /// </summary>
 public static class PatientFaceIdentity
 {
-    private const string Prefix = "patient:";
+    public const string Prefix = "patient:";
 
     public static string ForPatient(Guid patientId) => $"{Prefix}{patientId}";
 

@@ -19,7 +19,7 @@ public sealed class FileTests(AppFixture fixture)
         var fileName = $"note-{suffix}.pdf";
         using var content = new MultipartFormDataContent();
         content.Add(new StringContent(patientId.ToString()), "patientId");
-        var bytes = new ByteArrayContent([.. "clinic note"u8]);
+        var bytes = new ByteArrayContent([.. "%PDF-1.7 clinic note"u8]);
         bytes.Headers.ContentType = new MediaTypeHeaderValue("application/pdf");
         content.Add(bytes, "files", fileName);
         content.Add(new StringContent("visit note"), "descriptions");
@@ -45,7 +45,7 @@ public sealed class FileTests(AppFixture fixture)
         await Assert.That(uploadBody.TrimStart().StartsWith('[')).IsTrue();
         await Assert.That(uploadBody).Contains(fileName);
         await Assert.That(downloaded.StatusCode).IsEqualTo(HttpStatusCode.OK);
-        await Assert.That(downloadedBody).IsEqualTo("clinic note");
+        await Assert.That(downloadedBody).IsEqualTo("%PDF-1.7 clinic note");
         await Assert.That(listed.StatusCode).IsEqualTo(HttpStatusCode.OK);
         await Assert.That(listedBody).Contains(fileName);
         await Assert.That(deleted.StatusCode).IsEqualTo(HttpStatusCode.OK);
@@ -58,7 +58,7 @@ public sealed class FileTests(AppFixture fixture)
         await Assert.That(restoredContent.StatusCode).IsEqualTo(HttpStatusCode.OK);
         await Assert
             .That(await restoredContent.Content.ReadAsStringAsync())
-            .IsEqualTo("clinic note");
+            .IsEqualTo("%PDF-1.7 clinic note");
     }
 
     [Test]

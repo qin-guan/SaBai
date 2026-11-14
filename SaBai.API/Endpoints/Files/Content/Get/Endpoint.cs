@@ -33,13 +33,16 @@ public sealed class Endpoint(AppDbContext db, IAmazonS3 s3, RustFsSettings stora
                 ct
             );
 
+            // Served as an attachment with the type found on upload, never one taken from the
+            // client, under a policy that keeps the content from running in the app's origin.
+            var contentType = FileSignatures.ContentTypeOfStored(file.StoredFileName);
+            HttpContext.Response.Headers.ContentSecurityPolicy =
+                FileSignatures.DownloadContentSecurityPolicy;
             await Send.StreamAsync(
                 obj.ResponseStream,
-                file.FileName,
+                FileSignatures.DownloadName(file.FileName, contentType, "file"),
                 file.SizeBytes,
-                string.IsNullOrWhiteSpace(obj.Headers.ContentType)
-                    ? "application/octet-stream"
-                    : obj.Headers.ContentType,
+                contentType,
                 cancellation: ct
             );
         }

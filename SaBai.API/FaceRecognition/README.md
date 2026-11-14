@@ -13,12 +13,23 @@ there or pre-provision the files and set `FaceRecognition:AutoDownloadModels` to
 landmarks) or ArcFace ONNX export works, for example `antelopev2`'s `glintr100.onnx`; the Qdrant collection is sized
 from the model's output.
 
+Each model file is checked against `FaceRecognition:DetectorModelSha256` / `RecognizerModelSha256` (defaults: the
+`buffalo_l` files) before it is loaded, including files already on disk. A file that does not match is deleted and
+face recognition stays unavailable until restart. When you use other models, set their hashes; with
+`AutoDownloadModels` on, both hashes are required. Leaving a hash empty skips the check, which is only allowed for
+files you provide yourself.
+
 The pipeline uses InsightFace's RGB normalization and ArcFace alignment template. Detector resizing
 uses bilinear interpolation when shrinking as well as enlarging, rather than smoothing small faces
 with area averaging. Alignment also uses bilinear interpolation;
 pixel-identical parity with the reference Python/OpenCV implementation is not guaranteed.
 
 Endpoints require an authenticated staff user (`Admin` or `Member` role).
+
+Patient faces (`/patients/{id}/faces`) are only enrolled while the patient's latest `BiometricFaceRecognition`
+consent is granted; recording a withdrawal deletes the patient's stored faces, and face search only returns patients
+whose consent is current. `/persons` identities have no consent model and cannot use the reserved `patient:` prefix.
+A request `threshold` can only make matching stricter than `MatchThreshold`, never looser.
 
 > **License:** InsightFace's pretrained models are for **non-commercial research use only**. Commercial use requires a
 > license from InsightFace or a different model.

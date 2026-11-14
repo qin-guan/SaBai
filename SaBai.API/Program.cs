@@ -168,6 +168,19 @@ if (!string.IsNullOrWhiteSpace(storage.Endpoint))
     );
 }
 
+// Browsers must treat every response as its declared Content-Type and never sniff another.
+// Set when the response starts so it survives the exception handler clearing headers.
+app.Use(
+    (context, next) =>
+    {
+        context.Response.OnStarting(() =>
+        {
+            context.Response.Headers.XContentTypeOptions = "nosniff";
+            return Task.CompletedTask;
+        });
+        return next(context);
+    }
+);
 app.UseExceptionHandler();
 
 await using var scope = app.Services.CreateAsyncScope();

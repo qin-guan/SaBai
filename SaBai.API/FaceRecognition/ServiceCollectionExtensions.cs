@@ -37,6 +37,12 @@ public static class ServiceCollectionExtensions
                 o => o.MatchThreshold is >= -1 and <= 1,
                 "MatchThreshold must be between -1 and 1."
             )
+            .Validate(
+                o =>
+                    FaceModelProvisioner.IsValidSha256(o.DetectorModelSha256)
+                    && FaceModelProvisioner.IsValidSha256(o.RecognizerModelSha256),
+                "DetectorModelSha256 and RecognizerModelSha256 must be empty or 64 hexadecimal characters."
+            )
             .ValidateOnStart();
 
         builder.Services.AddSingleton<FaceModelProvisioner>();

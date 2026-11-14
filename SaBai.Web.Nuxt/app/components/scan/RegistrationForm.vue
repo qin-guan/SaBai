@@ -88,8 +88,10 @@ async function submit() {
   }
   else {
     try {
-      await setPatientPhotoAndFace(vars.id, image.value)
+      const face = await setPatientPhotoAndFace(vars.id, image.value)
       queryClient.invalidateQueries({ queryKey: queryKeys.patients() })
+      if (!face.enrolled)
+        toast.warning(`Photo saved, but the face was not enrolled: ${face.reason}`, { description: FACE_CONSENT_HINT })
     }
     catch (error) {
       console.error('Error saving patient photo/face:', error)

@@ -31,13 +31,13 @@ public sealed class Endpoint(
             ct
         );
 
-        var bytes = await PatientPhoto.ReadValidatedAsync(this, req.Image, nameof(req.Image), ct);
+        var photo = await PatientPhoto.ReadValidatedAsync(this, req.Image, nameof(req.Image), ct);
         ThrowIfAnyErrors();
 
-        var extension = PatientPhoto.Extension(req.Image.FileName);
-        var key = PatientPhoto.BuildKey(patient.Id, req.Image.FileName);
+        var (bytes, contentType) = photo!.Value;
+        var key = PatientPhoto.BuildKey(patient.Id, contentType);
 
-        await using (var stream = new MemoryStream(bytes!))
+        await using (var stream = new MemoryStream(bytes))
         {
             await s3.PutObjectAsync(
                 new PutObjectRequest
@@ -45,7 +45,7 @@ public sealed class Endpoint(
                     BucketName = storage.Bucket,
                     Key = key,
                     InputStream = stream,
-                    ContentType = PatientPhoto.ContentType(req.Image.ContentType, extension),
+                    ContentType = contentType,
                     AutoCloseStream = false,
                 },
                 ct

@@ -85,7 +85,13 @@ internal sealed class ApiExceptionHandler(ILogger<ApiExceptionHandler> logger) :
             return false;
         }
 
-        logger.LogWarning(exception, "Handled API exception: {Title}", title);
+        // Only the type: these messages can echo request input (file names, tags), which is PHI
+        // that must not reach exported logs. The client still gets the message in the response.
+        logger.LogWarning(
+            "Handled API exception: {Title} ({ExceptionType})",
+            title,
+            exception.GetType().Name
+        );
         httpContext.Response.StatusCode = status;
         await httpContext.Response.WriteAsJsonAsync(
             new ProblemDetails

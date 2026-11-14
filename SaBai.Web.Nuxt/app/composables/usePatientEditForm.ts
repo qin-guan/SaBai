@@ -101,9 +101,11 @@ export function usePatientEditForm(
       }
       else {
         try {
-          await setPatientPhotoAndFace(id, newPhoto.value)
+          const face = await setPatientPhotoAndFace(id, newPhoto.value)
           queryClient.invalidateQueries({ queryKey: queryKeys.patientPhoto(id) })
           queryClient.invalidateQueries({ queryKey: queryKeys.patients() })
+          if (!face.enrolled)
+            toast.warning(`Photo saved, but the face was not enrolled: ${face.reason}`, { description: FACE_CONSENT_HINT })
         }
         catch (error) {
           console.error('Error saving patient photo/face:', error)

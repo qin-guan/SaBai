@@ -28,6 +28,13 @@ const filteredReferrals = computed(() => {
 
 const hasActiveFilters = computed(() => !!search.value || !!selectedVillageId.value || !!selectedStatus.value)
 
+/** Esc in the search box clears it first; a second Esc leaves the field, a third goes back. */
+function onSearchEsc(event: KeyboardEvent) {
+  if (!search.value) return
+  event.stopPropagation()
+  search.value = ''
+}
+
 function clearFilters() {
   search.value = ''
   selectedVillageId.value = ''
@@ -36,15 +43,16 @@ function clearFilters() {
 </script>
 
 <template>
-  <div class="flex flex-col gap-4">
+  <div class="flex flex-col gap-3">
     <PageHeader
       title="Referrals"
       description="Track patients referred for further care."
       :breadcrumbs="[{ label: 'Home', to: '/' }, { label: 'Referrals' }]"
+      class="mb-0!"
     />
 
     <!-- Filter & search bar -->
-    <div class="border border-border bg-card p-2.5 sm:p-3">
+    <div class="border border-border bg-card p-2">
       <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div class="relative flex-1">
           <PhMagnifyingGlass class="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2" aria-hidden="true" />
@@ -54,6 +62,7 @@ function clearFilters() {
             placeholder="Search name, ID, reason, notes…"
             class="h-8 pl-8 text-xs border-input touch:h-11 touch:text-base"
             aria-label="Search referrals"
+            @keydown.esc="onSearchEsc"
           />
           <button
             v-if="search"
@@ -114,17 +123,17 @@ function clearFilters() {
     <StateMessage v-if="isLoading" kind="loading" message="Loading referrals…" />
     <StateMessage v-else-if="isError" kind="error" message="Failed to load referrals. Please refresh to try again." />
     <AppPanel v-else-if="!referrals || referrals.length === 0" title="Referrals">
-      <div class="p-8 text-center text-muted-foreground">
-        <PhArrowUpRight class="mx-auto mb-2 size-8 text-muted-foreground/60" aria-hidden="true" />
+      <div class="flex flex-col items-center gap-1 px-3 py-10 text-center text-muted-foreground" role="status">
+        <PhArrowUpRight class="mb-1 size-8 text-muted-foreground/60" aria-hidden="true" />
         <p class="font-medium text-foreground">No referrals recorded yet</p>
-        <p class="text-xs mt-1">Referrals opened during doctor consultations will appear here.</p>
+        <p class="text-xs touch:text-sm">Referrals opened during doctor consultations will appear here.</p>
       </div>
     </AppPanel>
     <AppPanel v-else-if="filteredReferrals.length === 0" title="Referrals">
-      <div class="p-8 text-center text-muted-foreground">
+      <div class="flex flex-col items-center gap-1 px-3 py-10 text-center text-muted-foreground" role="status">
         <p class="font-medium text-foreground">No referrals match your search</p>
-        <p class="text-xs mt-1">Try adjusting the search query or filters.</p>
-        <Button variant="outline" size="sm" class="mt-3 text-xs" @click="clearFilters">
+        <p class="text-xs touch:text-sm">Try adjusting the search query or filters.</p>
+        <Button variant="outline" size="sm" class="mt-2" @click="clearFilters">
           Clear filters
         </Button>
       </div>
@@ -235,7 +244,7 @@ function clearFilters() {
         <table class="grid-table w-full text-left text-xs">
           <thead>
             <tr>
-              <th scope="col" class="py-2 pr-2 pl-3 w-12">Photo</th>
+              <th scope="col" class="py-2 pr-2 pl-3 w-12"><span class="sr-only">Photo</span></th>
               <th scope="col" class="px-2 py-2 min-w-[140px]">Patient</th>
               <th scope="col" class="px-2 py-2 min-w-[200px]">Referral summary</th>
               <th scope="col" class="px-2 py-2 min-w-[180px]">Status</th>
@@ -246,7 +255,7 @@ function clearFilters() {
             <tr
               v-for="referral in filteredReferrals"
               :key="referral.id"
-              class="transition-colors"
+              class="transition-colors hover:bg-accent/60"
             >
               <!-- Photo -->
               <td class="py-2 pr-2 pl-3 align-top">

@@ -65,7 +65,7 @@ function confirmDelete() {
     <AppPanel title="Referral partners" flush>
       <StateMessage v-if="isLoading" kind="loading" message="Loading referral partners..." />
       <StateMessage v-else-if="isError" kind="error" message="Failed to load referral partners." />
-      <div v-else-if="!partners || partners.length === 0" class="p-8 text-center text-sm text-muted-foreground">
+      <div v-else-if="!partners || partners.length === 0" class="px-3 py-10 text-center text-xs text-muted-foreground touch:text-sm" role="status">
         No referral partners yet. Add a clinic or hospital to get started.
       </div>
       <Table v-else class="grid-table stack-table">
@@ -93,15 +93,13 @@ function confirmDelete() {
                 Inactive
               </Badge>
             </TableCell>
-            <TableCell data-label="Actions" class="text-right">
-              <div class="inline-flex items-center gap-1.5">
-                <Button variant="outline" size="sm" @click="openEdit(partner)">
-                  <PhPencilSimple class="size-3.5" aria-hidden="true" />
-                  <span>Edit</span>
+            <TableCell data-stack="actions">
+              <div class="flex justify-end gap-1">
+                <Button variant="outline" size="sm" :aria-label="`Edit ${partner.name}`" @click="openEdit(partner)">
+                  <PhPencilSimple aria-hidden="true" /> Edit
                 </Button>
-                <Button variant="outline" size="sm" class="text-destructive hover:text-destructive" @click="openDelete(partner)">
-                  <PhTrash class="size-3.5" aria-hidden="true" />
-                  <span>Delete</span>
+                <Button variant="destructive" size="sm" :aria-label="`Delete ${partner.name}`" @click="openDelete(partner)">
+                  <PhTrash aria-hidden="true" /> Delete
                 </Button>
               </div>
             </TableCell>
@@ -114,7 +112,7 @@ function confirmDelete() {
 
     <AppDialog
       v-if="mode === 'deleting' && active"
-      title="Delete Referral Partner"
+      title="Confirm Deletion"
       size="sm"
       @close="close"
     >
@@ -127,7 +125,7 @@ function confirmDelete() {
       <template #footer>
         <Button variant="outline" @click="close">Cancel</Button>
         <Button variant="destructive" :disabled="deletePartner.isPending.value" @click="confirmDelete">
-          {{ deletePartner.isPending.value ? 'Deleting…' : 'Delete' }}
+          <PhTrash aria-hidden="true" /> {{ deletePartner.isPending.value ? 'Deleting...' : 'Confirm' }}
         </Button>
       </template>
     </AppDialog>

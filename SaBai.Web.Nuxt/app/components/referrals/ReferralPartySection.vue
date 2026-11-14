@@ -54,10 +54,13 @@ function submit() {
     },
   )
 }
+
+const formEl = ref<HTMLElement>()
+useSaveShortcut(submit, { scope: formEl })
 </script>
 
 <template>
-  <form class="flex flex-col gap-4" novalidate @submit.prevent="submit">
+  <form ref="formEl" class="flex flex-col gap-4" novalidate @submit.prevent="submit">
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <div class="flex flex-col gap-1.5">
         <Label for="party-member-on-run" class="text-xs font-semibold">PN member on run</Label>
@@ -114,7 +117,10 @@ function submit() {
       </div>
     </div>
 
-    <div class="flex justify-end">
+    <div class="flex items-center justify-end gap-3">
+      <span class="mr-auto hidden text-xs text-muted-foreground kb:inline">
+        <ShortcutHint keys="Ctrl+S" /> to save
+      </span>
       <Button
         type="submit"
         variant="success"

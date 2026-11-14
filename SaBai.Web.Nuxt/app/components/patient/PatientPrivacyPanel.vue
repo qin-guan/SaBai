@@ -65,7 +65,9 @@ const types = Object.keys(CONSENT_LABELS) as ConsentType[]
     <template v-if="isAdmin" #headerActions>
       <Button as-child size="sm" variant="outline">
         <NuxtLink :to="paths.settingsAuditLog({ entityType: 'Patient', entityId: patientId })">
-          <PhClockCounterClockwise aria-hidden="true" /> Who accessed this record
+          <PhClockCounterClockwise aria-hidden="true" />
+          <span class="max-sm:hidden">Who accessed this record</span>
+          <span class="sm:hidden">Access log</span>
         </NuxtLink>
       </Button>
     </template>

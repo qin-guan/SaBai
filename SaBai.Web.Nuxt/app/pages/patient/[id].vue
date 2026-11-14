@@ -139,12 +139,12 @@ useHead({ title: () => `${patient.value?.name ?? 'Patient'} · Sa'Bai` })
               </li>
             </ol>
           </AppPanel>
-        </div>
 
-        <div class="flex min-w-0 flex-col gap-3">
-          <PatientDetailsForm :key="patient.id" :patient="patient" />
           <PatientPrivacyPanel :patient-id="patient.id" />
         </div>
+
+        <!-- Last in its column and on phones, so its save bar ends the page like the station forms. -->
+        <PatientDetailsForm :key="patient.id" :patient="patient" class="min-w-0" />
       </div>
     </template>
   </div>

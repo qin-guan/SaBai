@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Kbd } from '@/components/ui/kbd'
 import { Textarea } from '@/components/ui/textarea'
-import { formatBillAmount, getBillBreakdown, hasReferralBill } from '@/utils/referralBills'
+import { hasReferralBill } from '@/utils/referralBills'
 
 /**
  * One referral, worked like a station form: the four steps (booth → party →
@@ -65,26 +65,6 @@ function goToStep(step: ReferralStep) {
 REFERRAL_STEPS.forEach((step, i) => useKeyShortcut(String(i + 1), () => goToStep(step), { enabled: () => !!form.value }))
 
 const unsavedLabel = computed(() => changedSteps.value.map(s => REFERRAL_PART_LABELS[s].toLowerCase()).join(', '))
-
-const billBreakdown = computed(() => (referral.value ? getBillBreakdown(referral.value) : null))
-
-const updateReimbursement = useUpdateReferralReimbursement()
-async function toggleReimbursement() {
-  if (!referral.value || updateReimbursement.isPending.value) return
-  const next = !referral.value.isReimbursed
-  try {
-    const outcome = await updateReimbursement.mutateAsync({
-      id: referral.value.id,
-      patientName: referral.value.patientName,
-      isReimbursed: next,
-      reimbursementNotes: next ? referral.value.reimbursementNotes : null,
-    })
-    notifySaved(outcome, next ? 'Marked as reimbursed' : 'Marked as pending reimbursement')
-  }
-  catch (err) {
-    toast.error(getApiErrorMessage(err, 'Could not update reimbursement status.'))
-  }
-}
 </script>
 
 <template>
@@ -247,40 +227,12 @@ async function toggleReimbursement() {
             </template>
             <ReferralMoneySection v-model="form.money" :saved-member-id="saved?.money.memberWhoPaidId ?? ''" :errors="moneyErrors" />
             <div v-if="hasReferralBill(referral)" class="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3 text-xs touch:text-sm">
-              <div class="flex flex-wrap items-center gap-2">
-                <span class="font-semibold text-muted-foreground">Reimbursement:</span>
-                <Badge
-                  variant="outline"
-                  :class="referral.isReimbursed ? 'border-success/40 bg-success-subtle text-success' : billBreakdown?.isPartial ? 'border-band-border bg-accent text-accent-foreground' : 'border-warning-border bg-warning-subtle text-warning'"
-                >
-                  {{ referral.isReimbursed ? 'Reimbursed' : billBreakdown?.isPartial ? 'Partial' : 'Pending reimbursement' }}
-                </Badge>
-                <span v-if="billBreakdown?.isPartial" class="text-muted-foreground tabular-nums">
-                  ({{ formatBillAmount(billBreakdown.reimbursedUsd, billBreakdown.reimbursedRiels) }} repaid)
-                </span>
-                <span v-if="referral.reimbursedAt" class="text-muted-foreground tabular-nums">
-                  ({{ formatVisitDate(referral.reimbursedAt) }})
-                </span>
-                <span v-if="referral.reimbursementNotes" class="text-muted-foreground">
-                  — {{ referral.reimbursementNotes }}
-                </span>
-              </div>
-              <div class="flex flex-wrap items-center gap-2">
-                <Button
-                  type="button"
-                  size="sm"
-                  :variant="referral.isReimbursed ? 'outline' : 'success'"
-                  :disabled="updateReimbursement.isPending.value"
-                  @click="toggleReimbursement"
-                >
-                  {{ referral.isReimbursed ? 'Mark pending' : 'Mark reimbursed' }}
-                </Button>
-                <Button as-child size="sm" variant="ghost">
-                  <NuxtLink :to="paths.referralBills()">
-                    <PhReceipt aria-hidden="true" /> All PN bills
-                  </NuxtLink>
-                </Button>
-              </div>
+              <span class="text-muted-foreground">Repayments are tracked per person in the PN ledger.</span>
+              <Button as-child size="sm" variant="ghost">
+                <NuxtLink :to="paths.referralBills()">
+                  <PhReceipt aria-hidden="true" /> Open PN ledger
+                </NuxtLink>
+              </Button>
             </div>
           </AppPanel>
 

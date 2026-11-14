@@ -40,12 +40,6 @@ const sampleReferral: ReferralListItem = {
   amountPaidUsd: null,
   amountPaidRiels: null,
   memberWhoPaidId: null,
-  isReimbursed: false,
-  reimbursedUsd: null,
-  reimbursedRiels: null,
-  reimbursedAt: null,
-  reimbursedByUserId: null,
-  reimbursementNotes: null,
 }
 
 describe('referral constants & options', () => {

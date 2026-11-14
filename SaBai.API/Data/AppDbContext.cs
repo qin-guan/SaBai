@@ -48,6 +48,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<Referral> Referrals => Set<Referral>();
 
+    public DbSet<PnLedgerEntry> PnLedgerEntries => Set<PnLedgerEntry>();
+
     public DbSet<ReferralPartner> ReferralPartners => Set<ReferralPartner>();
 
     public DbSet<MedicationActiveIngredient> MedicationActiveIngredients =>
@@ -478,8 +480,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             entity.Property(x => x.GuardiansContacted).HasConversion<string>().HasMaxLength(32);
             entity.Property(x => x.ClassOfService).HasConversion<string>().HasMaxLength(32);
             entity.Property(x => x.AmountPaidUsd).HasPrecision(10, 2);
-            entity.Property(x => x.ReimbursedUsd).HasPrecision(10, 2);
-            entity.Property(x => x.ReimbursementNotes).HasMaxLength(500);
             entity
                 .HasOne(x => x.Consult)
                 .WithMany(x => x.Referrals)
@@ -505,10 +505,35 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
                 .WithMany()
                 .HasForeignKey(x => x.MemberWhoPaidId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<PnLedgerEntry>(entity =>
+        {
+            entity.Property(x => x.EntryType).HasConversion<string>().HasMaxLength(32);
+            entity.Property(x => x.DebitAccount).HasMaxLength(64);
+            entity.Property(x => x.CreditAccount).HasMaxLength(64);
+            entity.Property(x => x.AmountUsd).HasPrecision(10, 2);
+            entity.Property(x => x.Notes).HasMaxLength(500);
+            entity.HasIndex(x => new { x.MemberId, x.CreatedAt });
             entity
-                .HasOne(x => x.ReimbursedByUser)
+                .HasOne(x => x.Member)
                 .WithMany()
-                .HasForeignKey(x => x.ReimbursedByUserId)
+                .HasForeignKey(x => x.MemberId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity
+                .HasOne(x => x.Referral)
+                .WithMany()
+                .HasForeignKey(x => x.ReferralId)
+                .OnDelete(DeleteBehavior.SetNull);
+            entity
+                .HasOne(x => x.ReversedEntry)
+                .WithMany()
+                .HasForeignKey(x => x.ReversedEntryId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity
+                .HasOne(x => x.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(x => x.CreatedByUserId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 

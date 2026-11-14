@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -833,13 +833,7 @@ namespace SaBai.API.Migrations
                     DoctorsUpdated = table.Column<bool>(type: "boolean", nullable: false),
                     AmountPaidUsd = table.Column<decimal>(type: "numeric(10,2)", precision: 10, scale: 2, nullable: true),
                     AmountPaidRiels = table.Column<int>(type: "integer", nullable: true),
-                    MemberWhoPaidId = table.Column<Guid>(type: "uuid", nullable: true),
-                    IsReimbursed = table.Column<bool>(type: "boolean", nullable: false),
-                    ReimbursedUsd = table.Column<decimal>(type: "numeric(10,2)", precision: 10, scale: 2, nullable: true),
-                    ReimbursedRiels = table.Column<int>(type: "integer", nullable: true),
-                    ReimbursedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    ReimbursedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
-                    ReimbursementNotes = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true)
+                    MemberWhoPaidId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -874,9 +868,49 @@ namespace SaBai.API.Migrations
                         principalTable: "StaffUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PnLedgerEntries",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    MemberId = table.Column<Guid>(type: "uuid", nullable: false),
+                    EntryType = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
+                    DebitAccount = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
+                    CreditAccount = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
+                    AmountUsd = table.Column<decimal>(type: "numeric(10,2)", precision: 10, scale: 2, nullable: false),
+                    AmountRiels = table.Column<int>(type: "integer", nullable: false),
+                    ReferralId = table.Column<Guid>(type: "uuid", nullable: true),
+                    ReversedEntryId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Notes = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    CreatedByUserId = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PnLedgerEntries", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Referrals_StaffUsers_ReimbursedByUserId",
-                        column: x => x.ReimbursedByUserId,
+                        name: "FK_PnLedgerEntries_PnLedgerEntries_ReversedEntryId",
+                        column: x => x.ReversedEntryId,
+                        principalTable: "PnLedgerEntries",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_PnLedgerEntries_Referrals_ReferralId",
+                        column: x => x.ReferralId,
+                        principalTable: "Referrals",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_PnLedgerEntries_StaffUsers_CreatedByUserId",
+                        column: x => x.CreatedByUserId,
+                        principalTable: "StaffUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_PnLedgerEntries_StaffUsers_MemberId",
+                        column: x => x.MemberId,
                         principalTable: "StaffUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -1169,9 +1203,24 @@ namespace SaBai.API.Migrations
                 column: "ReferredToId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Referrals_ReimbursedByUserId",
-                table: "Referrals",
-                column: "ReimbursedByUserId");
+                name: "IX_PnLedgerEntries_CreatedByUserId",
+                table: "PnLedgerEntries",
+                column: "CreatedByUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PnLedgerEntries_MemberId_CreatedAt",
+                table: "PnLedgerEntries",
+                columns: new[] { "MemberId", "CreatedAt" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PnLedgerEntries_ReferralId",
+                table: "PnLedgerEntries",
+                column: "ReferralId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PnLedgerEntries_ReversedEntryId",
+                table: "PnLedgerEntries",
+                column: "ReversedEntryId");
 
             migrationBuilder.CreateIndex(
                 name: "EmailIndex",
@@ -1290,6 +1339,9 @@ namespace SaBai.API.Migrations
 
             migrationBuilder.DropTable(
                 name: "PushSubscriptions");
+
+            migrationBuilder.DropTable(
+                name: "PnLedgerEntries");
 
             migrationBuilder.DropTable(
                 name: "Referrals");

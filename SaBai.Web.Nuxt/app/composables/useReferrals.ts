@@ -2,26 +2,25 @@ import { useQuery } from '@tanstack/vue-query'
 import type { MaybeRefOrGetter } from 'vue'
 import {
   createReferral,
+  fetchPnLedger,
   fetchReferral,
   fetchReferrals,
   fetchReferralsByConsult,
-  reimburseReferralBills,
-  repayPnBills,
+  recordPnRepayment,
+  reversePnLedgerEntry,
   updateReferralBooth,
   updateReferralMoney,
   updateReferralOutcome,
   updateReferralParty,
-  updateReferralReimbursement,
   updateReferralState,
   type CreateReferralContext,
+  type RecordPnRepaymentVars,
   type ReferralDetail,
-  type ReimburseReferralBillsVars,
-  type RepayPnBillsVars,
+  type ReversePnLedgerEntryVars,
   type UpdateReferralBoothVars,
   type UpdateReferralMoneyVars,
   type UpdateReferralOutcomeVars,
   type UpdateReferralPartyVars,
-  type UpdateReferralReimbursementVars,
   type UpdateReferralStateVars,
 } from '~/offline/mutations/referrals'
 import type { OfflineMutationDef } from '~/offline/defineOfflineMutation'
@@ -148,27 +147,29 @@ export function useUpdateReferralMoney() {
   return useOfflineWrite(updateReferralMoney, (input: UpdateReferralMoneyInput) => input)
 }
 
-export type UpdateReferralReimbursementInput = UpdateReferralReimbursementVars
-export type ReimburseReferralBillsInput = ReimburseReferralBillsVars
-export type RepayPnBillsInput = RepayPnBillsVars
+export type RecordPnRepaymentInput = RecordPnRepaymentVars
+export type ReversePnLedgerEntryInput = ReversePnLedgerEntryVars
 
 /**
- * Marks a single referral bill as reimbursed or pending reimbursement.
+ * Per-PN balances and double-entry ledger entries.
  */
-export function useUpdateReferralReimbursement() {
-  return useOfflineWrite(updateReferralReimbursement, (input: UpdateReferralReimbursementInput) => input)
+export function usePnLedger() {
+  return useQuery({
+    queryKey: queryKeys.pnLedger(),
+    queryFn: ({ signal }) => fetchPnLedger(signal),
+  })
 }
 
 /**
- * Bulk marks multiple referral bills as reimbursed or pending reimbursement.
+ * Records a repayment to a PN member (supports underpayment and overpayment).
  */
-export function useReimburseReferralBills() {
-  return useOfflineWrite(reimburseReferralBills, (input: ReimburseReferralBillsInput) => input)
+export function useRecordPnRepayment() {
+  return useOfflineWrite(recordPnRepayment, (input: RecordPnRepaymentInput) => input)
 }
 
 /**
- * Applies a full or partial lump-sum repayment to a PN member's pending bills (FIFO).
+ * Reverses a PN repayment or adjustment ledger entry.
  */
-export function useRepayPnBills() {
-  return useOfflineWrite(repayPnBills, (input: RepayPnBillsInput) => input)
+export function useReversePnLedgerEntry() {
+  return useOfflineWrite(reversePnLedgerEntry, (input: ReversePnLedgerEntryInput) => input)
 }

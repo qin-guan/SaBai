@@ -988,6 +988,66 @@ namespace SaBai.API.Migrations
                     b.ToTable("PatientTags");
                 });
 
+            modelBuilder.Entity("SaBai.API.Domain.PnLedgerEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("AmountRiels")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("AmountUsd")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CreditAccount")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("DebitAccount")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("EntryType")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<Guid>("MemberId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<Guid?>("ReferralId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ReversedEntryId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("ReferralId");
+
+                    b.HasIndex("ReversedEntryId");
+
+                    b.HasIndex("MemberId", "CreatedAt");
+
+                    b.ToTable("PnLedgerEntries");
+                });
+
             modelBuilder.Entity("SaBai.API.Domain.PubertyAssessment", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1078,9 +1138,6 @@ namespace SaBai.API.Migrations
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)");
 
-                    b.Property<bool>("IsReimbursed")
-                        .HasColumnType("boolean");
-
                     b.Property<Guid?>("MemberInChargeId")
                         .HasColumnType("uuid");
 
@@ -1117,23 +1174,6 @@ namespace SaBai.API.Migrations
                     b.Property<Guid?>("ReferredToId")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTimeOffset?>("ReimbursedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("ReimbursedByUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int?>("ReimbursedRiels")
-                        .HasColumnType("integer");
-
-                    b.Property<decimal?>("ReimbursedUsd")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)");
-
-                    b.Property<string>("ReimbursementNotes")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
                     b.Property<string>("RemarksAtBooth")
                         .HasColumnType("text");
 
@@ -1154,8 +1194,6 @@ namespace SaBai.API.Migrations
                     b.HasIndex("MemberWhoPaidId");
 
                     b.HasIndex("ReferredToId");
-
-                    b.HasIndex("ReimbursedByUserId");
 
                     b.ToTable("Referrals");
                 });
@@ -1844,6 +1882,38 @@ namespace SaBai.API.Migrations
                     b.Navigation("Tag");
                 });
 
+            modelBuilder.Entity("SaBai.API.Domain.PnLedgerEntry", b =>
+                {
+                    b.HasOne("SaBai.API.Domain.StaffUser", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SaBai.API.Domain.StaffUser", "Member")
+                        .WithMany()
+                        .HasForeignKey("MemberId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SaBai.API.Domain.Referral", "Referral")
+                        .WithMany()
+                        .HasForeignKey("ReferralId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("SaBai.API.Domain.PnLedgerEntry", "ReversedEntry")
+                        .WithMany()
+                        .HasForeignKey("ReversedEntryId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("Member");
+
+                    b.Navigation("Referral");
+
+                    b.Navigation("ReversedEntry");
+                });
+
             modelBuilder.Entity("SaBai.API.Domain.PubertyAssessment", b =>
                 {
                     b.HasOne("SaBai.API.Domain.Vitals", "Vitals")
@@ -1883,11 +1953,6 @@ namespace SaBai.API.Migrations
                         .HasForeignKey("ReferredToId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("SaBai.API.Domain.StaffUser", "ReimbursedByUser")
-                        .WithMany()
-                        .HasForeignKey("ReimbursedByUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.Navigation("Consult");
 
                     b.Navigation("MemberInCharge");
@@ -1897,8 +1962,6 @@ namespace SaBai.API.Migrations
                     b.Navigation("MemberWhoPaid");
 
                     b.Navigation("ReferredTo");
-
-                    b.Navigation("ReimbursedByUser");
                 });
 
             modelBuilder.Entity("SaBai.API.Domain.StaffPushSubscription", b =>

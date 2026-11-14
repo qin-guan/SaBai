@@ -3,13 +3,13 @@ import { describe, expect, it } from 'vitest'
 import {
   createReferral,
   deleteReferralPartner,
-  reimburseReferralBills,
-  repayPnBills,
+  recordPnRepayment,
+  reversePnLedgerEntry,
   sortReferralPartners,
   updateReferralBooth,
   updateReferralPartner,
-  updateReferralReimbursement,
   updateReferralState,
+  type PnLedgerData,
   type ReferralDetail,
   type ReferralListEntry,
   type ReferralPartner,
@@ -86,96 +86,86 @@ describe('referral optimistic edits', () => {
     expect(updateReferralBooth.dependsOn!({ id: referralId, referredToId: 'p1' } as never)).toEqual(['p1'])
   })
 
-  it('reimbursing a single bill or bulk bills updates both list and detail caches', () => {
+  it('records PN repayments (including overpayment) and reversals optimistically in the double-entry ledger', () => {
     const qc = new QueryClient()
-    qc.setQueryData<ReferralListEntry[]>(queryKeys.referrals(), [])
-    createReferral.optimistic!(createVars, qc)
-
-    updateReferralReimbursement.optimistic!({ id: referralId, isReimbursed: true, reimbursementNotes: 'Cash' }, qc)
-    expect(qc.getQueryData<ReferralDetail>(queryKeys.referral(referralId))).toMatchObject({ isReimbursed: true, reimbursementNotes: 'Cash' })
-    expect(qc.getQueryData<ReferralListEntry[]>(queryKeys.referrals())![0]).toMatchObject({ isReimbursed: true, reimbursementNotes: 'Cash' })
-
-    reimburseReferralBills.optimistic!({ referralIds: [referralId], isReimbursed: false }, qc)
-    expect(qc.getQueryData<ReferralDetail>(queryKeys.referral(referralId))).toMatchObject({ isReimbursed: false, reimbursedAt: null, reimbursementNotes: null })
-    expect(qc.getQueryData<ReferralListEntry[]>(queryKeys.referrals())![0]).toMatchObject({ isReimbursed: false, reimbursedAt: null })
-  })
-
-  it('partial bill repayment and FIFO PN lump-sum repayment update caches accurately', () => {
-    const qc = new QueryClient()
-    const bill1: ReferralListEntry = {
-      id: 'b1',
-      consultId,
-      doctorId: context.doctorId,
-      patientId: context.patientId,
-      patientName: 'Sokha Chan',
-      hasPhoto: false,
-      villageCodeId: context.villageCodeId,
-      villageCode: context.villageCode,
-      villageColorHex: context.villageColorHex,
-      referredFor: 'Diagnostic',
-      referralNotes: null,
-      referralState: 'Completed',
-      referralOutcome: null,
-      createdAt: '2026-11-10T08:00:00Z',
-      consultDate: context.consultDate,
-      tags: [],
-      referredToId: null,
-      amountPaidUsd: 10,
-      amountPaidRiels: 20000,
-      memberWhoPaidId: 'pn-1',
-      isReimbursed: false,
-      reimbursedUsd: null,
-      reimbursedRiels: null,
-      reimbursedAt: null,
-      reimbursedByUserId: null,
-      reimbursementNotes: null,
-    }
-    const bill2: ReferralListEntry = {
-      ...bill1,
-      id: 'b2',
-      createdAt: '2026-11-11T08:00:00Z',
-      amountPaidUsd: 15,
-      amountPaidRiels: null,
-    }
-    qc.setQueryData<ReferralListEntry[]>(queryKeys.referrals(), [bill1, bill2])
-
-    updateReferralReimbursement.optimistic!({
-      id: 'b1',
-      isReimbursed: false,
-      reimbursedUsd: 4,
-      reimbursedRiels: 5000,
-      reimbursementNotes: 'Partial',
-    }, qc)
-    expect(qc.getQueryData<ReferralListEntry[]>(queryKeys.referrals())![0]).toMatchObject({
-      isReimbursed: false,
-      reimbursedUsd: 4,
-      reimbursedRiels: 5000,
-      reimbursementNotes: 'Partial',
+    qc.setQueryData<PnLedgerData>(queryKeys.pnLedger(), {
+      balances: [
+        {
+          memberId: 'pn-1',
+          memberName: 'Dara',
+          totalBillsUsd: 20,
+          totalBillsRiels: 0,
+          totalRepaidUsd: 0,
+          totalRepaidRiels: 0,
+          totalAdjustmentsUsd: 0,
+          totalAdjustmentsRiels: 0,
+          balanceUsd: 20,
+          balanceRiels: 0,
+          entryCount: 1,
+          lastActivityAt: '2026-11-10T08:00:00Z',
+        },
+      ],
+      entries: [
+        {
+          id: 'bill-1',
+          memberId: 'pn-1',
+          memberName: 'Dara',
+          entryType: 'Bill',
+          debitAccount: 'Clinic:ReferralExpense',
+          creditAccount: 'PN:Payable',
+          amountUsd: 20,
+          amountRiels: 0,
+          referralId: referralId,
+          patientName: 'Sokha Chan',
+          reversedEntryId: null,
+          isReversed: false,
+          notes: 'Referral bill recorded',
+          createdAt: '2026-11-10T08:00:00Z',
+          createdByUserId: null,
+          createdByName: null,
+        },
+      ],
     })
 
-    // Remaining on b1: $6 + 15000 KHR. Paying $10 + 15000 KHR should settle b1 and put $4 toward b2.
-    repayPnBills.optimistic!({
-      memberWhoPaidId: 'pn-1',
-      amountUsd: 10,
-      amountRiels: 15000,
-      reimbursementNotes: 'EOD cash',
+    // Overpay $25 when $20 is owed -> balance becomes -$5
+    recordPnRepayment.optimistic!({
+      memberId: 'pn-1',
+      memberName: 'Dara',
+      amountUsd: 25,
+      amountRiels: null,
+      notes: 'Cash',
     }, qc)
 
-    const updated = qc.getQueryData<ReferralListEntry[]>(queryKeys.referrals())!
-    expect(updated[0]).toMatchObject({
-      id: 'b1',
-      isReimbursed: true,
-      reimbursedUsd: 10,
-      reimbursedRiels: 20000,
-      reimbursementNotes: 'EOD cash',
+    const afterRepay = qc.getQueryData<PnLedgerData>(queryKeys.pnLedger())!
+    expect(afterRepay.balances[0]).toMatchObject({
+      memberId: 'pn-1',
+      totalRepaidUsd: 25,
+      balanceUsd: -5,
     })
-    expect(updated[1]).toMatchObject({
-      id: 'b2',
-      isReimbursed: false,
-      reimbursedUsd: 4,
-      reimbursedRiels: null,
-      reimbursementNotes: 'EOD cash',
+    const repayEntry = afterRepay.entries[0]!
+    expect(repayEntry).toMatchObject({
+      entryType: 'Repayment',
+      debitAccount: 'PN:Payable',
+      creditAccount: 'Clinic:Cash',
+      amountUsd: -25,
     })
+
+    // Reverse that repayment -> balance returns to +$20
+    reversePnLedgerEntry.optimistic!({ id: repayEntry.id, notes: 'Typo' }, qc)
+    const afterReverse = qc.getQueryData<PnLedgerData>(queryKeys.pnLedger())!
+    expect(afterReverse.balances[0]).toMatchObject({
+      memberId: 'pn-1',
+      totalAdjustmentsUsd: 25,
+      balanceUsd: 20,
+    })
+    expect(afterReverse.entries[0]).toMatchObject({
+      entryType: 'Adjustment',
+      debitAccount: 'Clinic:Cash',
+      creditAccount: 'PN:Payable',
+      amountUsd: 25,
+      reversedEntryId: repayEntry.id,
+    })
+    expect(afterReverse.entries.find(e => e.id === repayEntry.id)?.isReversed).toBe(true)
   })
 })
 

@@ -1,18 +1,17 @@
 <script setup lang="ts">
 import {
+  PhArrowCounterClockwise,
   PhArrowLeft,
-  PhCheck,
-  PhCheckCircle,
   PhDownloadSimple,
   PhMagnifyingGlass,
   PhPencilSimple,
+  PhPlus,
   PhWarning,
   PhX,
 } from '@phosphor-icons/vue'
 import { toast } from 'vue-sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
   DialogContent,
@@ -25,41 +24,42 @@ import { Input } from '@/components/ui/input'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
+import type { PnLedgerEntryResponse, PnMemberBalanceResponse } from '~/offline/mutations/referrals'
 import type { ReferralListItem } from '@/utils/referral'
 import {
+  buildPnLedgerCsv,
   buildReferralBillsCsv,
-  consolidateBillsByPn,
   formatBillAmount,
   formatRiels,
+  formatSignedBillAmount,
   formatUsd,
-  getBillBreakdown,
   hasReferralBill,
   isUnattributedBill,
   matchesReferralBill,
   summarizeReferralBills,
   UNASSIGNED_PAYER_KEY,
-  type PnMemberBillGroup,
   type ReferralBillLookup,
-  type ReimbursementStatusFilter,
 } from '@/utils/referralBills'
 
-useHead({ title: "PN Referral Bills · Sa'Bai" })
+useHead({ title: "PN Bills & Ledger · Sa'Bai" })
 
-const { data: referrals, isLoading, isError, error } = useReferralsList()
+const { data: referrals, isLoading: referralsLoading, isError: referralsError, error: referralsErr } = useReferralsList()
+const { data: ledger, isLoading: ledgerLoading, isError: ledgerError, error: ledgerErr } = usePnLedger()
 const { data: patientsData } = usePatientsList()
 const { data: partners } = useReferralPartnersList()
 const { data: staff } = useStaffUsersList()
 const { villageCodes } = useVillageCode()
 
 const updateMoney = useUpdateReferralMoney()
-const updateReimbursement = useUpdateReferralReimbursement()
-const reimburseBills = useReimburseReferralBills()
-const repayPnBills = useRepayPnBills()
+const recordRepayment = useRecordPnRepayment()
+const reverseEntry = useReversePnLedgerEntry()
+
+const activeTab = useState<'ledger' | 'bills'>('referrals:bills-tab', () => 'ledger')
 
 const filters = useState('referrals:bills-filters', () => ({
   search: '',
   memberWhoPaidId: '',
-  reimbursementStatus: 'all' as ReimbursementStatusFilter,
+  unattributedOnly: false,
   referredToId: '',
   villageId: '',
   dateFrom: '',
@@ -79,6 +79,54 @@ const lookup: ReferralBillLookup = {
   partnerName: id => (id ? partnersById.value.get(id)?.name : undefined),
 }
 
+const staffOptions = computed(() =>
+  [...(staff.value ?? [])]
+    .filter(u => !u.isLocked)
+    .sort((a, b) => (a.nickname || a.userName).localeCompare(b.nickname || b.userName)),
+)
+
+function shortDate(iso: string | null | undefined): string {
+  if (!iso) return '—'
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return iso.slice(0, 10)
+  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+}
+
+const balances = computed<PnMemberBalanceResponse[]>(() => ledger.value?.balances ?? [])
+const ledgerEntries = computed<PnLedgerEntryResponse[]>(() => {
+  const all = ledger.value?.entries ?? []
+  if (!filters.value.memberWhoPaidId || filters.value.memberWhoPaidId === UNASSIGNED_PAYER_KEY)
+    return all
+  return all.filter(e => e.memberId === filters.value.memberWhoPaidId)
+})
+
+const ledgerTotals = computed(() => {
+  let owedUsdCents = 0
+  let owedRiels = 0
+  let overpaidUsdCents = 0
+  let overpaidRiels = 0
+  let owedPeople = 0
+  let overpaidPeople = 0
+
+  for (const b of balances.value) {
+    if (b.balanceUsd > 0 || b.balanceRiels > 0) owedPeople++
+    if (b.balanceUsd < 0 || b.balanceRiels < 0) overpaidPeople++
+    if (b.balanceUsd > 0) owedUsdCents += Math.round(b.balanceUsd * 100)
+    else if (b.balanceUsd < 0) overpaidUsdCents += Math.round(Math.abs(b.balanceUsd) * 100)
+    if (b.balanceRiels > 0) owedRiels += b.balanceRiels
+    else if (b.balanceRiels < 0) overpaidRiels += Math.abs(b.balanceRiels)
+  }
+
+  return {
+    owedPeople,
+    owedUsd: owedUsdCents / 100,
+    owedRiels,
+    overpaidPeople,
+    overpaidUsd: overpaidUsdCents / 100,
+    overpaidRiels,
+  }
+})
+
 const allBills = computed<ReferralListItem[]>(() =>
   (referrals.value ?? [])
     .filter(hasReferralBill)
@@ -89,26 +137,7 @@ const allBills = computed<ReferralListItem[]>(() =>
     }),
 )
 
-const summary = computed(() => summarizeReferralBills(allBills.value))
-
-const pnGroups = computed(() =>
-  consolidateBillsByPn(allBills.value, id => lookup.memberName(id)),
-)
-
-const pnFilterOptions = computed(() => {
-  const seen = new Map<string, string>()
-  for (const u of staff.value ?? []) {
-    if (u.roles.some(r => r.trim().toLowerCase() === 'pn'))
-      seen.set(u.id, u.nickname || u.userName)
-  }
-  for (const b of allBills.value) {
-    if (b.memberWhoPaidId && !seen.has(b.memberWhoPaidId))
-      seen.set(b.memberWhoPaidId, lookup.memberName(b.memberWhoPaidId) ?? 'Unknown PN member')
-  }
-  return [...seen.entries()]
-    .map(([value, label]) => ({ value, label }))
-    .sort((a, b) => a.label.localeCompare(b.label))
-})
+const billsSummary = computed(() => summarizeReferralBills(allBills.value))
 
 const filteredBills = computed(() =>
   allBills.value.filter(item =>
@@ -117,7 +146,7 @@ const filteredBills = computed(() =>
       {
         search: filters.value.search,
         memberWhoPaidId: filters.value.memberWhoPaidId || null,
-        reimbursementStatus: filters.value.reimbursementStatus,
+        unattributedOnly: filters.value.unattributedOnly,
         referredToId: filters.value.referredToId || null,
         villageCodeId: filters.value.villageId || null,
         dateFrom: filters.value.dateFrom || null,
@@ -128,13 +157,11 @@ const filteredBills = computed(() =>
   ),
 )
 
-const filteredSummary = computed(() => summarizeReferralBills(filteredBills.value))
-
 const hasFilters = computed(
   () =>
     !!filters.value.search
     || !!filters.value.memberWhoPaidId
-    || filters.value.reimbursementStatus !== 'all'
+    || filters.value.unattributedOnly
     || !!filters.value.referredToId
     || !!filters.value.villageId
     || !!filters.value.dateFrom
@@ -145,7 +172,7 @@ function clearFilters() {
   filters.value = {
     search: '',
     memberWhoPaidId: '',
-    reimbursementStatus: 'all',
+    unattributedOnly: false,
     referredToId: '',
     villageId: '',
     dateFrom: '',
@@ -153,937 +180,692 @@ function clearFilters() {
   }
 }
 
-function formatSummaryTotals(usd: number, riels: number): string {
+function togglePersonFilter(memberId: string) {
+  filters.value.memberWhoPaidId = filters.value.memberWhoPaidId === memberId ? '' : memberId
+  filters.value.unattributedOnly = false
+}
+
+function formatBalanceBadge(usd: number, riels: number): { label: string, tone: string } {
+  const hasPos = usd > 0 || riels > 0
+  const hasNeg = usd < 0 || riels < 0
+  if (!hasPos && !hasNeg) {
+    return { label: 'Settled', tone: 'border-success/40 bg-success-subtle text-success' }
+  }
   const parts: string[] = []
-  if (usd > 0) parts.push(formatUsd(usd))
-  if (riels > 0) parts.push(formatRiels(riels))
-  return parts.length ? parts.join(' + ') : 'US$0.00'
-}
+  if (usd > 0) parts.push(`Owed ${formatUsd(usd)}`)
+  else if (usd < 0) parts.push(`Overpaid ${formatUsd(Math.abs(usd))}`)
+  if (riels > 0) parts.push(`Owed ${formatRiels(riels)}`)
+  else if (riels < 0) parts.push(`Overpaid ${formatRiels(Math.abs(riels))}`)
 
-const summaryCells = computed(() => [
-  {
-    key: 'all' as const,
-    label: 'All bills',
-    count: summary.value.totalCount,
-    detail: formatSummaryTotals(summary.value.totalUsd, summary.value.totalRiels),
-  },
-  {
-    key: 'pending' as const,
-    label: 'Pending reimbursement',
-    count: summary.value.pendingCount,
-    detail: formatSummaryTotals(summary.value.pendingUsd, summary.value.pendingRiels),
-  },
-  {
-    key: 'reimbursed' as const,
-    label: 'Reimbursed',
-    count: summary.value.reimbursedCount,
-    detail: formatSummaryTotals(summary.value.reimbursedUsd, summary.value.reimbursedRiels),
-  },
-  {
-    key: 'unattributed' as const,
-    label: 'Missing payer',
-    count: summary.value.unattributedCount,
-    detail: summary.value.unattributedCount > 0
-      ? formatSummaryTotals(summary.value.unattributedUsd, summary.value.unattributedRiels)
-      : 'All attributed',
-  },
-])
-
-// ── Bulk selection & reimbursement ───────────────────────────────────────
-const selectedIds = ref<string[]>([])
-const visibleIds = computed(() => filteredBills.value.map(b => b.id))
-const allVisibleSelected = computed(
-  () => visibleIds.value.length > 0 && visibleIds.value.every(id => selectedIds.value.includes(id)),
-)
-
-watch(filteredBills, (bills) => {
-  const valid = new Set(bills.map(b => b.id))
-  selectedIds.value = selectedIds.value.filter(id => valid.has(id))
-})
-
-function toggleSelectAll(checked: boolean | 'indeterminate') {
-  selectedIds.value = checked === true ? [...visibleIds.value] : []
-}
-
-function toggleRowSelected(id: string, checked: boolean | 'indeterminate') {
-  if (checked === true) {
-    if (!selectedIds.value.includes(id))
-      selectedIds.value = [...selectedIds.value, id]
-  }
-  else {
-    selectedIds.value = selectedIds.value.filter(x => x !== id)
+  return {
+    label: parts.join(' · '),
+    tone: hasPos
+      ? 'border-warning-border bg-warning-subtle text-warning'
+      : 'border-band-border bg-accent text-accent-foreground',
   }
 }
 
-// ── Repay PN (full or partial lump-sum) dialog ───────────────────────────
-const repayPnDialog = ref<{
+// ── Repay by person dialog ───────────────────────────────────────────────
+
+const repayDialog = ref<{
   open: boolean
   memberId: string
-  memberName: string
-  maxUsd: number
-  maxRiels: number
   amountUsd: string
   amountRiels: string
   notes: string
-  error: string
 }>({
   open: false,
   memberId: '',
-  memberName: '',
-  maxUsd: 0,
-  maxRiels: 0,
   amountUsd: '',
   amountRiels: '',
   notes: '',
-  error: '',
 })
 
-function openRepayPn(group: PnMemberBillGroup) {
-  if (group.pendingIds.length === 0 || group.isUnassigned) return
-  repayPnDialog.value = {
+const selectedRepayBalance = computed(() =>
+  balances.value.find(b => b.memberId === repayDialog.value.memberId),
+)
+
+const projectedBalance = computed(() => {
+  const curUsd = selectedRepayBalance.value?.balanceUsd ?? 0
+  const curRiels = selectedRepayBalance.value?.balanceRiels ?? 0
+  const payUsd = repayDialog.value.amountUsd.trim() ? Number(repayDialog.value.amountUsd) : 0
+  const payRiels = repayDialog.value.amountRiels.trim() ? Number(repayDialog.value.amountRiels) : 0
+  return {
+    usd: Math.round((curUsd - (Number.isFinite(payUsd) ? payUsd : 0)) * 100) / 100,
+    riels: curRiels - (Number.isFinite(payRiels) ? Math.round(payRiels) : 0),
+  }
+})
+
+function openRepayDialog(memberId = '') {
+  const bal = balances.value.find(b => b.memberId === memberId)
+  repayDialog.value = {
     open: true,
-    memberId: group.memberId,
-    memberName: group.memberName,
-    maxUsd: group.pendingUsd,
-    maxRiels: group.pendingRiels,
-    amountUsd: group.pendingUsd > 0 ? group.pendingUsd.toFixed(2) : '',
-    amountRiels: group.pendingRiels > 0 ? String(group.pendingRiels) : '',
+    memberId,
+    amountUsd: bal && bal.balanceUsd > 0 ? bal.balanceUsd.toFixed(2) : '',
+    amountRiels: bal && bal.balanceRiels > 0 ? String(bal.balanceRiels) : '',
     notes: '',
-    error: '',
   }
 }
 
-async function confirmRepayPn() {
-  if (repayPnBills.isPending.value || !repayPnDialog.value.memberId) return
-
-  const usdStr = repayPnDialog.value.amountUsd.trim()
-  const rielsStr = repayPnDialog.value.amountRiels.trim()
-  const moneyErrors = validateReferralMoney({
-    amountPaidUsd: usdStr,
-    amountPaidRiels: rielsStr,
-    memberWhoPaidId: repayPnDialog.value.memberId,
-  })
-  if (moneyErrors.amountPaidUsd || moneyErrors.amountPaidRiels) {
-    repayPnDialog.value.error = moneyErrors.amountPaidUsd || moneyErrors.amountPaidRiels || ''
+async function submitRepay() {
+  const memberId = repayDialog.value.memberId
+  if (!memberId) {
+    toast.error('Select a PN member to repay.')
     return
   }
-
-  const usd = usdStr ? Number(usdStr) : 0
-  const riels = rielsStr ? Number(rielsStr) : 0
+  const usd = repayDialog.value.amountUsd.trim() ? Number(repayDialog.value.amountUsd) : 0
+  const riels = repayDialog.value.amountRiels.trim() ? Number(repayDialog.value.amountRiels) : 0
+  if (!Number.isFinite(usd) || usd < 0 || !Number.isFinite(riels) || riels < 0 || !Number.isInteger(riels)) {
+    toast.error('Enter valid non-negative USD and integer KHR amounts.')
+    return
+  }
   if (usd <= 0 && riels <= 0) {
-    repayPnDialog.value.error = 'Enter a repayment amount in USD or KHR.'
-    return
-  }
-  if (usd > repayPnDialog.value.maxUsd) {
-    repayPnDialog.value.error = `USD repayment cannot exceed ${formatUsd(repayPnDialog.value.maxUsd)} owed.`
-    return
-  }
-  if (riels > repayPnDialog.value.maxRiels) {
-    repayPnDialog.value.error = `KHR repayment cannot exceed ${formatRiels(repayPnDialog.value.maxRiels)} owed.`
+    toast.error('Enter a positive USD or KHR repayment amount.')
     return
   }
 
-  repayPnDialog.value.error = ''
+  const memberName = lookup.memberName(memberId) ?? selectedRepayBalance.value?.memberName ?? 'PN member'
   try {
-    const outcome = await repayPnBills.mutateAsync({
-      memberWhoPaidId: repayPnDialog.value.memberId,
+    const outcome = await recordRepayment.mutateAsync({
+      memberId,
+      memberName,
       amountUsd: usd > 0 ? usd : null,
       amountRiels: riels > 0 ? riels : null,
-      reimbursementNotes: repayPnDialog.value.notes.trim() || null,
-      label: `Repay ${repayPnDialog.value.memberName}`,
+      notes: repayDialog.value.notes.trim() || null,
     })
-    notifySaved(outcome, `Repayment recorded for ${repayPnDialog.value.memberName}`)
-    repayPnDialog.value.open = false
+    repayDialog.value.open = false
+    notifySaved(outcome, `Recorded ${formatBillAmount(usd, riels)} repayment to ${memberName}`)
   }
   catch (err) {
     toast.error(getApiErrorMessage(err, 'Could not record repayment.'))
   }
 }
 
-// ── Bulk settle dialog ───────────────────────────────────────────────────
-const settleDialog = ref<{
+// ── Reverse ledger entry dialog ──────────────────────────────────────────
+
+const reverseDialog = ref<{
   open: boolean
-  ids: string[]
-  isReimbursed: boolean
-  title: string
-  description: string
+  entry: PnLedgerEntryResponse | null
   notes: string
 }>({
   open: false,
-  ids: [],
-  isReimbursed: true,
-  title: '',
-  description: '',
+  entry: null,
   notes: '',
 })
 
-function openBulkSettle(isReimbursed: boolean) {
-  if (selectedIds.value.length === 0) return
-  const count = selectedIds.value.length
-  settleDialog.value = {
-    open: true,
-    ids: [...selectedIds.value],
-    isReimbursed,
-    title: isReimbursed ? `Mark ${count} bill${count === 1 ? '' : 's'} reimbursed` : `Mark ${count} bill${count === 1 ? '' : 's'} pending`,
-    description: isReimbursed
-      ? `Confirm reimbursement for ${count} selected referral bill${count === 1 ? '' : 's'}.`
-      : `Return ${count} selected referral bill${count === 1 ? '' : 's'} to pending reimbursement.`,
-    notes: '',
-  }
+function openReverseDialog(entry: PnLedgerEntryResponse) {
+  reverseDialog.value = { open: true, entry, notes: '' }
 }
 
-async function confirmSettle() {
-  if (reimburseBills.isPending.value || settleDialog.value.ids.length === 0) return
+async function submitReverse() {
+  const entry = reverseDialog.value.entry
+  if (!entry) return
   try {
-    const outcome = await reimburseBills.mutateAsync({
-      referralIds: settleDialog.value.ids,
-      isReimbursed: settleDialog.value.isReimbursed,
-      reimbursementNotes: settleDialog.value.notes.trim() || null,
-      label: settleDialog.value.title,
+    const outcome = await reverseEntry.mutateAsync({
+      id: entry.id,
+      notes: reverseDialog.value.notes.trim() || null,
     })
-    notifySaved(
-      outcome,
-      settleDialog.value.isReimbursed ? 'Bills marked as reimbursed' : 'Bills marked as pending',
-    )
-    selectedIds.value = []
-    settleDialog.value.open = false
+    reverseDialog.value.open = false
+    notifySaved(outcome, 'Ledger entry reversed')
   }
   catch (err) {
-    toast.error(getApiErrorMessage(err, 'Could not update reimbursement status.'))
+    toast.error(getApiErrorMessage(err, 'Could not reverse ledger entry.'))
   }
 }
 
-async function toggleSingleReimbursement(item: ReferralListItem) {
-  if (updateReimbursement.isPending.value) return
-  const next = !item.isReimbursed
-  try {
-    const outcome = await updateReimbursement.mutateAsync({
-      id: item.id,
-      patientName: item.patientName,
-      isReimbursed: next,
-      reimbursementNotes: next ? item.reimbursementNotes : null,
-    })
-    notifySaved(outcome, next ? 'Marked as reimbursed' : 'Marked as pending')
-  }
-  catch (err) {
-    toast.error(getApiErrorMessage(err, 'Could not update reimbursement status.'))
-  }
-}
+// ── Edit referral bill dialog ────────────────────────────────────────────
 
-// ── Edit bill dialog ─────────────────────────────────────────────────────
 const editDialog = ref<{
   open: boolean
   item: ReferralListItem | null
+  memberWhoPaidId: string
   amountPaidUsd: string
   amountPaidRiels: string
-  memberWhoPaidId: string
-  isReimbursed: boolean
-  reimbursedUsd: string
-  reimbursedRiels: string
-  reimbursementNotes: string
-  errors: ReferralMoneyErrors & { reimbursedUsd?: string, reimbursedRiels?: string }
 }>({
   open: false,
   item: null,
+  memberWhoPaidId: '',
   amountPaidUsd: '',
   amountPaidRiels: '',
-  memberWhoPaidId: '',
-  isReimbursed: false,
-  reimbursedUsd: '',
-  reimbursedRiels: '',
-  reimbursementNotes: '',
-  errors: {},
 })
 
-const editPnOptions = usePnMemberOptions(() => editDialog.value.item?.memberWhoPaidId ?? '')
-
 function openEditBill(item: ReferralListItem) {
-  const b = getBillBreakdown(item)
   editDialog.value = {
     open: true,
     item,
+    memberWhoPaidId: item.memberWhoPaidId ?? '',
     amountPaidUsd: item.amountPaidUsd != null ? String(item.amountPaidUsd) : '',
     amountPaidRiels: item.amountPaidRiels != null ? String(item.amountPaidRiels) : '',
-    memberWhoPaidId: item.memberWhoPaidId ?? '',
-    isReimbursed: item.isReimbursed,
-    reimbursedUsd: b.reimbursedUsd > 0 ? String(b.reimbursedUsd) : '',
-    reimbursedRiels: b.reimbursedRiels > 0 ? String(b.reimbursedRiels) : '',
-    reimbursementNotes: item.reimbursementNotes ?? '',
-    errors: {},
   }
 }
 
 async function saveEditBill() {
   const item = editDialog.value.item
-  if (!item || updateMoney.isPending.value || updateReimbursement.isPending.value) return
+  if (!item) return
 
-  const errors: ReferralMoneyErrors & { reimbursedUsd?: string, reimbursedRiels?: string } = validateReferralMoney({
-    amountPaidUsd: editDialog.value.amountPaidUsd,
-    amountPaidRiels: editDialog.value.amountPaidRiels,
-    memberWhoPaidId: editDialog.value.memberWhoPaidId,
-  })
-  const reimbMoneyErrors = validateReferralMoney({
-    amountPaidUsd: editDialog.value.reimbursedUsd,
-    amountPaidRiels: editDialog.value.reimbursedRiels,
-    memberWhoPaidId: '',
-  })
-  if (reimbMoneyErrors.amountPaidUsd) errors.reimbursedUsd = reimbMoneyErrors.amountPaidUsd
-  if (reimbMoneyErrors.amountPaidRiels) errors.reimbursedRiels = reimbMoneyErrors.amountPaidRiels
-
-  const usd = editDialog.value.amountPaidUsd.trim()
-  const riels = editDialog.value.amountPaidRiels.trim()
-  const nextUsd = usd ? Number(usd) : null
-  const nextRiels = riels ? Number(riels) : null
-
-  const rUsdStr = editDialog.value.reimbursedUsd.trim()
-  const rRielsStr = editDialog.value.reimbursedRiels.trim()
-  const nextReimbUsd = rUsdStr ? Number(rUsdStr) : null
-  const nextReimbRiels = rRielsStr ? Number(rRielsStr) : null
-
-  if (!errors.reimbursedUsd && nextReimbUsd != null && nextReimbUsd > (nextUsd ?? 0))
-    errors.reimbursedUsd = 'Cannot exceed amount paid in USD.'
-  if (!errors.reimbursedRiels && nextReimbRiels != null && nextReimbRiels > (nextRiels ?? 0))
-    errors.reimbursedRiels = 'Cannot exceed amount paid in KHR.'
-
-  editDialog.value.errors = errors
-  if (Object.keys(errors).length > 0) return
-
-  const nextMember = editDialog.value.memberWhoPaidId || null
-  const nextReimbursed = editDialog.value.isReimbursed
-  const nextNotes = editDialog.value.reimbursementNotes.trim() || null
-
-  const moneyChanged
-    = nextUsd !== item.amountPaidUsd
-    || nextRiels !== item.amountPaidRiels
-    || nextMember !== item.memberWhoPaidId
-
-  const reimbursementChanged
-    = nextReimbursed !== item.isReimbursed
-    || nextReimbUsd !== (item.reimbursedUsd ?? null)
-    || nextReimbRiels !== (item.reimbursedRiels ?? null)
-    || nextNotes !== (item.reimbursementNotes ?? null)
+  const parsedUsd = editDialog.value.amountPaidUsd.trim() ? Number(editDialog.value.amountPaidUsd) : null
+  const parsedRiels = editDialog.value.amountPaidRiels.trim() ? Number(editDialog.value.amountPaidRiels) : null
+  if (parsedUsd !== null && (!Number.isFinite(parsedUsd) || parsedUsd < 0)) {
+    toast.error('USD amount must be a non-negative number.')
+    return
+  }
+  if (parsedRiels !== null && (!Number.isFinite(parsedRiels) || parsedRiels < 0 || !Number.isInteger(parsedRiels))) {
+    toast.error('KHR amount must be a non-negative whole number.')
+    return
+  }
 
   try {
-    let outcome
-    if (moneyChanged) {
-      outcome = await updateMoney.mutateAsync({
-        id: item.id,
-        patientName: item.patientName,
-        amountPaidUsd: nextUsd,
-        amountPaidRiels: nextRiels,
-        memberWhoPaidId: nextMember,
-      })
-    }
-    if (reimbursementChanged) {
-      outcome = await updateReimbursement.mutateAsync({
-        id: item.id,
-        patientName: item.patientName,
-        isReimbursed: nextReimbursed,
-        reimbursedUsd: nextReimbursed ? nextUsd : nextReimbUsd,
-        reimbursedRiels: nextReimbursed ? nextRiels : nextReimbRiels,
-        reimbursementNotes: nextNotes,
-      })
-    }
-    if (outcome)
-      notifySaved(outcome, 'Bill updated')
+    const outcome = await updateMoney.mutateAsync({
+      id: item.id,
+      patientName: item.patientName,
+      amountPaidUsd: parsedUsd,
+      amountPaidRiels: parsedRiels,
+      memberWhoPaidId: editDialog.value.memberWhoPaidId || null,
+    })
     editDialog.value.open = false
+    notifySaved(outcome, 'Bill payment updated and ledger adjusted')
   }
   catch (err) {
-    toast.error(getApiErrorMessage(err, 'Could not save bill changes.'))
+    toast.error(getApiErrorMessage(err, 'Could not update bill payment.'))
   }
 }
 
-// ── CSV export ───────────────────────────────────────────────────────────
-function exportCsv() {
-  if (filteredBills.value.length === 0) return
-  const csv = buildReferralBillsCsv(filteredBills.value, lookup)
-  const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' })
+function downloadCsv(filename: string, csv: string) {
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
-  const today = new Date().toISOString().slice(0, 10)
   link.href = url
-  link.download = `sabai-referral-bills-${today}.csv`
-  document.body.appendChild(link)
+  link.download = filename
   link.click()
-  document.body.removeChild(link)
   URL.revokeObjectURL(url)
 }
 
-const shortDate = (date: string) => {
-  const d = new Date(date)
-  return d.toLocaleDateString(undefined, {
-    day: 'numeric',
-    month: 'short',
-    year: d.getFullYear() === new Date().getFullYear() ? undefined : 'numeric',
-  })
+function exportCsv() {
+  const today = new Date().toISOString().slice(0, 10)
+  if (activeTab.value === 'ledger') {
+    downloadCsv(`pn-ledger-${today}.csv`, buildPnLedgerCsv(ledgerEntries.value))
+  }
+  else {
+    downloadCsv(`pn-referral-bills-${today}.csv`, buildReferralBillsCsv(filteredBills.value, lookup))
+  }
 }
 </script>
 
 <template>
   <div class="flex flex-col gap-3">
     <PageHeader
-      title="PN Referral Bills"
-      description="Consolidate, review, and reimburse referral bills paid by PN members."
+      title="PN Bills & Ledger"
+      description="Double-entry ledger of referral bills paid by PNs and repayments made by person."
       :breadcrumbs="[
         { label: 'Home', to: '/' },
         { label: 'Referrals', to: paths.referrals() },
-        { label: 'PN Bills' },
+        { label: 'PN Bills & Ledger' },
       ]"
-      class="mb-0!"
     >
       <template #actions>
+        <Button as-child variant="outline" size="sm">
+          <NuxtLink :to="paths.referrals()">
+            <PhArrowLeft aria-hidden="true" /> Referrals
+          </NuxtLink>
+        </Button>
         <Button
+          type="button"
           variant="outline"
-          :disabled="isLoading || filteredBills.length === 0"
+          size="sm"
+          :disabled="activeTab === 'ledger' ? !ledgerEntries.length : !filteredBills.length"
           @click="exportCsv"
         >
           <PhDownloadSimple aria-hidden="true" /> Export CSV
         </Button>
-        <Button as-child variant="outline">
-          <NuxtLink :to="paths.referrals()">
-            <PhArrowLeft aria-hidden="true" /> All referrals
-          </NuxtLink>
+        <Button type="button" variant="success" size="sm" @click="openRepayDialog(filters.memberWhoPaidId || '')">
+          <PhPlus aria-hidden="true" /> Record repayment
         </Button>
       </template>
     </PageHeader>
 
-    <!-- Summary strip: clickable to filter by reimbursement status -->
-    <div role="group" aria-label="Filter by bill status" class="grid grid-cols-2 gap-px border border-border bg-border sm:grid-cols-4">
-      <button
-        v-for="cell in summaryCells"
-        :key="cell.key"
-        type="button"
-        class="flex min-w-0 flex-col gap-0.5 bg-card px-3 py-2 text-left hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
-        :class="filters.reimbursementStatus === cell.key && 'bg-accent shadow-[inset_0_-3px_0_var(--color-primary)]'"
-        :aria-pressed="filters.reimbursementStatus === cell.key"
-        @click="filters.reimbursementStatus = cell.key"
-      >
-        <span class="flex items-baseline justify-between gap-2">
-          <span class="truncate text-xs font-bold text-chrome touch:text-sm">{{ cell.label }}</span>
-          <span
-            class="text-lg leading-tight font-bold tabular-nums"
-            :class="cell.count === 0 ? 'text-muted-foreground' : cell.key === 'unattributed' ? 'text-warning' : ''"
-          >
-            {{ isLoading ? '–' : cell.count }}
-          </span>
-        </span>
-        <span class="truncate text-xs font-medium text-muted-foreground tabular-nums touch:text-[0.8125rem]">
-          {{ isLoading ? '–' : cell.detail }}
-        </span>
-      </button>
-    </div>
+    <StateMessage v-if="referralsLoading || ledgerLoading" kind="loading" message="Loading PN ledger…" />
+    <StateMessage
+      v-else-if="referralsError || ledgerError"
+      kind="error"
+      :message="describeLoadError(ledgerErr ?? referralsErr, 'Could not load PN bills and ledger.')"
+    />
 
-    <!-- Consolidation by PN Member -->
-    <AppPanel
-      title="Consolidation by PN member"
-      :description="isLoading ? undefined : `${pnGroups.length} ${pnGroups.length === 1 ? 'payer' : 'payers'}`"
-      flush
-    >
-      <StateMessage v-if="isLoading" kind="loading" message="Loading referral bills…" />
-      <StateMessage v-else-if="isError && !referrals" kind="error" :message="describeLoadError(error, 'Referral bills could not be loaded. Check the connection and reload.')" />
-      <div v-else-if="pnGroups.length === 0" class="px-3 py-8 text-center text-xs text-muted-foreground touch:text-sm" role="status">
-        No referral payments recorded yet. Record payments on a referral's Payment step.
-      </div>
-      <Table v-else class="grid-table stack-table">
-        <TableHeader>
-          <TableRow>
-            <TableHead>PN Member</TableHead>
-            <TableHead>Bills</TableHead>
-            <TableHead>Pending</TableHead>
-            <TableHead>Reimbursed</TableHead>
-            <TableHead>Total Paid</TableHead>
-            <TableHead class="text-right">
-              Actions
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          <TableRow
-            v-for="group in pnGroups"
-            :key="group.memberId"
-            :class="filters.memberWhoPaidId === group.memberId && 'bg-accent/50'"
+    <template v-else>
+      <!-- Summary strip -->
+      <section aria-label="Ledger totals" class="grid grid-cols-2 gap-px border border-border bg-border md:grid-cols-4">
+        <div class="bg-card px-3 py-2.5">
+          <p class="text-[0.6875rem] font-bold uppercase tracking-[0.06em] text-muted-foreground">
+            Owed to PNs
+          </p>
+          <p class="mt-0.5 text-base font-bold tabular-nums text-warning">
+            {{ formatBillAmount(ledgerTotals.owedUsd, ledgerTotals.owedRiels) }}
+          </p>
+          <p class="text-xs text-muted-foreground tabular-nums">
+            {{ ledgerTotals.owedPeople }} {{ ledgerTotals.owedPeople === 1 ? 'person' : 'people' }}
+          </p>
+        </div>
+
+        <div class="bg-card px-3 py-2.5">
+          <p class="text-[0.6875rem] font-bold uppercase tracking-[0.06em] text-muted-foreground">
+            Overpaid credits
+          </p>
+          <p class="mt-0.5 text-base font-bold tabular-nums text-chrome">
+            {{ formatBillAmount(ledgerTotals.overpaidUsd, ledgerTotals.overpaidRiels) }}
+          </p>
+          <p class="text-xs text-muted-foreground tabular-nums">
+            {{ ledgerTotals.overpaidPeople }} {{ ledgerTotals.overpaidPeople === 1 ? 'person' : 'people' }}
+          </p>
+        </div>
+
+        <div class="bg-card px-3 py-2.5">
+          <p class="text-[0.6875rem] font-bold uppercase tracking-[0.06em] text-muted-foreground">
+            Total referral bills
+          </p>
+          <p class="mt-0.5 text-base font-bold tabular-nums text-foreground">
+            {{ formatBillAmount(billsSummary.totalUsd, billsSummary.totalRiels) }}
+          </p>
+          <p class="text-xs text-muted-foreground tabular-nums">
+            {{ billsSummary.totalCount }} {{ billsSummary.totalCount === 1 ? 'bill' : 'bills' }}
+          </p>
+        </div>
+
+        <button
+          type="button"
+          class="bg-card px-3 py-2.5 text-left transition-colors hover:bg-accent/50"
+          @click="() => { activeTab = 'bills'; filters.unattributedOnly = !filters.unattributedOnly; filters.memberWhoPaidId = '' }"
+        >
+          <p class="flex items-center gap-1 text-[0.6875rem] font-bold uppercase tracking-[0.06em] text-muted-foreground">
+            <PhWarning v-if="billsSummary.unattributedCount" class="size-3.5 text-destructive" aria-hidden="true" />
+            Unattributed bills
+          </p>
+          <p class="mt-0.5 text-base font-bold tabular-nums" :class="billsSummary.unattributedCount ? 'text-destructive' : 'text-muted-foreground'">
+            {{ formatBillAmount(billsSummary.unattributedUsd, billsSummary.unattributedRiels) }}
+          </p>
+          <p class="text-xs text-muted-foreground tabular-nums">
+            {{ billsSummary.unattributedCount }} without PN assigned
+          </p>
+        </button>
+      </section>
+
+      <!-- Per-person balances -->
+      <AppPanel title="Balances by person" description="Repay by person. Underpaying leaves an owed balance; overpaying records a credit against future bills.">
+        <div v-if="!balances.length" class="py-4 text-center text-xs text-muted-foreground">
+          No PN ledger entries yet. Record a referral bill payment or click "Record repayment".
+        </div>
+        <div v-else class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          <div
+            v-for="b in balances"
+            :key="b.memberId"
+            class="flex flex-col justify-between gap-2 border p-3 transition-colors"
+            :class="filters.memberWhoPaidId === b.memberId ? 'border-primary bg-accent/40' : 'border-border bg-card'"
           >
-            <TableCell data-label="PN Member" class="font-semibold">
-              <span class="flex items-center gap-1.5">
-                <PhWarning v-if="group.isUnassigned" class="size-4 shrink-0 text-warning" aria-hidden="true" />
-                <span>{{ group.memberName }}</span>
-              </span>
-            </TableCell>
-            <TableCell data-label="Bills" class="tabular-nums">
-              {{ group.totalCount }}
-              <span v-if="group.pendingCount > 0" class="text-xs text-warning">
-                ({{ group.pendingCount }} pending)
-              </span>
-            </TableCell>
-            <TableCell data-label="Pending" class="font-medium tabular-nums" :class="group.pendingCount > 0 ? 'text-warning' : 'text-muted-foreground'">
-              {{ group.pendingCount > 0 ? formatSummaryTotals(group.pendingUsd, group.pendingRiels) : '—' }}
-            </TableCell>
-            <TableCell data-label="Reimbursed" class="tabular-nums text-success">
-              {{ group.reimbursedCount > 0 ? formatSummaryTotals(group.reimbursedUsd, group.reimbursedRiels) : '—' }}
-            </TableCell>
-            <TableCell data-label="Total Paid" class="font-bold tabular-nums">
-              {{ formatSummaryTotals(group.totalUsd, group.totalRiels) }}
-            </TableCell>
-            <TableCell data-label="Actions" class="text-right">
-              <div class="flex flex-wrap justify-end gap-1.5">
-                <Button
-                  size="sm"
-                  :variant="filters.memberWhoPaidId === group.memberId ? 'default' : 'outline'"
-                  @click="filters.memberWhoPaidId = filters.memberWhoPaidId === group.memberId ? '' : group.memberId"
-                >
-                  {{ filters.memberWhoPaidId === group.memberId ? 'Showing' : 'Filter' }}
-                </Button>
-                <Button
-                  v-if="group.pendingCount > 0 && !group.isUnassigned"
-                  size="sm"
-                  variant="success"
-                  @click="openRepayPn(group)"
-                >
-                  <PhCheck aria-hidden="true" /> Repay
-                </Button>
+            <div class="flex items-start justify-between gap-2">
+              <button type="button" class="min-w-0 text-left" @click="togglePersonFilter(b.memberId)">
+                <p class="truncate text-sm font-bold text-chrome hover:underline">
+                  {{ b.memberName }}
+                </p>
+                <p class="text-xs text-muted-foreground tabular-nums">
+                  {{ b.entryCount }} ledger {{ b.entryCount === 1 ? 'entry' : 'entries' }}
+                </p>
+              </button>
+              <Badge variant="outline" :class="formatBalanceBadge(b.balanceUsd, b.balanceRiels).tone">
+                {{ formatBalanceBadge(b.balanceUsd, b.balanceRiels).label }}
+              </Badge>
+            </div>
+
+            <dl class="grid grid-cols-2 gap-1 text-xs tabular-nums">
+              <div>
+                <dt class="text-muted-foreground">Bills paid</dt>
+                <dd class="font-medium text-foreground">{{ formatBillAmount(b.totalBillsUsd, b.totalBillsRiels) }}</dd>
               </div>
-            </TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
-    </AppPanel>
+              <div>
+                <dt class="text-muted-foreground">Repaid</dt>
+                <dd class="font-medium text-foreground">{{ formatBillAmount(b.totalRepaidUsd, b.totalRepaidRiels) }}</dd>
+              </div>
+            </dl>
 
-    <!-- Detailed Bills List -->
-    <AppPanel
-      title="Referral bills"
-      :description="isLoading ? undefined : `${filteredBills.length} shown · ${formatSummaryTotals(filteredSummary.totalUsd, filteredSummary.totalRiels)}`"
-      flush
-    >
-      <template #actions>
-        <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
-          <div class="relative sm:w-56">
-            <PhMagnifyingGlass class="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+            <div class="flex items-center justify-between gap-2 border-t border-border pt-2">
+              <Button type="button" size="sm" variant="ghost" @click="togglePersonFilter(b.memberId)">
+                {{ filters.memberWhoPaidId === b.memberId ? 'Show all' : 'Filter' }}
+              </Button>
+              <Button type="button" size="sm" variant="outline" @click="openRepayDialog(b.memberId)">
+                Repay
+              </Button>
+            </div>
+          </div>
+        </div>
+      </AppPanel>
+
+      <!-- Tabs: Ledger vs Referral Bills -->
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div class="inline-flex border border-border bg-card p-0.5">
+          <button
+            type="button"
+            class="px-3 py-1.5 text-xs font-semibold transition-colors"
+            :class="activeTab === 'ledger' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'"
+            @click="activeTab = 'ledger'"
+          >
+            Double-entry ledger ({{ ledgerEntries.length }})
+          </button>
+          <button
+            type="button"
+            class="px-3 py-1.5 text-xs font-semibold transition-colors"
+            :class="activeTab === 'bills' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'"
+            @click="activeTab = 'bills'"
+          >
+            Referral bills ({{ filteredBills.length }})
+          </button>
+        </div>
+
+        <div v-if="filters.memberWhoPaidId || filters.unattributedOnly" class="flex items-center gap-2 text-xs">
+          <span class="text-muted-foreground">
+            Filtered by:
+            <strong class="text-foreground">
+              {{ filters.unattributedOnly ? 'Unattributed bills' : lookup.memberName(filters.memberWhoPaidId) ?? 'Selected PN' }}
+            </strong>
+          </span>
+          <Button type="button" size="sm" variant="ghost" @click="clearFilters">
+            <PhX aria-hidden="true" /> Clear
+          </Button>
+        </div>
+      </div>
+
+      <!-- Tab 1: Double-entry ledger -->
+      <AppPanel v-if="activeTab === 'ledger'" title="Double-entry ledger" flush>
+        <div v-if="!ledgerEntries.length" class="px-3 py-10 text-center text-xs text-muted-foreground">
+          No ledger entries match the current filter.
+        </div>
+        <div v-else class="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Date</TableHead>
+                <TableHead>PN Member</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Debit → Credit</TableHead>
+                <TableHead class="text-right">Amount</TableHead>
+                <TableHead>Notes / Referral</TableHead>
+                <TableHead class="text-right">Action</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <TableRow v-for="e in ledgerEntries" :key="e.id" :class="e.isReversed ? 'opacity-60' : ''">
+                <TableCell class="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
+                  {{ shortDate(e.createdAt) }}
+                </TableCell>
+                <TableCell class="text-xs font-medium text-foreground">
+                  {{ e.memberName }}
+                </TableCell>
+                <TableCell>
+                  <Badge
+                    variant="outline"
+                    class="text-[0.6875rem]"
+                    :class="e.entryType === 'Repayment' ? 'border-success/40 bg-success-subtle text-success' : e.entryType === 'Adjustment' ? 'border-band-border bg-accent text-accent-foreground' : 'border-border text-foreground'"
+                  >
+                    {{ e.entryType }}
+                  </Badge>
+                </TableCell>
+                <TableCell class="whitespace-nowrap font-mono text-[0.6875rem] text-muted-foreground">
+                  {{ e.debitAccount }} → {{ e.creditAccount }}
+                </TableCell>
+                <TableCell class="whitespace-nowrap text-right text-xs font-semibold tabular-nums" :class="e.amountUsd < 0 || e.amountRiels < 0 ? 'text-success' : 'text-foreground'">
+                  {{ formatSignedBillAmount(e.amountUsd, e.amountRiels) }}
+                </TableCell>
+                <TableCell class="max-w-xs text-xs text-muted-foreground">
+                  <div class="flex flex-wrap items-center gap-1.5">
+                    <NuxtLink
+                      v-if="e.referralId"
+                      :to="paths.referralsDetail(e.referralId)"
+                      class="font-medium text-primary hover:underline"
+                    >
+                      {{ e.patientName || 'View referral' }}
+                    </NuxtLink>
+                    <span v-if="e.notes">{{ e.referralId ? '—' : '' }} {{ e.notes }}</span>
+                    <Badge v-if="e.isReversed" variant="outline" class="text-[0.625rem]">Reversed</Badge>
+                  </div>
+                </TableCell>
+                <TableCell class="text-right">
+                  <Button
+                    v-if="e.entryType !== 'Bill' && !e.isReversed && !e.reversedEntryId"
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    @click="openReverseDialog(e)"
+                  >
+                    <PhArrowCounterClockwise aria-hidden="true" /> Reverse
+                  </Button>
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </div>
+      </AppPanel>
+
+      <!-- Tab 2: Referral bills -->
+      <AppPanel v-else title="Referral bills" flush>
+        <div class="flex flex-wrap items-end gap-2 border-b border-border p-3">
+          <div class="relative min-w-48 flex-1">
+            <PhMagnifyingGlass class="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
             <Input
               v-model="filters.search"
               type="search"
-              placeholder="Patient, clinic, PN, notes"
-              class="bg-card pr-8 pl-8"
+              placeholder="Search patient, ID, clinic, PN…"
+              class="pl-8"
               aria-label="Search referral bills"
             />
-            <button
-              v-if="filters.search"
-              type="button"
-              class="absolute top-1/2 right-1.5 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground"
-              aria-label="Clear search"
-              @click="filters.search = ''"
-            >
-              <PhX class="size-3.5" aria-hidden="true" />
-            </button>
           </div>
-          <NativeSelect v-model="filters.memberWhoPaidId" aria-label="PN member who paid" class="bg-card sm:w-44">
-            <NativeSelectOption value="">
-              All PN members
-            </NativeSelectOption>
-            <NativeSelectOption :value="UNASSIGNED_PAYER_KEY">
-              Unassigned (missing payer)
-            </NativeSelectOption>
-            <NativeSelectOption v-for="opt in pnFilterOptions" :key="opt.value" :value="opt.value">
-              {{ opt.label }}
+
+          <NativeSelect v-model="filters.memberWhoPaidId" aria-label="Filter by PN member" class="w-40">
+            <NativeSelectOption value="">All PNs</NativeSelectOption>
+            <NativeSelectOption :value="UNASSIGNED_PAYER_KEY">Unassigned</NativeSelectOption>
+            <NativeSelectOption v-for="u in staffOptions" :key="u.id" :value="u.id">
+              {{ u.nickname || u.userName }}
             </NativeSelectOption>
           </NativeSelect>
-          <NativeSelect v-model="filters.reimbursementStatus" aria-label="Reimbursement status" class="bg-card sm:w-40">
-            <NativeSelectOption value="all">
-              All statuses
-            </NativeSelectOption>
-            <NativeSelectOption value="pending">
-              Pending
-            </NativeSelectOption>
-            <NativeSelectOption value="reimbursed">
-              Reimbursed
-            </NativeSelectOption>
-            <NativeSelectOption value="unattributed">
-              Missing payer
-            </NativeSelectOption>
-          </NativeSelect>
-          <NativeSelect v-model="filters.referredToId" aria-label="Partner clinic" class="bg-card sm:w-40">
-            <NativeSelectOption value="">
-              All clinics
-            </NativeSelectOption>
-            <NativeSelectOption v-for="p in partners" :key="p.id" :value="p.id">
+
+          <NativeSelect v-model="filters.referredToId" aria-label="Filter by clinic" class="w-40">
+            <NativeSelectOption value="">All clinics</NativeSelectOption>
+            <NativeSelectOption v-for="p in partners ?? []" :key="p.id" :value="p.id">
               {{ p.name }}
             </NativeSelectOption>
           </NativeSelect>
-          <NativeSelect v-model="filters.villageId" aria-label="Village" class="bg-card sm:w-36">
-            <NativeSelectOption value="">
-              All villages
-            </NativeSelectOption>
+
+          <NativeSelect v-model="filters.villageId" aria-label="Filter by village" class="w-32">
+            <NativeSelectOption value="">All villages</NativeSelectOption>
             <NativeSelectOption v-for="v in villageCodes" :key="v.id" :value="v.id">
-              {{ v.name }} ({{ v.code }})
+              {{ v.code }}
             </NativeSelectOption>
           </NativeSelect>
-          <Input
-            v-model="filters.dateFrom"
-            type="date"
-            aria-label="From date"
-            class="bg-card sm:w-36"
-          />
-          <Input
-            v-model="filters.dateTo"
-            type="date"
-            aria-label="To date"
-            class="bg-card sm:w-36"
-          />
-          <Button
-            v-if="hasFilters"
-            variant="ghost"
-            size="sm"
-            class="text-xs touch:h-10"
-            @click="clearFilters"
-          >
-            Reset
-          </Button>
-        </div>
-      </template>
 
-      <!-- Bulk selection bar -->
-      <div
-        v-if="selectedIds.length > 0"
-        class="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-accent/60 px-3 py-2"
-      >
-        <span class="text-xs font-semibold text-chrome touch:text-sm">
-          {{ selectedIds.length }} bill{{ selectedIds.length === 1 ? '' : 's' }} selected
-        </span>
-        <div class="flex flex-wrap items-center gap-2">
-          <Button size="sm" variant="success" @click="openBulkSettle(true)">
-            <PhCheckCircle aria-hidden="true" /> Mark reimbursed
-          </Button>
-          <Button size="sm" variant="outline" @click="openBulkSettle(false)">
-            Mark pending
-          </Button>
-          <Button size="sm" variant="ghost" @click="selectedIds = []">
+          <Input v-model="filters.dateFrom" type="date" aria-label="From date" class="w-36" />
+          <Input v-model="filters.dateTo" type="date" aria-label="To date" class="w-36" />
+
+          <Button v-if="hasFilters" type="button" size="sm" variant="ghost" @click="clearFilters">
             Clear
           </Button>
         </div>
-      </div>
 
-      <div v-if="!isLoading && filteredBills.length === 0" class="flex flex-col items-center gap-2 px-3 py-10 text-center" role="status">
-        <p class="text-xs text-muted-foreground touch:text-sm">
-          {{ allBills.length === 0 ? 'No referral bills recorded yet.' : 'No referral bills match these filters.' }}
-        </p>
-        <Button v-if="hasFilters" variant="outline" size="sm" @click="clearFilters">
-          Clear filters
-        </Button>
-      </div>
+        <div v-if="!filteredBills.length" class="px-3 py-10 text-center text-xs text-muted-foreground">
+          No referral bills match these filters.
+        </div>
+        <div v-else class="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Date</TableHead>
+                <TableHead>Patient</TableHead>
+                <TableHead>Clinic / Referred for</TableHead>
+                <TableHead>PN Who Paid</TableHead>
+                <TableHead class="text-right">Amount</TableHead>
+                <TableHead class="text-right">Edit</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <TableRow v-for="item in filteredBills" :key="item.id">
+                <TableCell class="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
+                  {{ shortDate(item.createdAt) }}
+                </TableCell>
+                <TableCell class="text-xs">
+                  <NuxtLink :to="paths.referralsDetail(item.id)" class="font-semibold text-primary hover:underline">
+                    {{ item.patientName }}
+                  </NuxtLink>
+                  <div class="text-muted-foreground">
+                    <PatientCode
+                      :village-code="item.villageCode"
+                      :village-color-hex="item.villageColorHex"
+                      :id="item.patientId"
+                      :display-id="item.patientDisplayId ?? item.villageCode"
+                    />
+                  </div>
+                </TableCell>
+                <TableCell class="text-xs">
+                  <p class="font-medium text-foreground">{{ lookup.partnerName(item.referredToId) ?? '—' }}</p>
+                  <p class="text-muted-foreground">{{ item.referredFor }}</p>
+                </TableCell>
+                <TableCell class="text-xs">
+                  <span v-if="item.memberWhoPaidId" class="font-medium text-foreground">
+                    {{ lookup.memberName(item.memberWhoPaidId) ?? 'Staff' }}
+                  </span>
+                  <Badge v-else variant="outline" class="border-destructive/40 text-destructive">
+                    Unassigned
+                  </Badge>
+                </TableCell>
+                <TableCell class="whitespace-nowrap text-right text-xs font-semibold tabular-nums text-foreground">
+                  {{ formatBillAmount(item.amountPaidUsd, item.amountPaidRiels) }}
+                </TableCell>
+                <TableCell class="text-right">
+                  <Button type="button" size="sm" variant="ghost" @click="openEditBill(item)">
+                    <PhPencilSimple aria-hidden="true" /> Edit
+                  </Button>
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </div>
+      </AppPanel>
+    </template>
 
-      <Table v-else-if="filteredBills.length > 0" class="grid-table stack-table">
-        <TableHeader>
-          <TableRow>
-            <TableHead class="w-10">
-              <Checkbox
-                :model-value="allVisibleSelected"
-                aria-label="Select all visible bills"
-                @update:model-value="toggleSelectAll"
-              />
-            </TableHead>
-            <TableHead>Patient</TableHead>
-            <TableHead>Referral & Clinic</TableHead>
-            <TableHead>PN Member</TableHead>
-            <TableHead>Amount</TableHead>
-            <TableHead>Reimbursement</TableHead>
-            <TableHead class="text-right">
-              Actions
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          <TableRow v-for="bill in filteredBills" :key="bill.id">
-            <TableCell data-label="Select">
-              <Checkbox
-                :model-value="selectedIds.includes(bill.id)"
-                :aria-label="`Select bill for ${bill.patientName}`"
-                @update:model-value="(val) => toggleRowSelected(bill.id, val)"
-              />
-            </TableCell>
-            <TableCell data-label="Patient">
-              <NuxtLink :to="paths.referralsDetail(bill.id)" class="font-semibold text-primary hover:underline">
-                {{ bill.patientName }}
-              </NuxtLink>
-              <div class="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
-                <PatientCode
-                  :id="bill.patientId"
-                  :village-code="bill.villageCode"
-                  :village-color-hex="bill.villageColorHex"
-                  :display-id="bill.patientDisplayId ?? bill.villageCode"
-                />
-                <span class="tabular-nums">{{ shortDate(bill.createdAt) }}</span>
-              </div>
-            </TableCell>
-            <TableCell data-label="Referral & Clinic">
-              <p class="font-medium text-chrome">
-                {{ bill.referredFor }}
-              </p>
-              <p class="text-xs text-muted-foreground">
-                {{ lookup.partnerName(bill.referredToId) || 'No partner clinic' }}
-              </p>
-            </TableCell>
-            <TableCell data-label="PN Member">
-              <span v-if="bill.memberWhoPaidId" class="font-medium">
-                {{ lookup.memberName(bill.memberWhoPaidId) ?? 'Unknown PN member' }}
-              </span>
-              <Badge v-else-if="isUnattributedBill(bill)" variant="outline" class="border-warning-border bg-warning-subtle text-warning">
-                Missing payer
-              </Badge>
-              <span v-else class="text-muted-foreground">—</span>
-            </TableCell>
-            <TableCell data-label="Amount" class="font-bold tabular-nums">
-              {{ formatBillAmount(bill.amountPaidUsd, bill.amountPaidRiels) }}
-            </TableCell>
-            <TableCell data-label="Reimbursement">
-              <div class="flex flex-col gap-0.5">
-                <Badge
-                  v-if="bill.isReimbursed"
-                  variant="outline"
-                  class="w-fit border-success/40 bg-success-subtle text-success"
-                >
-                  Reimbursed
-                </Badge>
-                <Badge
-                  v-else-if="getBillBreakdown(bill).isPartial"
-                  variant="outline"
-                  class="w-fit border-band-border bg-accent text-accent-foreground"
-                >
-                  Partial
-                </Badge>
-                <Badge
-                  v-else
-                  variant="outline"
-                  class="w-fit border-warning-border bg-warning-subtle text-warning"
-                >
-                  Pending
-                </Badge>
-                <span v-if="getBillBreakdown(bill).isPartial" class="text-xs text-muted-foreground tabular-nums">
-                  {{ formatSummaryTotals(getBillBreakdown(bill).reimbursedUsd, getBillBreakdown(bill).reimbursedRiels) }} repaid · {{ formatSummaryTotals(getBillBreakdown(bill).remainingUsd, getBillBreakdown(bill).remainingRiels) }} left
-                </span>
-                <span v-if="bill.reimbursedAt" class="text-xs text-muted-foreground tabular-nums">
-                  {{ shortDate(bill.reimbursedAt) }}
-                </span>
-                <span v-if="bill.reimbursementNotes" class="line-clamp-1 text-xs text-muted-foreground" :title="bill.reimbursementNotes">
-                  {{ bill.reimbursementNotes }}
-                </span>
-              </div>
-            </TableCell>
-            <TableCell data-label="Actions" class="text-right">
-              <div class="flex flex-wrap justify-end gap-1.5">
-                <Button
-                  size="sm"
-                  :variant="bill.isReimbursed ? 'outline' : 'success'"
-                  :disabled="updateReimbursement.isPending.value"
-                  @click="toggleSingleReimbursement(bill)"
-                >
-                  {{ bill.isReimbursed ? 'Mark pending' : 'Reimburse' }}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  aria-label="Edit payment"
-                  @click="openEditBill(bill)"
-                >
-                  <PhPencilSimple aria-hidden="true" /> Edit
-                </Button>
-              </div>
-            </TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
-    </AppPanel>
-
-    <!-- Repay PN (full or partial) Dialog -->
-    <Dialog v-model:open="repayPnDialog.open">
-      <DialogContent class="sm:max-w-md">
+    <!-- Record repayment dialog -->
+    <Dialog v-model:open="repayDialog.open">
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle>Repay {{ repayPnDialog.memberName }}</DialogTitle>
+          <DialogTitle>Record repayment by person</DialogTitle>
           <DialogDescription>
-            Total owed: {{ formatSummaryTotals(repayPnDialog.maxUsd, repayPnDialog.maxRiels) }}. Enter the full amount or a partial repayment (applied oldest bill first).
+            Record cash repaid to a PN member. You can underpay (partial) or overpay (credit); the ledger tracks the net balance.
           </DialogDescription>
         </DialogHeader>
-        <div class="flex flex-col gap-3 py-2">
-          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <FormField v-slot="{ id }" label="Repay in US dollars">
-              <NumericInput
-                :id="id"
-                v-model="repayPnDialog.amountUsd"
-                unit="USD"
-                step="0.01"
-                min="0"
-                placeholder="0.00"
-              />
-            </FormField>
-            <FormField v-slot="{ id }" label="Repay in riels">
-              <NumericInput
-                :id="id"
-                v-model="repayPnDialog.amountRiels"
-                unit="KHR"
-                step="1"
-                min="0"
-                placeholder="0"
-              />
-            </FormField>
-          </div>
-          <p v-if="repayPnDialog.error" class="text-xs font-medium text-destructive" role="alert">
-            {{ repayPnDialog.error }}
-          </p>
-          <FormField v-slot="{ id }" label="Reimbursement note (optional)">
-            <Textarea
-              :id="id"
-              v-model="repayPnDialog.notes"
-              :rows="2"
-              placeholder="e.g. Partial cash repayment, receipt #12"
-            />
-          </FormField>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" :disabled="repayPnBills.isPending.value" @click="repayPnDialog.open = false">
-            Cancel
-          </Button>
-          <Button
-            variant="success"
-            :disabled="repayPnBills.isPending.value"
-            @click="confirmRepayPn"
-          >
-            {{ repayPnBills.isPending.value ? 'Saving…' : 'Record repayment' }}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
 
-    <!-- Bulk Reimburse Dialog -->
-    <Dialog v-model:open="settleDialog.open">
-      <DialogContent class="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>{{ settleDialog.title }}</DialogTitle>
-          <DialogDescription>{{ settleDialog.description }}</DialogDescription>
-        </DialogHeader>
-        <div class="flex flex-col gap-3 py-2">
-          <FormField v-slot="{ id }" label="Reimbursement note (optional)">
-            <Textarea
-              :id="id"
-              v-model="settleDialog.notes"
-              :rows="2"
-              placeholder="e.g. Cash reimbursed on 14 Nov, receipt #12"
-            />
-          </FormField>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" :disabled="reimburseBills.isPending.value" @click="settleDialog.open = false">
-            Cancel
-          </Button>
-          <Button
-            :variant="settleDialog.isReimbursed ? 'success' : 'default'"
-            :disabled="reimburseBills.isPending.value"
-            @click="confirmSettle"
-          >
-            {{ reimburseBills.isPending.value ? 'Saving…' : 'Confirm' }}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-
-    <!-- Edit Bill Dialog -->
-    <Dialog v-model:open="editDialog.open">
-      <DialogContent class="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Edit referral bill</DialogTitle>
-          <DialogDescription v-if="editDialog.item">
-            {{ editDialog.item.patientName }} · {{ editDialog.item.referredFor }}
-          </DialogDescription>
-        </DialogHeader>
-        <div class="flex flex-col gap-3 py-2">
-          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <FormField v-slot="{ id, describedby, invalid }" label="Paid in US dollars" :error="editDialog.errors.amountPaidUsd">
-              <NumericInput
-                :id="id"
-                v-model="editDialog.amountPaidUsd"
-                unit="USD"
-                step="0.01"
-                min="0"
-                placeholder="0.00"
-                :aria-describedby="describedby"
-                :aria-invalid="invalid || undefined"
-              />
-            </FormField>
-            <FormField v-slot="{ id, describedby, invalid }" label="Paid in riels" :error="editDialog.errors.amountPaidRiels">
-              <NumericInput
-                :id="id"
-                v-model="editDialog.amountPaidRiels"
-                unit="KHR"
-                step="1"
-                min="0"
-                placeholder="0"
-                :aria-describedby="describedby"
-                :aria-invalid="invalid || undefined"
-              />
-            </FormField>
-          </div>
-          <FormField v-slot="{ id }" label="PN member who paid">
-            <NativeSelect :id="id" v-model="editDialog.memberWhoPaidId">
-              <NativeSelectOption value="">
-                Not chosen
-              </NativeSelectOption>
-              <NativeSelectOption v-for="opt in editPnOptions" :key="opt.value" :value="opt.value">
-                {{ opt.label }}
+        <div class="flex flex-col gap-3">
+          <FormField v-slot="{ id }" label="PN Member">
+            <NativeSelect :id="id" v-model="repayDialog.memberId">
+              <NativeSelectOption value="">Select PN member…</NativeSelectOption>
+              <NativeSelectOption v-for="u in staffOptions" :key="u.id" :value="u.id">
+                {{ u.nickname || u.userName }}
               </NativeSelectOption>
             </NativeSelect>
           </FormField>
-          <div class="flex items-center gap-2 pt-1">
-            <Checkbox id="edit-bill-reimbursed" v-model="editDialog.isReimbursed" />
-            <label for="edit-bill-reimbursed" class="text-sm font-medium">
-              Fully reimbursed to PN member
-            </label>
+
+          <div v-if="repayDialog.memberId" class="border border-border bg-muted/40 px-3 py-2 text-xs">
+            <p class="flex items-center justify-between">
+              <span class="text-muted-foreground">Current balance:</span>
+              <span class="font-semibold tabular-nums">
+                {{ formatBalanceBadge(selectedRepayBalance?.balanceUsd ?? 0, selectedRepayBalance?.balanceRiels ?? 0).label }}
+              </span>
+            </p>
+            <p class="mt-1 flex items-center justify-between">
+              <span class="text-muted-foreground">Balance after repayment:</span>
+              <span class="font-semibold tabular-nums">
+                {{ formatBalanceBadge(projectedBalance.usd, projectedBalance.riels).label }}
+              </span>
+            </p>
           </div>
-          <div v-if="!editDialog.isReimbursed" class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <FormField v-slot="{ id, describedby, invalid }" label="Reimbursed USD (partial)" :error="editDialog.errors.reimbursedUsd">
-              <NumericInput
-                :id="id"
-                v-model="editDialog.reimbursedUsd"
-                unit="USD"
-                step="0.01"
-                min="0"
-                placeholder="0.00"
-                :aria-describedby="describedby"
-                :aria-invalid="invalid || undefined"
-              />
+
+          <div class="grid grid-cols-2 gap-3">
+            <FormField v-slot="{ id }" label="Amount USD">
+              <Input :id="id" v-model="repayDialog.amountUsd" type="number" step="0.01" min="0" placeholder="0.00" />
             </FormField>
-            <FormField v-slot="{ id, describedby, invalid }" label="Reimbursed KHR (partial)" :error="editDialog.errors.reimbursedRiels">
-              <NumericInput
-                :id="id"
-                v-model="editDialog.reimbursedRiels"
-                unit="KHR"
-                step="1"
-                min="0"
-                placeholder="0"
-                :aria-describedby="describedby"
-                :aria-invalid="invalid || undefined"
-              />
+            <FormField v-slot="{ id }" label="Amount KHR">
+              <Input :id="id" v-model="repayDialog.amountRiels" type="number" step="100" min="0" placeholder="0" />
             </FormField>
           </div>
-          <FormField v-slot="{ id }" label="Reimbursement note (optional)">
-            <Textarea
-              :id="id"
-              v-model="editDialog.reimbursementNotes"
-              :rows="2"
-              placeholder="e.g. Settled in cash"
-            />
+
+          <FormField v-slot="{ id }" label="Notes">
+            <Textarea :id="id" v-model="repayDialog.notes" :rows="2" placeholder="e.g. End-of-day cash settlement" />
           </FormField>
         </div>
+
         <DialogFooter>
-          <Button
-            variant="outline"
-            :disabled="updateMoney.isPending.value || updateReimbursement.isPending.value"
-            @click="editDialog.open = false"
-          >
-            Cancel
+          <Button type="button" variant="outline" @click="repayDialog.open = false">Cancel</Button>
+          <Button type="button" variant="success" :disabled="recordRepayment.isPending.value" @click="submitRepay">
+            {{ recordRepayment.isPending.value ? 'Saving…' : 'Record repayment' }}
           </Button>
-          <Button
-            variant="success"
-            :disabled="updateMoney.isPending.value || updateReimbursement.isPending.value"
-            @click="saveEditBill"
-          >
-            {{ updateMoney.isPending.value || updateReimbursement.isPending.value ? 'Saving…' : 'Save changes' }}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+    <!-- Reverse ledger entry dialog -->
+    <Dialog v-model:open="reverseDialog.open">
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Reverse ledger entry</DialogTitle>
+          <DialogDescription>
+            Creates an equal-and-opposite double-entry adjustment for {{ reverseDialog.entry?.memberName }}.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div v-if="reverseDialog.entry" class="flex flex-col gap-3">
+          <div class="border border-border bg-muted/40 px-3 py-2 text-xs tabular-nums">
+            Original: <strong>{{ reverseDialog.entry.entryType }}</strong>
+            ({{ formatSignedBillAmount(reverseDialog.entry.amountUsd, reverseDialog.entry.amountRiels) }})
+          </div>
+          <FormField v-slot="{ id }" label="Reason / notes">
+            <Textarea :id="id" v-model="reverseDialog.notes" :rows="2" placeholder="e.g. Entered wrong amount" />
+          </FormField>
+        </div>
+
+        <DialogFooter>
+          <Button type="button" variant="outline" @click="reverseDialog.open = false">Cancel</Button>
+          <Button type="button" variant="destructive" :disabled="reverseEntry.isPending.value" @click="submitReverse">
+            {{ reverseEntry.isPending.value ? 'Reversing…' : 'Confirm reversal' }}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+    <!-- Edit referral bill dialog -->
+    <Dialog v-model:open="editDialog.open">
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Edit referral payment</DialogTitle>
+          <DialogDescription>
+            Updating the amount or PN automatically posts a double-entry adjustment to the ledger.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div v-if="editDialog.item" class="flex flex-col gap-3">
+          <FormField v-slot="{ id }" label="PN Member Who Paid">
+            <NativeSelect :id="id" v-model="editDialog.memberWhoPaidId">
+              <NativeSelectOption value="">Unassigned</NativeSelectOption>
+              <NativeSelectOption v-for="u in staffOptions" :key="u.id" :value="u.id">
+                {{ u.nickname || u.userName }}
+              </NativeSelectOption>
+            </NativeSelect>
+          </FormField>
+
+          <div class="grid grid-cols-2 gap-3">
+            <FormField v-slot="{ id }" label="Paid USD">
+              <Input :id="id" v-model="editDialog.amountPaidUsd" type="number" step="0.01" min="0" placeholder="0.00" />
+            </FormField>
+            <FormField v-slot="{ id }" label="Paid KHR">
+              <Input :id="id" v-model="editDialog.amountPaidRiels" type="number" step="100" min="0" placeholder="0" />
+            </FormField>
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button type="button" variant="outline" @click="editDialog.open = false">Cancel</Button>
+          <Button type="button" variant="success" :disabled="updateMoney.isPending.value" @click="saveEditBill">
+            {{ updateMoney.isPending.value ? 'Saving…' : 'Save payment' }}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,6 +1,9 @@
 import type { QueryClient } from '@tanstack/vue-query'
 import {
   saBaiAPIEndpointsAuthUsersListGetEndpoint,
+  saBaiAPIEndpointsPnLedgerListGetEndpoint,
+  saBaiAPIEndpointsPnLedgerRepayPostEndpoint,
+  saBaiAPIEndpointsPnLedgerReversePostEndpoint,
   saBaiAPIEndpointsReferralPartnersCreatePostEndpoint,
   saBaiAPIEndpointsReferralPartnersDeleteDeleteEndpoint,
   saBaiAPIEndpointsReferralPartnersListGetEndpoint,
@@ -9,17 +12,17 @@ import {
   saBaiAPIEndpointsReferralsGetEndpoint,
   saBaiAPIEndpointsReferralsListByConsultGetEndpoint,
   saBaiAPIEndpointsReferralsListGetEndpoint,
-  saBaiAPIEndpointsReferralsReimburseBillsPostEndpoint,
-  saBaiAPIEndpointsReferralsRepayPnPostEndpoint,
   saBaiAPIEndpointsReferralsUpdateBoothPatchEndpoint,
   saBaiAPIEndpointsReferralsUpdateMoneyPatchEndpoint,
   saBaiAPIEndpointsReferralsUpdateOutcomePatchEndpoint,
   saBaiAPIEndpointsReferralsUpdatePartyPatchEndpoint,
-  saBaiAPIEndpointsReferralsUpdateReimbursementPatchEndpoint,
   saBaiAPIEndpointsReferralsUpdateStatePatchEndpoint,
 } from '@sabai/sdk/clients'
 import type {
+  PnLedgerEntryResponse,
+  PnMemberBalanceResponse,
   SaBaiAPIDomainReferralStateKey,
+  SaBaiAPIEndpointsPnLedgerListGetResponse,
   SaBaiAPIEndpointsReferralPartnersListGetResponse,
   SaBaiAPIEndpointsReferralsGetResponse,
   SaBaiAPIEndpointsReferralsListByConsultGetResponse,
@@ -37,18 +40,25 @@ import type { GuardiansContacted, ReferralServiceClass } from '~/utils/referral'
  * - `queryKeys.referrals()`: the list (newest first),
  * - `queryKeys.referral(id)`: one referral with its booth, party and money parts,
  * - `queryKeys.referralsByConsult(consultId)`: the referrals of one consult,
- * - `queryKeys.referralPartners()`: partners, active first.
+ * - `queryKeys.referralPartners()`: partners, active first,
+ * - `queryKeys.pnLedger()`: per-PN balances and double-entry ledger entries.
  */
 
 export type ReferralDetail = SaBaiAPIEndpointsReferralsGetResponse
 export type ReferralListEntry = SaBaiAPIEndpointsReferralsListGetResponse
 export type ConsultReferral = SaBaiAPIEndpointsReferralsListByConsultGetResponse
 export type ReferralPartner = SaBaiAPIEndpointsReferralPartnersListGetResponse
+export type PnLedgerData = SaBaiAPIEndpointsPnLedgerListGetResponse
+export type { PnLedgerEntryResponse, PnMemberBalanceResponse }
 
 // ── Reads ────────────────────────────────────────────────────────────────
 
 export function fetchReferrals(signal?: AbortSignal) {
   return saBaiAPIEndpointsReferralsListGetEndpoint({ ...apiConfig, signal }).unwrap()
+}
+
+export function fetchPnLedger(signal?: AbortSignal) {
+  return saBaiAPIEndpointsPnLedgerListGetEndpoint({ ...apiConfig, signal }).unwrap()
 }
 
 export function fetchReferral(id: string, signal?: AbortSignal) {
@@ -101,8 +111,7 @@ export type ReferralPatch = Partial<Pick<ReferralDetail,
   | 'referredToId' | 'memberInChargeId' | 'guardiansContacted' | 'classOfService'
   | 'descriptionOfService' | 'patientSummaryFromScreening' | 'remarksAtBooth'
   | 'memberOnRunId' | 'presentAtReferralParty' | 'referralPartyResults' | 'followUp' | 'doctorsUpdated'
-  | 'amountPaidUsd' | 'amountPaidRiels' | 'memberWhoPaidId'
-  | 'isReimbursed' | 'reimbursedUsd' | 'reimbursedRiels' | 'reimbursedAt' | 'reimbursedByUserId' | 'reimbursementNotes'>>
+  | 'amountPaidUsd' | 'amountPaidRiels' | 'memberWhoPaidId'>>
 
 const CONSULT_REFERRALS_KEY = ['referrals', 'consult'] as const
 
@@ -113,12 +122,6 @@ const LIST_PATCH_KEYS = [
   'amountPaidUsd',
   'amountPaidRiels',
   'memberWhoPaidId',
-  'isReimbursed',
-  'reimbursedUsd',
-  'reimbursedRiels',
-  'reimbursedAt',
-  'reimbursedByUserId',
-  'reimbursementNotes',
 ] as const
 
 /** Sets `patch` on the referral wherever it is cached (detail, list row, consult list). */
@@ -252,12 +255,6 @@ export const createReferral = defineOfflineMutation({
       amountPaidUsd: null,
       amountPaidRiels: null,
       memberWhoPaidId: null,
-      isReimbursed: false,
-      reimbursedUsd: null,
-      reimbursedRiels: null,
-      reimbursedAt: null,
-      reimbursedByUserId: null,
-      reimbursementNotes: null,
     }
     queryClient.setQueryData<ReferralListEntry[]>(queryKeys.referrals(), old => {
       const current = old?.find(r => r.id === vars.id)
@@ -458,187 +455,169 @@ export const updateReferralMoney = defineOfflineMutation({
     amountPaidRiels: vars.amountPaidRiels,
     memberWhoPaidId: vars.memberWhoPaidId,
   }),
-  onSuccess: afterFullPatch,
+  onSuccess: async (updated, _vars, queryClient) => {
+    await afterFullPatch(updated, _vars, queryClient)
+    await queryClient.invalidateQueries({ queryKey: queryKeys.pnLedger() })
+  },
 })
 
-export interface UpdateReferralReimbursementVars extends Labelled {
-  isReimbursed: boolean
-  reimbursementNotes?: string | null
-  reimbursedUsd?: number | null
-  reimbursedRiels?: number | null
+function roundUsd(value: number): number {
+  return Math.round(value * 100) / 100
 }
 
-export const updateReferralReimbursement = defineOfflineMutation({
-  key: 'referrals.reimbursement',
-  describe: (vars: UpdateReferralReimbursementVars) =>
-    `${vars.isReimbursed ? 'Reimburse' : 'Update reimbursement'} referral bill${forPatient(vars)}`,
-  recordIds: vars => [vars.id],
-  baseQueries: vars => [queryKeys.referral(vars.id)],
-  send: (vars, ctx) =>
-    saBaiAPIEndpointsReferralsUpdateReimbursementPatchEndpoint({
-      ...apiConfig,
-      ...requestOptions(ctx),
-      path: { id: vars.id },
-      body: {
-        isReimbursed: vars.isReimbursed,
-        reimbursementNotes: vars.reimbursementNotes ?? null,
-        reimbursedUsd: vars.reimbursedUsd ?? null,
-        reimbursedRiels: vars.reimbursedRiels ?? null,
-      },
-    }).unwrap(),
-  optimistic: (vars, queryClient) => {
-    const existing = queryClient.getQueryData<ReferralDetail>(queryKeys.referral(vars.id))
-      ?? queryClient.getQueryData<ReferralListEntry[]>(queryKeys.referrals())?.find(r => r.id === vars.id)
-    const hasPartial = vars.reimbursedUsd !== undefined || vars.reimbursedRiels !== undefined
-    let nextUsd = existing?.reimbursedUsd ?? null
-    let nextRiels = existing?.reimbursedRiels ?? null
-    let nextDone = vars.isReimbursed
+function applyOptimisticLedgerEntry(
+  data: PnLedgerData | undefined,
+  entry: PnLedgerEntryResponse,
+  markReversedId?: string,
+): PnLedgerData | undefined {
+  if (!data) return data
+  const entries = [
+    entry,
+    ...data.entries.map(e => (markReversedId && e.id === markReversedId ? { ...e, isReversed: true } : e)),
+  ]
+  const existing = data.balances.find(b => b.memberId === entry.memberId)
+  const deltaRepaidUsd = entry.entryType === 'Repayment' ? -entry.amountUsd : 0
+  const deltaRepaidRiels = entry.entryType === 'Repayment' ? -entry.amountRiels : 0
+  const deltaAdjUsd = entry.entryType === 'Adjustment' ? entry.amountUsd : 0
+  const deltaAdjRiels = entry.entryType === 'Adjustment' ? entry.amountRiels : 0
 
-    if (vars.isReimbursed && !hasPartial) {
-      nextUsd = existing?.amountPaidUsd ?? null
-      nextRiels = existing?.amountPaidRiels ?? null
-    }
-    else if (!vars.isReimbursed && !hasPartial) {
-      nextUsd = null
-      nextRiels = null
-    }
-    else {
-      if (vars.reimbursedUsd !== undefined)
-        nextUsd = vars.reimbursedUsd && vars.reimbursedUsd > 0 ? vars.reimbursedUsd : null
-      if (vars.reimbursedRiels !== undefined)
-        nextRiels = vars.reimbursedRiels && vars.reimbursedRiels > 0 ? vars.reimbursedRiels : null
-      const paidUsd = existing?.amountPaidUsd ?? 0
-      const paidRiels = existing?.amountPaidRiels ?? 0
-      const hasPaid = paidUsd > 0 || paidRiels > 0
-      nextDone = vars.isReimbursed || (hasPaid && (nextUsd ?? 0) >= paidUsd && (nextRiels ?? 0) >= paidRiels)
-    }
+  const nextBalance: PnMemberBalanceResponse = existing
+    ? {
+        ...existing,
+        totalRepaidUsd: roundUsd(existing.totalRepaidUsd + deltaRepaidUsd),
+        totalRepaidRiels: existing.totalRepaidRiels + deltaRepaidRiels,
+        totalAdjustmentsUsd: roundUsd(existing.totalAdjustmentsUsd + deltaAdjUsd),
+        totalAdjustmentsRiels: existing.totalAdjustmentsRiels + deltaAdjRiels,
+        balanceUsd: roundUsd(existing.balanceUsd + entry.amountUsd),
+        balanceRiels: existing.balanceRiels + entry.amountRiels,
+        entryCount: existing.entryCount + 1,
+        lastActivityAt: entry.createdAt,
+      }
+    : {
+        memberId: entry.memberId,
+        memberName: entry.memberName,
+        totalBillsUsd: 0,
+        totalBillsRiels: 0,
+        totalRepaidUsd: roundUsd(deltaRepaidUsd),
+        totalRepaidRiels: deltaRepaidRiels,
+        totalAdjustmentsUsd: roundUsd(deltaAdjUsd),
+        totalAdjustmentsRiels: deltaAdjRiels,
+        balanceUsd: roundUsd(entry.amountUsd),
+        balanceRiels: entry.amountRiels,
+        entryCount: 1,
+        lastActivityAt: entry.createdAt,
+      }
 
-    const hasAnyReimbursed = nextDone || (nextUsd ?? 0) > 0 || (nextRiels ?? 0) > 0
-    patchReferral(queryClient, vars.id, {
-      isReimbursed: nextDone,
-      reimbursedUsd: nextUsd,
-      reimbursedRiels: nextRiels,
-      reimbursedAt: hasAnyReimbursed ? new Date().toISOString() : null,
-      reimbursementNotes: vars.reimbursementNotes?.trim() || null,
-    })
-  },
-  onSuccess: afterFullPatch,
-})
+  const balances = existing
+    ? data.balances.map(b => (b.memberId === entry.memberId ? nextBalance : b))
+    : [nextBalance, ...data.balances]
 
-export interface ReimburseReferralBillsVars {
-  referralIds: string[]
-  isReimbursed: boolean
-  reimbursementNotes?: string | null
-  label?: string
+  return { balances, entries }
 }
 
-export const reimburseReferralBills = defineOfflineMutation({
-  key: 'referrals.reimburseBills',
-  describe: (vars: ReimburseReferralBillsVars) =>
-    vars.label
-      ?? `${vars.isReimbursed ? 'Reimburse' : 'Mark pending'} ${vars.referralIds.length} referral bill${vars.referralIds.length === 1 ? '' : 's'}`,
-  recordIds: vars => vars.referralIds,
-  send: (vars, ctx) =>
-    saBaiAPIEndpointsReferralsReimburseBillsPostEndpoint({
-      ...apiConfig,
-      ...requestOptions(ctx),
-      body: {
-        referralIds: vars.referralIds,
-        isReimbursed: vars.isReimbursed,
-        reimbursementNotes: vars.reimbursementNotes ?? null,
-      },
-    }).unwrap(),
-  optimistic: (vars, queryClient) => {
-    const now = vars.isReimbursed ? new Date().toISOString() : null
-    const notes = vars.reimbursementNotes !== undefined
-      ? (vars.reimbursementNotes?.trim() || null)
-      : undefined
-    const list = queryClient.getQueryData<ReferralListEntry[]>(queryKeys.referrals())
-    for (const id of vars.referralIds) {
-      const existing = queryClient.getQueryData<ReferralDetail>(queryKeys.referral(id))
-        ?? list?.find(r => r.id === id)
-      patchReferral(queryClient, id, {
-        isReimbursed: vars.isReimbursed,
-        reimbursedUsd: vars.isReimbursed ? (existing?.amountPaidUsd ?? null) : null,
-        reimbursedRiels: vars.isReimbursed ? (existing?.amountPaidRiels ?? null) : null,
-        reimbursedAt: now,
-        ...(notes !== undefined ? { reimbursementNotes: notes } : !vars.isReimbursed ? { reimbursementNotes: null } : {}),
-      })
-    }
-  },
-  onSuccess: async (res, vars, queryClient) => {
-    for (const id of vars.referralIds) {
-      patchReferral(queryClient, id, {
-        isReimbursed: res.isReimbursed,
-        reimbursedAt: res.reimbursedAt,
-        reimbursedByUserId: res.reimbursedByUserId,
-        ...(res.reimbursementNotes !== undefined ? { reimbursementNotes: res.reimbursementNotes } : {}),
-      })
-    }
-    await queryClient.invalidateQueries({ queryKey: queryKeys.referrals() })
-  },
-})
-
-export interface RepayPnBillsVars {
-  memberWhoPaidId: string
+export interface RecordPnRepaymentVars {
+  memberId: string
+  memberName?: string
   amountUsd: number | null
   amountRiels: number | null
-  reimbursementNotes?: string | null
-  label?: string
+  notes?: string | null
 }
 
-export const repayPnBills = defineOfflineMutation({
-  key: 'referrals.repayPn',
-  describe: (vars: RepayPnBillsVars) => vars.label ?? 'Repay PN referral bills',
-  recordIds: vars => [vars.memberWhoPaidId],
+export const recordPnRepayment = defineOfflineMutation({
+  key: 'pnLedger.repay',
+  describe: (vars: RecordPnRepaymentVars) =>
+    `Repay ${vars.memberName ?? 'PN member'}`,
+  recordIds: vars => [vars.memberId],
   send: (vars, ctx) =>
-    saBaiAPIEndpointsReferralsRepayPnPostEndpoint({
+    saBaiAPIEndpointsPnLedgerRepayPostEndpoint({
       ...apiConfig,
       ...requestOptions(ctx),
       body: {
-        memberWhoPaidId: vars.memberWhoPaidId,
+        memberId: vars.memberId,
         amountUsd: vars.amountUsd,
         amountRiels: vars.amountRiels,
-        reimbursementNotes: vars.reimbursementNotes ?? null,
+        notes: vars.notes ?? null,
       },
     }).unwrap(),
   optimistic: (vars, queryClient) => {
-    const list = queryClient.getQueryData<ReferralListEntry[]>(queryKeys.referrals())
-    if (!list) return
-    const pending = list
-      .filter(r => r.memberWhoPaidId === vars.memberWhoPaidId && !r.isReimbursed)
-      .sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id))
-
-    let remainingUsd = vars.amountUsd ?? 0
-    let remainingRiels = vars.amountRiels ?? 0
+    const usd = vars.amountUsd ?? 0
+    const riels = vars.amountRiels ?? 0
     const now = new Date().toISOString()
-    const notes = vars.reimbursementNotes?.trim() || null
-
-    for (const r of pending) {
-      const paidUsd = r.amountPaidUsd ?? 0
-      const paidRiels = r.amountPaidRiels ?? 0
-      const curUsd = r.reimbursedUsd ?? 0
-      const curRiels = r.reimbursedRiels ?? 0
-      const applyUsd = Math.min(Math.max(0, paidUsd - curUsd), remainingUsd)
-      const applyRiels = Math.min(Math.max(0, paidRiels - curRiels), remainingRiels)
-      if (applyUsd <= 0 && applyRiels <= 0) continue
-
-      const nextUsd = Math.round((curUsd + applyUsd) * 100) / 100
-      const nextRiels = curRiels + applyRiels
-      remainingUsd = Math.round((remainingUsd - applyUsd) * 100) / 100
-      remainingRiels -= applyRiels
-
-      patchReferral(queryClient, r.id, {
-        reimbursedUsd: nextUsd > 0 ? nextUsd : null,
-        reimbursedRiels: nextRiels > 0 ? nextRiels : null,
-        isReimbursed: nextUsd >= paidUsd && nextRiels >= paidRiels,
-        reimbursedAt: now,
-        ...(notes ? { reimbursementNotes: notes } : {}),
-      })
-    }
+    queryClient.setQueryData<PnLedgerData>(queryKeys.pnLedger(), old =>
+      applyOptimisticLedgerEntry(old, {
+        id: `optimistic-${now}`,
+        memberId: vars.memberId,
+        memberName: vars.memberName ?? 'Staff',
+        entryType: 'Repayment',
+        debitAccount: 'PN:Payable',
+        creditAccount: 'Clinic:Cash',
+        amountUsd: -usd,
+        amountRiels: -riels,
+        referralId: null,
+        patientName: null,
+        reversedEntryId: null,
+        isReversed: false,
+        notes: vars.notes?.trim() || null,
+        createdAt: now,
+        createdByUserId: null,
+        createdByName: null,
+      }))
   },
   onSuccess: async (_res, _vars, queryClient) => {
-    await queryClient.invalidateQueries({ queryKey: queryKeys.referrals() })
+    await queryClient.invalidateQueries({ queryKey: queryKeys.pnLedger() })
+  },
+})
+
+export interface ReversePnLedgerEntryVars {
+  id: string
+  notes?: string | null
+}
+
+export const reversePnLedgerEntry = defineOfflineMutation({
+  key: 'pnLedger.reverse',
+  describe: (_vars: ReversePnLedgerEntryVars) => 'Reverse PN ledger entry',
+  recordIds: vars => [vars.id],
+  send: (vars, ctx) =>
+    saBaiAPIEndpointsPnLedgerReversePostEndpoint({
+      ...apiConfig,
+      ...requestOptions(ctx),
+      path: { Id: vars.id },
+      body: {
+        id: vars.id,
+        notes: vars.notes ?? null,
+      },
+    }).unwrap(),
+  optimistic: (vars, queryClient) => {
+    queryClient.setQueryData<PnLedgerData>(queryKeys.pnLedger(), (old) => {
+      const target = old?.entries.find(e => e.id === vars.id)
+      if (!old || !target || target.isReversed) return old
+      const now = new Date().toISOString()
+      return applyOptimisticLedgerEntry(
+        old,
+        {
+          id: `optimistic-rev-${now}`,
+          memberId: target.memberId,
+          memberName: target.memberName,
+          entryType: 'Adjustment',
+          debitAccount: target.creditAccount,
+          creditAccount: target.debitAccount,
+          amountUsd: -target.amountUsd,
+          amountRiels: -target.amountRiels,
+          referralId: null,
+          patientName: null,
+          reversedEntryId: target.id,
+          isReversed: false,
+          notes: vars.notes?.trim() || `Reversal of ${target.entryType}`,
+          createdAt: now,
+          createdByUserId: null,
+          createdByName: null,
+        },
+        target.id,
+      )
+    })
+  },
+  onSuccess: async (_res, _vars, queryClient) => {
+    await queryClient.invalidateQueries({ queryKey: queryKeys.pnLedger() })
   },
 })
 

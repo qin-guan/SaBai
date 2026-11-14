@@ -1,7 +1,6 @@
+import type { PnLedgerEntryResponse } from '@sabai/sdk/types'
 import { cleanKhmerText, matchesSearchText } from './khmer'
 import type { ReferralListItem } from './referral'
-
-export type ReimbursementStatusFilter = 'all' | 'pending' | 'reimbursed' | 'unattributed'
 
 export const UNASSIGNED_PAYER_KEY = '__unassigned__'
 
@@ -9,37 +8,15 @@ export interface ReferralBillSummary {
   totalCount: number
   totalUsd: number
   totalRiels: number
-  pendingCount: number
-  pendingUsd: number
-  pendingRiels: number
-  reimbursedCount: number
-  reimbursedUsd: number
-  reimbursedRiels: number
   unattributedCount: number
   unattributedUsd: number
   unattributedRiels: number
 }
 
-export interface PnMemberBillGroup {
-  memberId: string
-  memberName: string
-  isUnassigned: boolean
-  totalCount: number
-  pendingCount: number
-  reimbursedCount: number
-  pendingUsd: number
-  pendingRiels: number
-  reimbursedUsd: number
-  reimbursedRiels: number
-  totalUsd: number
-  totalRiels: number
-  pendingIds: string[]
-}
-
 export interface ReferralBillFilterOptions {
   search?: string
   memberWhoPaidId?: string | null
-  reimbursementStatus?: ReimbursementStatusFilter
+  unattributedOnly?: boolean
   referredToId?: string | null
   villageCodeId?: string | null
   dateFrom?: string | null
@@ -61,42 +38,6 @@ export function isUnattributedBill(item: Pick<ReferralListItem, 'amountPaidUsd' 
   return ((item.amountPaidUsd ?? 0) > 0 || (item.amountPaidRiels ?? 0) > 0) && !item.memberWhoPaidId
 }
 
-/** Returns the reimbursed and remaining amounts for a bill, accounting for partial repayments. */
-export function getBillBreakdown(
-  item: Pick<ReferralListItem, 'amountPaidUsd' | 'amountPaidRiels' | 'isReimbursed' | 'reimbursedUsd' | 'reimbursedRiels'>,
-): {
-  paidUsd: number
-  paidRiels: number
-  reimbursedUsd: number
-  reimbursedRiels: number
-  remainingUsd: number
-  remainingRiels: number
-  isPartial: boolean
-} {
-  const paidUsd = item.amountPaidUsd ?? 0
-  const paidRiels = item.amountPaidRiels ?? 0
-
-  if (item.isReimbursed) {
-    return {
-      paidUsd,
-      paidRiels,
-      reimbursedUsd: paidUsd,
-      reimbursedRiels: paidRiels,
-      remainingUsd: 0,
-      remainingRiels: 0,
-      isPartial: false,
-    }
-  }
-
-  const reimbursedUsd = Math.min(paidUsd, Math.max(0, item.reimbursedUsd ?? 0))
-  const reimbursedRiels = Math.min(paidRiels, Math.max(0, item.reimbursedRiels ?? 0))
-  const remainingUsd = Math.max(0, Math.round((paidUsd - reimbursedUsd) * 100) / 100)
-  const remainingRiels = Math.max(0, paidRiels - reimbursedRiels)
-  const isPartial = (reimbursedUsd > 0 || reimbursedRiels > 0) && (remainingUsd > 0 || remainingRiels > 0)
-
-  return { paidUsd, paidRiels, reimbursedUsd, reimbursedRiels, remainingUsd, remainingRiels, isPartial }
-}
-
 export function formatUsd(amount: number): string {
   return `US$${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
@@ -107,191 +48,111 @@ export function formatRiels(amount: number): string {
 
 export function formatBillAmount(usd: number | null | undefined, riels: number | null | undefined): string {
   const parts: string[] = []
-  if (usd != null && usd > 0)
+  if (usd != null && usd !== 0)
     parts.push(formatUsd(usd))
-  if (riels != null && riels > 0)
+  if (riels != null && riels !== 0)
     parts.push(formatRiels(riels))
   return parts.length ? parts.join(' + ') : 'No amount'
 }
 
-/** Aggregates bill counts and currency totals across a list of referral bills (including partial repayments). */
+export function formatSignedBillAmount(usd: number, riels: number): string {
+  const parts: string[] = []
+  if (usd !== 0)
+    parts.push(`${usd > 0 ? '+' : '-'}${formatUsd(Math.abs(usd))}`)
+  if (riels !== 0)
+    parts.push(`${riels > 0 ? '+' : '-'}${formatRiels(Math.abs(riels))}`)
+  return parts.length ? parts.join(' ') : 'US$0.00'
+}
+
+function addUsdCents(cents: number, usd: number | null | undefined): number {
+  return cents + Math.round((usd ?? 0) * 100)
+}
+
+/** Aggregates bill counts and currency totals across referral bills. */
 export function summarizeReferralBills(items: readonly ReferralListItem[]): ReferralBillSummary {
-  const summary: ReferralBillSummary = {
-    totalCount: 0,
-    totalUsd: 0,
-    totalRiels: 0,
-    pendingCount: 0,
-    pendingUsd: 0,
-    pendingRiels: 0,
-    reimbursedCount: 0,
-    reimbursedUsd: 0,
-    reimbursedRiels: 0,
-    unattributedCount: 0,
-    unattributedUsd: 0,
-    unattributedRiels: 0,
-  }
+  let totalUsdCents = 0
+  let totalRiels = 0
+  let unattributedCount = 0
+  let unattributedUsdCents = 0
+  let unattributedRiels = 0
 
   for (const item of items) {
-    const b = getBillBreakdown(item)
-    summary.totalCount += 1
-    summary.totalUsd += b.paidUsd
-    summary.totalRiels += b.paidRiels
-    summary.reimbursedUsd += b.reimbursedUsd
-    summary.reimbursedRiels += b.reimbursedRiels
-    summary.pendingUsd += b.remainingUsd
-    summary.pendingRiels += b.remainingRiels
-
-    if (item.isReimbursed)
-      summary.reimbursedCount += 1
-    else
-      summary.pendingCount += 1
-
+    totalUsdCents = addUsdCents(totalUsdCents, item.amountPaidUsd)
+    totalRiels += item.amountPaidRiels ?? 0
     if (isUnattributedBill(item)) {
-      summary.unattributedCount += 1
-      summary.unattributedUsd += b.paidUsd
-      summary.unattributedRiels += b.paidRiels
+      unattributedCount++
+      unattributedUsdCents = addUsdCents(unattributedUsdCents, item.amountPaidUsd)
+      unattributedRiels += item.amountPaidRiels ?? 0
     }
   }
 
-  // Avoid floating-point drift on USD sums.
-  summary.totalUsd = Math.round(summary.totalUsd * 100) / 100
-  summary.pendingUsd = Math.round(summary.pendingUsd * 100) / 100
-  summary.reimbursedUsd = Math.round(summary.reimbursedUsd * 100) / 100
-  summary.unattributedUsd = Math.round(summary.unattributedUsd * 100) / 100
-
-  return summary
+  return {
+    totalCount: items.length,
+    totalUsd: totalUsdCents / 100,
+    totalRiels,
+    unattributedCount,
+    unattributedUsd: unattributedUsdCents / 100,
+    unattributedRiels,
+  }
 }
 
-/** Consolidates bills per PN member (plus an Unassigned group if any bill lacks a payer). */
-export function consolidateBillsByPn(
-  items: readonly ReferralListItem[],
-  memberName: (id: string) => string | undefined,
-): PnMemberBillGroup[] {
-  const groups = new Map<string, PnMemberBillGroup>()
-
-  for (const item of items) {
-    const isUnassigned = !item.memberWhoPaidId
-    const key = item.memberWhoPaidId ?? UNASSIGNED_PAYER_KEY
-    let group = groups.get(key)
-    if (!group) {
-      group = {
-        memberId: key,
-        memberName: isUnassigned ? 'Unassigned (missing payer)' : (memberName(key) ?? 'Unknown PN member'),
-        isUnassigned,
-        totalCount: 0,
-        pendingCount: 0,
-        reimbursedCount: 0,
-        pendingUsd: 0,
-        pendingRiels: 0,
-        reimbursedUsd: 0,
-        reimbursedRiels: 0,
-        totalUsd: 0,
-        totalRiels: 0,
-        pendingIds: [],
-      }
-      groups.set(key, group)
-    }
-
-    const b = getBillBreakdown(item)
-    group.totalCount += 1
-    group.totalUsd += b.paidUsd
-    group.totalRiels += b.paidRiels
-    group.reimbursedUsd += b.reimbursedUsd
-    group.reimbursedRiels += b.reimbursedRiels
-    group.pendingUsd += b.remainingUsd
-    group.pendingRiels += b.remainingRiels
-
-    if (item.isReimbursed) {
-      group.reimbursedCount += 1
-    }
-    else {
-      group.pendingCount += 1
-      group.pendingIds.push(item.id)
-    }
-  }
-
-  for (const g of groups.values()) {
-    g.totalUsd = Math.round(g.totalUsd * 100) / 100
-    g.pendingUsd = Math.round(g.pendingUsd * 100) / 100
-    g.reimbursedUsd = Math.round(g.reimbursedUsd * 100) / 100
-  }
-
-  return [...groups.values()].sort((a, b) => {
-    if (a.isUnassigned !== b.isUnassigned)
-      return a.isUnassigned ? -1 : 1
-    if (a.pendingCount !== b.pendingCount)
-      return b.pendingCount - a.pendingCount
-    if (a.totalUsd !== b.totalUsd)
-      return b.totalUsd - a.totalUsd
-    return a.memberName.localeCompare(b.memberName)
-  })
-}
-
-/** Filters a referral bill by PN member, reimbursement status, partner, village, date range, and text search. */
+/** Filters referral bills by PN member, clinic, village, date range, and search text. */
 export function matchesReferralBill(
   item: ReferralListItem,
-  filters: ReferralBillFilterOptions,
+  options: ReferralBillFilterOptions,
   lookup: ReferralBillLookup,
 ): boolean {
-  if (filters.memberWhoPaidId) {
-    if (filters.memberWhoPaidId === UNASSIGNED_PAYER_KEY) {
+  if (options.unattributedOnly && !isUnattributedBill(item))
+    return false
+
+  if (options.memberWhoPaidId) {
+    if (options.memberWhoPaidId === UNASSIGNED_PAYER_KEY) {
       if (item.memberWhoPaidId)
         return false
     }
-    else if (item.memberWhoPaidId !== filters.memberWhoPaidId) {
+    else if (item.memberWhoPaidId !== options.memberWhoPaidId) {
       return false
     }
   }
 
-  if (filters.reimbursementStatus === 'pending' && item.isReimbursed)
-    return false
-  if (filters.reimbursementStatus === 'reimbursed' && !item.isReimbursed)
-    return false
-  if (filters.reimbursementStatus === 'unattributed' && !isUnattributedBill(item))
+  if (options.referredToId && item.referredToId !== options.referredToId)
     return false
 
-  if (filters.referredToId && item.referredToId !== filters.referredToId)
+  if (options.villageCodeId && item.villageCodeId !== options.villageCodeId)
     return false
 
-  if (filters.villageCodeId && item.villageCodeId !== filters.villageCodeId)
+  const isoDay = item.createdAt.slice(0, 10)
+  if (options.dateFrom && isoDay < options.dateFrom)
+    return false
+  if (options.dateTo && isoDay > options.dateTo)
     return false
 
-  if (filters.dateFrom || filters.dateTo) {
-    const day = item.createdAt.slice(0, 10)
-    if (filters.dateFrom && day < filters.dateFrom)
-      return false
-    if (filters.dateTo && day > filters.dateTo)
-      return false
-  }
-
-  const needle = cleanKhmerText(filters.search ?? '')
-  if (!needle)
+  const q = cleanKhmerText(options.search ?? '')
+  if (!q)
     return true
 
-  const targets = [
+  const pnName = lookup.memberName(item.memberWhoPaidId) ?? ''
+  const clinicName = lookup.partnerName(item.referredToId) ?? ''
+  const haystack = [
     item.patientName,
-    item.patientDisplayId ?? '',
+    item.patientDisplayId,
     item.villageCode,
     item.referredFor,
-    item.referralNotes ?? '',
-    item.reimbursementNotes ?? '',
-    lookup.partnerName(item.referredToId) ?? '',
-    lookup.memberName(item.memberWhoPaidId) ?? '',
-  ]
-
-  return targets.some(target => matchesSearchText(target, needle))
+    pnName,
+    clinicName,
+  ].filter(Boolean).join(' ')
+  return matchesSearchText(haystack, q)
 }
 
-function csvCell(value: string | number | null | undefined): string {
-  const str = value == null ? '' : String(value)
-  if (/[",\n\r]/.test(str))
-    return `"${str.replace(/"/g, '""')}"`
-  return str
+function escapeCsvCell(value: string): string {
+  if (value.includes(',') || value.includes('"') || value.includes('\n') || value.includes('\r'))
+    return `"${value.replaceAll('"', '""')}"`
+  return value
 }
 
-/** Builds an RFC 4180 CSV export of the given referral bills. */
+/** Builds an RFC-4180 CSV export of the given referral bills. */
 export function buildReferralBillsCsv(items: readonly ReferralListItem[], lookup: ReferralBillLookup): string {
-  const headers = [
+  const header = [
     'Referral Date',
     'Patient Name',
     'Patient ID',
@@ -301,18 +162,11 @@ export function buildReferralBillsCsv(items: readonly ReferralListItem[], lookup
     'PN Member Who Paid',
     'Amount USD',
     'Amount KHR',
-    'Reimbursed USD',
-    'Reimbursed KHR',
-    'Remaining USD',
-    'Remaining KHR',
-    'Reimbursement Status',
-    'Reimbursed At',
-    'Reimbursement Notes',
   ]
 
   const rows = items.map((item) => {
-    const b = getBillBreakdown(item)
-    const status = item.isReimbursed ? 'Reimbursed' : b.isPartial ? 'Partial' : 'Pending'
+    const paidUsd = item.amountPaidUsd ?? 0
+    const paidRiels = item.amountPaidRiels ?? 0
     return [
       item.createdAt.slice(0, 10),
       item.patientName,
@@ -320,18 +174,42 @@ export function buildReferralBillsCsv(items: readonly ReferralListItem[], lookup
       item.villageCode,
       item.referredFor,
       lookup.partnerName(item.referredToId) ?? '',
-      item.memberWhoPaidId ? (lookup.memberName(item.memberWhoPaidId) ?? '') : 'Unassigned',
-      item.amountPaidUsd != null ? item.amountPaidUsd.toFixed(2) : '',
-      item.amountPaidRiels != null ? String(item.amountPaidRiels) : '',
-      b.reimbursedUsd > 0 ? b.reimbursedUsd.toFixed(2) : '0.00',
-      b.reimbursedRiels > 0 ? String(b.reimbursedRiels) : '0',
-      b.remainingUsd > 0 ? b.remainingUsd.toFixed(2) : '0.00',
-      b.remainingRiels > 0 ? String(b.remainingRiels) : '0',
-      status,
-      item.reimbursedAt ? item.reimbursedAt.slice(0, 10) : '',
-      item.reimbursementNotes ?? '',
-    ]
+      lookup.memberName(item.memberWhoPaidId) ?? 'Unassigned',
+      paidUsd > 0 ? paidUsd.toFixed(2) : '',
+      paidRiels > 0 ? String(paidRiels) : '',
+    ].map(escapeCsvCell).join(',')
   })
 
-  return [headers, ...rows].map(row => row.map(csvCell).join(',')).join('\r\n')
+  return [header.join(','), ...rows].join('\r\n')
+}
+
+/** Builds an RFC-4180 CSV export of double-entry PN ledger entries. */
+export function buildPnLedgerCsv(entries: readonly PnLedgerEntryResponse[]): string {
+  const header = [
+    'Date',
+    'PN Member',
+    'Type',
+    'Debit Account',
+    'Credit Account',
+    'Amount USD',
+    'Amount KHR',
+    'Patient',
+    'Reversed',
+    'Notes',
+  ]
+
+  const rows = entries.map(e => [
+    e.createdAt.slice(0, 10),
+    e.memberName,
+    e.entryType,
+    e.debitAccount,
+    e.creditAccount,
+    e.amountUsd.toFixed(2),
+    String(e.amountRiels),
+    e.patientName ?? '',
+    e.isReversed ? 'Yes' : 'No',
+    e.notes ?? '',
+  ].map(escapeCsvCell).join(','))
+
+  return [header.join(','), ...rows].join('\r\n')
 }

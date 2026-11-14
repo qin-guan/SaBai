@@ -53,6 +53,7 @@ export const queryKeys = {
   referral: (id: string | number) => ["referrals", id] as const,
   referralsByConsult: (consultId: string | number) => ["referrals", "consult", consultId] as const,
   referralPartners: () => ["referral-partners"] as const,
+  pnLedger: () => ["pn-ledger"] as const,
   tags: () => ["tags"] as const,
 };
 

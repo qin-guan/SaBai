@@ -32,6 +32,17 @@ const availableSuggestions = computed(() => {
   return (knownTags.value ?? []).filter(t => !current.has(t.toLowerCase()))
 })
 
+const browseFilter = ref('')
+const showBrowse = ref(false)
+const browseMatches = computed(() => {
+  const q = browseFilter.value.trim().toLowerCase()
+  return availableSuggestions.value.filter(t => !q || t.toLowerCase().includes(q))
+})
+
+function pickTag(tag: string) {
+  addTag(tag)
+}
+
 function addTag(raw?: string) {
   const parts = (raw ?? draft.value)
     .split(',')
@@ -111,6 +122,44 @@ function onKeydown(event: KeyboardEvent) {
       >
         <PhPlus aria-hidden="true" /> Add
       </Button>
+    </div>
+    <div v-if="availableSuggestions.length > 0" class="flex flex-col gap-1.5">
+      <button
+        type="button"
+        class="self-start text-xs text-primary hover:underline focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+        :aria-expanded="showBrowse"
+        @click="showBrowse = !showBrowse"
+      >
+        {{ showBrowse ? 'Hide existing tags' : `Browse existing tags (${availableSuggestions.length})` }}
+      </button>
+      <div v-if="showBrowse" class="flex flex-col gap-1.5 border border-border p-2">
+        <Input
+          v-model="browseFilter"
+          type="search"
+          class="h-7 text-xs"
+          placeholder="Filter existing tags…"
+          aria-label="Filter existing tags"
+          autocomplete="off"
+          @keydown.enter.prevent.stop
+        />
+        <ul class="flex max-h-32 flex-wrap gap-1.5 overflow-y-auto" aria-label="Existing tags">
+          <li v-for="tag in browseMatches" :key="tag">
+            <button
+              type="button"
+              class="inline-flex"
+              :aria-label="`Add tag ${tag}`"
+              @click="pickTag(tag)"
+            >
+              <Badge variant="outline" class="cursor-pointer gap-1 hover:bg-accent">
+                <PhPlus class="size-3" aria-hidden="true" />{{ tag }}
+              </Badge>
+            </button>
+          </li>
+          <li v-if="browseMatches.length === 0" class="text-xs text-muted-foreground">
+            No matching tags.
+          </li>
+        </ul>
+      </div>
     </div>
     <datalist v-if="availableSuggestions.length > 0" :id="listId">
       <option v-for="tag in availableSuggestions" :key="tag" :value="tag" />

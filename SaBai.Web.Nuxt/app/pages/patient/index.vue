@@ -30,12 +30,15 @@ const station = computed<StationKey | undefined>(() =>
 useHead({ title: () => `${station.value ? stationLabel(station.value) : 'Patients'} · Sa'Bai` })
 
 const filter = ref('')
+const tagFilter = ref('')
 const { data, isLoading, isError } = usePatientsWithLatestVisit()
 type Row = NonNullable<typeof data.value>['patients'][number]
 
 const allPatients = computed(() => data.value?.patients ?? [])
 
 const matchesFilter = (p: Row) => {
+  if (tagFilter.value && !(p.tags ?? []).some(t => t.toLowerCase() === tagFilter.value.toLowerCase()))
+    return false
   const needle = cleanKhmerText(filter.value)
   if (!needle)
     return true
@@ -120,7 +123,7 @@ const stationCards = computed(() => [
 ])
 
 const sections = computed(() => {
-  const trimmed = filter.value.trim()
+  const trimmed = filter.value.trim() || tagFilter.value
   const s = station.value
   if (!s) {
     return [
@@ -268,6 +271,8 @@ const gridCols = 'md:grid-cols-[2rem_minmax(0,1fr)_minmax(15rem,22rem)_1rem] lg:
       </NuxtLink>
     </nav>
 
+    <TagFilter v-model="tagFilter" class="mb-3" />
+
     <AppPanel
       v-for="section in sections"
       :key="section.key"
@@ -280,7 +285,7 @@ const gridCols = 'md:grid-cols-[2rem_minmax(0,1fr)_minmax(15rem,22rem)_1rem] lg:
       <template v-if="section.showSearch" #actions>
         <div class="relative w-full sm:w-56">
           <PhMagnifyingGlass class="pointer-events-none absolute top-1/2 left-2 size-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-          <Input v-model="filter" type="search" class="h-7 bg-card pl-7 text-xs touch:h-11" placeholder="Name, ID or phone" aria-label="Filter patients" />
+          <Input v-model="filter" type="search" class="h-7 bg-card pl-7 text-xs touch:h-11" placeholder="Name, ID, phone or tag" aria-label="Filter patients" />
         </div>
       </template>
 

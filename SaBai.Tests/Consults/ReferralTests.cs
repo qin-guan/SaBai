@@ -447,9 +447,9 @@ public sealed class ReferralTests(AppFixture fixture)
         await client.LoginAsync();
         var suffix = ClinicSetup.Suffix();
 
-        var meRes = await client.GetAsync("/auth/me");
+        var meRes = await client.GetAsync("/auth/whoami");
         var meBody = await meRes.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
-        var memberId = ClinicSetup.ReadGuid(meBody, "id");
+        var memberId = ClinicSetup.ReadGuid(meBody.GetProperty("user"), "id");
 
         var (c1, _) = await CreateConsultAsync(client, $"Partial1 {suffix}");
         var (c2, _) = await CreateConsultAsync(client, $"Partial2 {suffix}");

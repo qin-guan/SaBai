@@ -161,6 +161,43 @@ export function collectUniqueTags(lists: readonly (readonly string[] | null | un
   return [...seen.values()].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
 }
 
+export interface PartitionedTags {
+  ordered: string[];
+  visible: string[];
+  hidden: string[];
+  hasHiddenSelected: boolean;
+}
+
+/**
+ * Orders a record's tags with currently selected filter tags first (preserving
+ * relative order), then splits them into `visible` and `hidden` lists when
+ * `maxVisible` is set.
+ */
+export function partitionPatientTags(
+  tags: readonly string[] | null | undefined,
+  selectedTags: readonly string[] | null | undefined,
+  maxVisible?: number,
+): PartitionedTags {
+  const normalized = (tags ?? []).map(t => t.trim()).filter(Boolean);
+  const selected: string[] = [];
+  const unselected: string[] = [];
+
+  for (const tag of normalized) {
+    if (hasTagSelected(selectedTags, tag))
+      selected.push(tag);
+    else
+      unselected.push(tag);
+  }
+
+  const ordered = [...selected, ...unselected];
+  const cap = maxVisible !== undefined && maxVisible > 0 ? maxVisible : ordered.length;
+  const visible = ordered.slice(0, cap);
+  const hidden = ordered.slice(cap);
+  const hasHiddenSelected = hidden.some(t => hasTagSelected(selectedTags, t));
+
+  return { ordered, visible, hidden, hasHiddenSelected };
+}
+
 export const MAX_TAG_LENGTH = 64;
 
 export interface TagDropdownOption {

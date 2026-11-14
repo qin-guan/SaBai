@@ -12,6 +12,7 @@ import {
   hasTagSelected,
   collectUniqueTags,
   buildTagDropdownOptions,
+  partitionPatientTags,
 } from "~/utils/patient";
 
 describe("formatPatientId", () => {
@@ -213,5 +214,35 @@ describe("tag filtering utilities", () => {
 
     // Already-selected tag does not offer a duplicate "create" option
     expect(buildTagDropdownOptions(known, selected, "kairos")).toEqual([]);
+  });
+
+  it("partitions tags with selected filters prioritized and respects maxVisible", () => {
+    expect(partitionPatientTags(null, [])).toEqual({
+      ordered: [],
+      visible: [],
+      hidden: [],
+      hasHiddenSelected: false,
+    });
+
+    expect(partitionPatientTags(["Diabetic", "Elderly", "Follow-Up"], ["follow-up"], 1)).toEqual({
+      ordered: ["Follow-Up", "Diabetic", "Elderly"],
+      visible: ["Follow-Up"],
+      hidden: ["Diabetic", "Elderly"],
+      hasHiddenSelected: false,
+    });
+
+    expect(partitionPatientTags(["Diabetic", "Elderly", "Follow-Up"], ["elderly", "follow-up"], 1)).toEqual({
+      ordered: ["Elderly", "Follow-Up", "Diabetic"],
+      visible: ["Elderly"],
+      hidden: ["Follow-Up", "Diabetic"],
+      hasHiddenSelected: true,
+    });
+
+    expect(partitionPatientTags(["Diabetic", " ", "Elderly"], [], undefined)).toEqual({
+      ordered: ["Diabetic", "Elderly"],
+      visible: ["Diabetic", "Elderly"],
+      hidden: [],
+      hasHiddenSelected: false,
+    });
   });
 });

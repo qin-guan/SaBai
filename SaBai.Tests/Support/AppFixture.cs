@@ -31,7 +31,8 @@ public class AppFixture : AspireFixture<Projects.SaBai_AppHost>
 
     public const string PushPrivateKey = "ttxHYerkAeg1Mntwzqade39Y7rfv36lhkq9fS4N8-uk";
 
-    protected override IEnumerable<string> ResourcesToRemove() => ["postgres-pgadmin"];
+    protected override IEnumerable<string> ResourcesToRemove() =>
+        ["postgres-pgadmin", "frontend", "frontend-nuxt", "powersync"];
 
     protected override ResourceWaitBehavior WaitBehavior => ResourceWaitBehavior.Named;
 

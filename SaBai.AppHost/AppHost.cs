@@ -14,7 +14,7 @@ if (!builder.ExecutionContext.IsPublishMode)
     postgres.WithPgAdmin();
 }
 var db = postgres.AddDatabase("sabai");
-var psDb = postgres.AddDatabase("powersync");
+var psDb = postgres.AddDatabase("powersync-db", "powersync");
 
 var rustFsAccessKey = builder.AddParameter("rustFsAccessKey", "rustfsadmin");
 var rustFsSecretKey = builder.AddParameter("rustFsSecretKey", "rustfsadmin", secret: true);

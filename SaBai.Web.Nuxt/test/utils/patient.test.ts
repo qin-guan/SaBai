@@ -11,6 +11,7 @@ import {
   toggleTagSelection,
   hasTagSelected,
   collectUniqueTags,
+  buildTagDropdownOptions,
 } from "~/utils/patient";
 
 describe("formatPatientId", () => {
@@ -183,5 +184,34 @@ describe("tag filtering utilities", () => {
       "Pediatric",
     ]);
   });
-});
 
+  it("builds inline tag dropdown options with matching existing tags and a create option when unmatched", () => {
+    const known = ["country:singapore", "kairos", "Follow-Up", "Mobility-Aid"];
+    const selected = ["country:singapore", "kairos"];
+
+    // Empty query shows all unselected existing tags, sorted
+    expect(buildTagDropdownOptions(known, selected, "")).toEqual([
+      { type: "existing", tag: "Follow-Up" },
+      { type: "existing", tag: "Mobility-Aid" },
+    ]);
+
+    // Partial match shows matching existing tags plus a "create" option for the partial string
+    expect(buildTagDropdownOptions(known, selected, "follow")).toEqual([
+      { type: "existing", tag: "Follow-Up" },
+      { type: "create", tag: "follow" },
+    ]);
+
+    // Case-insensitive exact match of an unselected existing tag shows only that existing tag (no duplicate create option)
+    expect(buildTagDropdownOptions(known, selected, "follow-up")).toEqual([
+      { type: "existing", tag: "Follow-Up" },
+    ]);
+
+    // Unmatched query offers only the "create" option
+    expect(buildTagDropdownOptions(known, selected, "  VIP  ")).toEqual([
+      { type: "create", tag: "VIP" },
+    ]);
+
+    // Already-selected tag does not offer a duplicate "create" option
+    expect(buildTagDropdownOptions(known, selected, "kairos")).toEqual([]);
+  });
+});

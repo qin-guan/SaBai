@@ -47,23 +47,6 @@ services:
         read_only: false
     networks:
       - "aspire"
-  pgadmin:
-    image: "docker.io/dpage/pgadmin4:9.15.0"
-    environment:
-      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
-      PGADMIN_CONFIG_SERVER_MODE: "False"
-      PGADMIN_DEFAULT_EMAIL: "admin@domain.com"
-      PGADMIN_DEFAULT_PASSWORD: "admin"
-    ports:
-      - "5050:80"
-    expose:
-      - "80"
-    networks:
-      - "aspire"
-    configs:
-      - source: "pgadmin__pgadmin4_servers.json"
-        target: "/pgadmin4/servers.json"
-        mode: 0644
   fs:
     image: "rustfs/rustfs:latest"
     environment:
@@ -156,9 +139,9 @@ services:
     expose:
       - "8080"
     depends_on:
-      postgres:
-        condition: "service_started"
       api:
+        condition: "service_started"
+      postgres:
         condition: "service_started"
     networks:
       - "aspire"
@@ -203,8 +186,6 @@ volumes:
   fs-logs:
     driver: "local"
 configs:
-  pgadmin__pgadmin4_servers.json:
-    content: "{\n  \"Servers\": {\n    \"1\": {\n      \"Name\": \"postgres\",\n      \"Group\": \"Servers\",\n      \"Host\": \"postgres\",\n      \"Port\": 5432,\n      \"Username\": \"postgres\",\n      \"SSLMode\": \"prefer\",\n      \"MaintenanceDB\": \"postgres\",\n      \"PasswordExecCommand\": \"echo \\u00278R834zjqYbSDw4bx~q7!RA\\u0027\"\n    }\n  }\n}"
   powersync__config_service.yaml:
     content: "replication:\n  connections:\n    - type: postgresql\n      uri: !env PS_SOURCE_PG_URI\n\nstorage:\n  type: postgresql\n  uri: !env PS_STORAGE_PG_URI\n\nport: 8080\n\nsync_config:\n  path: /config/sync-config.yaml\n\nclient_auth:\n  jwks_uri: !env PS_JWKS_URI\n  audience:\n    - powersync\n"
   powersync__config_sync-config.yaml:

@@ -8,10 +8,10 @@ import type { SaBaiAPIEndpointsVillageCodesGetResponse } from './SaBaiAPIEndpoin
 export type SaBaiAPIEndpointsVillageCodesGetEndpointPath = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  id: number;
+  id: string;
 };
 
 export type SaBaiAPIEndpointsVillageCodesGetEndpointStatus200 = SaBaiAPIEndpointsVillageCodesGetResponse;

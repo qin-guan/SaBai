@@ -21,6 +21,7 @@ import { saBaiAPIDomainYesNoUnknownSchema } from './saBaiAPIDomainYesNoUnknownSc
 import { systemNullableOfSystemDateOnlySchema } from './systemNullableOfSystemDateOnlySchema'
 
 export const saBaiAPIEndpointsDentalUpsertByVisitPutRequestSchema = z.object({
+  id: z.uuid().nullish(),
   previousDentalVisit: z.union([z.null(), saBaiAPIDomainYesNoUnknownSchema]).optional(),
   previousDentalTreatment: z.union([z.null(), saBaiAPIDomainYesNoUnknownSchema]).optional(),
   toothache: z.boolean().nullish(),
@@ -69,4 +70,5 @@ export const saBaiAPIEndpointsDentalUpsertByVisitPutRequestSchema = z.object({
   referralNotes: z.string().min(0).max(2000).nullish(),
   recommendedFacility: z.string().min(0).max(200).nullish(),
   remarks: z.string().min(0).max(2000).nullish(),
+  imageFileId: z.uuid().nullish(),
 })

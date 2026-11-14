@@ -8,6 +8,12 @@ import type { SaBaiAPIEndpointsPatientsCreatePostVitalsRequest } from './SaBaiAP
 
 export type SaBaiAPIEndpointsPatientsCreatePostRequest = {
   /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  id?: string | null;
+  /**
    * @minLength 0
    * @maxLength 255
    * @type string
@@ -43,9 +49,23 @@ export type SaBaiAPIEndpointsPatientsCreatePostRequest = {
   toGetReport?: boolean;
   /**
    * @description
-   * Format: `int32`
-   * @type integer | undefined
+   * Format: `uuid`
+   * @minLength 1
+   * @type string
    */
-  villageCodeId?: number;
+  villageCodeId: string;
+  tags?: string[] | null;
   vitals?: null | SaBaiAPIEndpointsPatientsCreatePostVitalsRequest;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  visitId?: string | null;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  vitalsId?: string | null;
 };

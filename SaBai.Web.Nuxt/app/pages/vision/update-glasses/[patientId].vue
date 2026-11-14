@@ -16,9 +16,9 @@ const { patient, visits, selectedVisitId, selectedVisit, isLoading } = usePatien
     empty-message="No visits found for this patient. Please create a visit first to update glasses prescription."
     choose-message="Please choose a visit to view vision data."
   >
-    <template #default="{ visit }">
+    <template #default="{ visit, patient: p }">
       <!-- Edits the full eyesight record, so it uses the eyesight endpoints. -->
-      <EyesightForm :key="visit.id" :visit-id="visit.id" />
+      <EyesightForm :key="visit.id" :visit-id="visit.id" :patient-name="p.name" />
     </template>
   </StationPage>
 </template>

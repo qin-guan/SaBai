@@ -12,6 +12,7 @@ export function createSaBaiAPIEndpointsAuthUsersUpdatePatchRequest<TData extends
     email: faker.internet.email(),
     nickname: faker.string.alpha({ length: { min: 0, max: 255 } }),
     roles: faker.helpers.multiple(() => (faker.string.alpha())),
+    tags: faker.helpers.multiple(() => (faker.string.alpha())),
   }
   return {
     ...defaultFakeData,

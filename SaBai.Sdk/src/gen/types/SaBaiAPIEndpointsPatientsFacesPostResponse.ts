@@ -14,10 +14,10 @@ export type SaBaiAPIEndpointsPatientsFacesPostResponse = {
   faceId: string;
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  patientId: number;
+  patientId: string;
   face: SaBaiAPIEndpointsFacesFaceDto;
   /**
    * @description

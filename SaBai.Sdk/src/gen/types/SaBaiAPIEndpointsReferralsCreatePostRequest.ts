@@ -6,10 +6,17 @@
 export type SaBaiAPIEndpointsReferralsCreatePostRequest = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer | undefined
+   * Format: `uuid`
+   * @type string | undefined
    */
-  consultId?: number;
+  id?: string | null;
+  /**
+   * @description
+   * Format: `uuid`
+   * @minLength 1
+   * @type string
+   */
+  consultId: string;
   /**
    * @minLength 1
    * @type string

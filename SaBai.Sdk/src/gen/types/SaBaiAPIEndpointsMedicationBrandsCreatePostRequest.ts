@@ -5,6 +5,12 @@
 
 export type SaBaiAPIEndpointsMedicationBrandsCreatePostRequest = {
   /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  id?: string | null;
+  /**
    * @minLength 0
    * @maxLength 255
    * @type string
@@ -12,9 +18,10 @@ export type SaBaiAPIEndpointsMedicationBrandsCreatePostRequest = {
   name: string;
   /**
    * @description
-   * Format: `int32`
-   * @type integer | undefined
+   * Format: `uuid`
+   * @minLength 1
+   * @type string
    */
-  activeIngredientId?: number;
+  activeIngredientId: string;
   remarks: string;
 };

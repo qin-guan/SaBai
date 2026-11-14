@@ -12,6 +12,8 @@ export const saBaiAPIEndpointsAuthUsersListGetEndpointQueryEmailSchema = z.strin
 
 export const saBaiAPIEndpointsAuthUsersListGetEndpointQueryIsLockedSchema = z.boolean().nullish()
 
+export const saBaiAPIEndpointsAuthUsersListGetEndpointQueryTagSchema = z.string().nullish()
+
 export const saBaiAPIEndpointsAuthUsersListGetEndpointStatus200Schema = saBaiAPIEndpointsAuthUsersListGetResponseSchema
 
 export const saBaiAPIEndpointsAuthUsersListGetEndpointStatus401Schema = z.unknown()
@@ -26,4 +28,5 @@ export const saBaiAPIEndpointsAuthUsersListGetEndpointQuerySchema = z.object({
   role: z.string().nullish(),
   email: z.string().nullish(),
   isLocked: z.boolean().nullish(),
+  tag: z.string().nullish(),
 })

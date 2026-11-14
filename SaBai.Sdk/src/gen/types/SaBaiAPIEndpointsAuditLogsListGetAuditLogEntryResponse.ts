@@ -9,10 +9,10 @@ import type { SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsAuditLogsL
 export type SaBaiAPIEndpointsAuditLogsListGetAuditLogEntryResponse = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  id: number;
+  id: string;
   /**
    * @description
    * Format: `date-time`

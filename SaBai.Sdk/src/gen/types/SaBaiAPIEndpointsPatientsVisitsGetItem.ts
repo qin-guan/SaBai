@@ -8,10 +8,10 @@ import type { SaBaiAPIEndpointsPatientsVisitJourney } from './SaBaiAPIEndpointsP
 export type SaBaiAPIEndpointsPatientsVisitsGetItem = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  id: number;
+  id: string;
   /**
    * @description
    * Format: `date-time`
@@ -20,17 +20,17 @@ export type SaBaiAPIEndpointsPatientsVisitsGetItem = {
   date: string;
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  patientId: number;
+  patientId: string;
   patientName: string;
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  villageCodeId: number;
+  villageCodeId: string;
   villageCode: string;
   villageName: string;
   villageColorHex: string;

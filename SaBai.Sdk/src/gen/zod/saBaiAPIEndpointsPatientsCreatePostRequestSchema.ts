@@ -8,6 +8,7 @@ import { saBaiAPIDomainGenderSchema } from './saBaiAPIDomainGenderSchema'
 import { saBaiAPIEndpointsPatientsCreatePostVitalsRequestSchema } from './saBaiAPIEndpointsPatientsCreatePostVitalsRequestSchema'
 
 export const saBaiAPIEndpointsPatientsCreatePostRequestSchema = z.object({
+  id: z.uuid().nullish(),
   name: z.string().min(0).max(255),
   identificationNumber: z.string().min(0).max(255).nullish(),
   contactNo: z.string().min(0).max(255).nullish(),
@@ -18,6 +19,9 @@ export const saBaiAPIEndpointsPatientsCreatePostRequestSchema = z.object({
   hasBS2Card: z.boolean().optional(),
   hasSabaiCard: z.boolean().optional(),
   toGetReport: z.boolean().optional(),
-  villageCodeId: z.int32().gt(0).optional(),
+  villageCodeId: z.uuid().min(1),
+  tags: z.array(z.string()).nullish(),
   vitals: z.union([z.null(), saBaiAPIEndpointsPatientsCreatePostVitalsRequestSchema.strict()]).optional(),
+  visitId: z.uuid().nullish(),
+  vitalsId: z.uuid().nullish(),
 })

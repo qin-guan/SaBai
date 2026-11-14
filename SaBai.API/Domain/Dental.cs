@@ -4,11 +4,9 @@ namespace SaBai.API.Domain;
 /// The dental station's consultation for a visit: history, chief complaint, clinical
 /// examination, diagnoses, treatment provided, referral and remarks. One per visit.
 /// </summary>
-public sealed class DentalConsult : ISyncEntity
+public sealed class DentalConsult : ITrackedEntity
 {
     public Guid Id { get; set; } = Guid.CreateVersion7();
-
-    public int Version { get; set; } = 1;
 
     public Guid VisitId { get; set; }
 
@@ -136,6 +134,8 @@ public sealed class DentalConsult : ISyncEntity
     public StoredFile? ImageFile { get; set; }
 
     public DateTimeOffset UpdatedAt { get; set; }
+
+    public Guid? UpdatedByUserId { get; set; }
 
     /// <summary>When the record was first saved; stamped by <c>AppDbContext</c>. Null for records from before it was tracked.</summary>
     public DateTimeOffset? RecordedAt { get; set; }

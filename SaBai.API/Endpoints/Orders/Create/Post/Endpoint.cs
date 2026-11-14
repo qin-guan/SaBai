@@ -1,4 +1,5 @@
 using FastEndpoints;
+using Microsoft.EntityFrameworkCore;
 using SaBai.API.Auth;
 using SaBai.API.Data;
 using SaBai.API.Domain;
@@ -27,18 +28,30 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             ct
         );
 
-        var order = new SaBai.API.Domain.Order
+        var order = await db
+            .Orders.Include(x => x.MedicationBrand)
+            .FindExistingAsync(req.Id, x => x.ConsultId == req.ConsultId, ct);
+        if (order is not null)
         {
-            ConsultId = req.ConsultId,
-            MedicationBrandId = brand.Id,
-            Quantity = req.Quantity,
-            DosageInstructions = req.DosageInstructions.Trim(),
-            Remarks = string.IsNullOrWhiteSpace(req.Remarks) ? null : req.Remarks.Trim(),
-            Status = OrderStatus.Pending,
-            CreatedAt = DateTimeOffset.UtcNow,
-        };
-        db.Orders.Add(order);
-        await db.SaveChangesAsync(ct);
+            // A resent create: answer with the order as it is now (it may have been approved).
+            brand = order.MedicationBrand;
+        }
+        else
+        {
+            order = new SaBai.API.Domain.Order
+            {
+                Id = req.Id ?? Guid.CreateVersion7(),
+                ConsultId = req.ConsultId,
+                MedicationBrandId = brand.Id,
+                Quantity = req.Quantity,
+                DosageInstructions = req.DosageInstructions.Trim(),
+                Remarks = string.IsNullOrWhiteSpace(req.Remarks) ? null : req.Remarks.Trim(),
+                Status = OrderStatus.Pending,
+                CreatedAt = DateTimeOffset.UtcNow,
+            };
+            db.Orders.Add(order);
+            await db.SaveChangesAsync(ct);
+        }
 
         await Send.CreatedAtAsync<Get.Endpoint>(
             new { order.Id },

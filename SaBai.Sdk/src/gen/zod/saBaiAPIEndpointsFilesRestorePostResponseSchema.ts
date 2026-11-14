@@ -6,8 +6,8 @@
 import * as z from 'zod'
 
 export const saBaiAPIEndpointsFilesRestorePostResponseSchema = z.object({
-  id: z.int32(),
-  patientId: z.int32(),
+  id: z.uuid(),
+  patientId: z.uuid().nullable(),
   fileName: z.string(),
   storedFileName: z.string(),
   description: z.string(),

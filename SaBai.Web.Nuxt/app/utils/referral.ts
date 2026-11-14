@@ -1,11 +1,16 @@
 import type { Option } from './options'
 import { cleanKhmerText, matchesSearchText } from './khmer'
-import { calculateAge, formatPatientCode, matchesTags, type TagMatchMode } from './patient'
-import type { SaBaiAPIDomainReferralStateKey } from '@sabai/sdk/types'
-import type { LocalReferralItem } from '~/composables/useReferrals'
+import { calculateAge, matchesTags, type TagMatchMode } from './patient'
+import type {
+  SaBaiAPIDomainReferralStateKey,
+  SaBaiAPIEndpointsReferralsGetResponse,
+  SaBaiAPIEndpointsReferralsListGetResponse,
+} from '@sabai/sdk/types'
 
-export type ReferralListItem = LocalReferralItem & {
+export type ReferralListItem = SaBaiAPIEndpointsReferralsListGetResponse & {
   tags?: string[]
+  /** The patient's card number (e.g. "PC0012"), when known; the referral responses carry no patient number. */
+  patientDisplayId?: string
 }
 
 export const GUARDIANS_CONTACTED = ['Yes', 'No', 'NotApplicable'] as const
@@ -41,7 +46,7 @@ export const ADULT_AGE = 18
 export const USD_AMOUNT_PATTERN = /^\d{1,8}(\.\d{1,2})?$/
 export const MAX_RIELS = 2_147_483_647
 
-export type ReferralDetail = LocalReferralItem
+export type ReferralDetail = SaBaiAPIEndpointsReferralsGetResponse
 
 /**
  * Natural lifecycle order of referral states.
@@ -141,9 +146,8 @@ export function matchesReferral(item: ReferralListItem, filters: ReferralFilterO
 
   const targets = [
     item.patientName,
-    item.patientDisplayId,
-    String(item.patientId),
-    item.villageCode ?? '',
+    item.patientDisplayId ?? '',
+    item.villageCode,
     item.referredFor,
     item.referralNotes ?? '',
     item.referralOutcome ?? '',

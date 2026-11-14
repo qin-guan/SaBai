@@ -45,34 +45,19 @@ const PN_ROLE = "pn";
  */
 export function usePnMemberOptions(savedMemberId: MaybeRefOrGetter<string | null | undefined>) {
   const { data: users } = useStaffUsersList();
-  const { data: localUsers } = useLocalQuery<Array<{ id: string; user_name: string | null; nickname: string | null }>>(
-    ["staff_users"],
-    async () => {
-      const db = getPowerSyncInstance();
-      return await db.getAll<{ id: string; user_name: string | null; nickname: string | null }>(
-        "SELECT id, user_name, nickname FROM staff_users ORDER BY COALESCE(nickname, user_name) ASC",
-      );
-    },
-  );
 
   return computed(() => {
     const savedId = toValue(savedMemberId);
-    if (users.value?.length) {
-      return users.value
-        .filter(
-          (u) =>
-            u.roles.some((r) => r.trim().toLowerCase() === PN_ROLE) ||
-            (!!savedId && u.id === savedId),
-        )
-        .map((u) => ({
-          value: u.id,
-          label: u.nickname || u.userName,
-        }));
-    }
-    return (localUsers.value ?? []).map((u) => ({
-      value: u.id,
-      label: u.nickname || u.user_name || u.id,
-    }));
+    return (users.value ?? [])
+      .filter(
+        (u) =>
+          u.roles.some((r) => r.trim().toLowerCase() === PN_ROLE) ||
+          (!!savedId && u.id === savedId),
+      )
+      .map((u) => ({
+        value: u.id,
+        label: u.nickname || u.userName,
+      }));
   });
 }
 

@@ -30,4 +30,5 @@ export type SaBaiAPIEndpointsAuthUsersCreatePostRequest = {
    */
   nickname?: string | null;
   roles?: string[] | null;
+  tags?: string[] | null;
 };

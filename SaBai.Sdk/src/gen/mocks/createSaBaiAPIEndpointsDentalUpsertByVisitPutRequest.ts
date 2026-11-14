@@ -23,6 +23,7 @@ import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsDentalUpsertByVisitPutRequest<TData extends Partial<SaBaiAPIEndpointsDentalUpsertByVisitPutRequest> = object>(data?: TData) {
   const defaultFakeData = {
+    id: faker.string.uuid(),
     previousDentalVisit: faker.helpers.arrayElement([null, createSaBaiAPIDomainYesNoUnknown()]),
     previousDentalTreatment: faker.helpers.arrayElement([null, createSaBaiAPIDomainYesNoUnknown()]),
     toothache: faker.datatype.boolean(),
@@ -71,6 +72,7 @@ export function createSaBaiAPIEndpointsDentalUpsertByVisitPutRequest<TData exten
     referralNotes: faker.string.alpha({ length: { min: 0, max: 2000 } }),
     recommendedFacility: faker.string.alpha({ length: { min: 0, max: 200 } }),
     remarks: faker.string.alpha({ length: { min: 0, max: 2000 } }),
+    imageFileId: faker.string.uuid(),
   }
   return {
     ...defaultFakeData,

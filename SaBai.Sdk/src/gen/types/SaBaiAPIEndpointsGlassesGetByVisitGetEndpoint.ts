@@ -9,10 +9,10 @@ import type { SaBaiAPIEndpointsGlassesGetByVisitGetResponse } from './SaBaiAPIEn
 export type SaBaiAPIEndpointsGlassesGetByVisitGetEndpointQuery = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  visitId: number;
+  visitId: string;
 };
 
 export type SaBaiAPIEndpointsGlassesGetByVisitGetEndpointStatus200 = SaBaiAPIEndpointsGlassesGetByVisitGetResponse;

@@ -46,7 +46,7 @@ async function open(patientId: string | number, target: PatientLinkTarget | unde
       <StateMessage
         v-else-if="search.isError.value"
         kind="error"
-        :message="getApiErrorMessage(search.error.value, 'Face search failed. Try again.')"
+        :message="describeLoadError(search.error.value, 'Face search failed. Try again.')"
       />
       <div v-else-if="image && matches.length === 0" class="flex flex-col items-center gap-2 py-4 text-center">
         <PhUserFocus class="size-10 text-muted-foreground/50" aria-hidden="true" />
@@ -78,7 +78,7 @@ async function open(patientId: string | number, target: PatientLinkTarget | unde
           </div>
           <!-- Each journey tile opens that station for the visit; close on any link click. -->
           <div class="pl-[3.75rem]" @click="closeOnLink">
-            <MatchVisits :patient-id="String(match.id)" />
+            <MatchVisits :patient-id="match.id" />
           </div>
         </li>
       </ol>

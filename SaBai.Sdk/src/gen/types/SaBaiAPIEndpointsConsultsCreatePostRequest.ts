@@ -9,10 +9,17 @@ import type { SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsCr
 export type SaBaiAPIEndpointsConsultsCreatePostRequest = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer | undefined
+   * Format: `uuid`
+   * @type string | undefined
    */
-  visitId?: number;
+  id?: string | null;
+  /**
+   * @description
+   * Format: `uuid`
+   * @minLength 1
+   * @type string
+   */
+  visitId: string;
   pastMedicalHistory?: string | null;
   consultation?: string | null;
   treatmentPlan?: string | null;

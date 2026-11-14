@@ -8,7 +8,8 @@ import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsChildVitalsCreatePostRequest<TData extends Partial<SaBaiAPIEndpointsChildVitalsCreatePostRequest> = object>(data?: TData) {
   const defaultFakeData = {
-    vitalsId: faker.number.int(),
+    id: faker.string.uuid(),
+    vitalsId: faker.string.uuid(),
     grossMotor: faker.string.alpha(),
     redReflex: faker.string.alpha(),
     scoliosis: faker.string.alpha(),

@@ -8,16 +8,16 @@ import type { SaBaiAPIDomainDiagnosisCategoryKey } from './SaBaiAPIDomainDiagnos
 export type SaBaiAPIEndpointsDiagnosesUpdatePatchResponse = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  id: number;
+  id: string;
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  consultId: number;
+  consultId: string;
   details: string;
   category: null | SaBaiAPIDomainDiagnosisCategoryKey;
 };

@@ -24,8 +24,8 @@ import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsDentalDentalConsultResponse<TData extends Partial<SaBaiAPIEndpointsDentalDentalConsultResponse> = object>(data?: TData) {
   const defaultFakeData = {
-    id: faker.number.int(),
-    visitId: faker.number.int(),
+    id: faker.string.uuid(),
+    visitId: faker.string.uuid(),
     previousDentalVisit: faker.helpers.arrayElement([null, createSaBaiAPIDomainYesNoUnknown()]),
     previousDentalTreatment: faker.helpers.arrayElement([null, createSaBaiAPIDomainYesNoUnknown()]),
     toothache: faker.datatype.boolean(),
@@ -74,6 +74,7 @@ export function createSaBaiAPIEndpointsDentalDentalConsultResponse<TData extends
     referralNotes: faker.string.alpha(),
     recommendedFacility: faker.string.alpha(),
     remarks: faker.string.alpha(),
+    imageFileId: faker.string.uuid(),
     updatedAt: faker.date.anytime().toISOString(),
   }
   return {

@@ -5,10 +5,11 @@ import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { Textarea } from '@/components/ui/textarea'
+import { createConsult } from '~/offline/mutations/visitRecords'
 import { REFERRAL_CATEGORY_OPTIONS } from '@/utils/referral'
 
 /** The doctor's consultation form for one visit (each save appends a consult). */
-const props = defineProps<{ visitId: string }>()
+const props = defineProps<{ visitId: string, patientName?: string }>()
 
 const consultFormSchema = z.object({
   pastMedicalHistory: z.string().trim().optional(),
@@ -62,7 +63,9 @@ function removeDiagnosis(index: number) {
 }
 
 const { user } = useCurrentUser()
-const isSaving = ref(false)
+const consultMutation = useOfflineMutation(createConsult)
+const createReferral = useCreateReferral()
+const isSaving = consultMutation.isPending
 
 async function submit() {
   if (isSaving.value)
@@ -76,64 +79,52 @@ async function submit() {
   }
   errors.value = {}
   const data: ConsultFormValues = parsed.data
-  const consultId = uuidv7()
-  const now = new Date().toISOString()
   const hasReferral = Boolean(data.referredFor && data.referredFor !== 'Not Referred')
+  const consultId = uuidv7()
 
-  isSaving.value = true
+  let outcome
   try {
-    const db = getPowerSyncInstance()
-    await db.writeTransaction(async (tx) => {
-      await tx.execute(
-        `INSERT INTO consults (
-          id, visit_id, date, past_medical_history, consultation, treatment_plan,
-          referred_for, referral_notes, remarks, doctor_id, version, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)`,
-        [
-          consultId,
-          props.visitId,
-          now,
-          data.pastMedicalHistory || null,
-          data.consultation || null,
-          data.treatmentPlan || null,
-          hasReferral ? data.referredFor! : null,
-          hasReferral && data.referralNotes ? data.referralNotes : null,
-          data.remarks || null,
-          user.value?.id ? String(user.value.id) : null,
-          now,
-        ],
-      )
-
-      for (const d of data.diagnoses) {
-        await tx.execute(
-          `INSERT INTO diagnoses (id, consult_id, details, category, version)
-           VALUES (?, ?, ?, ?, 1)`,
-          [uuidv7(), consultId, d.details, d.category],
-        )
-      }
-
-      if (hasReferral) {
-        await tx.execute(
-          `INSERT INTO referrals (
-            id, consult_id, referred_for, referral_notes, referral_state, created_at, updated_at, version
-          ) VALUES (?, ?, ?, ?, 'New', ?, ?, 1)`,
-          [uuidv7(), consultId, data.referredFor!, data.referralNotes || null, now, now],
-        )
-      }
+    outcome = await consultMutation.mutateAsync({
+      id: consultId,
+      visitId: props.visitId,
+      patientName: props.patientName,
+      doctorId: user.value?.id ?? '',
+      doctorNickname: user.value?.nickname ?? '',
+      date: new Date().toISOString(),
+      pastMedicalHistory: data.pastMedicalHistory || null,
+      consultation: data.consultation || null,
+      treatmentPlan: data.treatmentPlan || null,
+      remarks: data.remarks || null,
+      referredFor: hasReferral ? data.referredFor! : null,
+      referralNotes: hasReferral && data.referralNotes ? data.referralNotes : null,
+      diagnoses: data.diagnoses.map(d => ({ id: uuidv7(), details: d.details, category: d.category as DiagnosisCategory })),
     })
-    await refreshPendingCrudCount()
-    serviceTimer.saved()
-    toast.success(hasReferral ? 'Consult and referral saved!' : 'Consult saved!')
-    form.value = blank()
-    draft.clear(form.value)
   }
   catch (error) {
-    console.error('Error saving consult:', error)
-    toast.error('Failed to save consult.')
+    toast.error(getApiErrorMessage(error, 'Failed to save consult.'))
+    return
   }
-  finally {
-    isSaving.value = false
+  // Before the form is cleared for the next consult.
+  serviceTimer.saved()
+  notifySaved(outcome, 'Consult has been saved successfully!')
+
+  if (hasReferral) {
+    try {
+      // Queued behind the consult when the consult itself is waiting to be sent.
+      await createReferral.mutateAsync({
+        consultId,
+        referredFor: data.referredFor!,
+        referralNotes: data.referralNotes || undefined,
+      })
+      if (!outcome.queued) toast.success('Referral submitted!')
+    }
+    catch (error) {
+      toast.error(getApiErrorMessage(error, 'Failed to create referral.'))
+    }
   }
+
+  form.value = blank()
+  draft.clear(form.value)
 }
 
 useSaveShortcut(submit)

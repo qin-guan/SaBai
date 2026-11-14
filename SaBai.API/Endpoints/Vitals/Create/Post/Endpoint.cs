@@ -22,6 +22,16 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             .Visits.AsNoTracking()
             .FirstOrNotFoundAsync(x => x.Id == req.VisitId, "Visit was not found.", ct);
 
+        if (await db.Vitals.FindExistingAsync(req.Id, x => x.VisitId == req.VisitId, ct) is { } existing)
+        {
+            await Send.CreatedAtAsync<Get.Endpoint>(
+                new { existing.Id },
+                Response.From(existing),
+                cancellation: ct
+            );
+            return;
+        }
+
         if (await db.Vitals.AnyAsync(x => x.VisitId == req.VisitId, ct))
         {
             throw new ConflictException("Vitals already exist for this visit.");
@@ -29,6 +39,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
         var vitals = new global::SaBai.API.Domain.Vitals
         {
+            Id = req.Id ?? Guid.CreateVersion7(),
             VisitId = req.VisitId,
             Height = req.Height,
             Weight = req.Weight,

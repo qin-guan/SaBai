@@ -8,7 +8,7 @@ import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsPatientsFacesDeleteEndpointPath<TData extends Partial<SaBaiAPIEndpointsPatientsFacesDeleteEndpointPath> = object>(data?: TData) {
   const defaultFakeData = {
-    id: faker.number.int(),
+    id: faker.string.uuid(),
     faceId: faker.string.uuid(),
   }
   return {

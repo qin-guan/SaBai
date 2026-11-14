@@ -12,6 +12,7 @@ export function createSaBaiAPIEndpointsAuthUsersListGetEndpointQuery<TData exten
     role: faker.string.alpha(),
     email: faker.string.alpha(),
     isLocked: faker.datatype.boolean(),
+    tag: faker.string.alpha(),
   }
   return {
     ...defaultFakeData,

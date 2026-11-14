@@ -6,10 +6,10 @@
 export type SaBaiAPIEndpointsVillageCodesListGetItem = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  id: number;
+  id: string;
   code: string;
   name: string;
   colorHex: string;

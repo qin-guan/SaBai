@@ -5,7 +5,8 @@ import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components
 
 useHead({ title: "Medication Stock · Sa'Bai" })
 
-const { data: stock, isLoading, isError } = useMedicationStock()
+// Cached data renders even when the refetch failed (offline); errors show only when there is nothing to show.
+const { data: stock, isPending, isError, error } = useMedicationStock()
 const creating = ref(false)
 const splitting = ref<MedicationStockRow | null>(null)
 </script>
@@ -35,8 +36,8 @@ const splitting = ref<MedicationStockRow | null>(null)
     </PageHeader>
 
     <AppPanel title="Stock" :description="stock ? `${stock.length} lines · low stock highlighted red` : undefined" flush>
-      <StateMessage v-if="isError" kind="error" message="An error has occurred!" />
-      <StateMessage v-else-if="isLoading" kind="loading" message="Loading stock..." />
+      <StateMessage v-if="!stock && isError" kind="error" :message="describeLoadError(error, 'An error has occurred!')" />
+      <StateMessage v-else-if="!stock && isPending" kind="loading" message="Loading stock..." />
       <StateMessage v-else-if="!stock || stock.length === 0" message="No stock found. Seed the database or add a new record." />
       <Table v-else class="grid-table stack-table">
         <TableHeader>

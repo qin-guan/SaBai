@@ -3,11 +3,12 @@ import { PhFloppyDisk, PhWarning } from '@phosphor-icons/vue'
 import { toast } from 'vue-sonner'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
+import { createVitals, updateVitals, type VitalsFields } from '~/offline/mutations/visitRecords'
 
 const props = defineProps<{
   visitId: string
   visitDate: string
-  patient: { dateOfBirth: string, gender: string }
+  patient: { name?: string, dateOfBirth: string, gender: string }
 }>()
 
 type NumberKey =
@@ -77,7 +78,9 @@ const formEl = ref<HTMLFormElement>()
 // Times this form for the station wait estimate.
 const serviceTimer = useServiceTimer('vitals', formEl, () => form.value)
 
-const saving = ref(false)
+const createVitalsMutation = useOfflineMutation(createVitals)
+const updateVitalsMutation = useOfflineMutation(updateVitals)
+const saving = computed(() => createVitalsMutation.isPending.value || updateVitalsMutation.isPending.value)
 
 async function submit() {
   if (saving.value || isLoading.value)
@@ -87,83 +90,44 @@ async function submit() {
     return
   }
   const data = form.value
+  // `null` marks an omitted/cleared measurement. The API expects JSON numbers.
+  // Note: the PATCH endpoint only applies non-null numbers, so clearing an
+  // already-saved measurement cannot be persisted (same as SaBai.Web).
   const num = (v: string) => (v ? Number(v) : null)
-  const diabetes = data.diabetesMellitus === 'true' ? 1 : data.diabetesMellitus === 'false' ? 0 : null
-  const urineTest = data.urineTest || null
-  const others = data.others || null
-  const now = new Date().toISOString()
-
-  saving.value = true
+  const fields: VitalsFields = {
+    height: num(data.height),
+    weight: num(data.weight),
+    temperature: num(data.temperature),
+    systolic: num(data.systolic),
+    diastolic: num(data.diastolic),
+    heartRate: num(data.heartRate),
+    hemocueCount: num(data.hemocueCount),
+    diabetesMellitus: data.diabetesMellitus ? data.diabetesMellitus === 'true' : null,
+    urineTest: data.urineTest || null,
+    bloodGlucoseNonFasting: num(data.bloodGlucoseNonFasting),
+    bloodGlucoseFasting: num(data.bloodGlucoseFasting),
+    hba1c: num(data.hba1c),
+    others: data.others || null,
+  }
+  const existingId = vitalData.value?.id
+  const vars = {
+    id: existingId ?? uuidv7(),
+    visitId: props.visitId,
+    patientName: props.patient.name,
+    recordedAt: new Date().toISOString(),
+    fields,
+  }
   try {
-    const db = getPowerSyncInstance()
-    const existingId = vitalData.value?.id ? String(vitalData.value.id) : null
-    if (!existingId) {
-      await db.execute(
-        `INSERT INTO vitals (
-          id, visit_id, recorded_at, height, weight, temperature, systolic, diastolic,
-          heart_rate, hemocue_count, diabetes_mellitus, urine_test,
-          blood_glucose_non_fasting, blood_glucose_fasting, hba1c, others, version, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)`,
-        [
-          uuidv7(),
-          props.visitId,
-          now,
-          num(data.height),
-          num(data.weight),
-          num(data.temperature),
-          num(data.systolic),
-          num(data.diastolic),
-          num(data.heartRate),
-          num(data.hemocueCount),
-          diabetes,
-          urineTest,
-          num(data.bloodGlucoseNonFasting),
-          num(data.bloodGlucoseFasting),
-          num(data.hba1c),
-          others,
-          now,
-        ],
-      )
-    }
-    else {
-      await db.execute(
-        `UPDATE vitals
-         SET height = ?, weight = ?, temperature = ?, systolic = ?, diastolic = ?,
-             heart_rate = ?, hemocue_count = ?, diabetes_mellitus = ?, urine_test = ?,
-             blood_glucose_non_fasting = ?, blood_glucose_fasting = ?, hba1c = ?, others = ?,
-             updated_at = ?
-         WHERE id = ?`,
-        [
-          num(data.height),
-          num(data.weight),
-          num(data.temperature),
-          num(data.systolic),
-          num(data.diastolic),
-          num(data.heartRate),
-          num(data.hemocueCount),
-          diabetes,
-          urineTest,
-          num(data.bloodGlucoseNonFasting),
-          num(data.bloodGlucoseFasting),
-          num(data.hba1c),
-          others,
-          now,
-          existingId,
-        ],
-      )
-    }
-    await refreshPendingCrudCount()
+    const outcome = existingId
+      ? await updateVitalsMutation.mutateAsync(vars)
+      : await createVitalsMutation.mutateAsync(vars)
     serviceTimer.saved()
-    baseline.value = JSON.stringify(form.value)
-    draft.clear(form.value)
-    toast.success('Vitals saved!')
+    baseline.value = JSON.stringify(data)
+    draft.clear(data)
+    notifySaved(outcome, 'Vitals saved successfully!')
   }
   catch (error) {
-    console.error('Error saving vitals:', error)
-    toast.error('Failed to save vitals.')
-  }
-  finally {
-    saving.value = false
+    toast.error(getApiErrorMessage(error, 'Failed to save vitals.'))
   }
 }
 

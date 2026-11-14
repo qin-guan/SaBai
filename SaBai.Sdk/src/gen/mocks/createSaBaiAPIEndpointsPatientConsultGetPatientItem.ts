@@ -9,7 +9,7 @@ import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsPatientConsultGetPatientItem<TData extends Partial<SaBaiAPIEndpointsPatientConsultGetPatientItem> = object>(data?: TData) {
   const defaultFakeData = {
-    id: faker.number.int(),
+    id: faker.string.uuid(),
     name: faker.string.alpha(),
     identificationNumber: faker.string.alpha(),
     contactNo: faker.string.alpha(),
@@ -20,12 +20,12 @@ export function createSaBaiAPIEndpointsPatientConsultGetPatientItem<TData extend
     hasBS2Card: faker.datatype.boolean(),
     hasSabaiCard: faker.datatype.boolean(),
     toGetReport: faker.datatype.boolean(),
-    villageCodeId: faker.number.int(),
+    villageCodeId: faker.string.uuid(),
     villageCode: faker.string.alpha(),
     displayId: faker.string.alpha(),
     filterString: faker.string.alpha(),
     lastVisitDate: faker.date.anytime().toISOString(),
-    lastVisitId: faker.number.int(),
+    lastVisitId: faker.string.uuid(),
   }
   return {
     ...defaultFakeData,

@@ -10,7 +10,7 @@ import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsAuditLogsListGetAuditLogEntryResponse<TData extends Partial<SaBaiAPIEndpointsAuditLogsListGetAuditLogEntryResponse> = object>(data?: TData) {
   const defaultFakeData = {
-    id: faker.number.int(),
+    id: faker.string.uuid(),
     occurredAt: faker.date.anytime().toISOString(),
     action: createSaBaiAPIDomainAuditAction(),
     userId: faker.string.uuid(),

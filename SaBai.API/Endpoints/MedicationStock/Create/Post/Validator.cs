@@ -1,5 +1,6 @@
 using FastEndpoints;
 using FluentValidation;
+using SaBai.API.Data;
 
 namespace SaBai.API.Endpoints.MedicationStock.Create.Post;
 
@@ -7,6 +8,7 @@ public sealed class Validator : Validator<Request>
 {
     public Validator()
     {
+        RuleFor(x => x.Id).ClientId();
         RuleFor(x => x.MedicationBrandId).NotEmpty();
         RuleFor(x => x.Quantity).GreaterThanOrEqualTo(0);
         RuleFor(x => x.Expiry).NotEqual(default(DateTimeOffset));

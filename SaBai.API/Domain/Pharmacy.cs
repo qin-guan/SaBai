@@ -1,12 +1,12 @@
 namespace SaBai.API.Domain;
 
-public sealed class MedicationActiveIngredient : ISyncEntity
+public sealed class MedicationActiveIngredient : ITrackedEntity
 {
     public Guid Id { get; set; } = Guid.CreateVersion7();
 
-    public int Version { get; set; } = 1;
-
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+
+    public Guid? UpdatedByUserId { get; set; }
 
     public required string Name { get; set; }
 
@@ -25,13 +25,13 @@ public sealed class MedicationActiveIngredient : ISyncEntity
     public ICollection<MedicationBrand> Brands { get; set; } = [];
 }
 
-public sealed class MedicationBrand : ISyncEntity
+public sealed class MedicationBrand : ITrackedEntity
 {
     public Guid Id { get; set; } = Guid.CreateVersion7();
 
-    public int Version { get; set; } = 1;
-
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+
+    public Guid? UpdatedByUserId { get; set; }
 
     public required string Name { get; set; }
 
@@ -46,13 +46,13 @@ public sealed class MedicationBrand : ISyncEntity
     public ICollection<Order> Orders { get; set; } = [];
 }
 
-public sealed class MedicationStock : ISyncEntity
+public sealed class MedicationStock : ITrackedEntity
 {
     public Guid Id { get; set; } = Guid.CreateVersion7();
 
-    public int Version { get; set; } = 1;
-
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+
+    public Guid? UpdatedByUserId { get; set; }
 
     public Guid MedicationBrandId { get; set; }
 
@@ -71,13 +71,13 @@ public sealed class MedicationStock : ISyncEntity
     public ICollection<StockChange> Changes { get; set; } = [];
 }
 
-public sealed class StockChange : ISyncEntity
+public sealed class StockChange : ITrackedEntity
 {
     public Guid Id { get; set; } = Guid.CreateVersion7();
 
-    public int Version { get; set; } = 1;
-
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+
+    public Guid? UpdatedByUserId { get; set; }
 
     public Guid StockId { get; set; }
 
@@ -98,13 +98,13 @@ public sealed class StockChange : ISyncEntity
     public ICollection<OrderItem> OrderItems { get; set; } = [];
 }
 
-public sealed class Order : ISyncEntity
+public sealed class Order : ITrackedEntity
 {
     public Guid Id { get; set; } = Guid.CreateVersion7();
 
-    public int Version { get; set; } = 1;
-
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+
+    public Guid? UpdatedByUserId { get; set; }
 
     public Guid ConsultId { get; set; }
 

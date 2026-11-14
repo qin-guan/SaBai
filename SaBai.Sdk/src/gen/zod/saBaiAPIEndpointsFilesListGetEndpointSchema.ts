@@ -6,7 +6,7 @@
 import * as z from 'zod'
 import { systemCollectionsGenericListOfSaBaiAPIEndpointsFilesListGetResponseSchema } from './systemCollectionsGenericListOfSaBaiAPIEndpointsFilesListGetResponseSchema'
 
-export const saBaiAPIEndpointsFilesListGetEndpointQueryPatientIdSchema = z.int32().nullish()
+export const saBaiAPIEndpointsFilesListGetEndpointQueryPatientIdSchema = z.uuid().nullish()
 
 export const saBaiAPIEndpointsFilesListGetEndpointQueryDeletedSchema = z.string().nullish()
 
@@ -21,6 +21,6 @@ export const saBaiAPIEndpointsFilesListGetEndpointResponseSchema = saBaiAPIEndpo
 export const saBaiAPIEndpointsFilesListGetEndpointErrorSchema = z.union([saBaiAPIEndpointsFilesListGetEndpointStatus401Schema, saBaiAPIEndpointsFilesListGetEndpointStatus403Schema])
 
 export const saBaiAPIEndpointsFilesListGetEndpointQuerySchema = z.object({
-  patientId: z.int32().nullish(),
+  patientId: z.uuid().nullish(),
   deleted: z.string().nullish(),
 })

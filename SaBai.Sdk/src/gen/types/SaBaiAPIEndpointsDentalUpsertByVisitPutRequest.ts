@@ -20,6 +20,12 @@ import type { SaBaiAPIDomainYesNoUnknownKey } from './SaBaiAPIDomainYesNoUnknown
 import type { SystemNullableOfSystemDateOnly } from './SystemNullableOfSystemDateOnly'
 
 export type SaBaiAPIEndpointsDentalUpsertByVisitPutRequest = {
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  id?: string | null;
   previousDentalVisit?: null | SaBaiAPIDomainYesNoUnknownKey;
   previousDentalTreatment?: null | SaBaiAPIDomainYesNoUnknownKey;
   toothache?: boolean | null;
@@ -133,4 +139,10 @@ export type SaBaiAPIEndpointsDentalUpsertByVisitPutRequest = {
    * @type string | undefined
    */
   remarks?: string | null;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  imageFileId?: string | null;
 };

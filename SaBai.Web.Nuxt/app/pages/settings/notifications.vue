@@ -21,7 +21,8 @@ import { Textarea } from '@/components/ui/textarea'
 useHead({ title: "Notifications · Sa'Bai" })
 
 const { config, status } = usePushNotifications()
-const { data: broadcasts, isLoading, isError, refetch } = useBroadcastsList()
+const { data: broadcasts, isLoading, isError: queryFailed, error: loadError, refetch } = useBroadcastsList()
+const isError = computed(() => queryFailed.value && !broadcasts.value)
 const sendMutation = useSendBroadcast()
 const deleteMutation = useDeleteBroadcast()
 
@@ -77,7 +78,7 @@ async function handleSend() {
     submitted.value = false
   }
   catch (err) {
-    toast.error(getApiErrorMessage(err, 'Unable to send push notification.'))
+    toast.error(describeLoadError(err, 'Unable to send push notification.'))
   }
 }
 
@@ -103,7 +104,7 @@ async function handleDelete() {
     activeToDelete.value = null
   }
   catch (err) {
-    toast.error(getApiErrorMessage(err, 'Unable to delete notification.'))
+    toast.error(describeLoadError(err, 'Unable to delete notification.'))
   }
 }
 
@@ -257,7 +258,7 @@ function formatDateTime(iso: string) {
       </template>
 
       <StateMessage v-if="isLoading" kind="loading" message="Loading notifications history..." />
-      <StateMessage v-else-if="isError" kind="error" message="Unable to load notifications history." />
+      <StateMessage v-else-if="isError" kind="error" :message="describeLoadError(loadError, 'Unable to load notifications history.')" />
       <StateMessage v-else-if="!broadcasts || broadcasts.length === 0" message="No notifications have been sent yet." />
 
       <Table v-else class="grid-table stack-table">

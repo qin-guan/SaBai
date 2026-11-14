@@ -6,10 +6,17 @@
 export type SaBaiAPIEndpointsChildVitalsCreatePostRequest = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer | undefined
+   * Format: `uuid`
+   * @type string | undefined
    */
-  vitalsId?: number;
+  id?: string | null;
+  /**
+   * @description
+   * Format: `uuid`
+   * @minLength 1
+   * @type string
+   */
+  vitalsId: string;
   grossMotor?: string | null;
   redReflex?: string | null;
   scoliosis?: string | null;

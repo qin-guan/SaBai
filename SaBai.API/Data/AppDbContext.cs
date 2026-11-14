@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata;
 using SaBai.API.Domain;
 
@@ -15,6 +16,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     : IdentityDbContext<StaffUser, IdentityRole<Guid>, Guid>(options),
         IDataProtectionKeyContext
 {
+    /// <summary>
+    /// The current request, if any. The context is pooled and cannot take request services in
+    /// its constructor; the accessor reads the request from an AsyncLocal, as the audit
+    /// interceptor does.
+    /// </summary>
+    private static readonly HttpContextAccessor CurrentRequest = new();
+
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
     public DbSet<VillageCode> VillageCodes => Set<VillageCode>();
@@ -62,10 +70,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<AuditLogEntry> AuditLogs => Set<AuditLogEntry>();
 
-    public DbSet<SyncConflict> SyncConflicts => Set<SyncConflict>();
-
-    public DbSet<SyncRejection> SyncRejections => Set<SyncRejection>();
-
     public DbSet<PatientConsent> PatientConsents => Set<PatientConsent>();
 
     public DbSet<DisclosureLog> DisclosureLogs => Set<DisclosureLog>();
@@ -79,7 +83,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
         StampRecordedAt();
-        StampSyncMetadata();
+        StampTrackedEntities();
         return base.SaveChanges(acceptAllChangesOnSuccess);
     }
 
@@ -89,7 +93,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     )
     {
         StampRecordedAt();
-        StampSyncMetadata();
+        StampTrackedEntities();
         return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
     }
 
@@ -115,15 +119,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
                     case DentalConsult { RecordedAt: null } dental:
                         dental.RecordedAt = now;
                         break;
-                    case Referral referral:
-                        if (referral.CreatedAt == default)
-                            referral.CreatedAt = now;
-                        referral.UpdatedAt = now;
+                    case Referral referral when referral.CreatedAt == default:
+                        referral.CreatedAt = now;
                         break;
-                    case ReferralPartner partner:
-                        if (partner.CreatedAt == default)
-                            partner.CreatedAt = now;
-                        partner.UpdatedAt = now;
+                    case ReferralPartner partner when partner.CreatedAt == default:
+                        partner.CreatedAt = now;
                         break;
                     case Tag tag:
                         if (tag.CreatedAt == default)
@@ -131,37 +131,81 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
                         break;
                 }
             }
-            else if (entry.State == EntityState.Modified)
+        }
+    }
+
+    /// <summary>
+    /// Stamps <see cref="ITrackedEntity.UpdatedAt"/> and <see cref="ITrackedEntity.UpdatedByUserId"/>
+    /// on every tracked record being inserted or changed, after checking the request's
+    /// <c>If-Unmodified-Since</c> precondition (see <see cref="CheckUnmodifiedSince"/>).
+    /// Only entries the change tracker already sees as Added or Modified are touched, so an
+    /// unchanged record never becomes Modified because of the stamp itself.
+    /// </summary>
+    private void StampTrackedEntities()
+    {
+        var http = CurrentRequest.HttpContext;
+        var userId = AuditActor.UserIdOf(http);
+        // Entries() runs DetectChanges, so property edits made since loading show as Modified.
+        var entries = ChangeTracker
+            .Entries<ITrackedEntity>()
+            .Where(x => x.State is EntityState.Added or EntityState.Modified or EntityState.Deleted)
+            .ToList();
+        if (entries.Count == 0)
+        {
+            return;
+        }
+
+        CheckUnmodifiedSince(http, userId, entries);
+
+        var now = DateTimeOffset.UtcNow;
+        foreach (var entry in entries)
+        {
+            if (entry.State is EntityState.Added or EntityState.Modified)
             {
-                switch (entry.Entity)
-                {
-                    case Referral referral:
-                        referral.UpdatedAt = now;
-                        break;
-                    case ReferralPartner partner:
-                        partner.UpdatedAt = now;
-                        break;
-                }
+                entry.Entity.UpdatedAt = now;
+                entry.Entity.UpdatedByUserId = userId;
             }
         }
     }
 
-    private void StampSyncMetadata()
+    /// <summary>
+    /// When the request carries <c>If-Unmodified-Since</c> (a queued offline write being
+    /// replayed), refuses to change or delete any tracked record that a different user changed
+    /// after that time. Inserts are never checked, and neither are records whose last change
+    /// was made by the same user or by no signed-in user.
+    /// </summary>
+    private static void CheckUnmodifiedSince(
+        HttpContext? http,
+        Guid? userId,
+        IEnumerable<EntityEntry<ITrackedEntity>> entries
+    )
     {
-        var now = DateTimeOffset.UtcNow;
-        foreach (var entry in ChangeTracker.Entries<ISyncEntity>())
+        if (http?.Request.GetTypedHeaders().IfUnmodifiedSince is not { } since)
         {
-            if (entry.State == EntityState.Added)
+            return;
+        }
+
+        var sinceSeconds = since.ToUnixTimeSeconds();
+        foreach (var entry in entries)
+        {
+            if (entry.State is not (EntityState.Modified or EntityState.Deleted))
             {
-                if (entry.Entity.Version <= 0)
-                    entry.Entity.Version = 1;
-                if (entry.Entity.UpdatedAt == default)
-                    entry.Entity.UpdatedAt = now;
+                continue;
             }
-            else if (entry.State == EntityState.Modified)
+
+            var changedAt = entry.Property(x => x.UpdatedAt).OriginalValue;
+            var changedBy = entry.Property(x => x.UpdatedByUserId).OriginalValue;
+            // HTTP dates have whole-second precision; compare at that precision.
+            if (changedAt.ToUnixTimeSeconds() > sinceSeconds && changedBy is { } by && by != userId)
             {
-                entry.Entity.Version++;
-                entry.Entity.UpdatedAt = now;
+                var key = entry.Metadata.FindPrimaryKey()!.Properties.Select(p =>
+                    entry.Property(p.Name).OriginalValue?.ToString()
+                );
+                throw new PreconditionFailedException(
+                    entry.Metadata.ClrType.Name,
+                    string.Join(",", key),
+                    changedAt
+                );
             }
         }
     }
@@ -171,7 +215,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         base.OnModelCreating(modelBuilder);
 
         // Every clinic table is keyed by a UUIDv7 that the entity sets when it is constructed,
-        // or that a client chose while offline (see Sync/). EF must store it as given and never
+        // or that the client chose and sent in the create request. EF must store it as given and never
         // generate one: with a generated key, a new child reached through a navigation that
         // already has a key would be taken for an existing row and UPDATEd instead of INSERTed.
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
@@ -218,8 +262,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             entity.Property(x => x.LatestFaceId).HasColumnName("RekognitionFaceId");
             entity.HasIndex(x => x.Name);
             entity.HasIndex(x => x.IdentificationNumber);
-            // The card number is assigned by Postgres on the first server write, never by
-            // clients (they may be offline), and is never changed afterwards.
+            // The card number is assigned by Postgres when the row is inserted, never by
+            // clients (they may create the patient offline), and is never changed afterwards.
             entity.Property(x => x.Number).UseIdentityByDefaultColumn();
             entity.Property(x => x.Number).Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Ignore);
             entity.HasIndex(x => x.Number).IsUnique();
@@ -516,24 +560,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             entity.HasIndex(x => x.UserId);
         });
 
-        modelBuilder.Entity<SyncConflict>(entity =>
-        {
-            entity.ToTable("SyncConflicts");
-            entity.Property(x => x.Table).HasMaxLength(100);
-            entity.Property(x => x.Field).HasMaxLength(100);
-            entity.HasIndex(x => x.ResolvedAt);
-            entity.HasIndex(x => new { x.Table, x.RecordId });
-        });
-
-        modelBuilder.Entity<SyncRejection>(entity =>
-        {
-            entity.ToTable("SyncRejections");
-            entity.Property(x => x.Table).HasMaxLength(100);
-            entity.Property(x => x.Operation).HasMaxLength(16);
-            entity.HasIndex(x => x.ResolvedAt);
-            entity.HasIndex(x => new { x.Table, x.RecordId });
-        });
-
         modelBuilder.Entity<PatientConsent>(entity =>
         {
             entity.Property(x => x.ConsentType).HasConversion<string>().HasMaxLength(64);
@@ -581,8 +607,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
         modelBuilder.Entity<PatientTag>(entity =>
         {
-            entity.HasKey(x => x.Id);
-            entity.HasIndex(x => new { x.PatientId, x.TagId }).IsUnique();
+            entity.HasKey(x => new { x.PatientId, x.TagId });
             entity
                 .HasOne(x => x.Patient)
                 .WithMany(x => x.PatientTags)

@@ -12,13 +12,13 @@ import { Textarea } from '@/components/ui/textarea'
  * jump to a step. The status is part of the same save.
  */
 const referralId = useRouteId('id')
-const { data: referral, isLoading, isError } = useReferral(referralId)
+const { data: referral, isLoading, isError, error } = useReferral(referralId)
 const { data: patient } = usePatient(() => referral.value?.patientId ?? null)
 const { data: partners } = useReferralPartnersList()
 const { data: staff } = useStaffUsersList()
 
 useHead({
-  title: () => (referral.value ? `Referral #${referral.value.id} · ${referral.value.patientName} · Sa'Bai` : "Referral · Sa'Bai"),
+  title: () => (referral.value ? `Referral · ${referral.value.patientName} · Sa'Bai` : "Referral · Sa'Bai"),
 })
 
 const formEl = ref<HTMLFormElement>()
@@ -67,16 +67,16 @@ const unsavedLabel = computed(() => changedSteps.value.map(s => REFERRAL_PART_LA
 <template>
   <div class="flex flex-col">
     <StateMessage v-if="isLoading" kind="loading" message="Loading referral…" />
-    <StateMessage v-else-if="isError || !referral" kind="error" message="This referral could not be loaded. Check the link, or go back to Referrals." />
+    <StateMessage v-else-if="!referral" kind="error" :message="isError ? describeLoadError(error, 'This referral could not be loaded. Check the link, or go back to Referrals.') : 'This referral could not be loaded. Check the link, or go back to Referrals.'" />
 
     <template v-else>
       <PageHeader
-        :title="`Referral #${referral.id} for ${referral.patientName}`"
+        :title="`Referral for ${referral.patientName}`"
         hide-title
         :breadcrumbs="[
           { label: 'Home', to: '/' },
           { label: 'Referrals', to: paths.referrals() },
-          { label: `Referral #${referral.id}` },
+          { label: 'Referral' },
         ]"
       />
 
@@ -89,7 +89,7 @@ const unsavedLabel = computed(() => changedSteps.value.map(s => REFERRAL_PART_LA
             {{ referral.patientName }}
           </p>
           <p class="text-xs touch:text-sm">
-            <PatientCode :village-code="referral.villageCode" :village-color-hex="referral.villageColorHex" :id="referral.patientNumber" />
+            <PatientCode :village-code="referral.villageCode" :village-color-hex="referral.villageColorHex" :id="referral.patientId" :display-id="referral.villageCode" />
           </p>
         </div>
       </section>
@@ -108,7 +108,7 @@ const unsavedLabel = computed(() => changedSteps.value.map(s => REFERRAL_PART_LA
                   <span v-if="changedSteps.includes('status')" class="text-warning">Unsaved</span>
                 </dt>
                 <dd v-if="form">
-                  <ReferralStateDropdown v-model="form.status.referralState" :referral-id="referral.id" :save-on-change="false" class="w-full!" />
+                  <ReferralStateDropdown v-model="form.status.referralState" :referral-id="referral.id" :patient-name="referral.patientName" :save-on-change="false" class="w-full!" />
                 </dd>
               </div>
               <div class="flex flex-col gap-0.5 px-3 py-2">

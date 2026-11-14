@@ -8,9 +8,9 @@ import type { SaBaiAPIFaceRecognitionStoredFaceArray } from './SaBaiAPIFaceRecog
 export type SaBaiAPIEndpointsPatientsFacesGetResponse = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  patientId: number;
+  patientId: string;
   faces: SaBaiAPIFaceRecognitionStoredFaceArray;
 };

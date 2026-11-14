@@ -56,7 +56,10 @@ Last synced upstream commit: `ba266fddbf481ba276f6ab249c713c63b3c9c9d2`
   and "Referrals" navigation item) and referral creation in the doctor's consult form are fully implemented
   in `SaBai.Web.Nuxt`. In addition, consult PDF generation and download (upstream #47) are integrated across
   the consult form, previous consults cards, and referral pages.
-- **Offline-first PowerSync & UUIDv7 PKs**: All clinic domain entities in `SaBai.API` use `Guid` (UUIDv7) primary and
+- **Offline use & UUIDv7 PKs**: All clinic domain entities in `SaBai.API` use `Guid` (UUIDv7) primary and
   foreign keys instead of `int` identity keys (while keeping `Patient.Number` as a Postgres identity column for
-  human-readable card IDs), enabling conflict-free offline creation in `SaBai.Web.Nuxt` via self-hosted PowerSync
-  (`SaBai.AppHost/powersync/`) and `SaBai.API/Endpoints/Sync/`.
+  human-readable card IDs). The REST API is the only read and write path. `SaBai.Web.Nuxt` keeps fetched data
+  in a persisted query cache and queues writes made offline, replaying them later. To support that, create
+  endpoints accept an optional client-chosen `id` and return the existing record when the same create is sent
+  again, and a write that carries `If-Unmodified-Since` gets `412 Precondition Failed` when it would change a
+  record another user changed after that time (`ITrackedEntity` and `AppDbContext`).

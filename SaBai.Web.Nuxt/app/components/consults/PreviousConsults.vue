@@ -8,22 +8,7 @@ const props = defineProps<{
   highlightConsultId?: string | null
 }>()
 const { data, isLoading } = useVisitConsults(() => props.visitId)
-
-interface LocalConsultItem {
-  id: string
-  date: string
-  doctorName?: string | null
-  doctorNickname?: string | null
-  pastMedicalHistory?: string | null
-  consultation?: string | null
-  treatmentPlan?: string | null
-  remarks?: string | null
-  referredFor?: string | null
-  referralNotes?: string | null
-  diagnoses: Array<{ id: string, details: string, category?: string | null }>
-}
-
-const consults = computed(() => (data.value?.consults ?? []) as unknown as LocalConsultItem[])
+const consults = computed(() => data.value ?? [])
 
 const hasHighlightedConsult = computed(() =>
   !!props.highlightConsultId && consults.value.some(c => c.id === props.highlightConsultId),
@@ -87,8 +72,8 @@ const trailing = [
               Referred consult
             </span>
           </div>
-          <p v-if="consult.doctorNickname || consult.doctorName" class="text-xs text-muted-foreground">
-            Dr. {{ consult.doctorNickname || consult.doctorName }}
+          <p v-if="consult.doctorNickname" class="text-xs text-muted-foreground">
+            Dr. {{ consult.doctorNickname }}
           </p>
         </div>
         <ConsultPdfLink :consult-id="consult.id" size="sm" />

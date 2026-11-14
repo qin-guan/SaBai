@@ -7,8 +7,8 @@ import * as z from 'zod'
 import { saBaiAPIDomainDiagnosisCategorySchema } from './saBaiAPIDomainDiagnosisCategorySchema'
 
 export const saBaiAPIEndpointsDiagnosesCreatePostResponseSchema = z.object({
-  id: z.int32(),
-  consultId: z.int32(),
+  id: z.uuid(),
+  consultId: z.uuid(),
   details: z.string(),
   category: z.union([z.null(), saBaiAPIDomainDiagnosisCategorySchema]),
 })

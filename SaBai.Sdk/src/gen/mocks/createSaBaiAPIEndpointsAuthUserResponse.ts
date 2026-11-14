@@ -14,6 +14,7 @@ export function createSaBaiAPIEndpointsAuthUserResponse<TData extends Partial<Sa
     email: faker.string.alpha(),
     nickname: faker.string.alpha(),
     roles: createSystemCollectionsGenericIReadOnlyListOfSystemString(),
+    tags: createSystemCollectionsGenericIReadOnlyListOfSystemString(),
     isLocked: faker.datatype.boolean(),
     lockoutEnd: faker.date.anytime().toISOString(),
     twoFactorEnabled: faker.datatype.boolean(),

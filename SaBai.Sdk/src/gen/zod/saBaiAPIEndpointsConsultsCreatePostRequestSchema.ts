@@ -8,7 +8,8 @@ import { systemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsCreateP
 import { systemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsCreatePostOrderInputSchema } from './systemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsCreatePostOrderInputSchema'
 
 export const saBaiAPIEndpointsConsultsCreatePostRequestSchema = z.object({
-  visitId: z.int32().gt(0).optional(),
+  id: z.uuid().nullish(),
+  visitId: z.uuid().min(1),
   pastMedicalHistory: z.string().nullish(),
   consultation: z.string().nullish(),
   treatmentPlan: z.string().nullish(),

@@ -16,6 +16,7 @@ export type SaBaiAPIEndpointsAuthUserResponse = {
   email: string | null;
   nickname: string;
   roles: SystemCollectionsGenericIReadOnlyListOfSystemString;
+  tags: SystemCollectionsGenericIReadOnlyListOfSystemString;
   isLocked: boolean;
   /**
    * @description

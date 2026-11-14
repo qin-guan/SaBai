@@ -1,127 +1,118 @@
-import type { PowerSyncDatabase } from '@powersync/web'
-import { useOnline } from '@vueuse/core'
-import type { SyncUploadResult } from '~/db/connector'
+import type { OutboxItem } from '~/offline/outbox'
+import { getPrefetchState, subscribePrefetch, type PrefetchState } from '~/offline/prefetch'
+import {
+  clearOfflineData,
+  discardOutboxItem,
+  downloadForOffline,
+  getOfflineRuntime,
+  getOfflineUser,
+  lastServerContactAt,
+  requeueOutboxItem,
+  subscribeOfflineUser,
+  syncNow as runSyncNow,
+} from '~/offline/runtime'
 
-const pendingCrudCount = ref(0)
-const attentionCount = ref(0)
-const connected = ref(false)
-const connecting = ref(false)
-const downloading = ref(false)
-const uploading = ref(false)
-const hasSynced = ref(false)
+/**
+ * Reactive view of the offline state of this device, shared by the header
+ * badge and the sync page: connection, the signed-in user's queued writes and
+ * the ones that need a person (conflict or rejected), other users' parked
+ * writes, replay progress and offline downloads.
+ */
+
+const items = shallowRef<readonly OutboxItem[]>([])
+/** Changes on sign-in/out, so own/parked are recomputed. */
+const userId = ref<string | undefined>(undefined)
+const replaying = ref(false)
+const isOffline = ref(false)
 const lastSyncedAt = ref<Date | null>(null)
-const lastError = ref<string | null>(null)
-const lastUploadResult = ref<SyncUploadResult | null>(null)
+const prefetch = shallowRef<PrefetchState>(getPrefetchState())
+let bound = false
 
-let dbInstance: PowerSyncDatabase | null = null
-
-export function setPowerSyncInstance(db: PowerSyncDatabase) {
-  dbInstance = db
+function isOwnItem(item: OutboxItem): boolean {
+  void userId.value // reactive dependency
+  return import.meta.client ? getOfflineRuntime().outbox.isOwn(item) : false
 }
 
-export function getPowerSyncInstance(): PowerSyncDatabase {
-  if (!dbInstance) {
-    throw new Error('PowerSync database has not been initialized yet.')
-  }
-  return dbInstance
-}
-
-export async function refreshPendingCrudCount(): Promise<number> {
-  if (!dbInstance) return 0
-  try {
-    const row = await dbInstance.getOptional<{ c: number }>('SELECT COUNT(*) AS c FROM ps_crud')
-    pendingCrudCount.value = Number(row?.c ?? 0)
-    return pendingCrudCount.value
-  } catch {
-    return pendingCrudCount.value
+function refreshLastSynced() {
+  // "Synced" means the server was reached and none of the user's writes is waiting.
+  const contact = lastServerContactAt()
+  if (contact !== undefined && !items.value.some(item => item.status === 'queued' && isOwnItem(item))) {
+    lastSyncedAt.value = new Date(contact)
   }
 }
 
-export async function refreshAttentionCount(): Promise<number> {
-  if (typeof navigator !== 'undefined' && !navigator.onLine) {
-    return attentionCount.value
+function bind() {
+  if (bound || !import.meta.client) return
+  const { outbox, connectivity } = getOfflineRuntime()
+  bound = true
+  const syncOutbox = () => {
+    items.value = outbox.getItems()
+    replaying.value = outbox.isReplaying()
+    refreshLastSynced()
   }
-  try {
-    const res = await fetch('/api/sync/attention', { credentials: 'include' })
-    if (!res.ok) return attentionCount.value
-    const data = (await res.json()) as {
-      conflicts: unknown[]
-      rejections: unknown[]
-      duplicatePatients: unknown[]
-    }
-    attentionCount.value =
-      (data.conflicts?.length ?? 0)
-      + (data.rejections?.length ?? 0)
-      + (data.duplicatePatients?.length ?? 0)
-    return attentionCount.value
-  } catch {
-    return attentionCount.value
-  }
-}
-
-export function updateSyncStatusFromSdk(status: {
-  connected: boolean
-  connecting: boolean
-  lastSyncedAt?: Date
-  hasSynced?: boolean
-  dataFlowStatus?: {
-    downloading?: boolean
-    uploading?: boolean
-    downloadError?: Error
-    uploadError?: Error
-  }
-}) {
-  connected.value = status.connected
-  connecting.value = status.connecting
-  downloading.value = Boolean(status.dataFlowStatus?.downloading)
-  uploading.value = Boolean(status.dataFlowStatus?.uploading)
-  hasSynced.value = Boolean(status.hasSynced)
-  if (status.lastSyncedAt) {
-    lastSyncedAt.value = status.lastSyncedAt
-  }
-  const err = status.dataFlowStatus?.uploadError ?? status.dataFlowStatus?.downloadError
-  lastError.value = err ? err.message : null
-  void refreshPendingCrudCount()
-}
-
-export function recordUploadResult(result: SyncUploadResult) {
-  lastUploadResult.value = result
-  if (result.conflicts > 0 || result.rejections.length > 0) {
-    void refreshAttentionCount()
-  }
+  syncOutbox()
+  outbox.subscribe(syncOutbox)
+  userId.value = getOfflineUser()?.id
+  subscribeOfflineUser((user) => {
+    userId.value = user?.id
+  })
+  isOffline.value = connectivity.getState().offline
+  connectivity.subscribe((state) => {
+    isOffline.value = state.offline
+    refreshLastSynced()
+  })
+  subscribePrefetch((state) => {
+    prefetch.value = state
+    refreshLastSynced()
+  })
+  // Every successful request counts as contact; pick that up without an event per request.
+  setInterval(refreshLastSynced, 10_000)
 }
 
 export function useSyncState() {
-  const isOnline = useOnline()
+  bind()
+
+  const ownItems = computed(() => items.value.filter(isOwnItem))
+  const parkedItems = computed(() => items.value.filter(item => !isOwnItem(item)))
+  const pendingCount = computed(() => ownItems.value.filter(item => item.status === 'queued').length)
+  const attentionCount = computed(() =>
+    ownItems.value.filter(item => item.status !== 'queued').length + parkedItems.value.length)
 
   const statusLabel = computed(() => {
-    if (!isOnline.value) {
-      return pendingCrudCount.value > 0
-        ? `Offline (${pendingCrudCount.value} queued)`
-        : 'Offline'
-    }
-    if (uploading.value) return 'Syncing changes…'
-    if (downloading.value) return 'Downloading…'
-    if (connecting.value) return 'Connecting…'
-    if (pendingCrudCount.value > 0) return `Pending (${pendingCrudCount.value})`
-    if (connected.value) return 'Synced'
-    return 'Idle'
+    if (attentionCount.value > 0) return `${attentionCount.value} need${attentionCount.value === 1 ? 's' : ''} attention`
+    if (isOffline.value) return pendingCount.value > 0 ? `Offline · ${pendingCount.value} pending` : 'Offline'
+    if (replaying.value) return 'Syncing…'
+    if (pendingCount.value > 0) return `${pendingCount.value} pending`
+    return 'All synced'
   })
 
   return {
-    isOnline,
-    connected: readonly(connected),
-    connecting: readonly(connecting),
-    downloading: readonly(downloading),
-    uploading: readonly(uploading),
-    hasSynced: readonly(hasSynced),
+    /** Requests are failing to reach the server (or the browser reports no network). */
+    isOffline: readonly(isOffline),
+    isOnline: computed(() => !isOffline.value),
+    /** The signed-in user's writes waiting to be sent, including ones held behind a conflict. */
+    pendingCount,
+    /** The user's conflict + rejected writes, plus other users' parked writes: someone has to act. */
+    attentionCount,
+    replaying: readonly(replaying),
+    /** When the server was last reached with none of the user's writes left to send. */
     lastSyncedAt: readonly(lastSyncedAt),
-    lastError: readonly(lastError),
-    pendingCrudCount: readonly(pendingCrudCount),
-    attentionCount: readonly(attentionCount),
-    lastUploadResult: readonly(lastUploadResult),
+    /** Every outbox item (every user's), in order. */
+    items: computed(() => items.value),
+    /** The signed-in user's items, in the order they will be sent. */
+    ownItems,
+    /** Other users' items, kept until they sign in again on this device. */
+    parkedItems,
     statusLabel,
-    refreshPendingCrudCount,
-    refreshAttentionCount,
+    /** Offline download progress. */
+    prefetch: readonly(prefetch),
+    /** Checks the connection, sends queued writes and refreshes data. Resolves whether the server was reached. */
+    syncNow: runSyncNow,
+    downloadForOffline,
+    retry: (id: string) => requeueOutboxItem(id),
+    overwrite: (id: string) => requeueOutboxItem(id, { overwrite: true }),
+    /** Drops an item (the change is lost) and takes its edit off the screen, also offline. */
+    discard: (id: string) => discardOutboxItem(id),
+    clearOfflineData,
   }
 }

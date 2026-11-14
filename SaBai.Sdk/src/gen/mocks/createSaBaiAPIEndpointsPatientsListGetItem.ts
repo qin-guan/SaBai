@@ -5,11 +5,12 @@
 
 import type { SaBaiAPIEndpointsPatientsListGetItem } from '../types/SaBaiAPIEndpointsPatientsListGetItem'
 import { createSaBaiAPIDomainGender } from './createSaBaiAPIDomainGender'
+import { createSystemCollectionsGenericIReadOnlyListOfSystemString } from './createSystemCollectionsGenericIReadOnlyListOfSystemString'
 import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsPatientsListGetItem<TData extends Partial<SaBaiAPIEndpointsPatientsListGetItem> = object>(data?: TData) {
   const defaultFakeData = {
-    id: faker.number.int(),
+    id: faker.string.uuid(),
     name: faker.string.alpha(),
     identificationNumber: faker.string.alpha(),
     contactNo: faker.string.alpha(),
@@ -20,14 +21,15 @@ export function createSaBaiAPIEndpointsPatientsListGetItem<TData extends Partial
     hasBS2Card: faker.datatype.boolean(),
     hasSabaiCard: faker.datatype.boolean(),
     toGetReport: faker.datatype.boolean(),
-    villageCodeId: faker.number.int(),
+    villageCodeId: faker.string.uuid(),
     villageCode: faker.string.alpha(),
     displayId: faker.string.alpha(),
     filterString: faker.string.alpha(),
     lastVisitDate: faker.date.anytime().toISOString(),
-    lastVisitId: faker.number.int(),
+    lastVisitId: faker.string.uuid(),
     hasPhoto: faker.datatype.boolean(),
     hasFace: faker.datatype.boolean(),
+    tags: createSystemCollectionsGenericIReadOnlyListOfSystemString(),
   }
   return {
     ...defaultFakeData,

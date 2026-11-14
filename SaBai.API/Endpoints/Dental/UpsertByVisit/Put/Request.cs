@@ -8,6 +8,9 @@ namespace SaBai.API.Endpoints.Dental.UpsertByVisit.Put;
 /// </summary>
 public sealed record Request
 {
+    /// <summary>Id for the record when this request creates it, chosen by the client; generated when omitted. Ignored when the visit already has one.</summary>
+    public Guid? Id { get; init; }
+
     public Guid VisitId { get; init; }
 
     public YesNoUnknown? PreviousDentalVisit { get; init; }

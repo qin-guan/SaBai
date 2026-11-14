@@ -6,16 +6,16 @@
 export type SaBaiAPIEndpointsFilesListGetResponse = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  id: number;
+  id: string;
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  patientId: number;
+  patientId: string | null;
   fileName: string;
   storedFileName: string;
   description: string;

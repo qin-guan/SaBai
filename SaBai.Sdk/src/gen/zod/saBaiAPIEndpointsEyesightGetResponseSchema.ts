@@ -6,8 +6,8 @@
 import * as z from 'zod'
 
 export const saBaiAPIEndpointsEyesightGetResponseSchema = z.object({
-  id: z.int32(),
-  visitId: z.int32(),
+  id: z.uuid(),
+  visitId: z.uuid(),
   leftEyeDegree: z.string().nullable(),
   rightEyeDegree: z.string().nullable(),
   leftEyePinhole: z.string().nullable(),

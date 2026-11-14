@@ -10,7 +10,7 @@ import { fakerEN as faker } from '@faker-js/faker'
 export function createSaBaiAPIEndpointsAuditLogsListGetResponse<TData extends Partial<SaBaiAPIEndpointsAuditLogsListGetResponse> = object>(data?: TData) {
   const defaultFakeData = {
     entries: createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsAuditLogsListGetAuditLogEntryResponse(),
-    nextBefore: faker.number.int(),
+    nextBefore: faker.string.uuid(),
   }
   return {
     ...defaultFakeData,

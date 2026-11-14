@@ -6,10 +6,17 @@
 export type SaBaiAPIEndpointsEyesightCreatePostRequest = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer | undefined
+   * Format: `uuid`
+   * @type string | undefined
    */
-  visitId?: number;
+  id?: string | null;
+  /**
+   * @description
+   * Format: `uuid`
+   * @minLength 1
+   * @type string
+   */
+  visitId: string;
   leftEyeDegree?: string | null;
   rightEyeDegree?: string | null;
   leftEyePinhole?: string | null;

@@ -8,8 +8,8 @@ import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsPubertyUpdatePatchResponse<TData extends Partial<SaBaiAPIEndpointsPubertyUpdatePatchResponse> = object>(data?: TData) {
   const defaultFakeData = {
-    id: faker.number.int(),
-    vitalsId: faker.number.int(),
+    id: faker.string.uuid(),
+    vitalsId: faker.string.uuid(),
     pubarche: faker.datatype.boolean(),
     pubarcheAge: faker.number.int(),
     thelarche: faker.datatype.boolean(),

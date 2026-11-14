@@ -6,16 +6,16 @@
 export type SaBaiAPIEndpointsPubertyUpdateByVitalsPatchResponse = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  id: number;
+  id: string;
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  vitalsId: number;
+  vitalsId: string;
   pubarche: boolean | null;
   /**
    * @description

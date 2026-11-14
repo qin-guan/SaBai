@@ -1,14 +1,14 @@
 namespace SaBai.API.Domain;
 
-public sealed class Consult : ISyncEntity
+public sealed class Consult : ITrackedEntity
 {
     public static readonly TimeSpan EditWindow = TimeSpan.FromHours(24);
 
     public Guid Id { get; set; } = Guid.CreateVersion7();
 
-    public int Version { get; set; } = 1;
-
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+
+    public Guid? UpdatedByUserId { get; set; }
 
     public DateTimeOffset Date { get; set; }
 
@@ -46,13 +46,13 @@ public sealed class Consult : ISyncEntity
     public bool IsEditLocked(DateTimeOffset now) => now - Date > EditWindow;
 }
 
-public sealed class Diagnosis : ISyncEntity
+public sealed class Diagnosis : ITrackedEntity
 {
     public Guid Id { get; set; } = Guid.CreateVersion7();
 
-    public int Version { get; set; } = 1;
-
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+
+    public Guid? UpdatedByUserId { get; set; }
 
     [PhiData]
     public required string Details { get; set; }
@@ -73,11 +73,9 @@ public sealed class Diagnosis : ISyncEntity
     public Consult Consult { get; set; } = null!;
 }
 
-public sealed class ReferralPartner : ISyncEntity
+public sealed class ReferralPartner : ITrackedEntity
 {
     public Guid Id { get; set; } = Guid.CreateVersion7();
-
-    public int Version { get; set; } = 1;
 
     public required string Name { get; set; }
 
@@ -89,16 +87,18 @@ public sealed class ReferralPartner : ISyncEntity
 
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
 
+    public Guid? UpdatedByUserId { get; set; }
+
     public ICollection<Referral> Referrals { get; set; } = [];
 }
 
-public sealed class Referral : ISyncEntity
+public sealed class Referral : ITrackedEntity
 {
     public Guid Id { get; set; } = Guid.CreateVersion7();
 
-    public int Version { get; set; } = 1;
-
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+
+    public Guid? UpdatedByUserId { get; set; }
 
     public required string ReferredFor { get; set; }
 

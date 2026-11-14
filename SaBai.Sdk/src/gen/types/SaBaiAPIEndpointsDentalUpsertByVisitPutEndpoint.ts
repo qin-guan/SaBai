@@ -10,10 +10,10 @@ import type { SaBaiAPIEndpointsDentalUpsertByVisitPutRequest } from './SaBaiAPIE
 export type SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointPath = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  visitId: number;
+  visitId: string;
 };
 
 export type SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointStatus200 = SaBaiAPIEndpointsDentalDentalConsultResponse;

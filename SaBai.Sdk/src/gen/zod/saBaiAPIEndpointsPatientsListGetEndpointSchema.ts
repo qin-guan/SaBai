@@ -10,6 +10,8 @@ export const saBaiAPIEndpointsPatientsListGetEndpointQueryNameSchema = z.string(
 
 export const saBaiAPIEndpointsPatientsListGetEndpointQueryVillageCodeSchema = z.string().nullish()
 
+export const saBaiAPIEndpointsPatientsListGetEndpointQueryTagSchema = z.string().nullish()
+
 export const saBaiAPIEndpointsPatientsListGetEndpointStatus200Schema = saBaiAPIEndpointsPatientsListGetResponseSchema
 
 export const saBaiAPIEndpointsPatientsListGetEndpointStatus401Schema = z.unknown()
@@ -23,4 +25,5 @@ export const saBaiAPIEndpointsPatientsListGetEndpointErrorSchema = z.union([saBa
 export const saBaiAPIEndpointsPatientsListGetEndpointQuerySchema = z.object({
   name: z.string().nullish(),
   villageCode: z.string().nullish(),
+  tag: z.string().nullish(),
 })

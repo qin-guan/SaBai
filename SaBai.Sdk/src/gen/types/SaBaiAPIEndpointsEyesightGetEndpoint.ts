@@ -9,10 +9,10 @@ import type { SaBaiAPIEndpointsEyesightGetResponse } from './SaBaiAPIEndpointsEy
 export type SaBaiAPIEndpointsEyesightGetEndpointPath = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  id: number;
+  id: string;
 };
 
 export type SaBaiAPIEndpointsEyesightGetEndpointStatus200 = SaBaiAPIEndpointsEyesightGetResponse;

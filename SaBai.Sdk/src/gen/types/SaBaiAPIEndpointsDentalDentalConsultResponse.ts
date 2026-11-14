@@ -23,16 +23,16 @@ import type { SystemNullableOfSystemDateOnly } from './SystemNullableOfSystemDat
 export type SaBaiAPIEndpointsDentalDentalConsultResponse = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  id: number;
+  id: string;
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  visitId: number;
+  visitId: string;
   previousDentalVisit?: null | SaBaiAPIDomainYesNoUnknownKey;
   previousDentalTreatment?: null | SaBaiAPIDomainYesNoUnknownKey;
   toothache?: boolean | null;
@@ -81,6 +81,12 @@ export type SaBaiAPIEndpointsDentalDentalConsultResponse = {
   referralNotes?: string | null;
   recommendedFacility?: string | null;
   remarks?: string | null;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  imageFileId?: string | null;
   /**
    * @description
    * Format: `date-time`

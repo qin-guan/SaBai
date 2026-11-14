@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { LocalPatientSummary } from '~/db/types'
+import type { PatientDetail } from '~/composables/usePatientData'
 import { Badge } from '@/components/ui/badge'
 
 /**
@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
  * flagged in red.
  */
 const props = defineProps<{
-  patient: LocalPatientSummary
+  patient: PatientDetail
   /** Link the name here (the patient record, from station screens). */
   to?: string
 }>()

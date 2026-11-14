@@ -9,8 +9,8 @@ export type SaBaiAPIEndpointsAuditLogsListGetResponse = {
   entries: SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsAuditLogsListGetAuditLogEntryResponse;
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  nextBefore: number | null;
+  nextBefore: string | null;
 };

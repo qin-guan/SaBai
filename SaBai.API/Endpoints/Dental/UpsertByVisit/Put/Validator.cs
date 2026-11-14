@@ -1,5 +1,6 @@
 using FastEndpoints;
 using FluentValidation;
+using SaBai.API.Data;
 
 namespace SaBai.API.Endpoints.Dental.UpsertByVisit.Put;
 
@@ -7,6 +8,7 @@ public sealed class Validator : Validator<Request>
 {
     public Validator()
     {
+        RuleFor(x => x.Id).ClientId();
         RuleFor(x => x.VisitId).NotEmpty();
         RuleFor(x => x.PreviousDentalVisit).IsInEnum();
         RuleFor(x => x.PreviousDentalTreatment).IsInEnum();

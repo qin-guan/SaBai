@@ -8,20 +8,20 @@ import type { SaBaiAPIDomainReferralStateKey } from './SaBaiAPIDomainReferralSta
 export type SaBaiAPIEndpointsReferralsUpdateStatePatchResponse = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  id: number;
+  id: string;
   referredFor: string;
   referralNotes: string | null;
   referralState: SaBaiAPIDomainReferralStateKey;
   referralOutcome: string | null;
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  consultId: number;
+  consultId: string;
   /**
    * @description
    * Format: `date-time`
@@ -42,10 +42,10 @@ export type SaBaiAPIEndpointsReferralsUpdateStatePatchResponse = {
   doctorId: string;
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  patientId: number;
+  patientId: string;
   patientName: string;
   doctorNickname: string;
 };

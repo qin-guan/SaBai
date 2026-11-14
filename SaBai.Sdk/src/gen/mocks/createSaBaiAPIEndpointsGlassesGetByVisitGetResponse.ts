@@ -8,8 +8,8 @@ import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsGlassesGetByVisitGetResponse<TData extends Partial<SaBaiAPIEndpointsGlassesGetByVisitGetResponse> = object>(data?: TData) {
   const defaultFakeData = {
-    id: faker.number.int(),
-    visitId: faker.number.int(),
+    id: faker.string.uuid(),
+    visitId: faker.string.uuid(),
     leftGlassesDegree: faker.string.alpha(),
     rightGlassesDegree: faker.string.alpha(),
     notes: faker.string.alpha(),

@@ -9,6 +9,7 @@ export type SaBaiAPIEndpointsAuthUsersListGetEndpointQuery = {
   role?: string | null;
   email?: string | null;
   isLocked?: boolean | null;
+  tag?: string | null;
 };
 
 export type SaBaiAPIEndpointsAuthUsersListGetEndpointStatus200 = SaBaiAPIEndpointsAuthUsersListGetResponse;

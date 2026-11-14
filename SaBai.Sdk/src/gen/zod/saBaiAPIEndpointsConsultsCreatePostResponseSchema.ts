@@ -7,8 +7,8 @@ import * as z from 'zod'
 import { systemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsCreatePostDiagnosisItemSchema } from './systemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsConsultsCreatePostDiagnosisItemSchema'
 
 export const saBaiAPIEndpointsConsultsCreatePostResponseSchema = z.object({
-  id: z.int32(),
-  visitId: z.int32(),
+  id: z.uuid(),
+  visitId: z.uuid(),
   date: z.iso.datetime(),
   pastMedicalHistory: z.string().nullable(),
   consultation: z.string().nullable(),

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { PhCaretRight, PhIdentificationCard, PhPencilSimple } from '@phosphor-icons/vue'
-import type { LocalPatientSummary, LocalVisitSummary } from '~/db/types'
+import type { SaBaiAPIEndpointsPatientsGetResponse, SaBaiAPIEndpointsPatientsVisitsGetItem } from '@sabai/sdk/types'
 import type { Crumb } from '~/components/app/PageHeader.vue'
 import type { StationKey } from '~/utils/journey'
 import { Button } from '@/components/ui/button'
@@ -16,9 +16,9 @@ import { Skeleton } from '@/components/ui/skeleton'
 const props = defineProps<{
   station: StationKey
   title: string
-  patient: LocalPatientSummary | null | undefined
-  visits: LocalVisitSummary[] | undefined
-  selectedVisit: LocalVisitSummary | null
+  patient: SaBaiAPIEndpointsPatientsGetResponse | undefined
+  visits: SaBaiAPIEndpointsPatientsVisitsGetItem[] | undefined
+  selectedVisit: SaBaiAPIEndpointsPatientsVisitsGetItem | null
   isLoading: boolean
   summaryPrefix?: string
   emptyMessage: string

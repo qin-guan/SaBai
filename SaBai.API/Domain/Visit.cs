@@ -1,14 +1,14 @@
 namespace SaBai.API.Domain;
 
-public sealed class Visit : ISyncEntity
+public sealed class Visit : ITrackedEntity
 {
     public const string StartedStatus = "started";
 
     public Guid Id { get; set; } = Guid.CreateVersion7();
 
-    public int Version { get; set; } = 1;
-
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+
+    public Guid? UpdatedByUserId { get; set; }
 
     public Guid PatientId { get; set; }
 

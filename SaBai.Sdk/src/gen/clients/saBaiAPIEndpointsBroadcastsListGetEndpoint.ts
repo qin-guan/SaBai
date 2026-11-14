@@ -8,7 +8,7 @@ import type { SaBaiAPIEndpointsBroadcastsListGetEndpointOptions, SaBaiAPIEndpoin
 import { client, withUnwrap } from '../.kubb/client'
 
 /**
- * @summary List broadcasts
+ * @summary List broadcasts, newest first
  * {@link /broadcasts}
  */
 export function saBaiAPIEndpointsBroadcastsListGetEndpoint<ThrowOnError extends boolean = true>(options: Options<SaBaiAPIEndpointsBroadcastsListGetEndpointOptions, ThrowOnError> = {}): Unwrappable<RequestResult<SaBaiAPIEndpointsBroadcastsListGetEndpointResponses, ThrowOnError>> {

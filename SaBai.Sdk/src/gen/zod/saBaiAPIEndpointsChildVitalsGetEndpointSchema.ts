@@ -7,7 +7,7 @@ import * as z from 'zod'
 import { fastEndpointsProblemDetailsSchema } from './fastEndpointsProblemDetailsSchema'
 import { saBaiAPIEndpointsChildVitalsGetResponseSchema } from './saBaiAPIEndpointsChildVitalsGetResponseSchema'
 
-export const saBaiAPIEndpointsChildVitalsGetEndpointPathIdSchema = z.int32()
+export const saBaiAPIEndpointsChildVitalsGetEndpointPathIdSchema = z.uuid()
 
 export const saBaiAPIEndpointsChildVitalsGetEndpointStatus200Schema = saBaiAPIEndpointsChildVitalsGetResponseSchema
 
@@ -22,5 +22,5 @@ export const saBaiAPIEndpointsChildVitalsGetEndpointResponseSchema = saBaiAPIEnd
 export const saBaiAPIEndpointsChildVitalsGetEndpointErrorSchema = z.union([saBaiAPIEndpointsChildVitalsGetEndpointStatus400Schema, saBaiAPIEndpointsChildVitalsGetEndpointStatus401Schema, saBaiAPIEndpointsChildVitalsGetEndpointStatus403Schema])
 
 export const saBaiAPIEndpointsChildVitalsGetEndpointPathSchema = z.object({
-  id: z.int32(),
+  id: z.uuid(),
 })

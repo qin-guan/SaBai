@@ -38,8 +38,9 @@ export type SaBaiAPIEndpointsPatientsUpdatePatchRequest = {
   toGetReport?: boolean | null;
   /**
    * @description
-   * Format: `int32`
-   * @type integer | undefined
+   * Format: `uuid`
+   * @type string | undefined
    */
-  villageCodeId?: number | null;
+  villageCodeId?: string | null;
+  tags?: string[] | null;
 };

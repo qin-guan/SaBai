@@ -4,14 +4,15 @@
 */
 
 import type { SaBaiAPIDomainGenderKey } from './SaBaiAPIDomainGender'
+import type { SystemCollectionsGenericIReadOnlyListOfSystemString } from './SystemCollectionsGenericIReadOnlyListOfSystemString'
 
 export type SaBaiAPIEndpointsPatientsCreatePostResponse = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  id: number;
+  id: string;
   name: string;
   identificationNumber: string | null;
   contactNo: string | null;
@@ -29,10 +30,10 @@ export type SaBaiAPIEndpointsPatientsCreatePostResponse = {
   toGetReport: boolean;
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  villageCodeId: number | null;
+  villageCodeId: string | null;
   villageCode: string | null;
   displayId: string;
   filterString: string;
@@ -44,22 +45,23 @@ export type SaBaiAPIEndpointsPatientsCreatePostResponse = {
   lastVisitDate: string;
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  lastVisitId: number;
+  lastVisitId: string;
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  visitId: number;
+  visitId: string;
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  vitalsId: number | null;
+  vitalsId: string | null;
   hasPhoto: boolean;
   hasFace: boolean;
+  tags: SystemCollectionsGenericIReadOnlyListOfSystemString;
 };

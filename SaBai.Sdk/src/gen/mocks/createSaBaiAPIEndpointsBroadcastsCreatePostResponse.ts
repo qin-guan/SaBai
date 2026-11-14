@@ -9,7 +9,7 @@ import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsBroadcastsCreatePostResponse<TData extends Partial<SaBaiAPIEndpointsBroadcastsCreatePostResponse> = object>(data?: TData) {
   const defaultFakeData = {
-    id: faker.number.int(),
+    id: faker.string.uuid(),
     title: faker.string.alpha(),
     body: faker.string.alpha(),
     severity: createSaBaiAPIDomainBroadcastSeverity(),

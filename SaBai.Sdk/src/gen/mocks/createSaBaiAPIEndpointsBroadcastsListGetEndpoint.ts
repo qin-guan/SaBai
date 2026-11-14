@@ -3,15 +3,34 @@
 * Do not edit manually.
 */
 
-import type { SaBaiAPIEndpointsBroadcastsListGetEndpointResponse, SaBaiAPIEndpointsBroadcastsListGetEndpointStatus200 } from '../types/SaBaiAPIEndpointsBroadcastsListGetEndpoint'
+import type { SaBaiAPIEndpointsBroadcastsListGetEndpointQuery, SaBaiAPIEndpointsBroadcastsListGetEndpointResponse, SaBaiAPIEndpointsBroadcastsListGetEndpointStatus200, SaBaiAPIEndpointsBroadcastsListGetEndpointStatus400 } from '../types/SaBaiAPIEndpointsBroadcastsListGetEndpoint'
+import { createFastEndpointsProblemDetails } from './createFastEndpointsProblemDetails'
 import { createSystemCollectionsGenericListOfSaBaiAPIEndpointsBroadcastsListGetResponse } from './createSystemCollectionsGenericListOfSaBaiAPIEndpointsBroadcastsListGetResponse'
 import { fakerEN as faker } from '@faker-js/faker'
+
+export function createSaBaiAPIEndpointsBroadcastsListGetEndpointQuery<TData extends Partial<SaBaiAPIEndpointsBroadcastsListGetEndpointQuery> = object>(data?: TData) {
+  const defaultFakeData = {
+    limit: faker.number.int(),
+    since: faker.string.uuid(),
+  }
+  return {
+    ...defaultFakeData,
+    ...(data || {}),
+  } as Omit<typeof defaultFakeData, keyof NoInfer<TData>> & NoInfer<TData>
+}
 
 /**
  * @description Success
  */
 export function createSaBaiAPIEndpointsBroadcastsListGetEndpointStatus200(data?: Partial<SaBaiAPIEndpointsBroadcastsListGetEndpointStatus200>): SaBaiAPIEndpointsBroadcastsListGetEndpointStatus200 {
   return createSystemCollectionsGenericListOfSaBaiAPIEndpointsBroadcastsListGetResponse(data) as SaBaiAPIEndpointsBroadcastsListGetEndpointStatus200
+}
+
+/**
+ * @description Bad Request
+ */
+export function createSaBaiAPIEndpointsBroadcastsListGetEndpointStatus400(data?: Partial<SaBaiAPIEndpointsBroadcastsListGetEndpointStatus400>): SaBaiAPIEndpointsBroadcastsListGetEndpointStatus400 {
+  return createFastEndpointsProblemDetails(data) as SaBaiAPIEndpointsBroadcastsListGetEndpointStatus400
 }
 
 /**
@@ -29,5 +48,5 @@ export function createSaBaiAPIEndpointsBroadcastsListGetEndpointStatus403() {
 }
 
 export function createSaBaiAPIEndpointsBroadcastsListGetEndpointResponse(data?: Partial<SaBaiAPIEndpointsBroadcastsListGetEndpointResponse>): SaBaiAPIEndpointsBroadcastsListGetEndpointResponse {
-  return (data ?? faker.helpers.arrayElement([createSaBaiAPIEndpointsBroadcastsListGetEndpointStatus200(), createSaBaiAPIEndpointsBroadcastsListGetEndpointStatus401(), createSaBaiAPIEndpointsBroadcastsListGetEndpointStatus403()])) as SaBaiAPIEndpointsBroadcastsListGetEndpointResponse
+  return (data ?? faker.helpers.arrayElement([createSaBaiAPIEndpointsBroadcastsListGetEndpointStatus200(), createSaBaiAPIEndpointsBroadcastsListGetEndpointStatus400(), createSaBaiAPIEndpointsBroadcastsListGetEndpointStatus401(), createSaBaiAPIEndpointsBroadcastsListGetEndpointStatus403()])) as SaBaiAPIEndpointsBroadcastsListGetEndpointResponse
 }

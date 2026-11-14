@@ -3,31 +3,39 @@
 * Do not edit manually.
 */
 
+import type { SaBaiAPIDomainGuardiansContactedKey } from './SaBaiAPIDomainGuardiansContacted'
+import type { SaBaiAPIDomainReferralServiceClassKey } from './SaBaiAPIDomainReferralServiceClass'
 import type { SaBaiAPIDomainReferralStateKey } from './SaBaiAPIDomainReferralState'
 
 export type SaBaiAPIEndpointsReferralsGetResponse = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  id: number;
+  id: string;
   referredFor: string;
   referralNotes: string | null;
   referralState: SaBaiAPIDomainReferralStateKey;
   referralOutcome: string | null;
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  consultId: number;
+  consultId: string;
   /**
    * @description
    * Format: `date-time`
    * @type string
    */
   createdAt: string;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string
+   */
+  updatedAt: string;
   /**
    * @description
    * Format: `date-time`
@@ -42,19 +50,74 @@ export type SaBaiAPIEndpointsReferralsGetResponse = {
   doctorId: string;
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  patientId: number;
+  patientId: string;
   patientName: string;
+  /**
+   * @description
+   * Format: `date-time`
+   * @type string
+   */
+  patientDateOfBirth: string;
+  patientContactNo: string | null;
+  patientHasPoorCard: boolean;
+  patientHasBS2Card: boolean;
+  patientHasSabaiCard: boolean;
   hasPhoto: boolean;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string
+   */
+  villageCodeId: string;
+  villageCode: string;
+  villageColorHex: string;
+  doctorNickname: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string
+   */
+  referredToId: string | null;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string
+   */
+  memberInChargeId: string | null;
+  guardiansContacted: null | SaBaiAPIDomainGuardiansContactedKey;
+  classOfService: null | SaBaiAPIDomainReferralServiceClassKey;
+  descriptionOfService: string | null;
+  patientSummaryFromScreening: string | null;
+  remarksAtBooth: string | null;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string
+   */
+  memberOnRunId: string | null;
+  presentAtReferralParty: boolean;
+  referralPartyResults: string | null;
+  followUp: boolean;
+  doctorsUpdated: boolean;
+  /**
+   * @description
+   * Format: `double`
+   * @type number
+   */
+  amountPaidUsd: number | null;
   /**
    * @description
    * Format: `int32`
    * @type integer
    */
-  villageCodeId: number;
-  villageCode: string;
-  villageColorHex: string;
-  doctorNickname: string;
+  amountPaidRiels: number | null;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string
+   */
+  memberWhoPaidId: string | null;
 };

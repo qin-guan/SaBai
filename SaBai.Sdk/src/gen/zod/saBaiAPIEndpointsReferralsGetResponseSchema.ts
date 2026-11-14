@@ -4,23 +4,46 @@
 */
 
 import * as z from 'zod'
+import { saBaiAPIDomainGuardiansContactedSchema } from './saBaiAPIDomainGuardiansContactedSchema'
+import { saBaiAPIDomainReferralServiceClassSchema } from './saBaiAPIDomainReferralServiceClassSchema'
 import { saBaiAPIDomainReferralStateSchema } from './saBaiAPIDomainReferralStateSchema'
 
 export const saBaiAPIEndpointsReferralsGetResponseSchema = z.object({
-  id: z.int32(),
+  id: z.uuid(),
   referredFor: z.string(),
   referralNotes: z.string().nullable(),
   referralState: saBaiAPIDomainReferralStateSchema,
   referralOutcome: z.string().nullable(),
-  consultId: z.int32(),
+  consultId: z.uuid(),
   createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
   consultDate: z.iso.datetime(),
   doctorId: z.uuid(),
-  patientId: z.int32(),
+  patientId: z.uuid(),
   patientName: z.string(),
+  patientDateOfBirth: z.iso.datetime(),
+  patientContactNo: z.string().nullable(),
+  patientHasPoorCard: z.boolean(),
+  patientHasBS2Card: z.boolean(),
+  patientHasSabaiCard: z.boolean(),
   hasPhoto: z.boolean(),
-  villageCodeId: z.int32(),
+  villageCodeId: z.uuid(),
   villageCode: z.string(),
   villageColorHex: z.string(),
   doctorNickname: z.string(),
+  referredToId: z.uuid().nullable(),
+  memberInChargeId: z.uuid().nullable(),
+  guardiansContacted: z.union([z.null(), saBaiAPIDomainGuardiansContactedSchema]),
+  classOfService: z.union([z.null(), saBaiAPIDomainReferralServiceClassSchema]),
+  descriptionOfService: z.string().nullable(),
+  patientSummaryFromScreening: z.string().nullable(),
+  remarksAtBooth: z.string().nullable(),
+  memberOnRunId: z.uuid().nullable(),
+  presentAtReferralParty: z.boolean(),
+  referralPartyResults: z.string().nullable(),
+  followUp: z.boolean(),
+  doctorsUpdated: z.boolean(),
+  amountPaidUsd: z.number().nullable(),
+  amountPaidRiels: z.int32().nullable(),
+  memberWhoPaidId: z.uuid().nullable(),
 })

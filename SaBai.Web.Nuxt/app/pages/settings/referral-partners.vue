@@ -8,7 +8,7 @@ import type { ReferralPartner } from '@/composables/useReferralPartners'
 
 useHead({ title: "Referral Partners · Sa'Bai" })
 
-const { data: partners, isLoading, isError } = useReferralPartnersList()
+const { data: partners, isLoading, isError, error } = useReferralPartnersList()
 const deletePartner = useDeleteReferralPartner()
 
 const mode = ref<'editing' | 'deleting' | null>(null)
@@ -29,22 +29,20 @@ function close() {
   active.value = null
 }
 
-function confirmDelete() {
+async function confirmDelete() {
   if (!active.value || deletePartner.isPending.value) return
-  deletePartner.mutate(active.value.id, {
-    onSuccess: () => {
-      toast.success('Referral partner deleted')
-      close()
-    },
-    onError: (err) => {
-      toast.error(
-        getApiErrorMessage(
-          err,
-          'Unable to delete referral partner. If referrals already reference this partner, deactivate it instead.',
-        ),
-      )
-    },
-  })
+  try {
+    notifySaved(await deletePartner.mutateAsync(active.value.id), 'Referral partner deleted')
+    close()
+  }
+  catch (err) {
+    toast.error(
+      getApiErrorMessage(
+        err,
+        'Unable to delete referral partner. If referrals already reference this partner, deactivate it instead.',
+      ),
+    )
+  }
 }
 </script>
 
@@ -64,7 +62,7 @@ function confirmDelete() {
 
     <AppPanel title="Referral partners" flush>
       <StateMessage v-if="isLoading" kind="loading" message="Loading referral partners..." />
-      <StateMessage v-else-if="isError" kind="error" message="Failed to load referral partners." />
+      <StateMessage v-else-if="isError && !partners" kind="error" :message="describeLoadError(error, 'Failed to load referral partners.')" />
       <div v-else-if="!partners || partners.length === 0" class="px-3 py-10 text-center text-xs text-muted-foreground touch:text-sm" role="status">
         No referral partners yet. Add a clinic or hospital to get started.
       </div>

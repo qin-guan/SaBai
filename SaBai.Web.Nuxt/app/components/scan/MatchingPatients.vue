@@ -27,7 +27,7 @@ const matches = computed(() => search.data.value ?? [])
     <StateMessage
       v-else-if="search.isError.value"
       kind="error"
-      :message="getApiErrorMessage(search.error.value, 'Face search failed. Try again or register the patient manually.')"
+      :message="describeLoadError(search.error.value, 'Face search failed. Try again or register the patient manually.')"
     />
     <div v-else-if="matches.length === 0" class="flex flex-col items-center gap-2 py-8 text-center">
       <PhUserFocus class="size-12 text-muted-foreground/50" aria-hidden="true" />
@@ -54,10 +54,10 @@ const matches = computed(() => search.data.value ?? [])
               • <span class="font-semibold text-foreground">{{ Math.round(match.similarity * 100) }}% match</span>
             </p>
           </div>
-          <StartVisitButton :patient-id="String(match.id)" :name="match.name" />
+          <StartVisitButton :patient-id="match.id" :name="match.name" />
         </div>
         <div class="pl-[3.75rem]">
-          <MatchVisits :patient-id="String(match.id)" />
+          <MatchVisits :patient-id="match.id" />
         </div>
       </li>
     </ol>

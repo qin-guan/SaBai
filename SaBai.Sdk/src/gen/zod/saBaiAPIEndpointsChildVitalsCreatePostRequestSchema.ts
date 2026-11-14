@@ -6,7 +6,8 @@
 import * as z from 'zod'
 
 export const saBaiAPIEndpointsChildVitalsCreatePostRequestSchema = z.object({
-  vitalsId: z.int32().gt(0).optional(),
+  id: z.uuid().nullish(),
+  vitalsId: z.uuid().min(1),
   grossMotor: z.string().nullish(),
   redReflex: z.string().nullish(),
   scoliosis: z.string().nullish(),

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { PhCheck, PhPlus, PhTrash } from '@phosphor-icons/vue'
 import { toast } from 'vue-sonner'
+import { splitMedicationStock } from '~/offline/mutations/medication'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
@@ -29,10 +30,10 @@ function addSplit() {
 }
 
 const total = computed(() => splits.value.reduce((sum, s) => sum + (Number.parseInt(s.quantity, 10) || 0), 0))
-const isSplitting = ref(false)
+const split = useOfflineMutation(splitMedicationStock)
 
 async function submit() {
-  if (isSplitting.value)
+  if (split.isPending.value)
     return
   const payload: SplitPayload[] = splits.value.map(s => ({
     location: s.location,
@@ -46,46 +47,25 @@ async function submit() {
     return
   }
 
-  isSplitting.value = true
   try {
-    const db = getPowerSyncInstance()
-    const now = new Date().toISOString()
-    await db.writeTransaction(async (tx) => {
-      const first = payload[0]!
-      await tx.execute(
-        `UPDATE medication_stocks
-         SET location = ?, stock_status = ?, quantity = ?, remarks = ?, updated_at = ?
-         WHERE id = ?`,
-        [first.location.trim(), first.stockStatus, first.quantity, first.remarks ?? null, now, props.stock.id],
-      )
-      for (const s of payload.slice(1)) {
-        await tx.execute(
-          `INSERT INTO medication_stocks (
-            id, medication_brand_id, quantity, expiry, location, stock_status, remarks, version, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?)`,
-          [
-            uuidv7(),
-            props.stock.medicationBrandId,
-            s.quantity,
-            props.stock.expiry,
-            s.location.trim(),
-            s.stockStatus,
-            s.remarks ?? null,
-            now,
-          ],
-        )
-      }
+    // Each child lot gets its id here, so a split queued offline can be sent again without duplicating lots.
+    const outcome = await split.mutateAsync({
+      stockId: props.stock.id,
+      parent: { ...props.stock },
+      splits: payload.map(p => ({
+        id: uuidv7(),
+        quantity: p.quantity,
+        location: p.location.trim(),
+        stockStatus: p.stockStatus,
+        remarks: p.remarks?.trim() || null,
+      })),
     })
-    await refreshPendingCrudCount()
-    toast.success('Successfully split!')
     emit('close')
+    notifySaved(outcome, 'Successfully split!')
   }
   catch (err) {
     console.error(err)
-    toast.error('An error occurred while splitting stock.')
-  }
-  finally {
-    isSplitting.value = false
+    toast.error(getApiErrorMessage(err, 'An error occurred while splitting stock.'))
   }
 }
 
@@ -160,7 +140,7 @@ const parent = computed(() => [
       <Button variant="outline" @click="emit('close')">
         Cancel
       </Button>
-      <Button variant="success" :disabled="isSplitting" @click="submit">
+      <Button variant="success" :disabled="split.isPending.value" @click="submit">
         <PhCheck aria-hidden="true" /> Confirm
       </Button>
     </template>

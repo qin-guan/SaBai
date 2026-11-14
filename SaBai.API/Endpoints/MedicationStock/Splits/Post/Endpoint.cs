@@ -34,6 +34,11 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                 ct
             );
 
+            if (await IsReplayAsync(req, parent, ct))
+            {
+                return new Response(true);
+            }
+
             if (parent.Quantity == 0)
             {
                 throw new ConflictException("The parent stock has already split.");
@@ -42,6 +47,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             var children = req
                 .Splits.Select(split => new
                 {
+                    split.Id,
                     split.Quantity,
                     Location = split.Location.Trim(),
                     split.StockStatus,
@@ -75,6 +81,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             {
                 var stock = new SaBai.API.Domain.MedicationStock
                 {
+                    Id = child.Id ?? Guid.CreateVersion7(),
                     MedicationBrandId = parent.MedicationBrandId,
                     Quantity = child.Quantity,
                     Expiry = parent.Expiry,
@@ -93,5 +100,42 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             await transaction.CommitAsync(ct);
             return new Response(true);
         });
+    }
+
+    /// <summary>
+    /// True when the request names an id for every child lot and those lots all exist for the
+    /// parent's brand: the same split was already made. Throws when only some of the ids exist
+    /// or they belong to another brand.
+    /// </summary>
+    private async Task<bool> IsReplayAsync(
+        Request req,
+        SaBai.API.Domain.MedicationStock parent,
+        CancellationToken ct
+    )
+    {
+        var ids = req.Splits.Select(x => x.Id).OfType<Guid>().ToList();
+        if (ids.Count == 0)
+        {
+            return false;
+        }
+
+        var brands = await db
+            .MedicationStocks.AsNoTracking()
+            .Where(x => ids.Contains(x.Id))
+            .Select(x => x.MedicationBrandId)
+            .ToListAsync(ct);
+        if (brands.Count == 0)
+        {
+            return false;
+        }
+
+        if (ids.Count == req.Splits.Count
+            && brands.Count == ids.Count
+            && brands.All(x => x == parent.MedicationBrandId))
+        {
+            return true;
+        }
+
+        throw new ConflictException("A split id is already used by another stock lot.");
     }
 }

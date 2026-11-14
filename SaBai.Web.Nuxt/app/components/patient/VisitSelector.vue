@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import type { LocalVisitSummary } from '~/db/types'
+import type { SaBaiAPIEndpointsPatientsVisitsGetItem } from '@sabai/sdk/types'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 
 /** Visit picker shown above every station form. */
 const model = defineModel<string>({ required: true })
 const props = defineProps<{
-  visits: LocalVisitSummary[] | undefined
+  visits: SaBaiAPIEndpointsPatientsVisitsGetItem[] | undefined
   /** e.g. "Filling up vitals form for visit on" */
   summaryPrefix?: string
   /** Shown when the patient has no visits. */

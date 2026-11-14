@@ -6,7 +6,7 @@
 import * as z from 'zod'
 
 export const saBaiAPIEndpointsFilesCreatePostRequestSchema = z.object({
-  patientId: z.int32().optional(),
+  patientId: z.uuid().optional(),
   files: z.array(z.instanceof(File)).nullish(),
   descriptions: z.array(z.string()).nullish(),
 })

@@ -11,7 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton'
  * like the station forms.
  */
 const patientId = useRouteId('id')
-const { data: patient, isLoading } = usePatient(patientId)
+const { data: patient, isLoading, isError, error } = usePatient(patientId)
 const { data: visitsData, isLoading: visitsLoading } = usePatientVisits(patientId)
 const visits = computed(() => visitsData.value?.visits ?? [])
 const current = computed(() => visits.value[0])
@@ -29,6 +29,9 @@ useHead({ title: () => `${patient.value?.name ?? 'Patient'} · Sa'Bai` })
       <Skeleton class="h-16 w-full" />
       <Skeleton class="h-48 w-full" />
     </div>
+    <AppPanel v-else-if="!patient && isError" title="Patient could not be loaded">
+      <p>{{ describeLoadError(error, 'Patient could not be loaded.') }}</p>
+    </AppPanel>
     <AppPanel v-else-if="!patient" title="Patient not found">
       <p>No patient exists for ID: {{ patientId }}</p>
     </AppPanel>

@@ -21,11 +21,15 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             .Visits.AsNoTracking()
             .FirstOrNotFoundAsync(x => x.Id == req.VisitId, "Visit was not found.", ct);
 
+        // Glasses are saved on the visit's eyesight record. The client id only names that
+        // record when this request creates it; it may not name another visit's record.
+        _ = await db.Eyesights.FindExistingAsync(req.Id, x => x.VisitId == req.VisitId, ct);
         var eyesight = await db.Eyesights.FirstOrDefaultAsync(x => x.VisitId == req.VisitId, ct);
         if (eyesight is null)
         {
             eyesight = new global::SaBai.API.Domain.Eyesight
             {
+                Id = req.Id ?? Guid.CreateVersion7(),
                 VisitId = req.VisitId,
                 LeftPrescribedGlassesDegree = FreeText.Normalize(req.LeftGlassesDegree),
                 RightPrescribedGlassesDegree = FreeText.Normalize(req.RightGlassesDegree),

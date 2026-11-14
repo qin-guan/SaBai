@@ -8,5 +8,5 @@ import { systemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsAuditLogsListGe
 
 export const saBaiAPIEndpointsAuditLogsListGetResponseSchema = z.object({
   entries: systemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsAuditLogsListGetAuditLogEntryResponseSchema,
-  nextBefore: z.int32().nullable(),
+  nextBefore: z.uuid().nullable(),
 })

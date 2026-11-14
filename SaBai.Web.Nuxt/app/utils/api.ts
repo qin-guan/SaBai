@@ -1,3 +1,5 @@
+import { apiTransport } from "~/offline/transport";
+
 /**
  * Shared configuration passed to every @sabai/sdk call.
  *
@@ -6,10 +8,15 @@
  * which proxies them to SaBai.API (server/api/[...path].ts), so the API never
  * has to be reachable from the browser. Being same-origin, the browser sends
  * the API's HttpOnly session cookie by itself: no token is handled in JS.
+ *
+ * `transport` is the one place every call passes through: it times requests
+ * out, reports whether the API was reached, records the server's clock and
+ * applies offline-replay headers (app/offline/transport.ts).
  */
 export const apiConfig = {
   baseURL: "/api",
   credentials: "same-origin" as const,
+  transport: apiTransport,
 };
 
 /**

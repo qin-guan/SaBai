@@ -97,3 +97,21 @@ describe("page search", () => {
     expect(searchIndex(index, "vit")[0]?.id).toBe("/vitals");
   });
 });
+
+describe("patient search with UUID ids", () => {
+  const rest = [
+    { id: "0192f1c2-aaaa-7000-8000-000000000001", name: "Sok Dara", villageCode: "PC", displayId: "PC0012" },
+    { id: "0192f1c2-aaaa-7000-8000-000000000002", name: "Chan Nary", villageCode: "PC", displayId: "PCNEW" },
+  ];
+  const find = (q: string) => searchIndex(buildPatientIndex(rest), q).map((r) => r.id);
+  it("matches every form of the card code", () => {
+    expect(find("pc0012")).toEqual([rest[0]!.id]);
+    expect(find("0012")).toEqual([rest[0]!.id]);
+    expect(find("12")[0]).toBe(rest[0]!.id);
+    expect(find("pc12")[0]).toBe(rest[0]!.id);
+  });
+  it("finds a patient still waiting for a card number", () => {
+    expect(find("nary")).toEqual([rest[1]!.id]);
+    expect(find("pcnew")).toEqual([rest[1]!.id]);
+  });
+});

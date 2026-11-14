@@ -8,7 +8,7 @@ import { systemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPharmacyOrdersG
 import { systemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPharmacyOrdersGetPharmacyOrderItemSchema } from './systemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPharmacyOrdersGetPharmacyOrderItemSchema'
 
 export const saBaiAPIEndpointsPharmacyOrdersGetVisitBundleSchema = z.object({
-  visitId: z.int32(),
+  visitId: z.uuid(),
   visitDate: z.iso.datetime(),
   orders: systemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPharmacyOrdersGetPharmacyOrderItemSchema,
   diagnoses: systemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsPharmacyOrdersGetDiagnosisItemSchema,

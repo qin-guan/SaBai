@@ -26,7 +26,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 definePageMeta({ requiresAdmin: true })
 useHead({ title: "Staff Users · Sa'Bai" })
 
-const { data, isLoading, isError } = useStaffUsersList()
+const { data, isLoading, isError: queryFailed, error: loadError } = useStaffUsersList()
+const isError = computed(() => queryFailed.value && !data.value)
 const { user: me } = useCurrentUser()
 
 const filter = ref('')
@@ -86,7 +87,7 @@ function action(run: (id: string) => Promise<unknown>, success: (u: StaffUser) =
       toast.success(success(user))
       close()
     },
-    onError: err => toast.error(getApiErrorMessage(err, failure)),
+    onError: err => toast.error(describeLoadError(err, failure)),
   })
 }
 const lock = action(
@@ -155,7 +156,7 @@ function lockedLabel(user: StaffUser) {
 
     <AppPanel title="Staff" flush>
       <StateMessage v-if="isLoading" kind="loading" message="Loading staff users..." />
-      <StateMessage v-else-if="isError" kind="error" message="Unable to load staff users." />
+      <StateMessage v-else-if="isError" kind="error" :message="describeLoadError(loadError, 'Unable to load staff users.')" />
       <template v-else>
         <Table class="grid-table stack-table">
           <TableHeader>

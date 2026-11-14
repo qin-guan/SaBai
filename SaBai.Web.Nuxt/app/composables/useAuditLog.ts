@@ -47,7 +47,9 @@ function localDayStart(date: string, addDays = 0): string {
 export function useAuditLog(filters: MaybeRefOrGetter<AuditLogFilters>) {
   return useInfiniteQuery({
     queryKey: computed(() => [...queryKeys.auditLog(), toValue(filters)] as const),
-    initialPageParam: undefined as number | undefined,
+    // Who looked at which record: not kept on the device.
+    meta: { persist: false },
+    initialPageParam: undefined as string | undefined,
     queryFn: ({ pageParam, signal }) => {
       const f = toValue(filters);
       return saBaiAPIEndpointsAuditLogsListGetEndpoint({

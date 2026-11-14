@@ -9,10 +9,10 @@ import type { SaBaiAPIEndpointsPatientsPhotoPutResponse } from './SaBaiAPIEndpoi
 export type SaBaiAPIEndpointsPatientsPhotoPutEndpointPath = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  id: number;
+  id: string;
 };
 
 export type SaBaiAPIEndpointsPatientsPhotoPutEndpointStatus200 = SaBaiAPIEndpointsPatientsPhotoPutResponse;

@@ -8,7 +8,7 @@ import { saBaiAPIDomainAuditActionSchema } from './saBaiAPIDomainAuditActionSche
 import { systemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsAuditLogsListGetAuditFieldChangeResponseSchema } from './systemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsAuditLogsListGetAuditFieldChangeResponseSchema'
 
 export const saBaiAPIEndpointsAuditLogsListGetAuditLogEntryResponseSchema = z.object({
-  id: z.int32(),
+  id: z.uuid(),
   occurredAt: z.iso.datetime(),
   action: saBaiAPIDomainAuditActionSchema,
   userId: z.uuid().nullable(),

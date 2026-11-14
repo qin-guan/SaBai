@@ -7,7 +7,7 @@ import * as z from 'zod'
 import { saBaiAPIEndpointsPatientsPhotoPutRequestSchema } from './saBaiAPIEndpointsPatientsPhotoPutRequestSchema'
 import { saBaiAPIEndpointsPatientsPhotoPutResponseSchema } from './saBaiAPIEndpointsPatientsPhotoPutResponseSchema'
 
-export const saBaiAPIEndpointsPatientsPhotoPutEndpointPathIdSchema = z.int32()
+export const saBaiAPIEndpointsPatientsPhotoPutEndpointPathIdSchema = z.uuid()
 
 export const saBaiAPIEndpointsPatientsPhotoPutEndpointStatus200Schema = saBaiAPIEndpointsPatientsPhotoPutResponseSchema
 
@@ -22,5 +22,5 @@ export const saBaiAPIEndpointsPatientsPhotoPutEndpointErrorSchema = z.union([saB
 export const saBaiAPIEndpointsPatientsPhotoPutEndpointBodySchema = saBaiAPIEndpointsPatientsPhotoPutRequestSchema
 
 export const saBaiAPIEndpointsPatientsPhotoPutEndpointPathSchema = z.object({
-  id: z.int32(),
+  id: z.uuid(),
 })

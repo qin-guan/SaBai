@@ -6,7 +6,7 @@
 import * as z from 'zod'
 
 export const saBaiAPIEndpointsPatientsSearchByFacePostPatientFaceMatchSchema = z.object({
-  id: z.int32(),
+  id: z.uuid(),
   name: z.string(),
   displayId: z.string(),
   villageCode: z.string().nullable(),

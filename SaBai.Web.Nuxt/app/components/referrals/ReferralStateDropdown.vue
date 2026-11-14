@@ -10,6 +10,8 @@ const props = withDefaults(defineProps<{
   disabled?: boolean
   /** Accessible name; name the patient when several appear on one screen. */
   label?: string
+  /** Names the patient in the pending-changes list while the change waits to be sent. */
+  patientName?: string
   /** Save as soon as a status is picked (lists). Off on the referral page, which saves it with the rest of the form. */
   saveOnChange?: boolean
 }>(), { saveOnChange: true })
@@ -31,14 +33,11 @@ function onChange(event: Event) {
   }
 
   updateState.mutate(
+    { id: props.referralId, patientName: props.patientName, referralState: newState },
     {
-      id: props.referralId,
-      referralState: newState,
-    },
-    {
-      onSuccess: () => {
+      onSuccess: (outcome) => {
         emit('update:modelValue', newState)
-        toast.success('Referral status updated')
+        notifySaved(outcome, 'Referral status updated')
       },
       onError: (err) => {
         // Reset back to previous value

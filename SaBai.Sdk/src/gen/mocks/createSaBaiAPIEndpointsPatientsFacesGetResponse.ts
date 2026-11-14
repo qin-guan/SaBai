@@ -9,7 +9,7 @@ import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsPatientsFacesGetResponse<TData extends Partial<SaBaiAPIEndpointsPatientsFacesGetResponse> = object>(data?: TData) {
   const defaultFakeData = {
-    patientId: faker.number.int(),
+    patientId: faker.string.uuid(),
     faces: createSaBaiAPIFaceRecognitionStoredFaceArray(),
   }
   return {

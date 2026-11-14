@@ -21,14 +21,13 @@ const { data: consents, isLoading: consentsLoading, isError: consentsError, erro
 const current = computed(() => currentConsents(consents.value ?? []))
 const recordConsent = useRecordConsent(() => props.patientId)
 
-function setConsent(type: ConsentType, granted: boolean) {
-  recordConsent.mutate(
-    { consentType: type, granted },
-    {
-      onSuccess: () => toast.success(granted ? 'Consent recorded' : 'Consent revoked'),
-      onError: err => toast.error(getApiErrorMessage(err, 'Unable to save consent.')),
-    },
-  )
+async function setConsent(type: ConsentType, granted: boolean) {
+  try {
+    notifySaved(await recordConsent.mutateAsync({ consentType: type, granted }), granted ? 'Consent recorded' : 'Consent revoked')
+  }
+  catch (err) {
+    toast.error(getApiErrorMessage(err, 'Unable to save consent.'))
+  }
 }
 
 const { data: disclosures, isLoading: disclosuresLoading, isError: disclosuresError, error: disclosuresErr }
@@ -38,7 +37,7 @@ const adding = ref(false)
 const form = ref({ recipient: '', purpose: '', description: '' })
 const formError = ref('')
 
-function submitDisclosure() {
+async function submitDisclosure() {
   if (recordDisclosure.isPending.value)
     return
   if (!form.value.recipient.trim() || !form.value.purpose.trim()) {
@@ -46,14 +45,14 @@ function submitDisclosure() {
     return
   }
   formError.value = ''
-  recordDisclosure.mutate(form.value, {
-    onSuccess: () => {
-      toast.success('Disclosure recorded')
-      form.value = { recipient: '', purpose: '', description: '' }
-      adding.value = false
-    },
-    onError: err => toast.error(getApiErrorMessage(err, 'Unable to record disclosure.')),
-  })
+  try {
+    notifySaved(await recordDisclosure.mutateAsync(form.value), 'Disclosure recorded')
+    form.value = { recipient: '', purpose: '', description: '' }
+    adding.value = false
+  }
+  catch (err) {
+    toast.error(getApiErrorMessage(err, 'Unable to record disclosure.'))
+  }
 }
 
 const dateFormat = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' })
@@ -75,7 +74,7 @@ const types = Object.keys(CONSENT_LABELS) as ConsentType[]
       Consents
     </h3>
     <StateMessage v-if="consentsLoading" kind="loading" message="Loading consents..." />
-    <StateMessage v-else-if="consentsError" kind="error" :message="getApiErrorMessage(consentsErr, 'Unable to load consents.')" />
+    <StateMessage v-else-if="consentsError && !consents" kind="error" :message="describeLoadError(consentsErr, 'Unable to load consents.')" />
     <ul v-else class="divide-y divide-border border border-border">
       <li v-for="type in types" :key="type" class="flex flex-wrap items-center justify-between gap-2 px-3 py-2">
         <div class="min-w-0">
@@ -142,7 +141,7 @@ const types = Object.keys(CONSENT_LABELS) as ConsentType[]
       </form>
 
       <StateMessage v-if="disclosuresLoading" kind="loading" message="Loading disclosures..." />
-      <StateMessage v-else-if="disclosuresError" kind="error" :message="getApiErrorMessage(disclosuresErr, 'Unable to load disclosures.')" />
+      <StateMessage v-else-if="disclosuresError && !disclosures" kind="error" :message="describeLoadError(disclosuresErr, 'Unable to load disclosures.')" />
       <StateMessage v-else-if="!disclosures?.length" message="No disclosures recorded for this patient." />
       <ul v-else class="divide-y divide-border border border-border">
         <li v-for="d in disclosures" :key="d.id" class="px-3 py-2">

@@ -5,21 +5,23 @@
 
 import * as z from 'zod'
 import { saBaiAPIDomainReferralStateSchema } from './saBaiAPIDomainReferralStateSchema'
+import { systemCollectionsGenericIReadOnlyListOfSystemStringSchema } from './systemCollectionsGenericIReadOnlyListOfSystemStringSchema'
 
 export const saBaiAPIEndpointsReferralsListGetResponseSchema = z.object({
-  id: z.int32(),
+  id: z.uuid(),
   referredFor: z.string(),
   referralNotes: z.string().nullable(),
   referralState: saBaiAPIDomainReferralStateSchema,
   referralOutcome: z.string().nullable(),
-  consultId: z.int32(),
+  consultId: z.uuid(),
   createdAt: z.iso.datetime(),
   consultDate: z.iso.datetime(),
   doctorId: z.uuid(),
-  patientId: z.int32(),
+  patientId: z.uuid(),
   patientName: z.string(),
   hasPhoto: z.boolean(),
-  villageCodeId: z.int32(),
+  villageCodeId: z.uuid(),
   villageCode: z.string(),
   villageColorHex: z.string(),
+  tags: systemCollectionsGenericIReadOnlyListOfSystemStringSchema,
 })

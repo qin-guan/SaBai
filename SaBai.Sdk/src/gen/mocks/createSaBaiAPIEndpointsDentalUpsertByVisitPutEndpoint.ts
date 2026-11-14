@@ -11,7 +11,7 @@ import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsDentalUpsertByVisitPutEndpointPath<TData extends Partial<SaBaiAPIEndpointsDentalUpsertByVisitPutEndpointPath> = object>(data?: TData) {
   const defaultFakeData = {
-    visitId: faker.number.int(),
+    visitId: faker.string.uuid(),
   }
   return {
     ...defaultFakeData,

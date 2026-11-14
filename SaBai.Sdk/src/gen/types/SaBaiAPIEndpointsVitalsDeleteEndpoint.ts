@@ -8,10 +8,10 @@ import type { FastEndpointsProblemDetails } from './FastEndpointsProblemDetails'
 export type SaBaiAPIEndpointsVitalsDeleteEndpointPath = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  id: number;
+  id: string;
 };
 
 export type SaBaiAPIEndpointsVitalsDeleteEndpointStatus204 = unknown;

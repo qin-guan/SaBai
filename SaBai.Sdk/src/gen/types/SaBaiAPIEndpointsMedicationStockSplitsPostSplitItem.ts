@@ -8,6 +8,12 @@ import type { SaBaiAPIDomainStockStatusKey } from './SaBaiAPIDomainStockStatus'
 export type SaBaiAPIEndpointsMedicationStockSplitsPostSplitItem = {
   /**
    * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  id?: string | null;
+  /**
+   * @description
    * Format: `int32`
    * @type integer | undefined
    */

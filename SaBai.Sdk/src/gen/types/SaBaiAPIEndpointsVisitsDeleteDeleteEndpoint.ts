@@ -6,10 +6,10 @@
 export type SaBaiAPIEndpointsVisitsDeleteDeleteEndpointPath = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  id: number;
+  id: string;
 };
 
 export type SaBaiAPIEndpointsVisitsDeleteDeleteEndpointStatus204 = unknown;

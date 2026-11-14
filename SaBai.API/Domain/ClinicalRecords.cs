@@ -1,15 +1,15 @@
 namespace SaBai.API.Domain;
 
-public sealed class Vitals : ISyncEntity
+public sealed class Vitals : ITrackedEntity
 {
     /// <summary>When the record was first saved; stamped by <c>AppDbContext</c>. Null for records from before it was tracked.</summary>
     public DateTimeOffset? RecordedAt { get; set; }
 
     public Guid Id { get; set; } = Guid.CreateVersion7();
 
-    public int Version { get; set; } = 1;
-
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+
+    public Guid? UpdatedByUserId { get; set; }
 
     public Guid VisitId { get; set; }
 
@@ -47,16 +47,16 @@ public sealed class Vitals : ISyncEntity
     public ChildVitals? ChildVitals { get; set; }
 }
 
-public sealed class Eyesight : ISyncEntity
+public sealed class Eyesight : ITrackedEntity
 {
     /// <summary>When the record was first saved; stamped by <c>AppDbContext</c>. Null for records from before it was tracked.</summary>
     public DateTimeOffset? RecordedAt { get; set; }
 
     public Guid Id { get; set; } = Guid.CreateVersion7();
 
-    public int Version { get; set; } = 1;
-
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+
+    public Guid? UpdatedByUserId { get; set; }
 
     public Guid VisitId { get; set; }
 
@@ -82,13 +82,13 @@ public sealed class Eyesight : ISyncEntity
     public string? RightPrescribedGlassesDegree { get; set; }
 }
 
-public sealed class PubertyAssessment : ISyncEntity
+public sealed class PubertyAssessment : ITrackedEntity
 {
     public Guid Id { get; set; } = Guid.CreateVersion7();
 
-    public int Version { get; set; } = 1;
-
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+
+    public Guid? UpdatedByUserId { get; set; }
 
     public Guid VitalsId { get; set; }
 
@@ -118,13 +118,13 @@ public sealed class PubertyAssessment : ISyncEntity
     public string? AdditionalNotes { get; set; }
 }
 
-public sealed class ChildVitals : ISyncEntity
+public sealed class ChildVitals : ITrackedEntity
 {
     public Guid Id { get; set; } = Guid.CreateVersion7();
 
-    public int Version { get; set; } = 1;
-
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+
+    public Guid? UpdatedByUserId { get; set; }
 
     public Guid VitalsId { get; set; }
 

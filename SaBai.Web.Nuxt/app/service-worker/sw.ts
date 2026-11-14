@@ -6,11 +6,13 @@ import { CacheFirst, StaleWhileRevalidate } from 'workbox-strategies'
 import { notificationTargetUrl, parsePushPayload } from '../utils/pushPayload'
 
 /**
- * Service worker for the offline-first PWA:
- * 1. Precaches the app shell, fonts, and WASM SQLite runtime via Workbox.
- * 2. Serves cached app routes when offline (excluding `/api` and `/powersync`).
+ * Service worker of the installed PWA:
+ * 1. Precaches the app shell (JS, CSS, HTML, icons, fonts) via Workbox.
+ * 2. Serves the cached shell for app routes when offline (never for `/api`).
  * 3. Caches patient photos (`StaleWhileRevalidate`) and static fonts (`CacheFirst`).
  * 4. Handles Web Push notifications and notification clicks.
+ *
+ * API data is not cached here: the app keeps it in IndexedDB (app/offline).
  */
 declare const self: ServiceWorkerGlobalScope & {
   __WB_MANIFEST: Array<{ url: string; revision: string | null }>
@@ -19,15 +21,16 @@ declare const self: ServiceWorkerGlobalScope & {
 cleanupOutdatedCaches()
 precacheAndRoute(self.__WB_MANIFEST ?? [])
 
-// SPA navigation fallback to the precached shell, never intercepting API or PowerSync.
+// SPA navigation fallback to the precached shell (`/`, see nuxt.config.ts),
+// never intercepting the API.
 try {
   registerRoute(
-    new NavigationRoute(createHandlerBoundToURL('/index.html'), {
-      denylist: [/^\/api\//, /^\/powersync\//],
+    new NavigationRoute(createHandlerBoundToURL('/'), {
+      denylist: [/^\/api\//],
     }),
   )
 } catch {
-  // In dev mode without a precached /index.html, navigation falls through to network.
+  // Without a precached shell (dev server before the first build), navigation falls through to network.
 }
 
 // Cache fonts & static icons/images.

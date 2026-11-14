@@ -8,10 +8,17 @@ import type { SaBaiAPIDomainStockStatusKey } from './SaBaiAPIDomainStockStatus'
 export type SaBaiAPIEndpointsMedicationStockCreatePostRequest = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer | undefined
+   * Format: `uuid`
+   * @type string | undefined
    */
-  medicationBrandId?: number;
+  id?: string | null;
+  /**
+   * @description
+   * Format: `uuid`
+   * @minLength 1
+   * @type string
+   */
+  medicationBrandId: string;
   /**
    * @description
    * Format: `int32`

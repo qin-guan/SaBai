@@ -6,6 +6,12 @@
 import type { SaBaiAPIDomainDiagnosisCategoryKey } from './SaBaiAPIDomainDiagnosisCategory'
 
 export type SaBaiAPIEndpointsConsultsCreatePostDiagnosisInput = {
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string | undefined
+   */
+  id?: string | null;
   details?: string;
   category?: null | SaBaiAPIDomainDiagnosisCategoryKey;
 };

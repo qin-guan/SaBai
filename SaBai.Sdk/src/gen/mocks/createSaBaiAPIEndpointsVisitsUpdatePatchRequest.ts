@@ -8,8 +8,8 @@ import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsVisitsUpdatePatchRequest<TData extends Partial<SaBaiAPIEndpointsVisitsUpdatePatchRequest> = object>(data?: TData) {
   const defaultFakeData = {
-    patientId: faker.number.int(),
-    villageCodeId: faker.number.int(),
+    patientId: faker.string.uuid(),
+    villageCodeId: faker.string.uuid(),
     date: faker.date.anytime().toISOString(),
     status: faker.string.alpha({ length: { min: 0, max: 100 } }),
   }

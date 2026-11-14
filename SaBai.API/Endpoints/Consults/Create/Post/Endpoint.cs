@@ -17,6 +17,20 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
+        var existing = await db
+            .Consults.Include(x => x.Diagnoses)
+            .Include(x => x.Doctor)
+            .FindExistingAsync(req.Id, x => x.VisitId == req.VisitId, ct);
+        if (existing is not null)
+        {
+            await Send.CreatedAtAsync<Get.Endpoint>(
+                new { existing.Id },
+                Response.From(existing),
+                cancellation: ct
+            );
+            return;
+        }
+
         var doctorId = User.Id();
         var consult = await InsertConsultAsync(req, doctorId, ct);
         await db.Entry(consult).Reference(x => x.Doctor).LoadAsync(ct);
@@ -49,6 +63,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
         var now = DateTimeOffset.UtcNow;
         var consult = new Consult
         {
+            Id = req.Id ?? Guid.CreateVersion7(),
             Date = now,
             PastMedicalHistory = req.PastMedicalHistory,
             Consultation = req.Consultation,
@@ -69,7 +84,12 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             }
 
             consult.Diagnoses.Add(
-                new Diagnosis { Details = details, Category = diagnosis.Category }
+                new Diagnosis
+                {
+                    Id = diagnosis.Id ?? Guid.CreateVersion7(),
+                    Details = details,
+                    Category = diagnosis.Category,
+                }
             );
         }
 
@@ -78,6 +98,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             consult.Orders.Add(
                 new SaBai.API.Domain.Order
                 {
+                    Id = order.Id ?? Guid.CreateVersion7(),
                     MedicationBrandId = order.MedicationBrandId,
                     DosageInstructions = order.DosageInstructions ?? "",
                     Remarks = order.Remarks,

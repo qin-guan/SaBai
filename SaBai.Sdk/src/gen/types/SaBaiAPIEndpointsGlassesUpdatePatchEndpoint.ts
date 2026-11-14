@@ -10,10 +10,10 @@ import type { SaBaiAPIEndpointsGlassesUpdatePatchResponse } from './SaBaiAPIEndp
 export type SaBaiAPIEndpointsGlassesUpdatePatchEndpointPath = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  id: number;
+  id: string;
 };
 
 export type SaBaiAPIEndpointsGlassesUpdatePatchEndpointStatus200 = SaBaiAPIEndpointsGlassesUpdatePatchResponse;

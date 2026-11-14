@@ -8,10 +8,10 @@ import type { SystemCollectionsGenericListOfSaBaiAPIEndpointsDiagnosesListGetRes
 export type SaBaiAPIEndpointsDiagnosesListGetEndpointQuery = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer | undefined
+   * Format: `uuid`
+   * @type string | undefined
    */
-  consultId?: number | null;
+  consultId?: string | null;
 };
 
 export type SaBaiAPIEndpointsDiagnosesListGetEndpointStatus200 = SystemCollectionsGenericListOfSaBaiAPIEndpointsDiagnosesListGetResponse;

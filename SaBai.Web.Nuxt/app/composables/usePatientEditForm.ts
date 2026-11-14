@@ -1,15 +1,15 @@
 import { useQueryClient } from '@tanstack/vue-query'
 import { toast } from 'vue-sonner'
-import type { LocalPatientSummary } from '~/db/types'
+import type { PatientDetail } from '~/composables/usePatientData'
+import { updatePatient } from '~/offline/mutations/patients'
 import type { PatientFormValues } from '~/utils/patientForm'
-import { syncLocalPatientTags } from '~/composables/useTags'
 
-function toFormValues(patient: LocalPatientSummary): PatientFormValues {
+function toFormValues(patient: PatientDetail): PatientFormValues {
   return {
     name: patient.name,
     identificationNumber: patient.identificationNumber ?? '',
     contactNo: patient.contactNo ?? '',
-    gender: patient.gender === 'other' ? '' : patient.gender,
+    gender: patient.gender,
     drugAllergy: patient.drugAllergy,
     // <input type="date"> only accepts yyyy-MM-dd.
     dateOfBirth: toDateInputValue(patient.dateOfBirth),
@@ -27,7 +27,7 @@ function toFormValues(patient: LocalPatientSummary): PatientFormValues {
  * the profile photo and re-enrolls the face.
  */
 export function usePatientEditForm(
-  patient: () => LocalPatientSummary,
+  patient: () => PatientDetail,
   formEl: Ref<HTMLElement | undefined>,
 ) {
   const initial = toFormValues(patient())
@@ -51,11 +51,12 @@ export function usePatientEditForm(
   })
 
   const queryClient = useQueryClient()
-  const isSaving = ref(false)
+  const { mutateAsync, isPending } = useOfflineMutation(updatePatient)
+  const { isOnline } = useSyncState()
 
-  /** Saves; resolves true when the details were saved. */
+  /** Saves; resolves true when the details were saved (or queued on this device). */
   async function submit(): Promise<boolean> {
-    if (isSaving.value)
+    if (isPending.value)
       return false
     errors.value = validatePatientForm(form.value)
     if (Object.keys(errors.value).length) {
@@ -63,61 +64,45 @@ export function usePatientEditForm(
       return false
     }
 
-    const current = patient()
+    const id = patient().id
     const values = form.value
-    isSaving.value = true
+    let outcome
     try {
-      const db = getPowerSyncInstance()
-      const dob = new Date(values.dateOfBirth).toISOString()
-      const filterString = `${values.name} ${values.identificationNumber} ${values.contactNo}`.trim()
-      await db.execute(
-        `UPDATE patients
-         SET name = ?,
-             identification_number = ?,
-             contact_no = ?,
-             gender = ?,
-             date_of_birth = ?,
-             drug_allergy = ?,
-             has_poor_card = ?,
-             has_bs2_card = ?,
-             has_sabai_card = ?,
-             filter_string = ?
-         WHERE id = ?`,
-        [
-          values.name.trim(),
-          values.identificationNumber.trim() || null,
-          values.contactNo.trim() || null,
-          values.gender,
-          dob,
-          values.drugAllergy.trim() || 'None',
-          values.hasPoorCard ? 1 : 0,
-          values.hasBS2Card ? 1 : 0,
-          values.hasSabaiCard ? 1 : 0,
-          filterString,
-          current.id,
-        ],
-      )
-      await syncLocalPatientTags(current.id, values.tags)
-      await refreshPendingCrudCount()
+      outcome = await mutateAsync({
+        id,
+        name: values.name,
+        identificationNumber: values.identificationNumber,
+        contactNo: values.contactNo,
+        gender: values.gender as 'male' | 'female',
+        dateOfBirth: new Date(values.dateOfBirth).toISOString(),
+        drugAllergy: values.drugAllergy,
+        hasPoorCard: values.hasPoorCard,
+        hasBS2Card: values.hasBS2Card,
+        hasSabaiCard: values.hasSabaiCard,
+        tags: values.tags,
+      })
     }
     catch (error) {
       console.error('Error updating patient:', error)
-      toast.error('Failed to update patient. Please try again.')
+      // Surface a known conflict (duplicate ID) directly; otherwise a generic message.
+      toast.error(
+        getApiErrorStatus(error) === 409
+          ? getApiErrorMessage(error, 'Failed to update patient. Please try again.')
+          : 'Failed to update patient. Please try again.',
+      )
       return false
     }
-    finally {
-      isSaving.value = false
-    }
 
-    const id = current.id
     if (newPhoto.value) {
-      if (typeof navigator !== 'undefined' && !navigator.onLine) {
-        toast.warning('Patient updated locally. Photo and face enrollment require an internet connection.')
+      // The photo and face enrolment need the server, and the patient must exist there.
+      if (outcome.queued || !isOnline.value) {
+        toast.warning('Patient details are saved, but the photo and face enrolment need a connection. Add the photo again once online.')
       }
       else {
         try {
           await setPatientPhotoAndFace(id, newPhoto.value)
           queryClient.invalidateQueries({ queryKey: queryKeys.patientPhoto(id) })
+          queryClient.invalidateQueries({ queryKey: queryKeys.patients() })
         }
         catch (error) {
           console.error('Error saving patient photo/face:', error)
@@ -129,7 +114,7 @@ export function usePatientEditForm(
 
     baseline.value = JSON.stringify(form.value)
     draft.clear(form.value)
-    toast.success('Patient details updated successfully!')
+    notifySaved(outcome, 'Patient details updated successfully!')
     return true
   }
 
@@ -139,5 +124,5 @@ export function usePatientEditForm(
     errors.value = {}
   }
 
-  return { form, draft, errors, newPhoto, isDirty, isSaving, submit, reset }
+  return { form, draft, errors, newPhoto, isDirty, isSaving: isPending, submit, reset }
 }

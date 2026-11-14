@@ -1,14 +1,16 @@
 import { z } from "zod";
 import type { Option } from "./options";
-import type { SaBaiAPIDomainStockStatusKey } from "@sabai/sdk/types";
+import type {
+  SaBaiAPIDomainStockStatusKey,
+  SaBaiAPIEndpointsMedicationStockWithBrandGetResponse,
+} from "@sabai/sdk/types";
 import { saBaiAPIDomainStockStatus } from "@sabai/sdk/types";
-import type { LocalMedicationStock } from "~/composables/useMedication";
 
 export const MAX_SPLITS = 10;
 export const MIN_SPLITS = 2;
 
 export type StockStatus = SaBaiAPIDomainStockStatusKey;
-export type MedicationStockRow = LocalMedicationStock;
+export type MedicationStockRow = SaBaiAPIEndpointsMedicationStockWithBrandGetResponse;
 
 export const STOCK_STATUSES = Object.values(saBaiAPIDomainStockStatus) as StockStatus[];
 

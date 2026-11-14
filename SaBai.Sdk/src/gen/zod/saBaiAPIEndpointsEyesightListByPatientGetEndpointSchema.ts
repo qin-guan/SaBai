@@ -7,7 +7,7 @@ import * as z from 'zod'
 import { fastEndpointsProblemDetailsSchema } from './fastEndpointsProblemDetailsSchema'
 import { systemCollectionsGenericListOfSaBaiAPIEndpointsEyesightListByPatientGetResponseSchema } from './systemCollectionsGenericListOfSaBaiAPIEndpointsEyesightListByPatientGetResponseSchema'
 
-export const saBaiAPIEndpointsEyesightListByPatientGetEndpointPathPatientIdSchema = z.int32()
+export const saBaiAPIEndpointsEyesightListByPatientGetEndpointPathPatientIdSchema = z.uuid()
 
 export const saBaiAPIEndpointsEyesightListByPatientGetEndpointStatus200Schema = systemCollectionsGenericListOfSaBaiAPIEndpointsEyesightListByPatientGetResponseSchema
 
@@ -22,5 +22,5 @@ export const saBaiAPIEndpointsEyesightListByPatientGetEndpointResponseSchema = s
 export const saBaiAPIEndpointsEyesightListByPatientGetEndpointErrorSchema = z.union([saBaiAPIEndpointsEyesightListByPatientGetEndpointStatus400Schema, saBaiAPIEndpointsEyesightListByPatientGetEndpointStatus401Schema, saBaiAPIEndpointsEyesightListByPatientGetEndpointStatus403Schema])
 
 export const saBaiAPIEndpointsEyesightListByPatientGetEndpointPathSchema = z.object({
-  patientId: z.int32(),
+  patientId: z.uuid(),
 })

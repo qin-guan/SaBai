@@ -1,274 +1,296 @@
 <script setup lang="ts">
+import {
+  PhArrowClockwise,
+  PhArrowsClockwise,
+  PhCheckCircle,
+  PhCloudArrowDown,
+  PhCloudCheck,
+  PhCloudSlash,
+  PhTrash,
+  PhWarning,
+} from '@phosphor-icons/vue'
 import { toast } from 'vue-sonner'
+import type { OutboxItem } from '~/offline/outbox'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 
-interface ConflictItem {
-  id: string
-  table: string
-  recordId: string
-  field: string
-  previousValue: string | null
-  incomingValue: string | null
-  winningValue: string | null
-  occurredAt: string
-}
-
-interface RejectionItem {
-  id: string
-  table: string
-  recordId: string
-  operation: string
-  payloadJson: string
-  reason: string
-  occurredAt: string
-}
-
-interface DuplicatePatientSummary {
-  id: string
-  displayId: string
-  name: string
-  identificationNumber: string | null
-  dateOfBirth: string
-  gender: string
-  createdAt: string
-  visitCount: number
-}
-
-interface DuplicatePatientGroup {
-  matchReason: string
-  patients: DuplicatePatientSummary[]
-}
-
-interface AttentionResponse {
-  conflicts: ConflictItem[]
-  rejections: RejectionItem[]
-  duplicatePatients: DuplicatePatientGroup[]
-}
+useHead({ title: "Sync · Sa'Bai" })
 
 const {
-  isOnline,
-  connected,
-  statusLabel,
+  isOffline,
+  replaying,
+  pendingCount,
+  attentionCount,
   lastSyncedAt,
-  pendingCrudCount,
-  lastError,
-  refreshAttentionCount,
+  ownItems,
+  parkedItems,
+  statusLabel,
+  prefetch,
+  syncNow,
+  downloadForOffline,
+  retry,
+  overwrite,
+  discard,
 } = useSyncState()
 
-const loading = ref(false)
-const attention = ref<AttentionResponse>({
-  conflicts: [],
-  rejections: [],
-  duplicatePatients: [],
-})
-const selectedPrimary = ref<Record<number, string>>({})
+const { isAdmin } = useCurrentUser()
+const discarding = ref<OutboxItem | null>(null)
 
-async function loadAttention() {
-  if (!isOnline.value) return
-  loading.value = true
+const pendingItems = computed(() => ownItems.value.filter(item => item.status === 'queued'))
+const attentionItems = computed(() => ownItems.value.filter(item => item.status !== 'queued'))
+
+/** Other users' writes, grouped by who made them. */
+const parkedGroups = computed(() => {
+  const groups = new Map<string, { name: string, items: OutboxItem[] }>()
+  for (const item of parkedItems.value) {
+    const key = item.userId ?? ''
+    const group = groups.get(key) ?? { name: item.userName || 'another user', items: [] }
+    group.items.push(item)
+    groups.set(key, group)
+  }
+  return [...groups.values()]
+})
+const discardingParked = computed(() => !!discarding.value && parkedItems.value.some(item => item.id === discarding.value!.id))
+
+const syncing = ref(false)
+async function onSyncNow() {
+  syncing.value = true
   try {
-    const res = await fetch('/api/sync/attention', { credentials: 'include' })
-    if (!res.ok) throw new Error(`Failed to load sync attention (${res.status})`)
-    const data = (await res.json()) as AttentionResponse
-    attention.value = data
-    data.duplicatePatients.forEach((grp, idx) => {
-      if (!selectedPrimary.value[idx] && grp.patients[0]) {
-        selectedPrimary.value[idx] = grp.patients[0].id
-      }
-    })
-    await refreshAttentionCount()
-  } catch (err) {
-    toast.error(err instanceof Error ? err.message : 'Failed to load sync status.')
-  } finally {
-    loading.value = false
+    const reached = await syncNow()
+    if (!reached) toast.warning('The server cannot be reached. Changes stay on this device until it can.')
+    else if (pendingCount.value === 0 && attentionCount.value === 0) toast.success('Everything is synced.')
+  }
+  finally {
+    syncing.value = false
   }
 }
 
-async function resolveConflict(id: string) {
-  const res = await fetch(`/api/sync/conflicts/${id}/resolve`, {
-    method: 'POST',
-    credentials: 'include',
-  })
-  if (!res.ok) {
-    toast.error('Failed to resolve conflict.')
-    return
-  }
-  toast.success('Conflict marked as reviewed.')
-  await loadAttention()
+async function onDownload() {
+  const result = await downloadForOffline()
+  if (result.failed.length > 0) toast.warning(`Some data could not be downloaded (${result.failed.join(', ')}). Try again when the connection is better.`)
+  else toast.success('Downloaded for offline use.')
 }
 
-async function dismissRejection(id: string) {
-  const res = await fetch(`/api/sync/rejections/${id}/dismiss`, {
-    method: 'POST',
-    credentials: 'include',
-  })
-  if (!res.ok) {
-    toast.error('Failed to dismiss rejection.')
-    return
+const busyId = ref<string | null>(null)
+async function act(item: OutboxItem, action: (id: string) => Promise<unknown>) {
+  busyId.value = item.id
+  try {
+    await action(item.id)
   }
-  toast.success('Rejection dismissed.')
-  await loadAttention()
+  catch (err) {
+    console.error(err)
+    toast.error('That did not work. Try again.')
+  }
+  finally {
+    busyId.value = null
+  }
 }
 
-async function mergeDuplicates(groupIndex: number, group: DuplicatePatientGroup) {
-  const targetId = selectedPrimary.value[groupIndex]
-  if (!targetId) return
-  const sources = group.patients.filter(p => p.id !== targetId)
-  if (sources.length === 0) return
-
-  for (const src of sources) {
-    const res = await fetch('/api/sync/patients/merge', {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        sourcePatientId: src.id,
-        targetPatientId: targetId,
-      }),
-    })
-    if (!res.ok) {
-      toast.error(`Failed to merge ${src.name}.`)
-      return
-    }
-  }
-  toast.success('Duplicate patient records merged.')
-  await loadAttention()
+async function confirmDiscard() {
+  const item = discarding.value
+  if (!item) return
+  await act(item, discard)
+  discarding.value = null
+  toast.success('Change discarded.')
 }
 
-onMounted(() => {
-  void loadAttention()
-})
+const timeFormat = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+function formatTime(value: string | Date | null | undefined) {
+  return value ? timeFormat.format(new Date(value)) : 'Not yet'
+}
+
+const prefetchPercent = computed(() =>
+  prefetch.value.total > 0 ? Math.round((prefetch.value.done / prefetch.value.total) * 100) : 0,
+)
 </script>
 
 <template>
-  <div class="mx-auto max-w-4xl space-y-6">
+  <div class="flex flex-col gap-4">
     <PageHeader
-      title="Sync & Offline Status"
-      subtitle="Local database replication, queued offline edits, conflicts, and duplicate patient review"
+      title="Sync"
+      description="Changes saved on this device and the connection to the server."
+      :breadcrumbs="[{ label: 'Home', to: '/' }, { label: 'Settings', to: paths.settings() }, { label: 'Sync' }]"
+    />
+
+    <!-- Connection status -->
+    <div class="flex flex-wrap items-center justify-between gap-3 border border-border bg-card p-3 text-sm" role="status">
+      <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <Badge v-if="isOffline" variant="outline" class="border-warning/40 bg-warning-subtle text-warning">
+          <PhCloudSlash aria-hidden="true" /> Offline
+        </Badge>
+        <Badge v-else variant="outline" class="border-success/40 bg-success-subtle text-success">
+          <PhCloudCheck aria-hidden="true" /> Connected
+        </Badge>
+        <span class="font-semibold">{{ statusLabel }}</span>
+        <span class="text-xs text-muted-foreground touch:text-sm">Last synced: {{ formatTime(lastSyncedAt) }}</span>
+      </div>
+      <Button size="sm" :disabled="syncing || replaying" @click="onSyncNow">
+        <PhArrowsClockwise :class="(syncing || replaying) && 'animate-spin motion-reduce:animate-none'" aria-hidden="true" />
+        {{ syncing || replaying ? 'Syncing…' : 'Sync now' }}
+      </Button>
+    </div>
+
+    <!-- Conflicts and rejections -->
+    <AppPanel v-if="attentionItems.length > 0" :title="`Needs attention (${attentionItems.length})`" flush>
+      <ul class="divide-y divide-border">
+        <li
+          v-for="item in attentionItems"
+          :key="item.id"
+          class="flex flex-col gap-2 px-3 py-3 sm:flex-row sm:items-start sm:justify-between"
+          data-testid="attention-item"
+        >
+          <div class="min-w-0 space-y-1">
+            <p class="flex flex-wrap items-center gap-2 font-semibold">
+              <PhWarning class="size-4 shrink-0 text-warning" aria-hidden="true" />
+              {{ item.label }}
+              <Badge v-if="item.status === 'conflict'" variant="outline" class="border-warning/40 bg-warning-subtle text-warning">
+                Changed by someone else
+              </Badge>
+              <Badge v-else variant="outline" class="border-destructive/40 bg-destructive-subtle text-destructive">
+                Not accepted
+              </Badge>
+            </p>
+            <p class="text-xs text-muted-foreground touch:text-sm">
+              Saved {{ formatTime(item.queuedAt) }}
+            </p>
+            <p v-if="item.error" class="text-xs touch:text-sm" :class="item.status === 'conflict' ? 'text-warning' : 'text-destructive'">
+              {{ item.error }}
+            </p>
+            <p v-if="item.status === 'conflict'" class="text-xs text-muted-foreground touch:text-sm">
+              <strong>Overwrite</strong> replaces their change with yours. <strong>Discard</strong> keeps theirs and drops yours.
+            </p>
+          </div>
+          <div class="flex shrink-0 flex-wrap gap-1 sm:justify-end">
+            <Button
+              v-if="item.status === 'conflict'"
+              size="sm"
+              variant="outline"
+              :disabled="busyId === item.id"
+              @click="act(item, overwrite)"
+            >
+              <PhCheckCircle aria-hidden="true" /> Overwrite
+            </Button>
+            <Button size="sm" variant="outline" :disabled="busyId === item.id" @click="act(item, retry)">
+              <PhArrowClockwise aria-hidden="true" /> Retry
+            </Button>
+            <Button size="sm" variant="destructive" :disabled="busyId === item.id" @click="discarding = item">
+              <PhTrash aria-hidden="true" /> Discard
+            </Button>
+          </div>
+        </li>
+      </ul>
+    </AppPanel>
+
+    <!-- Other users' changes -->
+    <AppPanel
+      v-for="group in parkedGroups"
+      :key="group.name"
+      :title="`Changes made by ${group.name} waiting for them to sign in again (${group.items.length})`"
+      flush
     >
-      <template #actions>
-        <Button :disabled="!isOnline || loading" variant="outline" size="sm" @click="loadAttention">
-          Refresh
+      <p class="border-b border-border px-3 py-2 text-xs text-muted-foreground touch:text-sm">
+        These were saved on this device by {{ group.name }} and are sent only when {{ group.name }} signs in here again.
+        <template v-if="!isAdmin">An admin can discard them.</template>
+      </p>
+      <ol class="divide-y divide-border">
+        <li
+          v-for="item in group.items"
+          :key="item.id"
+          class="flex items-center gap-3 px-3 py-2"
+          data-testid="parked-item"
+        >
+          <span class="min-w-0 flex-1 truncate">{{ item.label }}</span>
+          <span class="shrink-0 text-xs text-muted-foreground touch:text-sm">{{ formatTime(item.queuedAt) }}</span>
+          <Button
+            v-if="isAdmin"
+            size="sm"
+            variant="destructive"
+            :disabled="busyId === item.id"
+            @click="discarding = item"
+          >
+            <PhTrash aria-hidden="true" /> Discard
+          </Button>
+        </li>
+      </ol>
+    </AppPanel>
+
+    <!-- Pending changes -->
+    <AppPanel :title="`Waiting to be sent (${pendingItems.length})`" flush>
+      <StateMessage
+        v-if="pendingItems.length === 0"
+        message="Nothing waiting. Every change made on this device has been sent."
+      />
+      <ol v-else class="divide-y divide-border">
+        <li
+          v-for="(item, index) in pendingItems"
+          :key="item.id"
+          class="flex items-center gap-3 px-3 py-2"
+          data-testid="pending-item"
+        >
+          <span class="w-6 shrink-0 text-right font-mono text-xs text-muted-foreground" aria-hidden="true">{{ index + 1 }}</span>
+          <span class="min-w-0 flex-1 truncate">{{ item.label }}</span>
+          <span class="shrink-0 text-xs text-muted-foreground touch:text-sm">{{ formatTime(item.queuedAt) }}</span>
+        </li>
+      </ol>
+      <p v-if="pendingItems.length > 0" class="border-t border-border px-3 py-2 text-xs text-muted-foreground touch:text-sm">
+        Sent in this order as soon as the server can be reached. A change that waits behind one needing attention is sent once that is resolved.
+      </p>
+    </AppPanel>
+
+    <!-- Offline download -->
+    <AppPanel title="Download for offline use">
+      <div class="flex flex-col gap-3 text-sm">
+        <p class="text-muted-foreground">
+          Saves the lists this clinic works from (patients, villages, medication…) on this device, so they can be opened without a connection. It also happens by itself after signing in.
+        </p>
+        <div v-if="prefetch.running" class="flex flex-col gap-1" role="status">
+          <div class="h-2 w-full overflow-hidden border border-border bg-muted" aria-hidden="true">
+            <div class="h-full bg-primary transition-[width]" :style="{ width: `${prefetchPercent}%` }" />
+          </div>
+          <span class="text-xs text-muted-foreground touch:text-sm">Downloading… {{ prefetch.done }} of {{ prefetch.total }}</span>
+        </div>
+        <p v-else class="text-xs text-muted-foreground touch:text-sm">
+          Last downloaded: {{ prefetch.lastRunAt ? formatTime(new Date(prefetch.lastRunAt)) : 'Not yet' }}
+          <span v-if="prefetch.failed.length" class="text-warning"> · Not downloaded: {{ prefetch.failed.join(', ') }}</span>
+        </p>
+        <div>
+          <Button size="sm" variant="outline" :disabled="prefetch.running || isOffline" @click="onDownload">
+            <PhCloudArrowDown aria-hidden="true" /> Download for offline use
+          </Button>
+        </div>
+      </div>
+    </AppPanel>
+
+    <!-- Explanation -->
+    <AppPanel title="Working offline">
+      <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+        <li>Anything this device has already opened or downloaded can be read without a connection.</li>
+        <li>Saving patient records, visits and station forms works offline. The change shows straight away and is sent when the server can be reached.</li>
+        <li>If someone else changed the same record in the meantime, the change is held here so you can decide what to keep.</li>
+        <li>Face search, photos and files, PDFs, the audit log, staff accounts and notifications need a connection.</li>
+        <li>Signing out deletes your changes that have not been sent yet, so sync first.</li>
+        <li>If your session ends before your changes are sent and someone else signs in on this device, your changes wait here, unsent, until you sign in again.</li>
+      </ul>
+    </AppPanel>
+
+    <AppDialog v-if="discarding" title="Discard this change?" size="sm" @close="discarding = null">
+      <p class="font-semibold">
+        {{ discarding.label }}
+      </p>
+      <p class="mt-2">
+        The change is deleted from this device and will never reach the server. This cannot be undone.
+      </p>
+      <p v-if="discardingParked" class="mt-2">
+        It was made by {{ discarding.userName || 'another user' }}, who has not signed in again since.
+      </p>
+      <template #footer>
+        <Button variant="outline" @click="discarding = null">
+          Keep it
+        </Button>
+        <Button variant="destructive" :disabled="busyId === discarding.id" @click="confirmDiscard">
+          <PhTrash aria-hidden="true" /> Discard change
         </Button>
       </template>
-    </PageHeader>
-
-    <AppPanel title="Device sync health">
-      <dl class="grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
-        <div>
-          <dt class="text-muted-foreground">Status</dt>
-          <dd class="font-semibold">{{ statusLabel }}</dd>
-        </div>
-        <div>
-          <dt class="text-muted-foreground">PowerSync stream</dt>
-          <dd class="font-semibold">{{ connected ? 'Connected' : 'Disconnected' }}</dd>
-        </div>
-        <div>
-          <dt class="text-muted-foreground">Queued offline edits</dt>
-          <dd class="font-semibold">{{ pendingCrudCount }}</dd>
-        </div>
-        <div>
-          <dt class="text-muted-foreground">Last synced</dt>
-          <dd class="font-semibold">
-            {{ lastSyncedAt ? lastSyncedAt.toLocaleTimeString() : 'Not yet' }}
-          </dd>
-        </div>
-      </dl>
-      <p v-if="lastError" class="mt-3 text-xs text-destructive">
-        Last sync error: {{ lastError }}
-      </p>
-    </AppPanel>
-
-    <AppPanel v-if="!isOnline" title="Offline mode">
-      <p class="text-sm text-muted-foreground">
-        You are currently offline. You can continue reading and editing patient records; changes are saved to this device and will upload automatically when connectivity returns. Connect to the server to review conflicts, rejections, and potential duplicate patients.
-      </p>
-    </AppPanel>
-
-    <template v-else>
-      <AppPanel :title="`Sync rejections (${attention.rejections.length})`">
-        <p v-if="attention.rejections.length === 0" class="text-sm text-muted-foreground">
-          No rejected offline changes.
-        </p>
-        <ul v-else class="divide-y">
-          <li v-for="r in attention.rejections" :key="r.id" class="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between">
-            <div class="min-w-0 space-y-1 text-sm">
-              <p class="font-medium">
-                {{ r.operation }} on <code class="text-xs">{{ r.table }}</code>
-                <span class="text-xs text-muted-foreground">({{ r.recordId }})</span>
-              </p>
-              <p class="text-destructive">{{ r.reason }}</p>
-              <p class="truncate text-xs text-muted-foreground">{{ r.payloadJson }}</p>
-            </div>
-            <Button size="sm" variant="outline" @click="dismissRejection(r.id)">
-              Dismiss
-            </Button>
-          </li>
-        </ul>
-      </AppPanel>
-
-      <AppPanel :title="`Same-field conflicts (${attention.conflicts.length})`">
-        <p v-if="attention.conflicts.length === 0" class="text-sm text-muted-foreground">
-          No unresolved field conflicts.
-        </p>
-        <ul v-else class="divide-y">
-          <li v-for="c in attention.conflicts" :key="c.id" class="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between">
-            <div class="space-y-1 text-sm">
-              <p class="font-medium">
-                <code class="text-xs">{{ c.table }}.{{ c.field }}</code>
-                <span class="text-xs text-muted-foreground">({{ c.recordId }})</span>
-              </p>
-              <p class="text-xs text-muted-foreground">
-                Previous: <span class="line-through">{{ c.previousValue ?? 'empty' }}</span>
-                → Kept: <span class="font-semibold text-foreground">{{ c.winningValue ?? 'empty' }}</span>
-              </p>
-            </div>
-            <Button size="sm" variant="outline" @click="resolveConflict(c.id)">
-              Mark reviewed
-            </Button>
-          </li>
-        </ul>
-      </AppPanel>
-
-      <AppPanel :title="`Possible duplicate patients (${attention.duplicatePatients.length})`">
-        <p v-if="attention.duplicatePatients.length === 0" class="text-sm text-muted-foreground">
-          No duplicate patient candidates detected.
-        </p>
-        <div v-else class="space-y-4">
-          <div
-            v-for="(grp, idx) in attention.duplicatePatients"
-            :key="idx"
-            class="rounded-md border p-3"
-          >
-            <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              {{ grp.matchReason }}
-            </p>
-            <div class="space-y-2">
-              <label
-                v-for="p in grp.patients"
-                :key="p.id"
-                class="flex items-center gap-2 text-sm"
-              >
-                <input
-                  v-model="selectedPrimary[idx]"
-                  type="radio"
-                  :name="`dup-${idx}`"
-                  :value="p.id"
-                >
-                <span class="font-medium">{{ p.name }}</span>
-                <span class="text-xs text-muted-foreground">
-                  ({{ p.displayId }} · {{ p.visitCount }} visit(s) · DOB {{ p.dateOfBirth.slice(0, 10) }})
-                </span>
-              </label>
-            </div>
-            <div class="mt-3 flex justify-end">
-              <Button size="sm" @click="mergeDuplicates(idx, grp)">
-                Merge into selected primary
-              </Button>
-            </div>
-          </div>
-        </div>
-      </AppPanel>
-    </template>
+    </AppDialog>
   </div>
 </template>

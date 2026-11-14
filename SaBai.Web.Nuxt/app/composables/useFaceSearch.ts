@@ -8,6 +8,8 @@ export function useFaceSearch(image: MaybeRefOrGetter<string | null>, maxMatches
     queryKey: computed(() => queryKeys.faceSearch(toValue(image) ?? "")),
     enabled: computed(() => !!toValue(image)),
     retry: false,
+    // The key holds the whole photo and the matches are patient data: never saved offline.
+    meta: { persist: false },
     queryFn: async () => {
       const file = await dataUrlToFile(toValue(image)!, "face-search");
       const result = await saBaiAPIEndpointsPatientsSearchByFacePostEndpoint({

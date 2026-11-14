@@ -8,7 +8,7 @@ import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsVillageCodesCreatePostResponse<TData extends Partial<SaBaiAPIEndpointsVillageCodesCreatePostResponse> = object>(data?: TData) {
   const defaultFakeData = {
-    id: faker.number.int(),
+    id: faker.string.uuid(),
     code: faker.string.alpha(),
     name: faker.string.alpha(),
     colorHex: faker.string.alpha(),

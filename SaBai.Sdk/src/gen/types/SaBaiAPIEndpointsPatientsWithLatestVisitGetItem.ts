@@ -5,14 +5,15 @@
 
 import type { SaBaiAPIDomainGenderKey } from './SaBaiAPIDomainGender'
 import type { SaBaiAPIEndpointsPatientsVisitJourney } from './SaBaiAPIEndpointsPatientsVisitJourney'
+import type { SystemCollectionsGenericIReadOnlyListOfSystemString } from './SystemCollectionsGenericIReadOnlyListOfSystemString'
 
 export type SaBaiAPIEndpointsPatientsWithLatestVisitGetItem = {
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  id: number;
+  id: string;
   name: string;
   identificationNumber: string | null;
   contactNo: string | null;
@@ -30,10 +31,10 @@ export type SaBaiAPIEndpointsPatientsWithLatestVisitGetItem = {
   toGetReport: boolean;
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  villageCodeId: number | null;
+  villageCodeId: string | null;
   villageCode: string | null;
   villageColorHex: string | null;
   displayId: string;
@@ -46,11 +47,12 @@ export type SaBaiAPIEndpointsPatientsWithLatestVisitGetItem = {
   lastVisitDate: string | null;
   /**
    * @description
-   * Format: `int32`
-   * @type integer
+   * Format: `uuid`
+   * @type string
    */
-  lastVisitId: number | null;
+  lastVisitId: string | null;
   hasPhoto: boolean;
   hasFace: boolean;
   lastVisitJourney: null | SaBaiAPIEndpointsPatientsVisitJourney;
+  tags: SystemCollectionsGenericIReadOnlyListOfSystemString;
 };

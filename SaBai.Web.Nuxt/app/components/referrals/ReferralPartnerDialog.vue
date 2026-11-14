@@ -28,7 +28,7 @@ const createPartner = useCreateReferralPartner()
 const updatePartner = useUpdateReferralPartner()
 const saving = computed(() => createPartner.isPending.value || updatePartner.isPending.value)
 
-function submit() {
+async function submit() {
   if (saving.value) return
   nameError.value = ''
 
@@ -38,39 +38,19 @@ function submit() {
     return
   }
 
-  if (isEditing.value) {
-    updatePartner.mutate(
-      {
-        id: props.partner!.id,
-        name: form.value.name,
-        remarks: form.value.remarks,
-        isActive: form.value.isActive,
-      },
-      {
-        onSuccess: () => {
-          toast.success('Referral partner updated')
-          emit('close')
-        },
-        onError: err => toast.error(getApiErrorMessage(err, 'Unable to update referral partner.')),
-      },
-    )
-    return
+  const values = { name: form.value.name, remarks: form.value.remarks, isActive: form.value.isActive }
+  try {
+    if (isEditing.value) {
+      notifySaved(await updatePartner.mutateAsync({ id: props.partner!.id, ...values }), 'Referral partner updated')
+    }
+    else {
+      notifySaved(await createPartner.mutateAsync(values), 'Referral partner created')
+    }
+    emit('close')
   }
-
-  createPartner.mutate(
-    {
-      name: form.value.name,
-      remarks: form.value.remarks,
-      isActive: form.value.isActive,
-    },
-    {
-      onSuccess: () => {
-        toast.success('Referral partner created')
-        emit('close')
-      },
-      onError: err => toast.error(getApiErrorMessage(err, 'Unable to create referral partner.')),
-    },
-  )
+  catch (err) {
+    toast.error(getApiErrorMessage(err, isEditing.value ? 'Unable to update referral partner.' : 'Unable to create referral partner.'))
+  }
 }
 
 useSaveShortcut(submit)

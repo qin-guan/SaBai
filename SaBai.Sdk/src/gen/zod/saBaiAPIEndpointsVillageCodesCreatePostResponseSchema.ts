@@ -6,7 +6,7 @@
 import * as z from 'zod'
 
 export const saBaiAPIEndpointsVillageCodesCreatePostResponseSchema = z.object({
-  id: z.int32(),
+  id: z.uuid(),
   code: z.string(),
   name: z.string(),
   colorHex: z.string(),

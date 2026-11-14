@@ -35,6 +35,16 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             .Vitals.AsNoTracking()
             .FirstOrNotFoundAsync(x => x.Id == req.VitalsId, "Vitals were not found.", ct);
 
+        if (await db.PubertyAssessments.FindExistingAsync(req.Id, x => x.VitalsId == req.VitalsId, ct) is { } existing)
+        {
+            await Send.CreatedAtAsync<Get.Endpoint>(
+                new { existing.Id },
+                Response.From(existing),
+                cancellation: ct
+            );
+            return;
+        }
+
         if (await db.PubertyAssessments.AnyAsync(x => x.VitalsId == req.VitalsId, ct))
         {
             throw new ConflictException(
@@ -44,6 +54,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
         var puberty = new PubertyAssessment
         {
+            Id = req.Id ?? Guid.CreateVersion7(),
             VitalsId = req.VitalsId,
             Pubarche = req.Pubarche,
             PubarcheAge = req.PubarcheAge,

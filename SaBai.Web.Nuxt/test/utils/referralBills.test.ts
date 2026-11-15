@@ -4,11 +4,15 @@ import type { ReferralListItem } from '~/utils/referral'
 import {
   buildPnLedgerCsv,
   buildReferralBillsCsv,
+  computeProjectedBalance,
+  formatBalanceStatus,
   formatBillAmount,
   formatSignedBillAmount,
   hasReferralBill,
   isUnattributedBill,
   matchesReferralBill,
+  parseOptionalRielsInput,
+  parseOptionalUsdInput,
   summarizeReferralBills,
   UNASSIGNED_PAYER_KEY,
   type ReferralBillLookup,
@@ -155,4 +159,37 @@ describe('referralBills helpers', () => {
     const ledgerCsv = buildPnLedgerCsv([entry])
     expect(ledgerCsv.split('\r\n')[1]).toContain('2026-11-14,Dara,Repayment,PN:Payable,Clinic:Cash,-15.00,0,,No,"Cash, EOD"')
   })
+
+  it('parses USD and KHR modal inputs safely from strings or raw numbers', () => {
+    expect(parseOptionalUsdInput('')).toEqual({ valid: true, value: null })
+    expect(parseOptionalUsdInput('  ')).toEqual({ valid: true, value: null })
+    expect(parseOptionalUsdInput('12.50')).toEqual({ valid: true, value: 12.5 })
+    expect(parseOptionalUsdInput(15)).toEqual({ valid: true, value: 15 })
+    expect(parseOptionalUsdInput(12.34)).toEqual({ valid: true, value: 12.34 })
+    expect(parseOptionalUsdInput('-5')).toEqual({ valid: false, value: null })
+    expect(parseOptionalUsdInput('1.234')).toEqual({ valid: false, value: null })
+    expect(parseOptionalUsdInput('abc')).toEqual({ valid: false, value: null })
+
+    expect(parseOptionalRielsInput('')).toEqual({ valid: true, value: null })
+    expect(parseOptionalRielsInput('40000')).toEqual({ valid: true, value: 40000 })
+    expect(parseOptionalRielsInput(25000)).toEqual({ valid: true, value: 25000 })
+    expect(parseOptionalRielsInput('400.5')).toEqual({ valid: false, value: null })
+    expect(parseOptionalRielsInput('-100')).toEqual({ valid: false, value: null })
+  })
+
+  it('computes projected balances for underpay, exact settlement, overpay, and partial typing without crashing on numbers', () => {
+    expect(computeProjectedBalance(25, 40000, '10', '15000')).toEqual({ usd: 15, riels: 25000 })
+    expect(computeProjectedBalance(25, 40000, 25, 40000)).toEqual({ usd: 0, riels: 0 })
+    expect(computeProjectedBalance(25, 40000, '30.50', '50000')).toEqual({ usd: -5.5, riels: -10000 })
+    expect(computeProjectedBalance(10, 0, '12.', '')).toEqual({ usd: -2, riels: 0 })
+    expect(computeProjectedBalance(10, 0, 'abc', '')).toEqual({ usd: 10, riels: 0 })
+  })
+
+  it('formats balance status labels for owed, overpaid, and settled states', () => {
+    expect(formatBalanceStatus(0, 0).label).toBe('Settled')
+    expect(formatBalanceStatus(12.5, 40000).label).toBe('Owed US$12.50 · Owed 40,000 KHR')
+    expect(formatBalanceStatus(-5, 0).label).toBe('Overpaid US$5.00')
+    expect(formatBalanceStatus(5, -10000).label).toBe('Owed US$5.00 · Overpaid 10,000 KHR')
+  })
 })
+

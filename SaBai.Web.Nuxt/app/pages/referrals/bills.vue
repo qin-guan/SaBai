@@ -29,13 +29,14 @@ import type { ReferralListItem } from '@/utils/referral'
 import {
   buildPnLedgerCsv,
   buildReferralBillsCsv,
+  computeProjectedBalance,
+  formatBalanceStatus,
   formatBillAmount,
-  formatRiels,
   formatSignedBillAmount,
-  formatUsd,
   hasReferralBill,
-  isUnattributedBill,
   matchesReferralBill,
+  parseOptionalRielsInput,
+  parseOptionalUsdInput,
   summarizeReferralBills,
   UNASSIGNED_PAYER_KEY,
   type ReferralBillLookup,
@@ -74,7 +75,7 @@ const lookup: ReferralBillLookup = {
   memberName: (id) => {
     if (!id) return undefined
     const u = staffById.value.get(id)
-    return u ? u.nickname || u.userName : undefined
+    return u ? (u.nickname || u.userName || undefined) : undefined
   },
   partnerName: id => (id ? partnersById.value.get(id)?.name : undefined),
 }
@@ -82,7 +83,7 @@ const lookup: ReferralBillLookup = {
 const staffOptions = computed(() =>
   [...(staff.value ?? [])]
     .filter(u => !u.isLocked)
-    .sort((a, b) => (a.nickname || a.userName).localeCompare(b.nickname || b.userName)),
+    .sort((a, b) => (a.nickname || a.userName || '').localeCompare(b.nickname || b.userName || '')),
 )
 
 function shortDate(iso: string | null | undefined): string {
@@ -186,23 +187,7 @@ function togglePersonFilter(memberId: string) {
 }
 
 function formatBalanceBadge(usd: number, riels: number): { label: string, tone: string } {
-  const hasPos = usd > 0 || riels > 0
-  const hasNeg = usd < 0 || riels < 0
-  if (!hasPos && !hasNeg) {
-    return { label: 'Settled', tone: 'border-success/40 bg-success-subtle text-success' }
-  }
-  const parts: string[] = []
-  if (usd > 0) parts.push(`Owed ${formatUsd(usd)}`)
-  else if (usd < 0) parts.push(`Overpaid ${formatUsd(Math.abs(usd))}`)
-  if (riels > 0) parts.push(`Owed ${formatRiels(riels)}`)
-  else if (riels < 0) parts.push(`Overpaid ${formatRiels(Math.abs(riels))}`)
-
-  return {
-    label: parts.join(' · '),
-    tone: hasPos
-      ? 'border-warning-border bg-warning-subtle text-warning'
-      : 'border-band-border bg-accent text-accent-foreground',
-  }
+  return formatBalanceStatus(usd, riels)
 }
 
 // ── Repay by person dialog ───────────────────────────────────────────────
@@ -225,16 +210,14 @@ const selectedRepayBalance = computed(() =>
   balances.value.find(b => b.memberId === repayDialog.value.memberId),
 )
 
-const projectedBalance = computed(() => {
-  const curUsd = selectedRepayBalance.value?.balanceUsd ?? 0
-  const curRiels = selectedRepayBalance.value?.balanceRiels ?? 0
-  const payUsd = repayDialog.value.amountUsd.trim() ? Number(repayDialog.value.amountUsd) : 0
-  const payRiels = repayDialog.value.amountRiels.trim() ? Number(repayDialog.value.amountRiels) : 0
-  return {
-    usd: Math.round((curUsd - (Number.isFinite(payUsd) ? payUsd : 0)) * 100) / 100,
-    riels: curRiels - (Number.isFinite(payRiels) ? Math.round(payRiels) : 0),
-  }
-})
+const projectedBalance = computed(() =>
+  computeProjectedBalance(
+    selectedRepayBalance.value?.balanceUsd ?? 0,
+    selectedRepayBalance.value?.balanceRiels ?? 0,
+    repayDialog.value.amountUsd,
+    repayDialog.value.amountRiels,
+  ),
+)
 
 function openRepayDialog(memberId = '') {
   const bal = balances.value.find(b => b.memberId === memberId)
@@ -253,12 +236,14 @@ async function submitRepay() {
     toast.error('Select a PN member to repay.')
     return
   }
-  const usd = repayDialog.value.amountUsd.trim() ? Number(repayDialog.value.amountUsd) : 0
-  const riels = repayDialog.value.amountRiels.trim() ? Number(repayDialog.value.amountRiels) : 0
-  if (!Number.isFinite(usd) || usd < 0 || !Number.isFinite(riels) || riels < 0 || !Number.isInteger(riels)) {
-    toast.error('Enter valid non-negative USD and integer KHR amounts.')
+  const parsedUsd = parseOptionalUsdInput(repayDialog.value.amountUsd)
+  const parsedRiels = parseOptionalRielsInput(repayDialog.value.amountRiels)
+  if (!parsedUsd.valid || !parsedRiels.valid) {
+    toast.error('Enter valid non-negative USD (up to 2 decimals) and whole-number KHR amounts.')
     return
   }
+  const usd = parsedUsd.value ?? 0
+  const riels = parsedRiels.value ?? 0
   if (usd <= 0 && riels <= 0) {
     toast.error('Enter a positive USD or KHR repayment amount.')
     return
@@ -343,13 +328,13 @@ async function saveEditBill() {
   const item = editDialog.value.item
   if (!item) return
 
-  const parsedUsd = editDialog.value.amountPaidUsd.trim() ? Number(editDialog.value.amountPaidUsd) : null
-  const parsedRiels = editDialog.value.amountPaidRiels.trim() ? Number(editDialog.value.amountPaidRiels) : null
-  if (parsedUsd !== null && (!Number.isFinite(parsedUsd) || parsedUsd < 0)) {
-    toast.error('USD amount must be a non-negative number.')
+  const parsedUsd = parseOptionalUsdInput(editDialog.value.amountPaidUsd)
+  const parsedRiels = parseOptionalRielsInput(editDialog.value.amountPaidRiels)
+  if (!parsedUsd.valid) {
+    toast.error('USD amount must be a non-negative number (up to 2 decimals).')
     return
   }
-  if (parsedRiels !== null && (!Number.isFinite(parsedRiels) || parsedRiels < 0 || !Number.isInteger(parsedRiels))) {
+  if (!parsedRiels.valid) {
     toast.error('KHR amount must be a non-negative whole number.')
     return
   }
@@ -358,8 +343,8 @@ async function saveEditBill() {
     const outcome = await updateMoney.mutateAsync({
       id: item.id,
       patientName: item.patientName,
-      amountPaidUsd: parsedUsd,
-      amountPaidRiels: parsedRiels,
+      amountPaidUsd: parsedUsd.value,
+      amountPaidRiels: parsedRiels.value,
       memberWhoPaidId: editDialog.value.memberWhoPaidId || null,
     })
     editDialog.value.open = false
@@ -782,10 +767,10 @@ function exportCsv() {
 
           <div class="grid grid-cols-2 gap-3">
             <FormField v-slot="{ id }" label="Amount USD">
-              <Input :id="id" v-model="repayDialog.amountUsd" type="number" step="0.01" min="0" placeholder="0.00" />
+              <NumericInput :id="id" v-model="repayDialog.amountUsd" unit="USD" step="0.01" min="0" placeholder="0.00" />
             </FormField>
             <FormField v-slot="{ id }" label="Amount KHR">
-              <Input :id="id" v-model="repayDialog.amountRiels" type="number" step="100" min="0" placeholder="0" />
+              <NumericInput :id="id" v-model="repayDialog.amountRiels" unit="KHR" step="1" min="0" placeholder="0" />
             </FormField>
           </div>
 
@@ -854,10 +839,10 @@ function exportCsv() {
 
           <div class="grid grid-cols-2 gap-3">
             <FormField v-slot="{ id }" label="Paid USD">
-              <Input :id="id" v-model="editDialog.amountPaidUsd" type="number" step="0.01" min="0" placeholder="0.00" />
+              <NumericInput :id="id" v-model="editDialog.amountPaidUsd" unit="USD" step="0.01" min="0" placeholder="0.00" />
             </FormField>
             <FormField v-slot="{ id }" label="Paid KHR">
-              <Input :id="id" v-model="editDialog.amountPaidRiels" type="number" step="100" min="0" placeholder="0" />
+              <NumericInput :id="id" v-model="editDialog.amountPaidRiels" unit="KHR" step="1" min="0" placeholder="0" />
             </FormField>
           </div>
         </div>

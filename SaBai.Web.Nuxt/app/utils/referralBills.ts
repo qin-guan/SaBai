@@ -1,6 +1,6 @@
 import type { PnLedgerEntryResponse } from '@sabai/sdk/types'
 import { cleanKhmerText, matchesSearchText } from './khmer'
-import type { ReferralListItem } from './referral'
+import { MAX_RIELS, USD_AMOUNT_PATTERN, type ReferralListItem } from './referral'
 
 export const UNASSIGNED_PAYER_KEY = '__unassigned__'
 
@@ -62,6 +62,68 @@ export function formatSignedBillAmount(usd: number, riels: number): string {
   if (riels !== 0)
     parts.push(`${riels > 0 ? '+' : '-'}${formatRiels(Math.abs(riels))}`)
   return parts.length ? parts.join(' ') : 'US$0.00'
+}
+
+/** Coerces a modal input (string or number) safely to a trimmed string. */
+function trimNumericText(raw: string | number | null | undefined): string {
+  if (raw == null) return ''
+  return (typeof raw === 'number' ? String(raw) : String(raw)).trim()
+}
+
+export function parseOptionalUsdInput(raw: string | number | null | undefined): { valid: boolean, value: number | null } {
+  const text = trimNumericText(raw)
+  if (!text) return { valid: true, value: null }
+  if (!USD_AMOUNT_PATTERN.test(text)) return { valid: false, value: null }
+  const n = Number(text)
+  return Number.isFinite(n) ? { valid: true, value: Math.round(n * 100) / 100 } : { valid: false, value: null }
+}
+
+export function parseOptionalRielsInput(raw: string | number | null | undefined): { valid: boolean, value: number | null } {
+  const text = trimNumericText(raw)
+  if (!text) return { valid: true, value: null }
+  if (!/^\d+$/.test(text)) return { valid: false, value: null }
+  const n = Number(text)
+  return Number.isSafeInteger(n) && n <= MAX_RIELS ? { valid: true, value: n } : { valid: false, value: null }
+}
+
+export function computeProjectedBalance(
+  currentUsd: number,
+  currentRiels: number,
+  payUsdRaw: string | number | null | undefined,
+  payRielsRaw: string | number | null | undefined,
+): { usd: number, riels: number } {
+  const usdText = trimNumericText(payUsdRaw)
+  const rielsText = trimNumericText(payRielsRaw)
+  const payUsd = usdText ? Number(usdText) : 0
+  const payRiels = rielsText ? Number(rielsText) : 0
+  const safeUsd = Number.isFinite(payUsd) && payUsd >= 0 ? payUsd : 0
+  const safeRiels = Number.isFinite(payRiels) && payRiels >= 0 ? Math.round(payRiels) : 0
+  const nextUsd = Math.round((currentUsd - safeUsd) * 100) / 100
+  const nextRiels = currentRiels - safeRiels
+  return {
+    usd: Object.is(nextUsd, -0) ? 0 : nextUsd,
+    riels: Object.is(nextRiels, -0) ? 0 : nextRiels,
+  }
+}
+
+export function formatBalanceStatus(usd: number, riels: number): { label: string, tone: string } {
+  const hasPos = usd > 0 || riels > 0
+  const hasNeg = usd < 0 || riels < 0
+  if (!hasPos && !hasNeg) {
+    return { label: 'Settled', tone: 'border-success/40 bg-success-subtle text-success' }
+  }
+  const parts: string[] = []
+  if (usd > 0) parts.push(`Owed ${formatUsd(usd)}`)
+  else if (usd < 0) parts.push(`Overpaid ${formatUsd(Math.abs(usd))}`)
+  if (riels > 0) parts.push(`Owed ${formatRiels(riels)}`)
+  else if (riels < 0) parts.push(`Overpaid ${formatRiels(Math.abs(riels))}`)
+
+  return {
+    label: parts.join(' · '),
+    tone: hasPos
+      ? 'border-warning-border bg-warning-subtle text-warning'
+      : 'border-band-border bg-accent text-accent-foreground',
+  }
 }
 
 function addUsdCents(cents: number, usd: number | null | undefined): number {

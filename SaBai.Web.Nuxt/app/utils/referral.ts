@@ -114,9 +114,12 @@ export function referralStateBadgeClass(state: SaBaiAPIDomainReferralStateKey): 
   }
 }
 
+export const UNASSIGNED_PN_ON_RUN_KEY = '__unassigned__'
+
 export interface ReferralFilterOptions {
   search?: string
   villageCodeId?: string | null
+  memberOnRunId?: string | null
   referralState?: SaBaiAPIDomainReferralStateKey | null
   referralStates?: readonly SaBaiAPIDomainReferralStateKey[] | null
   tags?: readonly string[] | null
@@ -124,12 +127,22 @@ export interface ReferralFilterOptions {
 }
 
 /**
- * Filters a referral against search query, village, state(s), and patient tags.
+ * Filters a referral against search query, village, PN on run, state(s), and patient tags.
  * Supports Khmer script and numeral normalization.
  */
 export function matchesReferral(item: ReferralListItem, filters: ReferralFilterOptions): boolean {
   if (filters.villageCodeId && item.villageCodeId !== filters.villageCodeId)
     return false
+
+  if (filters.memberOnRunId) {
+    if (filters.memberOnRunId === UNASSIGNED_PN_ON_RUN_KEY) {
+      if (item.memberOnRunId)
+        return false
+    }
+    else if (item.memberOnRunId !== filters.memberOnRunId) {
+      return false
+    }
+  }
 
   if (filters.referralState && item.referralState !== filters.referralState)
     return false

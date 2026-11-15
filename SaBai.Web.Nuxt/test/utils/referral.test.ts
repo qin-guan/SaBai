@@ -15,6 +15,7 @@ import {
   REFERRAL_STATE_OPTIONS,
   REFERRAL_STATES,
   referralStateBadgeClass,
+  UNASSIGNED_PN_ON_RUN_KEY,
   type ReferralListItem,
 } from '~/utils/referral'
 
@@ -40,6 +41,7 @@ const sampleReferral: ReferralListItem = {
   amountPaidUsd: null,
   amountPaidRiels: null,
   memberWhoPaidId: null,
+  memberOnRunId: null,
 }
 
 describe('referral constants & options', () => {
@@ -126,6 +128,17 @@ describe('matchesReferral filtering', () => {
   it('filters by villageCodeId', () => {
     expect(matchesReferral(sampleReferral, { villageCodeId: '01930000-0000-7000-8000-000000000002' })).toBe(true)
     expect(matchesReferral(sampleReferral, { villageCodeId: '01930000-0000-7000-8000-000000000099' })).toBe(false)
+  })
+
+  it('filters by PN assigned for the run (memberOnRunId and unassigned)', () => {
+    const assigned: ReferralListItem = { ...sampleReferral, memberOnRunId: 'pn-1' }
+    expect(matchesReferral(assigned, { memberOnRunId: 'pn-1' })).toBe(true)
+    expect(matchesReferral(assigned, { memberOnRunId: 'pn-2' })).toBe(false)
+    expect(matchesReferral(assigned, { memberOnRunId: UNASSIGNED_PN_ON_RUN_KEY })).toBe(false)
+
+    expect(matchesReferral(sampleReferral, { memberOnRunId: 'pn-1' })).toBe(false)
+    expect(matchesReferral(sampleReferral, { memberOnRunId: UNASSIGNED_PN_ON_RUN_KEY })).toBe(true)
+    expect(matchesReferral(sampleReferral, { memberOnRunId: null })).toBe(true)
   })
 
   it('filters by referralState and multiselect referralStates', () => {

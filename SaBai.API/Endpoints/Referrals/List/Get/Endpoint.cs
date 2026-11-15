@@ -41,6 +41,7 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
                 x.AmountPaidUsd,
                 x.AmountPaidRiels,
                 x.MemberWhoPaidId,
+                x.MemberOnRunId,
             })
             .ToListAsync(ct);
 
@@ -68,7 +69,8 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
                 x.ReferredToId,
                 x.AmountPaidUsd,
                 x.AmountPaidRiels,
-                x.MemberWhoPaidId
+                x.MemberWhoPaidId,
+                x.MemberOnRunId
             ))
             .ToList();
 

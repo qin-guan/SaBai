@@ -41,6 +41,7 @@ function makeReferral(overrides: Partial<ReferralListItem> = {}): ReferralListIt
     amountPaidUsd: null,
     amountPaidRiels: null,
     memberWhoPaidId: null,
+    memberOnRunId: null,
     ...overrides,
   }
 }

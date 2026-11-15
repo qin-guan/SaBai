@@ -8,6 +8,7 @@ import {
   sortReferralPartners,
   updateReferralBooth,
   updateReferralPartner,
+  updateReferralParty,
   updateReferralState,
   type PnLedgerData,
   type ReferralDetail,
@@ -84,6 +85,23 @@ describe('referral optimistic edits', () => {
     expect(qc.getQueryData<ReferralDetail>(queryKeys.referral(referralId))).toMatchObject({ referredToId: 'p1', classOfService: 'ChronicManagement' })
     expect(updateReferralBooth.recordIds!({ id: referralId, referredToId: 'p1' } as never)).toEqual([referralId])
     expect(updateReferralBooth.dependsOn!({ id: referralId, referredToId: 'p1' } as never)).toEqual(['p1'])
+  })
+
+  it('a party edit updates memberOnRunId on both the detail and the list', () => {
+    const qc = new QueryClient()
+    qc.setQueryData<ReferralListEntry[]>(queryKeys.referrals(), [])
+    createReferral.optimistic!(createVars, qc)
+    updateReferralParty.optimistic!({
+      id: referralId,
+      memberOnRunId: 'pn-run-1',
+      presentAtReferralParty: true,
+      referralPartyResults: null,
+      followUp: false,
+      doctorsUpdated: false,
+    }, qc)
+
+    expect(qc.getQueryData<ReferralDetail>(queryKeys.referral(referralId))?.memberOnRunId).toBe('pn-run-1')
+    expect(qc.getQueryData<ReferralListEntry[]>(queryKeys.referrals())![0]?.memberOnRunId).toBe('pn-run-1')
   })
 
   it('records PN repayments (including overpayment) and reversals optimistically in the double-entry ledger', () => {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PhMagnifyingGlass, PhUserPlus } from '@phosphor-icons/vue'
+import { PhCircleNotch, PhMagnifyingGlass, PhUserPlus } from '@phosphor-icons/vue'
 import { useQueryClient } from '@tanstack/vue-query'
 import { toast } from 'vue-sonner'
 import { newRegisterPatientVars, pendingDisplayId, registerPatient } from '~/offline/mutations/patients'
@@ -19,7 +19,9 @@ const errors = ref<Partial<Record<keyof PatientFormValues, string>>>({})
 const formEl = ref<HTMLFormElement>()
 const { selectedVillageCodeId, selectedVillage } = useVillageCode()
 const queryClient = useQueryClient()
-const { mutateAsync, isPending: isSaving } = useOfflineMutation(registerPatient)
+const { mutateAsync, isPending: isRegistering } = useOfflineMutation(registerPatient)
+const isSubmitting = ref(false)
+const isSaving = computed(() => isSubmitting.value || isRegistering.value)
 const { remember } = useRecentPatients()
 // Consents the patient gave at the desk, recorded with the registration. Never pre-ticked and
 // not kept in the draft: each one is staff confirming what this patient agreed to.
@@ -71,92 +73,99 @@ async function submit() {
     toast.error('Please select a village code before submitting.')
     return
   }
-  const vars = newRegisterPatientVars(
-    {
-      name: values.name,
-      identificationNumber: values.identificationNumber,
-      contactNo: values.contactNo,
-      gender: values.gender as 'male' | 'female',
-      dateOfBirth: new Date(values.dateOfBirth).toISOString(),
-      drugAllergy: values.drugAllergy,
-      hasPoorCard: values.hasPoorCard,
-      hasBS2Card: values.hasBS2Card,
-      hasSabaiCard: values.hasSabaiCard,
-      tags: values.tags,
-    },
-    { villageCodeId: village.id, code: village.code, name: village.name, colorHex: village.colorHex },
-  )
 
-  let outcome
+  isSubmitting.value = true
   try {
-    outcome = await mutateAsync(vars)
-  }
-  catch (error) {
-    console.error('Error creating patient:', error)
-    toast.error(getApiErrorMessage(error, 'Failed to create patient. Please try again.'))
-    return
-  }
+    const vars = newRegisterPatientVars(
+      {
+        name: values.name,
+        identificationNumber: values.identificationNumber,
+        contactNo: values.contactNo,
+        gender: values.gender as 'male' | 'female',
+        dateOfBirth: new Date(values.dateOfBirth).toISOString(),
+        drugAllergy: values.drugAllergy,
+        hasPoorCard: values.hasPoorCard,
+        hasBS2Card: values.hasBS2Card,
+        hasSabaiCard: values.hasSabaiCard,
+        tags: values.tags,
+      },
+      { villageCodeId: village.id, code: village.code, name: village.name, colorHex: village.colorHex },
+    )
 
-  remember(vars.id)
-
-  // Recorded before the face is enrolled, which the API only allows with face recognition
-  // consent. Offline they queue behind the registration.
-  consentPatientId.value = vars.id
-  const consentsFailed: string[] = []
-  for (const type of consentTypes.filter(t => consents.value[t])) {
+    let outcome
     try {
-      await recordConsent.mutateAsync({ consentType: type, granted: true })
+      outcome = await mutateAsync(vars)
     }
     catch (error) {
-      console.error(`Error recording ${type} consent:`, error)
-      consentsFailed.push(CONSENT_LABELS[type])
+      console.error('Error creating patient:', error)
+      toast.error(getApiErrorMessage(error, 'Failed to create patient. Please try again.'))
+      return
     }
-  }
-  if (consentsFailed.length)
-    toast.error(`Patient created, but these consents were not recorded: ${consentsFailed.join(', ')}. Record them under "Privacy & disclosures" on the patient page.`)
 
-  // Best-effort: the patient already exists, so a failure here must not discard the registration.
-  // The photo and face enrolment need the server, which does not know a queued patient yet.
-  if (outcome.queued) {
-    toast.warning('The photo and face enrolment need a connection. Add the photo from the patient page once the registration has been sent.')
-  }
-  else {
-    try {
-      const face = await setPatientPhotoAndFace(vars.id, image.value)
-      queryClient.invalidateQueries({ queryKey: queryKeys.patients() })
-      if (!face.enrolled)
-        toast.warning(`Photo saved, but the face was not enrolled: ${face.reason}`, { description: FACE_CONSENT_HINT })
-    }
-    catch (error) {
-      console.error('Error saving patient photo/face:', error)
-      toast.error('Patient created, but the photo or face could not be saved. You can retry from the patient page.')
-    }
-  }
+    remember(vars.id)
 
-  notifySaved(outcome, 'Patient created successfully!')
-  lastCreated.value = {
-    id: vars.id,
-    name: vars.name.trim(),
-    displayId: outcome.queued ? pendingDisplayId(village.code) : outcome.result.displayId,
-    visitId: vars.visitId,
-    pendingCardNumber: outcome.queued,
+    // Recorded before the face is enrolled, which the API only allows with face recognition
+    // consent. Offline they queue behind the registration.
+    consentPatientId.value = vars.id
+    const consentsFailed: string[] = []
+    for (const type of consentTypes.filter(t => consents.value[t])) {
+      try {
+        await recordConsent.mutateAsync({ consentType: type, granted: true })
+      }
+      catch (error) {
+        console.error(`Error recording ${type} consent:`, error)
+        consentsFailed.push(CONSENT_LABELS[type])
+      }
+    }
+    if (consentsFailed.length)
+      toast.error(`Patient created, but these consents were not recorded: ${consentsFailed.join(', ')}. Record them under "Privacy & disclosures" on the patient page.`)
+
+    // Best-effort: the patient already exists, so a failure here must not discard the registration.
+    // The photo and face enrolment need the server, which does not know a queued patient yet.
+    if (outcome.queued) {
+      toast.warning('The photo and face enrolment need a connection. Add the photo from the patient page once the registration has been sent.')
+    }
+    else {
+      try {
+        const face = await setPatientPhotoAndFace(vars.id, image.value)
+        queryClient.invalidateQueries({ queryKey: queryKeys.patients() })
+        if (!face.enrolled)
+          toast.warning(`Photo saved, but the face was not enrolled: ${face.reason}`, { description: FACE_CONSENT_HINT })
+      }
+      catch (error) {
+        console.error('Error saving patient photo/face:', error)
+        toast.error('Patient created, but the photo or face could not be saved. You can retry from the patient page.')
+      }
+    }
+
+    notifySaved(outcome, 'Patient created successfully!')
+    lastCreated.value = {
+      id: vars.id,
+      name: vars.name.trim(),
+      displayId: outcome.queued ? pendingDisplayId(village.code) : outcome.result.displayId,
+      visitId: vars.visitId,
+      pendingCardNumber: outcome.queued,
+    }
+    image.value = null
+    form.value = blankPatientForm()
+    consents.value = noConsents()
+    draft.clear(form.value)
+    errors.value = {}
   }
-  image.value = null
-  form.value = blankPatientForm()
-  consents.value = noConsents()
-  draft.clear(form.value)
-  errors.value = {}
+  finally {
+    isSubmitting.value = false
+  }
 }
 
-useSaveShortcut(submit)
-useKeyShortcut('m', () => emit('match'))
-useKeyShortcut('Escape', () => emit('match'))
+useSaveShortcut(submit, { enabled: () => !isSaving.value })
+useKeyShortcut('m', () => emit('match'), { enabled: () => !isSaving.value })
+useKeyShortcut('Escape', () => emit('match'), { enabled: () => !isSaving.value })
 </script>
 
 <template>
   <AppPanel title="Register new patient">
     <template #actions>
-      <Button size="sm" variant="outline" @click="emit('match')">
+      <Button size="sm" variant="outline" :disabled="isSaving" @click="emit('match')">
         <PhMagnifyingGlass aria-hidden="true" /> Match Instead <ShortcutHint class="hidden kb:inline-flex" keys="M" />
       </Button>
     </template>
@@ -223,8 +232,9 @@ useKeyShortcut('Escape', () => emit('match'))
         </p>
       </fieldset>
       <SaveBar>
-        <Button type="submit" variant="success" :disabled="isSaving">
-          <PhUserPlus aria-hidden="true" />
+        <Button type="submit" variant="success" :disabled="isSaving" :aria-busy="isSaving">
+          <PhCircleNotch v-if="isSaving" class="animate-spin motion-reduce:animate-none" aria-hidden="true" />
+          <PhUserPlus v-else aria-hidden="true" />
           {{ isSaving ? 'Creating new patient...' : 'Create New Patient' }}
         </Button>
       </SaveBar>

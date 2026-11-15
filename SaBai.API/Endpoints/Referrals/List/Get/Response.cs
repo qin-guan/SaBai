@@ -25,5 +25,6 @@ public sealed record Response(
     Guid? ReferredToId,
     decimal? AmountPaidUsd,
     int? AmountPaidRiels,
-    Guid? MemberWhoPaidId
+    Guid? MemberWhoPaidId,
+    Guid? MemberOnRunId
 );

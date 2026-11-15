@@ -119,6 +119,7 @@ const LIST_PATCH_KEYS = [
   'referralState',
   'referralOutcome',
   'referredToId',
+  'memberOnRunId',
   'amountPaidUsd',
   'amountPaidRiels',
   'memberWhoPaidId',
@@ -255,6 +256,7 @@ export const createReferral = defineOfflineMutation({
       amountPaidUsd: null,
       amountPaidRiels: null,
       memberWhoPaidId: null,
+      memberOnRunId: null,
     }
     queryClient.setQueryData<ReferralListEntry[]>(queryKeys.referrals(), old => {
       const current = old?.find(r => r.id === vars.id)

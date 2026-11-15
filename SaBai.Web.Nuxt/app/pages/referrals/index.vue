@@ -11,6 +11,7 @@ import {
   matchesReferral,
   REFERRAL_STATE_OPTIONS,
   REFERRAL_STATUS_GROUPS,
+  UNASSIGNED_PN_ON_RUN_KEY,
   type ReferralListItem,
   type ReferralStatusGroup,
 } from '@/utils/referral'
@@ -27,12 +28,14 @@ useHead({ title: "Referrals · Sa'Bai" })
 
 const { data: referrals, isLoading, isError, error } = useReferralsList()
 const { data: patientsData } = usePatientsList()
+const { data: staff } = useStaffUsersList()
 const { villageCodes } = useVillageCode()
 
 // Kept for the session so coming back from a referral restores the view.
 const filters = useState('referrals:filters', () => ({
   search: '',
   villageId: '',
+  memberOnRunId: '',
   status: null as ReferralStatusGroup | null,
   tags: [] as string[],
   tagMatchMode: 'any' as TagMatchMode,
@@ -42,6 +45,25 @@ const lastOpened = useState<string | null>('referrals:last-opened', () => null)
 
 // The referral list has no patient card numbers; the patient list does.
 const patientsById = computed(() => new Map((patientsData.value?.patients ?? []).map(p => [p.id, p])))
+const staffById = computed(() => new Map((staff.value ?? []).map(u => [u.id, u])))
+
+function memberName(id: string | null | undefined): string | undefined {
+  if (!id) return undefined
+  const user = staffById.value.get(id)
+  return user ? (user.nickname || user.userName) : undefined
+}
+
+const pnOnRunOptions = computed(() => {
+  const assignedIds = new Set(
+    (referrals.value ?? [])
+      .map(r => r.memberOnRunId)
+      .filter((id): id is string => !!id),
+  )
+  return (staff.value ?? [])
+    .filter(u => u.roles.some(r => r.trim().toLowerCase() === 'pn') || assignedIds.has(u.id))
+    .map(u => ({ value: u.id, label: u.nickname || u.userName }))
+    .sort((a, b) => a.label.localeCompare(b.label))
+})
 
 const enrichedReferrals = computed<ReferralListItem[]>(() =>
   (referrals.value ?? []).map((item) => {
@@ -55,11 +77,12 @@ const availableReferralTags = computed(() =>
   collectUniqueTags(enrichedReferrals.value.map(r => r.tags)),
 )
 
-/** Referrals matching the search, village, tags, and in-table status filters (before the status strip). */
+/** Referrals matching the search, village, PN on run, tags, and in-table status filters (before the status strip). */
 const matching = computed(() => {
   const options = {
     search: filters.value.search,
     villageCodeId: filters.value.villageId || null,
+    memberOnRunId: filters.value.memberOnRunId || null,
     tags: filters.value.tags,
     tagMatchMode: filters.value.tagMatchMode,
     referralStates: filters.value.statuses,
@@ -87,6 +110,7 @@ const hasFilters = computed(
   () =>
     !!filters.value.search ||
     !!filters.value.villageId ||
+    !!filters.value.memberOnRunId ||
     !!filters.value.status ||
     filters.value.tags.length > 0 ||
     filters.value.statuses.length > 0,
@@ -100,6 +124,7 @@ function clearFilters() {
   filters.value = {
     search: '',
     villageId: '',
+    memberOnRunId: '',
     status: null,
     tags: [],
     tagMatchMode: 'any',
@@ -257,6 +282,17 @@ const gridCols = 'md:grid-cols-[2rem_minmax(9rem,1fr)_minmax(0,2fr)_5.5rem_11rem
               {{ v.name }} ({{ v.code }})
             </NativeSelectOption>
           </NativeSelect>
+          <NativeSelect v-model="filters.memberOnRunId" aria-label="PN assigned for run" class="bg-card sm:w-44">
+            <NativeSelectOption value="">
+              All PNs (run)
+            </NativeSelectOption>
+            <NativeSelectOption :value="UNASSIGNED_PN_ON_RUN_KEY">
+              Unassigned
+            </NativeSelectOption>
+            <NativeSelectOption v-for="opt in pnOnRunOptions" :key="opt.value" :value="opt.value">
+              {{ opt.label }}
+            </NativeSelectOption>
+          </NativeSelect>
           <TagFilter
             v-model="filters.tags"
             v-model:match-mode="filters.tagMatchMode"
@@ -388,6 +424,9 @@ const gridCols = 'md:grid-cols-[2rem_minmax(9rem,1fr)_minmax(0,2fr)_5.5rem_11rem
                 </p>
                 <p v-else-if="r.referralNotes" class="line-clamp-2 text-muted-foreground md:line-clamp-1">
                   {{ r.referralNotes }}
+                </p>
+                <p v-if="r.memberOnRunId" class="mt-0.5 text-xs text-muted-foreground">
+                  Run: <span class="font-medium text-foreground">{{ memberName(r.memberOnRunId) ?? 'PN assigned' }}</span>
                 </p>
                 <p v-if="hasReferralBill(r)" class="mt-0.5 text-xs font-medium tabular-nums text-muted-foreground">
                   Paid: <span class="text-foreground">{{ formatBillAmount(r.amountPaidUsd, r.amountPaidRiels) }}</span>

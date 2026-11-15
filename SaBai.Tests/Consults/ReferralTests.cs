@@ -385,6 +385,55 @@ public sealed class ReferralTests(AppFixture fixture)
     }
 
     [Test]
+    public async Task List_IncludesMemberOnRunId()
+    {
+        // Arrange
+        var client = fixture.CreateApiClient();
+        await client.LoginAsync();
+        var suffix = ClinicSetup.Suffix();
+
+        var meRes = await client.GetAsync("/auth/whoami");
+        var meBody = await meRes.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
+        var memberId = ClinicSetup.ReadGuid(meBody.GetProperty("user"), "id");
+
+        var (consultId, _) = await CreateConsultAsync(client, $"RunMember {suffix}");
+        var created = await client.PostAsJsonAsync(
+            "/referrals",
+            new { consultId, referredFor = $"run {suffix}" },
+            ApiJson.Options
+        );
+        created.EnsureSuccessStatusCode();
+        var id = ClinicSetup.ReadGuid(
+            await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
+            "id"
+        );
+
+        var partyRes = await client.PatchAsJsonAsync(
+            $"/referrals/{id}/party",
+            new
+            {
+                id,
+                memberOnRunId = memberId,
+                presentAtReferralParty = true,
+                referralPartyResults = (string?)null,
+                followUp = false,
+                doctorsUpdated = false,
+            },
+            ApiJson.Options
+        );
+        partyRes.EnsureSuccessStatusCode();
+
+        // Act
+        var listRes = await client.GetAsync("/referrals");
+        var listItems = await listRes.Content.ReadFromJsonAsync<List<JsonElement>>(ApiJson.Options);
+        var item = listItems!.First(x => ClinicSetup.ReadGuid(x, "id") == id);
+
+        // Assert
+        await Assert.That(listRes.StatusCode).IsEqualTo(HttpStatusCode.OK);
+        await Assert.That(ClinicSetup.ReadGuid(item, "memberOnRunId")).IsEqualTo(memberId);
+    }
+
+    [Test]
     public async Task PnLedger_DoubleEntry_HandlesUnderpayOverpayAndBillEdits()
     {
         // Arrange

@@ -62,4 +62,10 @@ export type SaBaiAPIEndpointsReferralsListGetResponse = {
   amountPaidUsd: number | null;
   amountPaidRiels: number | null;
   memberWhoPaidId: string | null;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string
+   */
+  memberOnRunId: string | null;
 };

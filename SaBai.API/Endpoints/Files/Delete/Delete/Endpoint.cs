@@ -9,7 +9,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
     public override void Configure()
     {
         Delete("/files/{Id}");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.PatientOverview);
         Summary(s => s.Summary = "Soft-delete a clinical file");
     }
 

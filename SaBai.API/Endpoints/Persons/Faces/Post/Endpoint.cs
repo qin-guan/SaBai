@@ -19,7 +19,7 @@ public class Endpoint(FaceAnalyzer analyzer, FaceStore store) : Endpoint<Request
     {
         Post("/persons/{personId}/faces");
         AllowFileUploads();
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.PatientOverview);
         Summary(s =>
         {
             s.Summary = "Enroll a face for a person.";

@@ -26,7 +26,7 @@ public class Endpoint(FaceAnalyzer analyzer, IOptions<FaceRecognitionOptions> op
     {
         Post("/faces/verify");
         AllowFileUploads();
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.PatientOverview);
         Summary(s =>
             s.Summary = "Compare the most prominent face in two images (1:1 verification)."
         );

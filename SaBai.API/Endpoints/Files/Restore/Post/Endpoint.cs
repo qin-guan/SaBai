@@ -9,7 +9,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
     public override void Configure()
     {
         Post("/files/{Id}/restore");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.PatientOverview);
         Summary(s => s.Summary = "Restore a soft-deleted clinical file");
     }
 

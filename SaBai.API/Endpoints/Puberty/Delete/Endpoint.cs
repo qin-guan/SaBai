@@ -9,7 +9,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request>
     public override void Configure()
     {
         Delete("/puberty/{Id}");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.NurseWork);
         Summary(s => s.Summary = "Delete a puberty assessment");
     }
 

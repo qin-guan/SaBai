@@ -17,7 +17,7 @@ public sealed class Endpoint(AppDbContext db, IAmazonS3 s3, RustFsSettings stora
         Post("/files");
         AllowFileUploads();
         MaxRequestBodySize(StoredFile.MaxBytes * 8L);
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.PatientOverview);
         Summary(s => s.Summary = "Upload clinical files to RustFS");
     }
 

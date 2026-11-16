@@ -15,7 +15,7 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<Response>
         {
             options.WithOrder(-1);
         });
-        Roles(StaffRoles.Admin, StaffRoles.Member, StaffRoles.Pn);
+        Roles(StaffRoles.PatientOverview);
         Summary(s => s.Summary = "List patients with their latest visit");
     }
 

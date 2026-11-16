@@ -10,7 +10,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, List<Response>
     public override void Configure()
     {
         Get("/patients/{PatientId}/eyesight");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.OptometryWork);
         Summary(s => s.Summary = "List a patient's eyesight records");
     }
 

@@ -12,7 +12,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
     public override void Configure()
     {
         Get("/patient-consult");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.DoctorWork);
         Summary(s => s.Summary = "Load the consult workspace for a visit");
     }
 

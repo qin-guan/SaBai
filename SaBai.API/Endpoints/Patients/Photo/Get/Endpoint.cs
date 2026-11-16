@@ -15,7 +15,7 @@ public sealed class Endpoint(AppDbContext db, IAmazonS3 s3, RustFsSettings stora
     public override void Configure()
     {
         Get("/patients/{Id}/photo");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.PatientOverview);
         Summary(s => s.Summary = "Download a patient's profile photo");
     }
 

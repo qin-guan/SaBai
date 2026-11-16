@@ -20,7 +20,7 @@ public sealed class Endpoint(
     {
         Post("/patients/search-by-face");
         AllowFileUploads();
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.PatientOverview);
         Summary(s => s.Summary = "Search for patients by face photo");
     }
 

@@ -10,7 +10,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, List<Response>
     public override void Configure()
     {
         Get("/broadcasts");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.Authenticated);
         Summary(s => s.Summary = "List broadcasts, newest first");
     }
 

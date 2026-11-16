@@ -13,7 +13,7 @@ public sealed class Endpoint(AppDbContext db, IOptions<PushSettings> settings) :
     public override void Configure()
     {
         Put("/push/subscriptions");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.Authenticated);
         Summary(s =>
         {
             s.Summary = "Receive notifications on this device";

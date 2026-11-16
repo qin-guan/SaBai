@@ -11,7 +11,7 @@ public sealed class Endpoint(UserManager<StaffUser> users, SignInManager<StaffUs
     public override void Configure()
     {
         Get("/auth/account/two-factor");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.Authenticated);
         Summary(s => s.Summary = "Get your two-factor status");
     }
 

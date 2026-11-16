@@ -10,7 +10,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, List<Response>
     public override void Configure()
     {
         Get("/diagnoses");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.DoctorWork);
         Summary(s => s.Summary = "List diagnoses, optionally for one consult");
     }
 

@@ -12,7 +12,7 @@ public sealed class Endpoint(AppDbContext db, AuditTrail audit, TimeProvider clo
     public override void Configure()
     {
         Post("/patients/{PatientId}/disclosures");
-        Roles(StaffRoles.Admin, StaffRoles.Member, StaffRoles.Doctor);
+        Roles(StaffRoles.DisclosureWrite);
         Summary(s => s.Summary = "Record an external PHI disclosure for HIPAA §164.528 accounting");
     }
 

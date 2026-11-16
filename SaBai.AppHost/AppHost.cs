@@ -112,6 +112,8 @@ if (!builder.ExecutionContext.IsPublishMode)
     builder
         .AddNextJsApp("frontend", "../SaBai.Web")
         .WithPnpm(false)
+        // Keep the system CAs alongside the dev cert so pnpm can still reach the npm registry.
+        .WithCertificateTrustScope(CertificateTrustScope.System)
         .WithEnvironment("API_URL", apiHttp)
         .WithHttpEndpoint(port: 3000, env: "PORT")
         .WaitFor(api);
@@ -119,6 +121,7 @@ if (!builder.ExecutionContext.IsPublishMode)
     builder
         .AddJavaScriptApp("frontend-nuxt", "../SaBai.Web.Nuxt", "dev")
         .WithPnpm(false)
+        .WithCertificateTrustScope(CertificateTrustScope.System)
         .WithEnvironment("NUXT_API_URL", apiHttp)
         .WithHttpEndpoint(port: 3300, env: "PORT")
         .WaitFor(api);

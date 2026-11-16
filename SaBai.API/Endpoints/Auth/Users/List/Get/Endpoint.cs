@@ -10,7 +10,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
     public override void Configure()
     {
         Get("/auth/users");
-        Roles(StaffRoles.Admin, StaffRoles.Member, StaffRoles.Pn);
+        Roles(StaffRoles.PatientNavigation);
         Summary(s => s.Summary = "List staff users");
     }
 

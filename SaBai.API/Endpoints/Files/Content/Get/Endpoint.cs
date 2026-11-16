@@ -14,7 +14,7 @@ public sealed class Endpoint(AppDbContext db, IAmazonS3 s3, RustFsSettings stora
     public override void Configure()
     {
         Get("/files/{Id}/content");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.PatientOverview);
         Summary(s => s.Summary = "Download a clinical file from RustFS");
     }
 

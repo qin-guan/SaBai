@@ -10,7 +10,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, List<Response>
     public override void Configure()
     {
         Get("/visits/{VisitId}/consults");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.DoctorWork);
         Summary(s => s.Summary = "List consults for a visit, newest first");
     }
 

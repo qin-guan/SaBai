@@ -11,7 +11,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
     public override void Configure()
     {
         Get("/vision");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.OptometryWork);
         Summary(s => s.Summary = "Get the vision composite for a visit");
     }
 

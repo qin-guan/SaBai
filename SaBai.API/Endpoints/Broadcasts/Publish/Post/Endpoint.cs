@@ -15,7 +15,7 @@ public sealed class Endpoint(
     public override void Configure()
     {
         Post("/broadcasts/{Id}/publish");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.Authenticated);
         Summary(s => s.Summary = "Publish a broadcast");
     }
 

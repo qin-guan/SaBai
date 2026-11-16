@@ -13,13 +13,7 @@ public sealed class Endpoint(AppDbContext db, FaceStore faces, TimeProvider cloc
     public override void Configure()
     {
         Post("/patients/{PatientId}/consents");
-        Roles(
-            StaffRoles.Admin,
-            StaffRoles.Member,
-            StaffRoles.Doctor,
-            StaffRoles.Nurse,
-            StaffRoles.Registration
-        );
+        Roles(StaffRoles.ConsentWork);
         Summary(s => s.Summary = "Record or revoke a HIPAA or biometric consent for a patient");
     }
 

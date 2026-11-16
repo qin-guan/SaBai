@@ -10,7 +10,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
     {
         Verbs(Http.PATCH);
         Routes("/medication-brands/{Id}", "/medication-brands");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.PharmacyWork);
         Summary(s => s.Summary = "Update a medication brand");
     }
 

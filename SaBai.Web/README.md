@@ -77,9 +77,9 @@ When the API runs with `Auth:SeedDemoUsers=true` it seeds these accounts
 | Role   | Username       | Email                     |
 | ------ | -------------- | ------------------------- |
 | admin  | `admin`        | `admin@sabai.test`        |
-| member | `doctor`       | `doctor@sabai.test`       |
-| member | `pharmacist`   | `pharmacist@sabai.test`   |
-| member | `registration` | `registration@sabai.test` |
+| doctor | `doctor`       | `doctor@sabai.test`        |
+| pharmacist | `pharmacist`   | `pharmacist@sabai.test`   |
+| registration | `registration` | `registration@sabai.test` |
 
 ---
 

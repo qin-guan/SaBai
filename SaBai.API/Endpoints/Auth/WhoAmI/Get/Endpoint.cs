@@ -12,7 +12,7 @@ public sealed class Endpoint(UserManager<StaffUser> users, AppDbContext db)
     public override void Configure()
     {
         Get("/auth/whoami");
-        Roles(StaffRoles.Admin, StaffRoles.Member, StaffRoles.Pn);
+        Roles(StaffRoles.Authenticated);
         Summary(s => s.Summary = "Return the signed-in staff user");
     }
 

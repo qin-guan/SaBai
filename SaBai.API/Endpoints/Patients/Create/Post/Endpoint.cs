@@ -12,7 +12,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
     public override void Configure()
     {
         Post("/patients");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.RegistrationWork);
         Summary(s => s.Summary = "Register a patient and open a visit");
     }
 

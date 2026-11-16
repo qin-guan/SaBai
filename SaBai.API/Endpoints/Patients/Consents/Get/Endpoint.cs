@@ -11,14 +11,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
     public override void Configure()
     {
         Get("/patients/{PatientId}/consents");
-        Roles(
-            StaffRoles.Admin,
-            StaffRoles.Member,
-            StaffRoles.Doctor,
-            StaffRoles.Nurse,
-            StaffRoles.Registration,
-            StaffRoles.Auditor
-        );
+        Roles(StaffRoles.ConsentWork);
         Summary(s => s.Summary = "List HIPAA and biometric consents for a patient");
     }
 

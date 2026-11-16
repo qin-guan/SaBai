@@ -11,7 +11,7 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<Response>
     public override void Configure()
     {
         Get("/pn-ledger");
-        Roles(StaffRoles.Admin, StaffRoles.Member, StaffRoles.Pn);
+        Roles(StaffRoles.PatientNavigation);
         Summary(s => s.Summary = "List per-PN balances and double-entry ledger entries");
     }
 

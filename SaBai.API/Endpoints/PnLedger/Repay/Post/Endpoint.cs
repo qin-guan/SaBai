@@ -11,7 +11,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
     public override void Configure()
     {
         Post("/pn-ledger/repayments");
-        Roles(StaffRoles.Admin, StaffRoles.Member, StaffRoles.Pn);
+        Roles(StaffRoles.PatientNavigation);
         Summary(s =>
             s.Summary = "Record a repayment to a PN member (supports underpayment and overpayment)"
         );

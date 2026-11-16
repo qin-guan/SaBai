@@ -11,7 +11,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
     public override void Configure()
     {
         Post("/pn-ledger/entries/{Id}/reverse");
-        Roles(StaffRoles.Admin, StaffRoles.Member, StaffRoles.Pn);
+        Roles(StaffRoles.PatientNavigation);
         Summary(s => s.Summary = "Reverse a PN repayment or adjustment ledger entry");
     }
 

@@ -13,7 +13,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request>
     public override void Configure()
     {
         Get("/consults/{Id}/pdf");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.DoctorWork);
         Summary(s => s.Summary = "Download a consult as a PDF");
     }
 

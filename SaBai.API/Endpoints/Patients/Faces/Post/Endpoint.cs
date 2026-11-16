@@ -14,7 +14,7 @@ public sealed class Endpoint(AppDbContext db, FaceAnalyzer analyzer, FaceStore s
     {
         Post("/patients/{Id}/faces");
         AllowFileUploads();
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.PatientOverview);
         Summary(s =>
         {
             s.Summary = "Enroll a face for a patient.";

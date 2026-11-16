@@ -10,7 +10,7 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
     public override void Configure()
     {
         Get("/medication-ingredients");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.PharmacyWork);
         Summary(s => s.Summary = "List medication active ingredients");
     }
 

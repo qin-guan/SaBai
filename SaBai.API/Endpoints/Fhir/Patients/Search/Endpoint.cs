@@ -12,13 +12,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request>
     public override void Configure()
     {
         Get("/fhir/r4/Patient");
-        Roles(
-            StaffRoles.Admin,
-            StaffRoles.Member,
-            StaffRoles.Doctor,
-            StaffRoles.Nurse,
-            StaffRoles.Registration
-        );
+        Roles(StaffRoles.FhirSearch);
         Summary(s => s.Summary = "Search Patient resources in HL7 FHIR R4 format");
     }
 

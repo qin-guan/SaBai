@@ -32,7 +32,13 @@ export function isLockedByAdmin(user: StaffUser): boolean {
 
 export const ROLE_DESCRIPTIONS: Record<string, string> = {
   admin: "Everything, plus managing staff accounts.",
-  member: "Clinic work: patients, stations, pharmacy and settings.",
+  member: "Legacy broad clinic access.",
+  doctor: "Consultations, diagnoses and referrals.",
+  nurse: "Vitals and child health records.",
+  pharmacist: "Medication catalog, stock and dispensing.",
+  dentist: "Dental records.",
+  optometrist: "Vision and eyesight records.",
+  registration: "Patient registration and clinic visits.",
   pn: "Patient Navigation: manage referral booth, party, and payment details.",
 };
 

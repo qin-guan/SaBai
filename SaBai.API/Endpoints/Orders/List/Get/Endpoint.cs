@@ -11,7 +11,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, List<Response>
     public override void Configure()
     {
         Get("/orders");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.OrderWork);
         Summary(s => s.Summary = "List medication orders");
     }
 

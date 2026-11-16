@@ -13,7 +13,7 @@ public sealed class Endpoint(AppDbContext db, IOptions<PushSettings> settings)
     public override void Configure()
     {
         Get("/push/config");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.Authenticated);
         Summary(s =>
         {
             s.Summary = "Get the push notification settings a browser needs to subscribe";

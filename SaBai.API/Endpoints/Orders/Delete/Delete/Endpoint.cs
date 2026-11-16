@@ -9,7 +9,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request>
     public override void Configure()
     {
         Delete("/orders/{Id}");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.DoctorWork);
         Summary(s => s.Summary = "Delete a medication order without reversing stock");
     }
 

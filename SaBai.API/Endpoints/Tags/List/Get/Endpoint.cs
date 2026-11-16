@@ -10,7 +10,7 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<Response>
     public override void Configure()
     {
         Get("/tags");
-        Roles(StaffRoles.Admin, StaffRoles.Member, StaffRoles.Pn);
+        Roles(StaffRoles.PatientNavigation);
         Summary(s => s.Summary = "List all known freeform tags");
     }
 

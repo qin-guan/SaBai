@@ -17,7 +17,7 @@ public class Endpoint(FaceAnalyzer analyzer) : Endpoint<Request, Response>
     {
         Post("/faces/detect");
         AllowFileUploads();
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.PatientOverview);
         Summary(s => s.Summary = "Detect faces and their five-point landmarks in an image.");
     }
 

@@ -10,7 +10,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, DentalConsultR
     public override void Configure()
     {
         Get("/visits/{VisitId}/dental");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.DentalWork);
         Summary(s => s.Summary = "Get the dental consultation for a visit");
     }
 

@@ -19,7 +19,7 @@ public sealed class Endpoint(
         Put("/patients/{Id}/photo");
         AllowFileUploads();
         MaxRequestBodySize(PatientPhoto.MaxBytes + 1024);
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.PatientOverview);
         Summary(s => s.Summary = "Set or replace a patient's profile photo");
     }
 

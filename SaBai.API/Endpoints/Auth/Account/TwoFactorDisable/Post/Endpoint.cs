@@ -11,7 +11,7 @@ public sealed class Endpoint(UserManager<StaffUser> users, SignInManager<StaffUs
     public override void Configure()
     {
         Post("/auth/account/two-factor/disable");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.Authenticated);
         Summary(s => s.Summary = "Turn off two-factor authentication");
     }
 

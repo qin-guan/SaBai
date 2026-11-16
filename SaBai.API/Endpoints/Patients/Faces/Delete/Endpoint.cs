@@ -11,7 +11,7 @@ public sealed class Endpoint(AppDbContext db, FaceStore store) : Endpoint<Reques
     public override void Configure()
     {
         Delete("/patients/{Id}/faces/{FaceId}");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.PatientOverview);
         Summary(s => s.Summary = "Delete an enrolled face for a patient");
     }
 

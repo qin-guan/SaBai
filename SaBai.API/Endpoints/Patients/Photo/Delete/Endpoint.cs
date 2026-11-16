@@ -16,7 +16,7 @@ public sealed class Endpoint(
     public override void Configure()
     {
         Delete("/patients/{Id}/photo");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.PatientOverview);
         Summary(s => s.Summary = "Remove a patient's profile photo");
     }
 

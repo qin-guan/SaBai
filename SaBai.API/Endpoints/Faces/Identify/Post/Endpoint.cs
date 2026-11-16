@@ -35,7 +35,7 @@ public class Endpoint(
     {
         Post("/faces/identify");
         AllowFileUploads();
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.PatientOverview);
         Summary(s => s.Summary = "Identify every face in an image against the enrolled people.");
     }
 

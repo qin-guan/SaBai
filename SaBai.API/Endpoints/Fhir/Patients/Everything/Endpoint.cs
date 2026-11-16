@@ -11,7 +11,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request>
     public override void Configure()
     {
         Get("/fhir/r4/Patient/{Id}/$everything");
-        Roles(StaffRoles.Admin, StaffRoles.Member, StaffRoles.Doctor, StaffRoles.Nurse);
+        Roles(StaffRoles.DoctorWork);
         Summary(s => s.Summary = "Export a patient's complete HL7 FHIR R4 clinical summary Bundle");
     }
 

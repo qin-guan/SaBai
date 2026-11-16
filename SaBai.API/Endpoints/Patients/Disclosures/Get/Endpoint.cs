@@ -10,7 +10,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
     public override void Configure()
     {
         Get("/patients/{PatientId}/disclosures");
-        Roles(StaffRoles.Admin, StaffRoles.Member, StaffRoles.Doctor, StaffRoles.Auditor);
+        Roles(StaffRoles.DisclosureRead);
         Summary(s => s.Summary = "List HIPAA Accounting of Disclosures for a patient");
     }
 

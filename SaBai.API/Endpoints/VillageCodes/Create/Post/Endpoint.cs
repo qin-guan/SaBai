@@ -11,7 +11,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
     public override void Configure()
     {
         Post("/village-codes");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.RegistrationWork);
         Summary(s => s.Summary = "Create a village code");
     }
 

@@ -11,16 +11,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request>
     public override void Configure()
     {
         Get("/fhir/r4/Patient/{Id}");
-        Roles(
-            StaffRoles.Admin,
-            StaffRoles.Member,
-            StaffRoles.Doctor,
-            StaffRoles.Nurse,
-            StaffRoles.Pharmacist,
-            StaffRoles.Dentist,
-            StaffRoles.Optometrist,
-            StaffRoles.Registration
-        );
+        Roles(StaffRoles.PatientOverview);
         Summary(s => s.Summary = "Read a Patient resource in HL7 FHIR R4 format");
     }
 

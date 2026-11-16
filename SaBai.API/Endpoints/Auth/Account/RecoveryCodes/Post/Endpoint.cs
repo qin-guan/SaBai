@@ -10,7 +10,7 @@ public sealed class Endpoint(UserManager<StaffUser> users) : EndpointWithoutRequ
     public override void Configure()
     {
         Post("/auth/account/recovery-codes");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.Authenticated);
         Summary(s => s.Summary = "Replace your recovery codes");
     }
 

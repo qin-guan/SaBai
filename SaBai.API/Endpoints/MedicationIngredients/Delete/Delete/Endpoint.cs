@@ -11,7 +11,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request>
     public override void Configure()
     {
         Delete("/medication-ingredients/{Id}");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.PharmacyWork);
         Summary(s => s.Summary = "Delete a medication active ingredient");
     }
 

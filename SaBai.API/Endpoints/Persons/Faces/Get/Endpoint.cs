@@ -16,7 +16,7 @@ public class Endpoint(FaceStore store) : Endpoint<Request, Response>
     public override void Configure()
     {
         Get("/persons/{personId}/faces");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.PatientOverview);
         Summary(s => s.Summary = "List the faces enrolled for a person.");
     }
 

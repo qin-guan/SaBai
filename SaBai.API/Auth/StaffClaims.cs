@@ -34,6 +34,23 @@ public static class StaffRoles
         Auditor,
     ];
 
+    public static readonly string[] Authenticated = [.. All];
+    public static readonly string[] Clinic = [Admin, Member, Doctor, Nurse, Pharmacist, Dentist, Optometrist, Registration];
+    public static readonly string[] PatientOverview = [Admin, Member, Pn, Doctor, Nurse, Pharmacist, Dentist, Optometrist, Registration];
+    public static readonly string[] RegistrationWork = [Admin, Member, Registration];
+    public static readonly string[] DoctorWork = [Admin, Member, Doctor];
+    public static readonly string[] NurseWork = [Admin, Member, Nurse];
+    public static readonly string[] PharmacyWork = [Admin, Member, Pharmacist];
+    public static readonly string[] OrderWork = [Admin, Member, Doctor, Pharmacist];
+    public static readonly string[] DentalWork = [Admin, Member, Dentist];
+    public static readonly string[] OptometryWork = [Admin, Member, Optometrist];
+    public static readonly string[] ReferralWork = [Admin, Member, Pn, Doctor];
+    public static readonly string[] PatientNavigation = [Admin, Member, Pn];
+    public static readonly string[] ConsentWork = [Admin, Member, Doctor, Nurse, Registration];
+    public static readonly string[] DisclosureRead = [Admin, Member, Doctor, Auditor];
+    public static readonly string[] DisclosureWrite = [Admin, Member, Doctor];
+    public static readonly string[] FhirSearch = [Admin, Member, Doctor, Nurse, Registration];
+
     public static bool IsKnown(string role) => All.Contains(role, StringComparer.Ordinal);
 }
 

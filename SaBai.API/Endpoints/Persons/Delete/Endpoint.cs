@@ -14,7 +14,7 @@ public class Endpoint(FaceStore store) : Endpoint<Request>
     public override void Configure()
     {
         Delete("/persons/{personId}");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.PatientOverview);
         Summary(s => s.Summary = "Delete every face enrolled for a person.");
     }
 

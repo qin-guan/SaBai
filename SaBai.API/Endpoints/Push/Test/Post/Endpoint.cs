@@ -12,7 +12,7 @@ public sealed class Endpoint(PushNotifier notifier, IOptions<PushSettings> setti
     public override void Configure()
     {
         Post("/push/test");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.Authenticated);
         Summary(s => s.Summary = "Send a test notification to your own devices");
     }
 

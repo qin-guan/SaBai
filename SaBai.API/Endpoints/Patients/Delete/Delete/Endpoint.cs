@@ -20,7 +20,7 @@ public sealed class Endpoint(
     public override void Configure()
     {
         Delete("/patients/{Id}");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.RegistrationWork);
         Summary(s => s.Summary = "Delete a patient");
     }
 

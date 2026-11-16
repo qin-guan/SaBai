@@ -13,7 +13,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
     public override void Configure()
     {
         Patch("/orders/{Id}");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.OrderWork);
         Summary(s => s.Summary = "Update or approve a medication order");
     }
 

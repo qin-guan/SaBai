@@ -16,7 +16,7 @@ public sealed class Endpoint(
     public override void Configure()
     {
         Post("/auth/account/authenticator");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.Authenticated);
         Summary(s =>
         {
             s.Summary = "Start authenticator (TOTP) setup";

@@ -49,6 +49,7 @@ export const paths = {
     return qs ? `/settings/audit-log?${qs}` : "/settings/audit-log";
   },
   account: () => "/account",
+  changelog: () => "/changelog",
 };
 
 /** Which page a patient link opens: their record, or one station's form. */

@@ -11,6 +11,7 @@ import {
   PhHeartbeat,
   PhHospital,
   PhMapPin,
+  PhNewspaper,
   PhNotebook,
   PhPill,
   PhReceipt,
@@ -86,6 +87,8 @@ export const SETTINGS_PAGES: NavItem[] = [
 
 export const MY_ACCOUNT_PAGE: NavItem = { name: 'My Account', href: paths.account(), icon: PhUserCircle, keywords: 'profile password two-factor 2fa authenticator totp security', description: 'Change your password and set up two-factor authentication.' }
 
+export const CHANGELOG_PAGE: NavItem = { name: 'Changelog', href: paths.changelog(), icon: PhNewspaper, keywords: 'changelog updates releases news whats new history recent changes', description: "Recent updates and improvements to Project Sa'bai." }
+
 export const ADMIN_NAV_ITEMS: NavItem[] = [
   { name: 'Medication Stock', href: paths.medicationStock(), icon: PhPill, keywords: 'medicine drugs pharmacy inventory split expiry', children: MEDICATION_PAGES },
   { name: 'Orders', href: paths.orders(), icon: PhNotebook, keywords: 'prescriptions pharmacy' },
@@ -98,6 +101,7 @@ export const SUB_PAGES: NavItem[] = [
   ...MEDICATION_PAGES,
   ...SETTINGS_PAGES,
   MY_ACCOUNT_PAGE,
+  CHANGELOG_PAGE,
 ]
 
 export const ALL_NAV_ITEMS = [...NAV_ITEMS, ...STATION_NAV_ITEMS, ...ADMIN_NAV_ITEMS]

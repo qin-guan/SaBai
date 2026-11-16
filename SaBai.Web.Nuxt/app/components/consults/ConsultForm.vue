@@ -3,6 +3,7 @@ import { PhFloppyDisk, PhPlus, PhTrash } from '@phosphor-icons/vue'
 import { toast } from 'vue-sonner'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { Textarea } from '@/components/ui/textarea'
 import { createConsult } from '~/offline/mutations/visitRecords'
@@ -35,6 +36,17 @@ const consultFormSchema = z.object({
       category: z.string().min(1, 'Please select a category'),
     }),
   ),
+  orders: z.array(
+    z.object({
+      medicationBrandId: z.string().min(1, 'Please select a medication'),
+      quantity: z.string().trim().min(1, 'Quantity is required').refine((val) => {
+        const n = Number(val)
+        return Number.isInteger(n) && n >= 1
+      }, 'Quantity must be a whole number of at least 1'),
+      dosageInstructions: z.string().trim().min(1, 'Dosage instructions are required'),
+      remarks: z.string().trim().optional(),
+    }),
+  ).default([]),
 })
 type ConsultFormValues = z.infer<typeof consultFormSchema>
 
@@ -48,13 +60,15 @@ const blank = () => ({
   referredFor: 'Not Referred',
   referralNotes: '',
   diagnoses: [{ key: 0, details: '', category: '' }],
+  orders: [] as Array<{ key: number, medicationBrandId: string, quantity: string, dosageInstructions: string, remarks: string }>,
 })
 
 const form = ref(blank())
 // Each save appends a consult, so the draft is the consult being written now.
 const draft = useFormDraft(() => `consult:${props.visitId}`, form)
 form.value = draft.resume(blank())
-nextKey = Math.max(0, ...form.value.diagnoses.map(d => d.key)) + 1
+form.value.orders ??= []
+nextKey = Math.max(0, ...form.value.diagnoses.map(d => d.key), ...form.value.orders.map(o => o.key)) + 1
 const errors = ref<Record<string, string>>({})
 const formEl = ref<HTMLFormElement>()
 // Times this form for the station wait estimate.
@@ -73,9 +87,84 @@ function removeDiagnosis(index: number) {
   errors.value = {}
 }
 
+function addOrder() {
+  form.value.orders.push({ key: nextKey++, medicationBrandId: '', quantity: '1', dosageInstructions: '', remarks: '' })
+  nextTick(() => {
+    const selects = formEl.value?.querySelectorAll<HTMLSelectElement>('[data-order-medication]')
+    selects?.[selects.length - 1]?.focus()
+  })
+}
+
+function removeOrder(index: number) {
+  form.value.orders.splice(index, 1)
+  errors.value = {}
+}
+
+const brandsWithIngredient = useMedicationBrandsWithIngredient()
+const brandRecords = useMedicationBrands()
+const ingredients = useMedicationIngredients()
+const stock = useMedicationStock()
+
+const brandMetaById = computed(() => {
+  const map = new Map<string, { brandName: string, unitOfMeasurement: string | null, isLowStock: boolean, activeQty: number }>()
+  const rawStock = stock.data.value ?? []
+  const rawBrands = brandsWithIngredient.data.value ?? []
+  const rawIngredients = ingredients.data.value ?? []
+
+  const activeQtyByBrand = new Map<string, number>()
+  const activeQtyByIngredient = new Map<string, number>()
+
+  for (const s of rawStock) {
+    if (s.stockStatus === 'active' && s.quantity > 0) {
+      activeQtyByBrand.set(s.medicationBrandId, (activeQtyByBrand.get(s.medicationBrandId) ?? 0) + s.quantity)
+      activeQtyByIngredient.set(s.ingredientId, (activeQtyByIngredient.get(s.ingredientId) ?? 0) + s.quantity)
+    }
+  }
+
+  const ingredientMap = new Map(rawIngredients.map(i => [i.id, i]))
+
+  for (const b of rawBrands) {
+    const fullBrand = (brandRecords.data.value ?? []).find(x => x.id === b.id)
+    const ingredientId = fullBrand?.activeIngredientId ?? ''
+    const ing = ingredientMap.get(ingredientId)
+    const activeQty = activeQtyByBrand.get(b.id) ?? 0
+    const ingredientQty = activeQtyByIngredient.get(ingredientId) ?? 0
+    const fallBelow = ing?.fallBelow ?? 0
+    const isLowStock = ingredientQty <= fallBelow
+
+    map.set(b.id, {
+      brandName: b.name,
+      unitOfMeasurement: ing?.unitOfMeasurement ?? null,
+      isLowStock,
+      activeQty,
+    })
+  }
+
+  return map
+})
+
+const medicationOptions = computed(() => {
+  const raw = brandsWithIngredient.data.value ?? []
+  return [...raw]
+    .sort((a, b) => {
+      const cmp = a.activeIngredientName.localeCompare(b.activeIngredientName)
+      return cmp !== 0 ? cmp : a.name.localeCompare(b.name)
+    })
+    .map(b => {
+      const meta = brandMetaById.value.get(b.id)
+      const activeQty = meta?.activeQty ?? 0
+      const unit = meta?.unitOfMeasurement
+      const isLowStock = meta?.isLowStock ?? false
+      const statusSuffix = activeQty === 0 ? ' (Out of stock)' : isLowStock ? ' (Low stock)' : ''
+      const label = `${b.activeIngredientName} (${b.name}) — ${activeQty} ${unit ? `${unit} ` : ''}in stock${statusSuffix}`
+      return { value: b.id, label }
+    })
+})
+
 const { user } = useCurrentUser()
 const consultMutation = useOfflineMutation(createConsult)
 const createReferral = useCreateReferral()
+const createOrderMutation = useCreateOrder()
 const isSaving = consultMutation.isPending
 
 function referralContext(consultDate: string): CreateReferralContext | undefined {
@@ -153,6 +242,42 @@ async function submit() {
     }
     catch (error) {
       toast.error(getApiErrorMessage(error, 'Failed to create referral.'))
+    }
+  }
+
+  if (data.orders.length > 0) {
+    for (const order of data.orders) {
+      try {
+        const meta = brandMetaById.value.get(order.medicationBrandId)
+        await createOrderMutation.mutateAsync({
+          id: uuidv7(),
+          consultId,
+          medicationBrandId: order.medicationBrandId,
+          brandName: meta?.brandName ?? 'Medication',
+          quantity: Number(order.quantity),
+          dosageInstructions: order.dosageInstructions.trim(),
+          remarks: order.remarks?.trim() || null,
+          createdAt: consultDate,
+          context: props.patient && props.visit
+            ? {
+                patientId: props.patient.id,
+                patientDisplayId: props.patient.displayId,
+                patientName: props.patient.name,
+                villageCode: props.visit.villageCode ?? props.patient.villageCode ?? null,
+                visitId: props.visit.id,
+                visitDate: props.visit.date,
+                diagnoses: data.diagnoses.map(d => ({ category: d.category as DiagnosisCategory, details: d.details })),
+                isLowStock: meta?.isLowStock ?? false,
+              }
+            : undefined,
+        })
+      }
+      catch (error) {
+        toast.error(getApiErrorMessage(error, 'Failed to create medication order.'))
+      }
+    }
+    if (!outcome.queued) {
+      toast.success('Medication orders placed!')
     }
   }
 
@@ -237,6 +362,108 @@ useSaveShortcut(submit)
         <FormField v-slot="{ id }" label="Plan">
           <Textarea :id="id" v-model="form.treatmentPlan" :rows="3" placeholder="Type your plan here..." />
         </FormField>
+
+        <fieldset class="flex flex-col gap-2">
+          <legend class="mb-1 text-xs font-semibold touch:text-sm">Medication Orders</legend>
+          <div v-if="form.orders.length === 0">
+            <Button variant="outline" class="self-start" type="button" @click="addOrder">
+              <PhPlus aria-hidden="true" /> Add Medication
+            </Button>
+          </div>
+          <div
+            v-for="(order, index) in form.orders"
+            :key="order.key"
+            class="flex flex-col gap-2 border border-border bg-stripe p-2"
+          >
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <p class="text-xs font-bold text-muted-foreground touch:text-sm">
+                  Medication {{ index + 1 }}
+                </p>
+                <template v-if="order.medicationBrandId">
+                  <span
+                    v-if="brandMetaById.get(order.medicationBrandId)?.activeQty === 0"
+                    class="border border-destructive/40 bg-destructive-subtle px-1.5 py-0.5 text-[0.6875rem] font-semibold text-destructive"
+                  >
+                    Out of stock
+                  </span>
+                  <span
+                    v-else-if="Number(order.quantity) > (brandMetaById.get(order.medicationBrandId)?.activeQty ?? 0)"
+                    class="border border-warning/40 bg-warning-subtle px-1.5 py-0.5 text-[0.6875rem] font-semibold text-warning"
+                  >
+                    Exceeds active stock ({{ brandMetaById.get(order.medicationBrandId)?.activeQty }} available)
+                  </span>
+                  <span
+                    v-else-if="brandMetaById.get(order.medicationBrandId)?.isLowStock"
+                    class="border border-warning/40 bg-warning-subtle px-1.5 py-0.5 text-[0.6875rem] font-semibold text-warning"
+                  >
+                    Low stock
+                  </span>
+                </template>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                class="text-destructive"
+                type="button"
+                :aria-label="`Remove medication ${index + 1}`"
+                @click="removeOrder(index)"
+              >
+                <PhTrash aria-hidden="true" /> Remove
+              </Button>
+            </div>
+            <div class="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_8rem]">
+              <FormField v-slot="{ id: fieldId, describedby, invalid }" label="Medication (Brand + Active Ingredient)" required :error="errors[`orders.${index}.medicationBrandId`]">
+                <NativeSelect
+                  :id="fieldId"
+                  v-model="order.medicationBrandId"
+                  data-order-medication
+                  :aria-describedby="describedby"
+                  :aria-invalid="invalid || undefined"
+                >
+                  <NativeSelectOption value="">
+                    Choose a medication
+                  </NativeSelectOption>
+                  <NativeSelectOption v-for="opt in medicationOptions" :key="opt.value" :value="opt.value">
+                    {{ opt.label }}
+                  </NativeSelectOption>
+                </NativeSelect>
+              </FormField>
+              <FormField v-slot="{ id: fieldId, describedby, invalid }" label="Quantity" required :error="errors[`orders.${index}.quantity`]">
+                <NumericInput
+                  :id="fieldId"
+                  v-model="order.quantity"
+                  step="1"
+                  min="1"
+                  :unit="brandMetaById.get(order.medicationBrandId)?.unitOfMeasurement ?? undefined"
+                  :aria-describedby="describedby"
+                  :aria-invalid="invalid || undefined"
+                />
+              </FormField>
+            </div>
+            <div class="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_1fr]">
+              <FormField v-slot="{ id: fieldId, describedby, invalid }" label="Dosage instructions" required :error="errors[`orders.${index}.dosageInstructions`]">
+                <Input
+                  :id="fieldId"
+                  v-model="order.dosageInstructions"
+                  placeholder="e.g. 1 tablet twice daily after meals"
+                  :aria-describedby="describedby"
+                  :aria-invalid="invalid || undefined"
+                />
+              </FormField>
+              <FormField v-slot="{ id: fieldId }" label="Order remarks">
+                <Input
+                  :id="fieldId"
+                  v-model="order.remarks"
+                  placeholder="Optional notes for the pharmacist..."
+                />
+              </FormField>
+            </div>
+          </div>
+          <Button v-if="form.orders.length > 0" variant="outline" class="self-start" type="button" @click="addOrder">
+            <PhPlus aria-hidden="true" /> Add Medication
+          </Button>
+        </fieldset>
 
         <fieldset class="flex flex-col gap-2">
           <legend class="mb-1 text-xs font-semibold touch:text-sm">

@@ -75,6 +75,15 @@ describe('paths.consultsDetail', () => {
   })
 })
 
+describe('paths.orders and pharmacy patientLinkFor', () => {
+  it('builds orders URLs and pharmacy patient links correctly', async () => {
+    const { paths, patientLinkFor } = await import('~/utils/paths')
+    expect(paths.orders()).toBe('/orders')
+    expect(paths.orders({ patient: 'p1', visit: 'v1' })).toBe('/orders?patient=p1&visit=v1')
+    expect(patientLinkFor('pharmacy', 'p1', 'v1')).toBe('/orders?patient=p1&visit=v1')
+  })
+})
+
 describe('nested pages', () => {
   const settings = ADMIN_NAV_ITEMS.find(item => item.href === '/settings')!
   const stock = ADMIN_NAV_ITEMS.find(item => item.href === '/medication-stock')!

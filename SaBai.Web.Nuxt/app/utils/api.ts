@@ -55,6 +55,10 @@ export const queryKeys = {
   referralPartners: () => ["referral-partners"] as const,
   pnLedger: () => ["pn-ledger"] as const,
   tags: () => ["tags"] as const,
+  orders: () => ["orders"] as const,
+  ordersList: (status?: string) => status ? (["orders", "list", status] as const) : (["orders", "list"] as const),
+  pharmacyOrders: () => ["pharmacy-orders"] as const,
+  medicationHistory: (brandId: string | number) => ["medication-history", brandId] as const,
 };
 
 /** Converts a captured data URL (e.g. from the webcam) into a `File` for multipart upload. */

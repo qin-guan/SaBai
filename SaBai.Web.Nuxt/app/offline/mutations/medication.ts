@@ -13,6 +13,12 @@ import {
   saBaiAPIEndpointsMedicationStockSplitsPostEndpoint,
   saBaiAPIEndpointsMedicationStockUpdatePatchEndpoint,
   saBaiAPIEndpointsMedicationStockWithBrandGetEndpoint,
+  saBaiAPIEndpointsMedicationHistoryGetEndpoint,
+  saBaiAPIEndpointsOrdersCreatePostEndpoint,
+  saBaiAPIEndpointsOrdersDeleteDeleteEndpoint,
+  saBaiAPIEndpointsOrdersListGetEndpoint,
+  saBaiAPIEndpointsOrdersUpdatePatchEndpoint,
+  saBaiAPIEndpointsPharmacyOrdersGetEndpoint,
 } from '@sabai/sdk/clients'
 import type {
   SaBaiAPIDomainStockStatusKey,
@@ -20,6 +26,13 @@ import type {
   SaBaiAPIEndpointsMedicationBrandsWithIngredientGetResponse,
   SaBaiAPIEndpointsMedicationIngredientsListGetResponse,
   SaBaiAPIEndpointsMedicationStockWithBrandGetResponse,
+  SaBaiAPIDomainOrderStatusKey,
+  SaBaiAPIEndpointsMedicationHistoryGetResponse,
+  SaBaiAPIEndpointsOrdersListGetResponse,
+  SaBaiAPIEndpointsPharmacyOrdersGetDiagnosisItem,
+  SaBaiAPIEndpointsPharmacyOrdersGetPharmacyOrderItem,
+  SaBaiAPIEndpointsPharmacyOrdersGetResponse,
+  SaBaiAPIEndpointsPharmacyOrdersGetVisitBundle,
 } from '@sabai/sdk/types'
 import { defineOfflineMutation, requestOptions } from '~/offline/defineOfflineMutation'
 import { CLINIC_STAFF_ROLES, registerOfflinePrefetch } from '~/offline/prefetch'
@@ -50,6 +63,14 @@ export type MedicationBrandWithIngredient = SaBaiAPIEndpointsMedicationBrandsWit
 export type MedicationStockLine = SaBaiAPIEndpointsMedicationStockWithBrandGetResponse
 export type StockStatusKey = SaBaiAPIDomainStockStatusKey
 
+export type MedicationOrder = SaBaiAPIEndpointsOrdersListGetResponse
+export type OrderStatusKey = SaBaiAPIDomainOrderStatusKey
+export type PharmacyPatientOrders = SaBaiAPIEndpointsPharmacyOrdersGetResponse
+export type PharmacyVisitBundle = SaBaiAPIEndpointsPharmacyOrdersGetVisitBundle
+export type PharmacyOrderItem = SaBaiAPIEndpointsPharmacyOrdersGetPharmacyOrderItem
+export type PharmacyDiagnosisItem = SaBaiAPIEndpointsPharmacyOrdersGetDiagnosisItem
+export type MedicationHistoryEntry = SaBaiAPIEndpointsMedicationHistoryGetResponse
+
 // ── Reads ────────────────────────────────────────────────────────────────
 
 export function fetchMedicationIngredients(signal?: AbortSignal) {
@@ -68,6 +89,18 @@ export function fetchMedicationStock(signal?: AbortSignal) {
   return saBaiAPIEndpointsMedicationStockWithBrandGetEndpoint({ ...apiConfig, signal }).unwrap()
 }
 
+export function fetchOrders(status?: string, signal?: AbortSignal) {
+  return saBaiAPIEndpointsOrdersListGetEndpoint({ ...apiConfig, query: status ? { status } : undefined, signal }).unwrap()
+}
+
+export function fetchPharmacyOrders(signal?: AbortSignal) {
+  return saBaiAPIEndpointsPharmacyOrdersGetEndpoint({ ...apiConfig, signal }).unwrap()
+}
+
+export function fetchMedicationHistory(brandId: string, signal?: AbortSignal) {
+  return saBaiAPIEndpointsMedicationHistoryGetEndpoint({ ...apiConfig, query: { brandId }, signal }).unwrap()
+}
+
 // The consult form picks medication offline, so a device needs all four lists.
 registerOfflinePrefetch('medication', async (queryClient) => {
   await Promise.all([
@@ -75,6 +108,8 @@ registerOfflinePrefetch('medication', async (queryClient) => {
     queryClient.fetchQuery({ queryKey: queryKeys.medicationBrands(), queryFn: ({ signal }) => fetchMedicationBrands(signal) }),
     queryClient.fetchQuery({ queryKey: queryKeys.medicationBrandsWithIngredient(), queryFn: ({ signal }) => fetchMedicationBrandsWithIngredient(signal) }),
     queryClient.fetchQuery({ queryKey: queryKeys.medicationStock(), queryFn: ({ signal }) => fetchMedicationStock(signal) }),
+    queryClient.fetchQuery({ queryKey: queryKeys.ordersList(), queryFn: ({ signal }) => fetchOrders(undefined, signal) }),
+    queryClient.fetchQuery({ queryKey: queryKeys.pharmacyOrders(), queryFn: ({ signal }) => fetchPharmacyOrders(signal) }),
   ])
 }, { roles: CLINIC_STAFF_ROLES })
 
@@ -456,3 +491,307 @@ export const splitMedicationStock = defineOfflineMutation({
     editStock(queryClient, list => applySplit(list, vars.parent, vars.splits)),
   onSuccess: (_saved, _vars, queryClient) => invalidateStock(queryClient),
 })
+
+// ── Orders & Pharmacy Queue ──────────────────────────────────────────────
+
+import {
+  upsertOrderInPharmacyQueue,
+  patchOrderInPharmacyQueue,
+  removeOrderFromPharmacyQueue,
+  deductStockFifo,
+} from '~/utils/medicationCache'
+
+export interface CreateOrderContext {
+  patientId?: string
+  patientDisplayId: string
+  patientName: string
+  villageCode: string | null
+  visitId: string
+  visitDate: string
+  diagnoses: PharmacyDiagnosisItem[]
+  isLowStock: boolean
+}
+
+export interface CreateOrderVars {
+  id: string
+  consultId: string
+  medicationBrandId: string
+  brandName: string
+  quantity: number
+  dosageInstructions: string
+  remarks: string | null
+  createdAt?: string
+  context?: CreateOrderContext
+}
+
+export interface UpdateOrderVars {
+  id: string
+  status: OrderStatusKey
+  dosageInstructions?: string | null
+  remarks?: string | null
+  medicationBrandId?: string
+  brandName?: string
+  quantity?: number
+  visitId?: string
+  patientName?: string
+  approvedById?: string | null
+  approvedAt?: string | null
+  /** Snapshot of active stock lots for this brand when the user approved, so optimistic FIFO deduction is idempotent. */
+  stockSnapshot?: MedicationStockLine[]
+}
+
+export interface DeleteOrderVars {
+  id: string
+  brandName?: string
+  visitId?: string
+}
+
+const journeyAppliedActions = new WeakMap<object, Set<string>>()
+
+function adjustVisitPharmacyJourney(
+  queryClient: QueryClient,
+  visitId: string,
+  actionKey: string,
+  adjust: (journey: { pharmacyPending: number; pharmacyOrders: number; pharmacyAt?: string | null }) => any,
+) {
+  queryClient.setQueriesData<{ visits?: Array<{ id: string; journey?: any }> }>(
+    { queryKey: ['patients', 'visits'] },
+    (old) => {
+      if (!old || !Array.isArray(old.visits)) return old
+      if (!old.visits.some(v => v.id === visitId && v.journey)) return old
+      return {
+        ...old,
+        visits: old.visits.map(v => {
+          if (v.id === visitId && v.journey) {
+            const journey = v.journey
+            let set = journeyAppliedActions.get(journey)
+            if (!set) {
+              set = new Set()
+              journeyAppliedActions.set(journey, set)
+            }
+            if (set.has(actionKey)) return v
+            const nextSet = new Set(set)
+            nextSet.add(actionKey)
+            const updatedJourney = adjust(journey)
+            journeyAppliedActions.set(updatedJourney, nextSet)
+            return { ...v, journey: updatedJourney }
+          }
+          return v
+        }),
+      }
+    },
+  )
+
+  queryClient.setQueryData<{ patients?: Array<{ id: string; lastVisitId?: string | null; lastVisitJourney?: any }> }>(
+    queryKeys.patientsWithLatestVisit(),
+    (old) => {
+      if (!old || !Array.isArray(old.patients)) return old
+      if (!old.patients.some(p => p.lastVisitId === visitId && p.lastVisitJourney)) return old
+      return {
+        ...old,
+        patients: old.patients.map(p => {
+          if (p.lastVisitId === visitId && p.lastVisitJourney) {
+            const journey = p.lastVisitJourney
+            let set = journeyAppliedActions.get(journey)
+            if (!set) {
+              set = new Set()
+              journeyAppliedActions.set(journey, set)
+            }
+            if (set.has(actionKey)) return p
+            const nextSet = new Set(set)
+            nextSet.add(actionKey)
+            const updatedJourney = adjust(journey)
+            journeyAppliedActions.set(updatedJourney, nextSet)
+            return { ...p, lastVisitJourney: updatedJourney }
+          }
+          return p
+        }),
+      }
+    },
+  )
+}
+
+export const createOrder = defineOfflineMutation({
+  key: 'medication.order.create',
+  creates: true,
+  describe: (vars: CreateOrderVars) => `Order ${vars.brandName} × ${vars.quantity}${vars.context?.patientName ? ` for ${vars.context.patientName}` : ''}`,
+  recordIds: vars => [vars.id],
+  dependsOn: vars => [vars.consultId, vars.medicationBrandId, ...(vars.context?.visitId ? [vars.context.visitId] : []), ...(vars.context?.patientId ? [vars.context.patientId] : [])],
+  send: (vars, ctx) =>
+    saBaiAPIEndpointsOrdersCreatePostEndpoint({
+      ...apiConfig,
+      ...requestOptions(ctx),
+      body: {
+        id: vars.id,
+        consultId: vars.consultId,
+        medicationBrandId: vars.medicationBrandId,
+        quantity: vars.quantity,
+        dosageInstructions: vars.dosageInstructions,
+        remarks: vars.remarks,
+      },
+    }).unwrap(),
+  optimistic: (vars, queryClient) => {
+    const existing = queryClient.getQueryData<MedicationOrder[]>(queryKeys.ordersList())?.find(o => o.id === vars.id)
+    const order: MedicationOrder = {
+      id: vars.id,
+      consultId: vars.consultId,
+      medicationBrandId: vars.medicationBrandId,
+      brandName: vars.brandName,
+      quantity: vars.quantity,
+      dosageInstructions: vars.dosageInstructions,
+      remarks: vars.remarks,
+      status: 'PENDING',
+      createdAt: vars.createdAt ?? existing?.createdAt ?? new Date().toISOString(),
+      approvedById: null,
+      approvedAt: null,
+    }
+
+    // Upsert into orders list & PENDING orders list
+    queryClient.setQueryData<MedicationOrder[]>(queryKeys.ordersList(), old => upsertById(old ?? [], order, 'start'))
+    queryClient.setQueryData<MedicationOrder[]>(queryKeys.ordersList('PENDING'), old => upsertById(old ?? [], order, 'start'))
+
+    const c = vars.context
+    if (c) {
+      queryClient.setQueryData<PharmacyPatientOrders[]>(queryKeys.pharmacyOrders(), old =>
+        upsertOrderInPharmacyQueue(old ?? [], {
+          orderId: vars.id,
+          medicationName: vars.brandName,
+          quantity: vars.quantity,
+          isLowStock: c.isLowStock,
+          dosageInstructions: vars.dosageInstructions,
+          patientDisplayId: c.patientDisplayId,
+          patientName: c.patientName,
+          villageCode: c.villageCode,
+          visitId: c.visitId,
+          visitDate: c.visitDate,
+          diagnoses: c.diagnoses,
+        }),
+      )
+      adjustVisitPharmacyJourney(queryClient, c.visitId, `${vars.id}:create`, journey => ({
+        ...journey,
+        pharmacyPending: (journey.pharmacyPending ?? 0) + 1,
+        pharmacyOrders: (journey.pharmacyOrders ?? 0) + 1,
+      }))
+    }
+  },
+  revert: (vars, queryClient) => {
+    queryClient.setQueryData<MedicationOrder[]>(queryKeys.ordersList(), old => old?.filter(o => o.id !== vars.id))
+    queryClient.setQueryData<MedicationOrder[]>(queryKeys.ordersList('PENDING'), old => old?.filter(o => o.id !== vars.id))
+    queryClient.setQueryData<PharmacyPatientOrders[]>(queryKeys.pharmacyOrders(), old => old ? removeOrderFromPharmacyQueue(old, vars.id) : old)
+    if (vars.context?.visitId) {
+      adjustVisitPharmacyJourney(queryClient, vars.context.visitId, `${vars.id}:create:revert`, journey => ({
+        ...journey,
+        pharmacyPending: Math.max(0, (journey.pharmacyPending ?? 0) - 1),
+        pharmacyOrders: Math.max(0, (journey.pharmacyOrders ?? 0) - 1),
+      }))
+    }
+  },
+  onSuccess: (_saved, _vars, queryClient) => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.orders() })
+    queryClient.invalidateQueries({ queryKey: queryKeys.pharmacyOrders() })
+    queryClient.invalidateQueries({ queryKey: queryKeys.patients() })
+  },
+})
+
+export const updateOrder = defineOfflineMutation({
+  key: 'medication.order.update',
+  describe: (vars: UpdateOrderVars) => vars.status === 'APPROVED' ? `Dispense ${vars.brandName ?? 'order'}${vars.patientName ? ` for ${vars.patientName}` : ''}` : vars.status === 'CANCELLED' ? `Cancel order ${vars.brandName ?? ''}`.trim() : `Edit order ${vars.brandName ?? ''}`.trim(),
+  recordIds: vars => [vars.id],
+  dependsOn: vars => [vars.id],
+  send: (vars, ctx) =>
+    saBaiAPIEndpointsOrdersUpdatePatchEndpoint({
+      ...apiConfig,
+      ...requestOptions(ctx),
+      path: { id: vars.id },
+      body: {
+        status: vars.status,
+        dosageInstructions: vars.dosageInstructions ?? undefined,
+        remarks: vars.remarks ?? undefined,
+      },
+    }).unwrap(),
+  optimistic: (vars, queryClient) => {
+    const patch: Partial<MedicationOrder> = {
+      status: vars.status,
+    }
+    if (vars.dosageInstructions != null) patch.dosageInstructions = vars.dosageInstructions
+    if (vars.remarks !== undefined) patch.remarks = vars.remarks
+    if (vars.status === 'APPROVED') {
+      patch.approvedAt = vars.approvedAt ?? new Date().toISOString()
+    }
+
+    queryClient.setQueriesData<MedicationOrder[]>({ queryKey: ['orders', 'list'] }, old => {
+      if (!old) return old
+      return old.map(o => {
+        if (o.id === vars.id) {
+          return { ...o, ...patch }
+        }
+        return o
+      }).filter(o => {
+        // If queryKey is status-specific (e.g. ['orders', 'list', 'PENDING']), filter out if status changed
+        // but wait, setQueriesData with queryKey: ['orders', 'list'] matches all starting with ['orders', 'list']
+        return true
+      })
+    })
+
+    // Also specifically handle status-filtered lists if cached
+    for (const statusKey of ['PENDING', 'APPROVED', 'CANCELLED']) {
+      const qKey = queryKeys.ordersList(statusKey)
+      queryClient.setQueryData<MedicationOrder[]>(qKey, old => {
+        if (!old) return old
+        return old.map(o => o.id === vars.id ? { ...o, ...patch } : o).filter(o => o.status === statusKey)
+      })
+    }
+
+    queryClient.setQueryData<PharmacyPatientOrders[]>(queryKeys.pharmacyOrders(), old =>
+      old ? patchOrderInPharmacyQueue(old, vars.id, { status: vars.status, dosageInstructions: vars.dosageInstructions }) : old,
+    )
+
+    if (vars.status === 'APPROVED' && vars.medicationBrandId && vars.quantity) {
+      editStock(queryClient, list => deductStockFifo(list, vars.medicationBrandId!, vars.quantity!, vars.stockSnapshot))
+    }
+
+    if (vars.visitId && (vars.status === 'APPROVED' || vars.status === 'CANCELLED')) {
+      const isApproved = vars.status === 'APPROVED'
+      adjustVisitPharmacyJourney(queryClient, vars.visitId, `${vars.id}:${vars.status}`, journey => ({
+        ...journey,
+        pharmacyPending: Math.max(0, (journey.pharmacyPending ?? 0) - 1),
+        ...(isApproved ? { pharmacyAt: vars.approvedAt ?? new Date().toISOString() } : { pharmacyOrders: Math.max(0, (journey.pharmacyOrders ?? 0) - 1) }),
+      }))
+    }
+  },
+  onSuccess: (_saved, _vars, queryClient) => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.orders() })
+    queryClient.invalidateQueries({ queryKey: queryKeys.pharmacyOrders() })
+    queryClient.invalidateQueries({ queryKey: queryKeys.medicationStock() })
+    queryClient.invalidateQueries({ queryKey: queryKeys.patients() })
+  },
+})
+
+export const deleteOrder = defineOfflineMutation({
+  key: 'medication.order.delete',
+  describe: (vars: DeleteOrderVars) => `Delete order ${vars.brandName ?? ''}`.trim(),
+  recordIds: vars => [vars.id],
+  send: async (vars, ctx) => {
+    try {
+      await saBaiAPIEndpointsOrdersDeleteDeleteEndpoint({
+        ...apiConfig,
+        ...requestOptions(ctx),
+        path: { id: vars.id },
+      }).unwrap()
+    } catch (error) {
+      if (getApiErrorStatus(error) !== 404) throw error
+    }
+  },
+  optimistic: (vars, queryClient) => {
+    queryClient.setQueriesData<MedicationOrder[]>({ queryKey: ['orders', 'list'] }, old =>
+      old?.filter(o => o.id !== vars.id))
+    queryClient.setQueryData<PharmacyPatientOrders[]>(queryKeys.pharmacyOrders(), old =>
+      old ? removeOrderFromPharmacyQueue(old, vars.id) : old)
+  },
+  onSuccess: (_saved, _vars, queryClient) => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.orders() })
+    queryClient.invalidateQueries({ queryKey: queryKeys.pharmacyOrders() })
+    queryClient.invalidateQueries({ queryKey: queryKeys.patients() })
+  },
+})
+

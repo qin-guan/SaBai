@@ -218,7 +218,7 @@ const sections = computed(() => {
  * journey and the next step.
  */
 const rowLink = (p: Row) =>
-  station.value && station.value !== 'pharmacy'
+  station.value
     ? patientLinkFor(station.value, p.id, p.lastVisitId ?? undefined)
     : paths.patientDetail(p.id)
 
@@ -404,7 +404,7 @@ const gridCols = 'md:grid-cols-[2rem_minmax(0,1fr)_minmax(15rem,22rem)_1rem] lg:
                     :to="rowLink(patient)"
                     class="row-link min-w-0 shrink truncate text-sm font-semibold group-hover:text-primary after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-ring touch:text-base"
                   >
-                    <span class="sr-only">{{ station && station !== 'pharmacy' ? `Open ${stationLabel(station)}:` : 'Open record:' }}</span>
+                    <span class="sr-only">{{ station ? `Open ${stationLabel(station)}:` : 'Open record:' }}</span>
                     {{ patient.name }}
                   </NuxtLink>
                   <!-- Below laptop width the allergy rides next to the name (its own column on laptops). -->

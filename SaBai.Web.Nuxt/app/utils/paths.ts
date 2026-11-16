@@ -32,7 +32,13 @@ export const paths = {
   medicationStock: () => "/medication-stock",
   medicationBrands: () => "/medication-brands",
   medicationActiveIngredients: () => "/medication-active-ingredients",
-  orders: () => "/orders",
+  orders: (filter?: { patient?: string | number; visit?: string | number }) => {
+    const query = new URLSearchParams();
+    if (filter?.patient !== undefined) query.set("patient", String(filter.patient));
+    if (filter?.visit !== undefined) query.set("visit", String(filter.visit));
+    const qs = query.toString();
+    return qs ? `/orders?${qs}` : "/orders";
+  },
   settings: () => "/settings",
   settingsSync: () => "/settings/sync",
   settingsNotifications: () => "/settings/notifications",
@@ -65,8 +71,7 @@ export function patientLinkFor(target: PatientLinkTarget | undefined, patientId:
     case "dental":
       return paths.dentalDetail(patientId, visitId);
     case "pharmacy":
-      // Dispensing has no per-patient screen yet; the orders page is the pharmacy station.
-      return paths.orders();
+      return paths.orders({ patient: patientId, visit: visitId });
     default:
       return paths.patientDetail(patientId);
   }

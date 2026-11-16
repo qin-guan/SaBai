@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { MedicationOrder } from '~/offline/mutations/medication'
+
 /**
  * Read-only consults already saved for this visit (a visit can accumulate
  * several), shown alongside the form for recording a new one.
@@ -9,6 +11,17 @@ const props = defineProps<{
 }>()
 const { data, isLoading } = useVisitConsults(() => props.visitId)
 const consults = computed(() => data.value ?? [])
+
+const { data: allOrders } = useOrders()
+const ordersByConsultId = computed(() => {
+  const map = new Map<string, MedicationOrder[]>()
+  for (const o of allOrders.value ?? []) {
+    const list = map.get(o.consultId) ?? []
+    list.push(o)
+    map.set(o.consultId, list)
+  }
+  return map
+})
 
 const hasHighlightedConsult = computed(() =>
   !!props.highlightConsultId && consults.value.some(c => c.id === props.highlightConsultId),
@@ -106,6 +119,44 @@ const trailing = [
           {{ consult.referralNotes }}
         </p>
       </div>
+      <div v-if="ordersByConsultId.get(consult.id)?.length" class="flex flex-col gap-1 border-t border-border pt-2">
+        <div class="flex items-center justify-between">
+          <p class="text-xs touch:text-xs font-semibold text-muted-foreground">Prescriptions</p>
+          <NuxtLink
+            v-if="ordersByConsultId.get(consult.id)!.some(o => o.status === 'PENDING')"
+            :to="paths.orders({ visit: props.visitId })"
+            class="text-xs font-medium text-primary underline hover:text-primary/80"
+          >
+            View in Pharmacy Queue →
+          </NuxtLink>
+        </div>
+        <ul class="flex flex-col gap-1.5">
+          <li v-for="order in ordersByConsultId.get(consult.id)" :key="order.id" class="border border-border bg-stripe p-1.5 text-xs">
+            <div class="flex items-center justify-between gap-2">
+              <div>
+                <span class="font-semibold">{{ order.brandName }}</span> × {{ order.quantity }}
+              </div>
+              <span
+                class="border px-1.5 py-0.5 text-[0.6875rem] font-semibold"
+                :class="{
+                  'border-success/40 bg-success-subtle text-success': order.status === 'APPROVED',
+                  'border-destructive/40 bg-destructive-subtle text-destructive': order.status === 'CANCELLED',
+                  'border-warning/40 bg-warning-subtle text-warning': order.status === 'PENDING',
+                }"
+              >
+                {{ order.status === 'APPROVED' ? 'Dispensed' : order.status === 'CANCELLED' ? 'Cancelled' : 'Pending' }}
+              </span>
+            </div>
+            <p v-if="order.dosageInstructions" class="mt-0.5 text-muted-foreground">
+              {{ order.dosageInstructions }}
+            </p>
+            <p v-if="order.remarks" class="mt-0.5 italic text-muted-foreground">
+              Remarks: {{ order.remarks }}
+            </p>
+          </li>
+        </ul>
+      </div>
+
       <template v-for="f in trailing" :key="f.key">
         <div v-if="consult[f.key]">
           <p class="text-xs touch:text-xs font-semibold text-muted-foreground">

@@ -6,6 +6,9 @@ import {
   createMedicationStock,
   splitMedicationStock,
   updateMedicationIngredient,
+  createOrder,
+  updateOrder,
+  deleteOrder,
   type MedicationStockLine,
 } from '~/offline/mutations/medication'
 import { queryKeys } from '~/utils/api'
@@ -106,5 +109,138 @@ describe('medication offline writes', () => {
       splitMedicationStock.optimistic!({ stockId: 's', parent: stockLine, splits: [] }, qc)
       updateMedicationIngredient.optimistic!({ id: 'i', name: 'n', unitOfMeasurement: 'u', fallBelow: 1, remarks: null }, qc)
     }).not.toThrow()
+  })
+
+  it('registers order mutations by key', () => {
+    for (const key of [
+      'medication.order.create',
+      'medication.order.update',
+      'medication.order.delete',
+    ]) {
+      expect(getOfflineMutation(key), key).toBeDefined()
+    }
+  })
+
+  it('createOrder updates ordersList, pharmacyOrders and visit journey optimistically and is idempotent', () => {
+    const qc = seeded()
+    const vars = {
+      id: 'ord-1',
+      consultId: 'consult-1',
+      medicationBrandId: 'brand-1',
+      brandName: 'Brand',
+      quantity: 3,
+      dosageInstructions: '1 tablet',
+      remarks: null,
+      context: {
+        patientDisplayId: 'P001',
+        patientName: 'Alice',
+        villageCode: 'V1',
+        visitId: 'visit-1',
+        visitDate: '2026-11-15',
+        diagnoses: [{ id: 'd1', name: 'Fever' }],
+        isLowStock: false,
+      },
+    }
+    createOrder.optimistic!(vars, qc)
+    const onceOrders = qc.getQueryData(queryKeys.ordersList())
+    createOrder.optimistic!(vars, qc)
+    expect(qc.getQueryData(queryKeys.ordersList())).toEqual(onceOrders)
+    expect(qc.getQueryData(queryKeys.pharmacyOrders())).toBeDefined()
+  })
+
+  it('updateOrder approves order, deducts stock via FIFO, and updates pharmacy queue', () => {
+    const qc = seeded()
+    const varsCreate = {
+      id: 'ord-1',
+      consultId: 'consult-1',
+      medicationBrandId: 'brand-1',
+      brandName: 'Brand',
+      quantity: 3,
+      dosageInstructions: '1 tablet',
+      remarks: null,
+      context: {
+        patientDisplayId: 'P001',
+        patientName: 'Alice',
+        villageCode: 'V1',
+        visitId: 'visit-1',
+        visitDate: '2026-11-15',
+        diagnoses: [{ id: 'd1', name: 'Fever' }],
+        isLowStock: false,
+      },
+    }
+    createOrder.optimistic!(varsCreate, qc)
+    expect(stock(qc)[0]!.quantity).toBe(10)
+
+    const varsUpdate = {
+      id: 'ord-1',
+      status: 'APPROVED' as const,
+      medicationBrandId: 'brand-1',
+      quantity: 3,
+      visitId: 'visit-1',
+      stockSnapshot: [stockLine],
+    }
+    updateOrder.optimistic!(varsUpdate, qc)
+    expect(stock(qc)[0]!.quantity).toBe(7)
+  })
+
+  it('deleteOrder removes order from ordersList and pharmacyOrders', () => {
+    const qc = seeded()
+    const varsCreate = {
+      id: 'ord-1',
+      consultId: 'consult-1',
+      medicationBrandId: 'brand-1',
+      brandName: 'Brand',
+      quantity: 3,
+      dosageInstructions: '1 tablet',
+      remarks: null,
+      context: {
+        patientDisplayId: 'P001',
+        patientName: 'Alice',
+        villageCode: 'V1',
+        visitId: 'visit-1',
+        visitDate: '2026-11-15',
+        diagnoses: [{ id: 'd1', name: 'Fever' }],
+        isLowStock: false,
+      },
+    }
+    createOrder.optimistic!(varsCreate, qc)
+    expect(qc.getQueryData<any[]>(queryKeys.ordersList())).toHaveLength(1)
+
+    deleteOrder.optimistic!({ id: 'ord-1', brandName: 'Brand', visitId: 'visit-1' }, qc)
+    expect(qc.getQueryData<any[]>(queryKeys.ordersList())).toHaveLength(0)
+  })
+
+  it('adjustVisitPharmacyJourney updates patientsWithLatestVisit shape correctly', () => {
+    const qc = new QueryClient()
+    qc.setQueryData(queryKeys.patientsWithLatestVisit(), {
+      patients: [
+        {
+          id: 'patient-1',
+          lastVisitId: 'visit-1',
+          lastVisitJourney: { pharmacyPending: 0, pharmacyOrders: 0 },
+        },
+      ],
+    })
+    const vars = {
+      id: 'ord-1',
+      consultId: 'consult-1',
+      medicationBrandId: 'brand-1',
+      brandName: 'Brand',
+      quantity: 1,
+      dosageInstructions: '1',
+      remarks: null,
+      context: {
+        patientDisplayId: 'P1',
+        patientName: 'Test',
+        villageCode: null,
+        visitId: 'visit-1',
+        visitDate: '2026-11-15',
+        diagnoses: [],
+        isLowStock: false,
+      },
+    }
+    createOrder.optimistic!(vars, qc)
+    const latest = qc.getQueryData<any>(queryKeys.patientsWithLatestVisit())
+    expect(latest.patients[0].lastVisitJourney.pharmacyPending).toBe(1)
   })
 })

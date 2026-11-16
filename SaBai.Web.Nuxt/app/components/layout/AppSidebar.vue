@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PhCaretRight, PhSignOut, PhUserCircle } from '@phosphor-icons/vue'
+import { PhCaretRight, PhNewspaper, PhSignOut, PhUserCircle } from '@phosphor-icons/vue'
 import {
   Sidebar,
   SidebarContent,
@@ -126,6 +126,21 @@ const signOut = useSignOut()
     </SidebarContent>
     <SidebarFooter class="border-t border-sidebar-border">
       <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton
+            as-child
+            :is-active="route.path === paths.changelog()"
+            tooltip="Changelog"
+          >
+            <NuxtLink
+              :to="paths.changelog()"
+              :aria-current="route.path === paths.changelog() ? 'page' : undefined"
+            >
+              <PhNewspaper aria-hidden="true" />
+              <span>Changelog</span>
+            </NuxtLink>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
         <SidebarMenuItem>
           <SidebarMenuButton
             as-child

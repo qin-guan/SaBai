@@ -1,5 +1,5 @@
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-import { ADMIN_NAV_ITEMS, currentStation, isInNavSection, isNavItemActive, logicalBackTarget, patientTargetFor, SUB_PAGES } from '~/utils/navigation'
+import { ADMIN_NAV_ITEMS, CHANGELOG_PAGE, currentStation, isInNavSection, isNavItemActive, logicalBackTarget, patientTargetFor, SUB_PAGES } from '~/utils/navigation'
 
 type Route = Pick<RouteLocationNormalizedLoaded, 'path' | 'query' | 'meta'>
 
@@ -48,6 +48,7 @@ describe('logicalBackTarget', () => {
     expect(logicalBackTarget(route('/orders'))).toBeUndefined()
     expect(logicalBackTarget(route('/settings'))).toBeUndefined()
     expect(logicalBackTarget(route('/account'))).toBeUndefined()
+    expect(logicalBackTarget(route('/changelog'))).toBeUndefined()
   })
 })
 
@@ -103,5 +104,6 @@ describe('nested pages', () => {
   it('makes every nested page searchable', () => {
     for (const child of [...settings.children!, ...stock.children!])
       expect(SUB_PAGES).toContain(child)
+    expect(SUB_PAGES).toContain(CHANGELOG_PAGE)
   })
 })

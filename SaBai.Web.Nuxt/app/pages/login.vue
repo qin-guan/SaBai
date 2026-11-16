@@ -17,6 +17,7 @@ useHead({ title: "Log in · Sa'Bai" })
 
 const route = useRoute()
 const queryClient = useQueryClient()
+const { $pwa } = useNuxtApp()
 
 /** `password` first; `code` when the account has two-factor on. */
 const step = ref<'password' | 'code'>('password')
@@ -52,6 +53,25 @@ const signIn = useMutation({
     }).unwrap()
   },
 })
+
+// There is no unsaved clinical state on /login, so apply a waiting PWA update
+// automatically before the user starts typing or enters 2FA. If they already
+// started typing, PwaUpdateBanner in blank.vue lets them reload manually.
+watch(
+  () => $pwa?.needRefresh,
+  (needRefresh) => {
+    if (
+      needRefresh
+      && step.value === 'password'
+      && !userName.value
+      && !password.value
+      && !signIn.isPending.value
+    ) {
+      void $pwa?.updateServiceWorker?.(true)
+    }
+  },
+  { immediate: true },
+)
 
 async function submit() {
   error.value = null

@@ -1,3 +1,4 @@
 <template>
+  <PwaUpdateBanner />
   <slot />
 </template>

@@ -16,8 +16,8 @@ public static class AuthSeeder
     )[] DemoPeople =
     [
         ("admin@sabai.test", "admin", "Admin", StaffRoles.Admin),
-        ("doctor@sabai.test", "doctor", "Doctor", StaffRoles.Member),
-        ("pharmacist@sabai.test", "pharmacist", "Pharmacist", StaffRoles.Member),
+        ("doctor@sabai.test", "doctor", "Doctor", StaffRoles.Doctor),
+        ("pharmacist@sabai.test", "pharmacist", "Pharmacist", StaffRoles.Pharmacist),
         ("registration@sabai.test", "registration", "Registration", StaffRoles.Member),
     ];
 

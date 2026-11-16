@@ -11,7 +11,7 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
     public override void Configure()
     {
         Get("/pharmacy-orders");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.Admin, StaffRoles.Pharmacist);
         Summary(s => s.Summary = "List pending pharmacy orders grouped by patient and visit");
     }
 

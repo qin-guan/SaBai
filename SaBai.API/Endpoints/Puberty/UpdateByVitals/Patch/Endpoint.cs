@@ -9,7 +9,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
     public override void Configure()
     {
         Patch("/vitals/{VitalsId}/puberty");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.Admin, StaffRoles.Nurse);
         Summary(s => s.Summary = "Update the puberty assessment for vitals");
     }
 

@@ -10,7 +10,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
     public override void Configure()
     {
         Post("/medication-stock/{Id}/adjustments");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.Admin, StaffRoles.Pharmacist);
         Summary(s => s.Summary = "Adjust a stock lot quantity");
     }
 

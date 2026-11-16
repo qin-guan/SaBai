@@ -11,7 +11,7 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
     public override void Configure()
     {
         Get("/medication-stock/with-brand");
-        Roles(StaffRoles.Admin, StaffRoles.Member);
+        Roles(StaffRoles.Admin, StaffRoles.Pharmacist);
         Summary(s => s.Summary = "List medication stock with brand and ingredient names");
     }
 

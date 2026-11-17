@@ -63,3 +63,14 @@ Last synced upstream commit: `ba266fddbf481ba276f6ab249c713c63b3c9c9d2`
   endpoints accept an optional client-chosen `id` and return the existing record when the same create is sent
   again, and a write that carries `If-Unmodified-Since` gets `412 Precondition Failed` when it would change a
   record another user changed after that time (`ITrackedEntity` and `AppDbContext`).
+- Upstream #329 (stock edits): ported as API rules. Create, edit and split reject a status of
+  reserved or dispensed (400), and editing a reserved or dispensed lot is a conflict (409). The
+  split rule on the parent only matters for reserved lots, which this repo's order flow never
+  creates (it dispenses at approval), but it is kept for parity. Upstream's UI part waits on the
+  frontend choice.
+- Upstream #339 (medication brands): the UI part waits on the frontend choice. Its API change makes
+  `remarks` optional and stores blank remarks as null. That was not ported: the brand API
+  deliberately requires `remarks` ("may be an empty string") and changing it alters the contract.
+- Waiting on the frontend choice (Next, Nuxt or both), so the synced commit stays at `e16af5f`:
+  UI parts of #301, #285, #338, #262, #335 and #339. Waiting on separate decisions: #312 (reserve
+  stock when an order is placed from the consult form) and #342 (separate `users` table).

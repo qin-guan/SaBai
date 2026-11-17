@@ -46,6 +46,19 @@ public sealed class MedicationBrand : ITrackedEntity
     public ICollection<Order> Orders { get; set; } = [];
 }
 
+/// <summary>Which stock statuses can be chosen by hand and which are set by the order flow.</summary>
+public static class StockStatusRules
+{
+    public const string CannotChooseMessage = "Stock status cannot be reserved or dispensed.";
+
+    /// <summary>Reserved and dispensed lots belong to orders, so they can't be edited or split.</summary>
+    public static bool IsLocked(StockStatus status) =>
+        status is StockStatus.Reserved or StockStatus.Dispensed;
+
+    /// <summary>Only active, discarded and donated can be set on create, edit or split.</summary>
+    public static bool CanBeChosen(StockStatus status) => !IsLocked(status);
+}
+
 public sealed class MedicationStock : ITrackedEntity
 {
     public Guid Id { get; set; } = Guid.CreateVersion7();

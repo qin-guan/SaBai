@@ -1,5 +1,6 @@
 using FastEndpoints;
 using FluentValidation;
+using SaBai.API.Domain;
 using SaBai.API.Data;
 
 namespace SaBai.API.Endpoints.MedicationStock.Create.Post;
@@ -13,6 +14,9 @@ public sealed class Validator : Validator<Request>
         RuleFor(x => x.Quantity).GreaterThanOrEqualTo(0);
         RuleFor(x => x.Expiry).NotEqual(default(DateTimeOffset));
         RuleFor(x => x.Location).NotEmpty().MaximumLength(255);
-        RuleFor(x => x.StockStatus).IsInEnum();
+        RuleFor(x => x.StockStatus)
+            .IsInEnum()
+            .Must(StockStatusRules.CanBeChosen)
+            .WithMessage(StockStatusRules.CannotChooseMessage);
     }
 }

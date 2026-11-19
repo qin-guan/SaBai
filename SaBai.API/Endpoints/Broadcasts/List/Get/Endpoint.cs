@@ -22,9 +22,13 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, List<Response>
             query = query.Where(x => x.Id.CompareTo(since) > 0);
         }
 
-        var broadcasts = await query
-            .OrderByDescending(x => x.Id)
-            .Take(req.Limit ?? Request.DefaultLimit)
+        var ordered = query.OrderByDescending(x => x.Id);
+
+        // With Since, return every newer row. A limit would keep only the newest ones, and a
+        // client that moves Since past them would never get the rest.
+        var page = req.Since is null ? ordered.Take(req.Limit ?? Request.DefaultLimit) : ordered;
+
+        var broadcasts = await page
             .Select(x => new Response(
                 x.Id,
                 x.Title,

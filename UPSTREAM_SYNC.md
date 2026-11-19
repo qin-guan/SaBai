@@ -74,3 +74,10 @@ Last synced upstream commit: `ba266fddbf481ba276f6ab249c713c63b3c9c9d2`
 - Waiting on the frontend choice (Next, Nuxt or both), so the synced commit stays at `e16af5f`:
   UI parts of #301, #285, #338, #262, #335 and #339. Waiting on separate decisions: #312 (reserve
   stock when an order is placed from the consult form) and #342 (separate `users` table).
+- Upstream #346 (broadcasts send): only the list fix was ported: with `since`, every newer
+  broadcast is returned and `limit` is ignored (`limit` still caps the list without `since`).
+  Not ported: the Supabase Realtime outbox publish, the 5000-character body cap (it exists to stay
+  under Realtime's payload limit) and `senderName` (needs the held `users` table, #342).
+- Upstream #368 (source-map-js) is a transitive lockfile bump for upstream's Next app: nothing to port.
+- Also waiting on the frontend choice: UI parts of #367 (stock table remark overflow), #360
+  (growth chart sticky on mobile), #337 (dental frontend) and #358 (village codes layout).

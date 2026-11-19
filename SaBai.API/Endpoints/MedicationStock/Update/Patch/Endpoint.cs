@@ -21,6 +21,13 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             "Medication stock was not found.",
             ct
         );
+        if (StockStatusRules.IsLocked(stock.StockStatus))
+        {
+            throw new ConflictException(
+                "Cannot update a stock with reserved or dispensed status."
+            );
+        }
+
         var before = StockChangeLog.Snapshot.Of(stock);
 
         if (!string.IsNullOrWhiteSpace(req.Location))

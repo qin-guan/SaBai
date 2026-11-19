@@ -1,5 +1,6 @@
 using FastEndpoints;
 using FluentValidation;
+using SaBai.API.Domain;
 using SaBai.API.Data;
 
 namespace SaBai.API.Endpoints.MedicationStock.Splits.Post;
@@ -20,7 +21,11 @@ public sealed class Validator : Validator<Request>
                 split.RuleFor(x => x.Id).ClientId();
                 split.RuleFor(x => x.Quantity).GreaterThan(0);
                 split.RuleFor(x => x.Location).NotEmpty().MaximumLength(255);
-                split.RuleFor(x => x.StockStatus).IsInEnum();
+                split
+                    .RuleFor(x => x.StockStatus)
+                    .IsInEnum()
+                    .Must(StockStatusRules.CanBeChosen)
+                    .WithMessage(StockStatusRules.CannotChooseMessage);
             });
     }
 }

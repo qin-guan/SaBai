@@ -84,6 +84,36 @@ public sealed class OrderEdgeTests(AppFixture fixture)
     }
 
     [Test]
+    public async Task Update_DispensedLot_ReturnsConflict()
+    {
+        // Arrange
+        var client = fixture.CreateApiClient();
+        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        var suffix = ClinicSetup.Suffix();
+        var brandId = await CreateBrandAsync(client, suffix);
+        var stockId = await CreateStockAsync(client, brandId, quantity: 2, $"locked-{suffix}");
+        var consultId = await CreateConsultIdAsync(client);
+        var orderId = await CreateOrderAsync(client, consultId, brandId, quantity: 2);
+        (
+            await client.PatchAsJsonAsync(
+                $"/orders/{orderId}",
+                new { status = "APPROVED" },
+                ApiJson.Options
+            )
+        ).EnsureSuccessStatusCode();
+
+        // Act
+        var response = await client.PatchAsJsonAsync(
+            $"/medication-stock/{stockId}",
+            new { location = $"moved-{suffix}" },
+            ApiJson.Options
+        );
+
+        // Assert
+        await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.Conflict);
+    }
+
+    [Test]
     public async Task Approve_WhenAlreadyApproved_ReturnsBadRequest()
     {
         // Arrange

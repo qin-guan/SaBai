@@ -44,6 +44,13 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                 throw new ConflictException("The parent stock has already split.");
             }
 
+            if (StockStatusRules.IsLocked(parent.StockStatus))
+            {
+                throw new ConflictException(
+                    "Cannot split a stock with reserved or dispensed status."
+                );
+            }
+
             var children = req
                 .Splits.Select(split => new
                 {

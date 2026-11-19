@@ -244,6 +244,100 @@ public sealed class StockTests(AppFixture fixture)
         await Assert.That(listed!.Single(x => x.Id == okId).IsLowStock).IsFalse();
     }
 
+    [Test]
+    [Arguments("reserved")]
+    [Arguments("dispensed")]
+    public async Task Create_ReservedOrDispensedStatus_ReturnsBadRequest(string status)
+    {
+        // Arrange
+        var client = fixture.CreateApiClient();
+        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        var (_, brandId) = await CreateStockWithBrandAsync(
+            client,
+            ClinicSetup.Suffix(),
+            quantity: 1,
+            "seed"
+        );
+
+        // Act
+        var response = await client.PostAsJsonAsync(
+            "/medication-stock",
+            new
+            {
+                medicationBrandId = brandId,
+                quantity = 3,
+                expiry = DateTimeOffset.UtcNow.AddYears(1),
+                location = "rejected",
+                stockStatus = status,
+            },
+            ApiJson.Options
+        );
+
+        // Assert
+        await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
+    }
+
+    [Test]
+    [Arguments("reserved")]
+    [Arguments("dispensed")]
+    public async Task Update_ToReservedOrDispensed_ReturnsBadRequest(string status)
+    {
+        // Arrange
+        var client = fixture.CreateApiClient();
+        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        var suffix = ClinicSetup.Suffix();
+        var stockId = await CreateStockAsync(client, suffix, quantity: 4, $"flip-{suffix}");
+
+        // Act
+        var response = await client.PatchAsJsonAsync(
+            $"/medication-stock/{stockId}",
+            new { stockStatus = status },
+            ApiJson.Options
+        );
+
+        // Assert
+        await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
+    }
+
+    [Test]
+    [Arguments("reserved")]
+    [Arguments("dispensed")]
+    public async Task Split_ChildReservedOrDispensed_ReturnsBadRequest(string status)
+    {
+        // Arrange
+        var client = fixture.CreateApiClient();
+        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        var suffix = ClinicSetup.Suffix();
+        var stockId = await CreateStockAsync(client, suffix, quantity: 4, $"split-{suffix}");
+
+        // Act
+        var response = await client.PostAsJsonAsync(
+            $"/medication-stock/{stockId}/splits",
+            new
+            {
+                splits = new object[]
+                {
+                    new
+                    {
+                        quantity = 1,
+                        location = $"a-{suffix}",
+                        stockStatus = "active",
+                    },
+                    new
+                    {
+                        quantity = 3,
+                        location = $"b-{suffix}",
+                        stockStatus = status,
+                    },
+                },
+            },
+            ApiJson.Options
+        );
+
+        // Assert
+        await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
+    }
+
     private static async Task<Guid> CreateStockAsync(
         HttpClient client,
         string suffix,

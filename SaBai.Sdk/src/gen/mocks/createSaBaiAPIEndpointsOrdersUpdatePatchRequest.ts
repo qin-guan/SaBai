@@ -5,6 +5,7 @@
 
 import type { SaBaiAPIEndpointsOrdersUpdatePatchRequest } from '../types/SaBaiAPIEndpointsOrdersUpdatePatchRequest'
 import { createSaBaiAPIDomainOrderStatus } from './createSaBaiAPIDomainOrderStatus'
+import { createSaBaiAPIEndpointsOrdersAllocationChoice } from './createSaBaiAPIEndpointsOrdersAllocationChoice'
 import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsOrdersUpdatePatchRequest<TData extends Partial<SaBaiAPIEndpointsOrdersUpdatePatchRequest> = object>(data?: TData) {
@@ -14,6 +15,7 @@ export function createSaBaiAPIEndpointsOrdersUpdatePatchRequest<TData extends Pa
     remarks: faker.string.alpha(),
     quantity: faker.number.int(),
     medicationActiveIngredientId: faker.string.uuid(),
+    allocations: faker.helpers.multiple(() => (createSaBaiAPIEndpointsOrdersAllocationChoice())),
   }
   return {
     ...defaultFakeData,

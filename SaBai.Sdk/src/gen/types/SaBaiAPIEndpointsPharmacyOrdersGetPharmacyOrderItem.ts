@@ -12,7 +12,14 @@ export type SaBaiAPIEndpointsPharmacyOrdersGetPharmacyOrderItem = {
    * @type string
    */
   orderId: string;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string
+   */
+  medicationActiveIngredientId: string;
   medicationName: string;
+  unitOfMeasurement: string;
   /**
    * @description
    * Format: `int32`

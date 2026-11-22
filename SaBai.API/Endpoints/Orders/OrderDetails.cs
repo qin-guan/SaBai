@@ -5,13 +5,15 @@ namespace SaBai.API.Endpoints.Orders;
 
 /// <summary>
 /// An order as every order endpoint returns it. Each endpoint's response copies these fields, so
-/// they all agree. Brand and batch details are in <see cref="Allocations"/>.
+/// they all agree. <c>UnitOfMeasurement</c> is the ingredient's unit, which <c>Quantity</c> and the
+/// allocation quantities count. Brand and batch details are in <see cref="Allocations"/>.
 /// </summary>
 public sealed record OrderDetails(
     Guid Id,
     Guid ConsultId,
     Guid MedicationActiveIngredientId,
     string ActiveIngredientName,
+    string UnitOfMeasurement,
     int Quantity,
     OrderStatus Status,
     string DosageInstructions,
@@ -27,6 +29,7 @@ public sealed record OrderDetails(
         x.ConsultId,
         x.MedicationActiveIngredientId,
         x.MedicationActiveIngredient.Name,
+        x.MedicationActiveIngredient.UnitOfMeasurement,
         x.Quantity,
         x.Status,
         x.DosageInstructions,

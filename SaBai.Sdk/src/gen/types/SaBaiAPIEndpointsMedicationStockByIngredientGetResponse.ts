@@ -3,6 +3,8 @@
 * Do not edit manually.
 */
 
+import type { SystemCollectionsGenericIReadOnlyListOfSystemString } from './SystemCollectionsGenericIReadOnlyListOfSystemString'
+
 export type SaBaiAPIEndpointsMedicationStockByIngredientGetResponse = {
   /**
    * @description
@@ -18,4 +20,5 @@ export type SaBaiAPIEndpointsMedicationStockByIngredientGetResponse = {
    * @type integer
    */
   availableQuantity: number;
+  brandNames: SystemCollectionsGenericIReadOnlyListOfSystemString;
 };

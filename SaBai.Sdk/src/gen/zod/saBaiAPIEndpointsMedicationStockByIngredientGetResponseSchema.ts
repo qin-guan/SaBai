@@ -4,10 +4,12 @@
 */
 
 import * as z from 'zod'
+import { systemCollectionsGenericIReadOnlyListOfSystemStringSchema } from './systemCollectionsGenericIReadOnlyListOfSystemStringSchema'
 
 export const saBaiAPIEndpointsMedicationStockByIngredientGetResponseSchema = z.object({
   ingredientId: z.uuid(),
   ingredientName: z.string(),
   unitOfMeasurement: z.string(),
   availableQuantity: z.int32(),
+  brandNames: systemCollectionsGenericIReadOnlyListOfSystemStringSchema,
 })

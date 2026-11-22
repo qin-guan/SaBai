@@ -35,6 +35,7 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
                 BrandName = x.MedicationBrand.Name,
                 IngredientName = x.MedicationBrand.ActiveIngredient.Name,
                 IngredientId = x.MedicationBrand.ActiveIngredientId,
+                x.MedicationBrand.ActiveIngredient.UnitOfMeasurement,
                 x.MedicationBrand.ActiveIngredient.FallBelow,
             })
             .ToListAsync(ct);
@@ -61,6 +62,7 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
                     x.BrandName,
                     x.IngredientName,
                     x.IngredientId,
+                    x.UnitOfMeasurement,
                     x.FallBelow,
                     x.StockStatus == StockStatus.Active
                         && activeTotals.GetValueOrDefault(x.IngredientId) <= x.FallBelow

@@ -13,13 +13,20 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
         Patch("/orders/{Id}");
         Roles(StaffRoles.OrderWork);
         Summary(s =>
-            s.Summary = "Change a pending order (dosage, remarks, quantity, ingredient), dispense it or cancel it"
+            s.Summary = "Change a pending order (dosage, remarks, quantity, ingredient, stock batches), dispense it or cancel it"
         );
     }
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
         var userId = User.Id();
+        // Doctors may change their order, but which batch it is handed out from is the pharmacy's call.
+        if (req.Allocations is not null && !StaffRoles.PharmacyWork.Any(User.IsInRole))
+        {
+            throw new ForbiddenException("Only pharmacy staff can choose the stock batches of an order.");
+        }
+
+        var picks = req.Allocations?.ToPicks();
         await OrderLifecycle.RunAsync(
             db,
             async token =>
@@ -36,6 +43,11 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                     ),
                     token
                 );
+                if (picks is not null)
+                {
+                    await OrderLifecycle.ReallocateAsync(db, order, picks, token);
+                }
+
                 switch (req.Status)
                 {
                     case OrderStatus.Dispensed:

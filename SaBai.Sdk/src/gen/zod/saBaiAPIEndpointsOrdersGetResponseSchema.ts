@@ -12,6 +12,7 @@ export const saBaiAPIEndpointsOrdersGetResponseSchema = z.object({
   consultId: z.uuid(),
   medicationActiveIngredientId: z.uuid(),
   activeIngredientName: z.string(),
+  unitOfMeasurement: z.string(),
   quantity: z.int32(),
   status: saBaiAPIDomainOrderStatusSchema,
   dosageInstructions: z.string(),

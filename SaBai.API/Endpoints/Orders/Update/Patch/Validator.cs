@@ -20,5 +20,10 @@ public sealed class Validator : Validator<Request>
             .When(x => x.Status == OrderStatus.Cancelled)
             .WithName("Quantity")
             .WithMessage("A cancelled order's quantity or ingredient cannot be changed.");
+        RuleFor(x => x.Allocations)
+            .Null()
+            .When(x => x.Status == OrderStatus.Cancelled)
+            .WithMessage("Stock batches cannot be chosen for an order that is being cancelled.");
+        this.AllocationChoices(x => x.Allocations);
     }
 }

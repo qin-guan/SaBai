@@ -4,6 +4,7 @@
 */
 
 import type { SaBaiAPIDomainOrderStatusKey } from './SaBaiAPIDomainOrderStatus'
+import type { SaBaiAPIEndpointsOrdersAllocationChoice } from './SaBaiAPIEndpointsOrdersAllocationChoice'
 
 export type SaBaiAPIEndpointsOrdersUpdatePatchRequest = {
   status?: null | SaBaiAPIDomainOrderStatusKey;
@@ -21,4 +22,5 @@ export type SaBaiAPIEndpointsOrdersUpdatePatchRequest = {
    * @type string | undefined
    */
   medicationActiveIngredientId?: string | null;
+  allocations?: SaBaiAPIEndpointsOrdersAllocationChoice[] | null;
 };

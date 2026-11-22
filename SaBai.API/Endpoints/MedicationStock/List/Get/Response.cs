@@ -2,7 +2,7 @@ using SaBai.API.Domain;
 
 namespace SaBai.API.Endpoints.MedicationStock.List.Get;
 
-/// <summary>Stock lot with a non-zero quantity.</summary>
+/// <summary>Stock lot with a non-zero quantity. <c>UnitOfMeasurement</c> is its ingredient's unit, which the quantities count.</summary>
 public sealed record Response(
     Guid Id,
     Guid MedicationBrandId,
@@ -13,20 +13,6 @@ public sealed record Response(
     string Location,
     StockStatus StockStatus,
     string? Remarks,
-    Guid? ParentStockId
-)
-{
-    public static Response From(SaBai.API.Domain.MedicationStock x) =>
-        new(
-            x.Id,
-            x.MedicationBrandId,
-            x.Quantity,
-            x.ReservedQuantity,
-            x.AvailableQuantity,
-            x.Expiry,
-            x.Location,
-            x.StockStatus,
-            x.Remarks,
-            x.ParentStockId
-        );
-}
+    Guid? ParentStockId,
+    string UnitOfMeasurement
+);

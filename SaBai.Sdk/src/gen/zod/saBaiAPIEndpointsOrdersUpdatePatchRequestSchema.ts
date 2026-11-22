@@ -5,6 +5,7 @@
 
 import * as z from 'zod'
 import { saBaiAPIDomainOrderStatusSchema } from './saBaiAPIDomainOrderStatusSchema'
+import { saBaiAPIEndpointsOrdersAllocationChoiceSchema } from './saBaiAPIEndpointsOrdersAllocationChoiceSchema'
 
 export const saBaiAPIEndpointsOrdersUpdatePatchRequestSchema = z.object({
   status: z.union([z.null(), saBaiAPIDomainOrderStatusSchema]).optional(),
@@ -12,4 +13,5 @@ export const saBaiAPIEndpointsOrdersUpdatePatchRequestSchema = z.object({
   remarks: z.string().nullish(),
   quantity: z.int32().nullish(),
   medicationActiveIngredientId: z.uuid().nullish(),
+  allocations: z.array(saBaiAPIEndpointsOrdersAllocationChoiceSchema).nullish(),
 })

@@ -20,6 +20,7 @@ export const saBaiAPIEndpointsMedicationStockWithBrandGetResponseSchema = z.obje
   brandName: z.string(),
   ingredientName: z.string(),
   ingredientId: z.uuid(),
+  unitOfMeasurement: z.string(),
   fallBelow: z.int32(),
   isLowStock: z.boolean(),
 })

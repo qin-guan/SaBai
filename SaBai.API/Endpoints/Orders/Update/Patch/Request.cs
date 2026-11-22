@@ -23,4 +23,13 @@ public sealed record Request
     public int? Quantity { get; init; }
 
     public Guid? MedicationActiveIngredientId { get; init; }
+
+    /// <summary>
+    /// The pharmacist's own choice of stock batches, replacing the ones allocated automatically
+    /// (same rules as <c>PUT /orders/{id}/allocations</c>; pharmacy roles only). Send it together
+    /// with <c>status: DISPENSED</c> to dispense from the chosen batches in one step. The
+    /// quantities must add up to the order's quantity (the new one when <c>quantity</c> is sent
+    /// too). Omit to keep the current allocations.
+    /// </summary>
+    public IReadOnlyList<AllocationChoice>? Allocations { get; init; }
 }

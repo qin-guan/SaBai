@@ -27,6 +27,7 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
                 x.Quantity,
                 x.DosageInstructions,
                 MedicationName = x.MedicationActiveIngredient.Name,
+                x.MedicationActiveIngredient.UnitOfMeasurement,
                 IngredientId = x.MedicationActiveIngredientId,
                 FallBelow = x.MedicationActiveIngredient.FallBelow,
                 Allocations = x.Allocations.AsQueryable()
@@ -109,7 +110,9 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
                             .OrderBy(x => x.Id)
                             .Select(x => new PharmacyOrderItem(
                                 x.Id,
+                                x.IngredientId,
                                 x.MedicationName,
+                                x.UnitOfMeasurement,
                                 x.Quantity,
                                 x.FallBelow > activeByIngredient.GetValueOrDefault(x.IngredientId),
                                 x.DosageInstructions,

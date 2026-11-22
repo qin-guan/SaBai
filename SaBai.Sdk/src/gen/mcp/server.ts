@@ -88,11 +88,14 @@ import { saBaiAPIEndpointsMedicationIngredientsListGetEndpointHandler } from './
 import { saBaiAPIEndpointsMedicationIngredientsUpdatePutEndpointHandler } from './saBaiAPIEndpointsMedicationIngredientsUpdatePutEndpoint'
 import { saBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointHandler } from './saBaiAPIEndpointsMedicationStockAdjustmentsPostEndpoint'
 import { saBaiAPIEndpointsMedicationStockByIngredientGetEndpointHandler } from './saBaiAPIEndpointsMedicationStockByIngredientGetEndpoint'
+import { saBaiAPIEndpointsMedicationStockChangesGetEndpointHandler } from './saBaiAPIEndpointsMedicationStockChangesGetEndpoint'
 import { saBaiAPIEndpointsMedicationStockCreatePostEndpointHandler } from './saBaiAPIEndpointsMedicationStockCreatePostEndpoint'
 import { saBaiAPIEndpointsMedicationStockListGetEndpointHandler } from './saBaiAPIEndpointsMedicationStockListGetEndpoint'
 import { saBaiAPIEndpointsMedicationStockSplitsPostEndpointHandler } from './saBaiAPIEndpointsMedicationStockSplitsPostEndpoint'
 import { saBaiAPIEndpointsMedicationStockUpdatePatchEndpointHandler } from './saBaiAPIEndpointsMedicationStockUpdatePatchEndpoint'
 import { saBaiAPIEndpointsMedicationStockWithBrandGetEndpointHandler } from './saBaiAPIEndpointsMedicationStockWithBrandGetEndpoint'
+import { saBaiAPIEndpointsOrdersAllocationOptionsGetEndpointHandler } from './saBaiAPIEndpointsOrdersAllocationOptionsGetEndpoint'
+import { saBaiAPIEndpointsOrdersAllocationsPutEndpointHandler } from './saBaiAPIEndpointsOrdersAllocationsPutEndpoint'
 import { saBaiAPIEndpointsOrdersCreatePostEndpointHandler } from './saBaiAPIEndpointsOrdersCreatePostEndpoint'
 import { saBaiAPIEndpointsOrdersDeleteDeleteEndpointHandler } from './saBaiAPIEndpointsOrdersDeleteDeleteEndpoint'
 import { saBaiAPIEndpointsOrdersGetEndpointHandler } from './saBaiAPIEndpointsOrdersGetEndpoint'
@@ -254,11 +257,14 @@ import { saBaiAPIEndpointsMedicationIngredientsListGetEndpointStatus200Schema } 
 import { saBaiAPIEndpointsMedicationIngredientsUpdatePutEndpointBodySchema, saBaiAPIEndpointsMedicationIngredientsUpdatePutEndpointPathIdSchema, saBaiAPIEndpointsMedicationIngredientsUpdatePutEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsMedicationIngredientsUpdatePutEndpointSchema'
 import { saBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointBodySchema, saBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointPathIdSchema, saBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsMedicationStockAdjustmentsPostEndpointSchema'
 import { saBaiAPIEndpointsMedicationStockByIngredientGetEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsMedicationStockByIngredientGetEndpointSchema'
+import { saBaiAPIEndpointsMedicationStockChangesGetEndpointPathIdSchema, saBaiAPIEndpointsMedicationStockChangesGetEndpointQueryDispensedOnlySchema, saBaiAPIEndpointsMedicationStockChangesGetEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsMedicationStockChangesGetEndpointSchema'
 import { saBaiAPIEndpointsMedicationStockCreatePostEndpointBodySchema, saBaiAPIEndpointsMedicationStockCreatePostEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsMedicationStockCreatePostEndpointSchema'
 import { saBaiAPIEndpointsMedicationStockListGetEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsMedicationStockListGetEndpointSchema'
 import { saBaiAPIEndpointsMedicationStockSplitsPostEndpointBodySchema, saBaiAPIEndpointsMedicationStockSplitsPostEndpointPathIdSchema, saBaiAPIEndpointsMedicationStockSplitsPostEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsMedicationStockSplitsPostEndpointSchema'
 import { saBaiAPIEndpointsMedicationStockUpdatePatchEndpointBodySchema, saBaiAPIEndpointsMedicationStockUpdatePatchEndpointPathIdSchema, saBaiAPIEndpointsMedicationStockUpdatePatchEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsMedicationStockUpdatePatchEndpointSchema'
 import { saBaiAPIEndpointsMedicationStockWithBrandGetEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsMedicationStockWithBrandGetEndpointSchema'
+import { saBaiAPIEndpointsOrdersAllocationOptionsGetEndpointPathIdSchema, saBaiAPIEndpointsOrdersAllocationOptionsGetEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsOrdersAllocationOptionsGetEndpointSchema'
+import { saBaiAPIEndpointsOrdersAllocationsPutEndpointBodySchema, saBaiAPIEndpointsOrdersAllocationsPutEndpointPathIdSchema, saBaiAPIEndpointsOrdersAllocationsPutEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsOrdersAllocationsPutEndpointSchema'
 import { saBaiAPIEndpointsOrdersCreatePostEndpointBodySchema, saBaiAPIEndpointsOrdersCreatePostEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsOrdersCreatePostEndpointSchema'
 import { saBaiAPIEndpointsOrdersDeleteDeleteEndpointPathIdSchema, saBaiAPIEndpointsOrdersDeleteDeleteEndpointStatus204Schema } from '../zod/saBaiAPIEndpointsOrdersDeleteDeleteEndpointSchema'
 import { saBaiAPIEndpointsOrdersGetEndpointPathIdSchema, saBaiAPIEndpointsOrdersGetEndpointStatus200Schema } from '../zod/saBaiAPIEndpointsOrdersGetEndpointSchema'
@@ -1151,6 +1157,16 @@ export function getServer() {
   })
 
 
+  server.registerTool("SaBaiAPIEndpointsMedicationStockChangesGetEndpoint", {
+    title: "List a stock batch's change log, newest first: what was dispensed from it and to whom, adjustments, splits and edits",
+    description: "Make a GET request to /medication-stock/{id}/changes",
+    outputSchema: z.object({ data: saBaiAPIEndpointsMedicationStockChangesGetEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsMedicationStockChangesGetEndpointPathIdSchema }), query: z.object({ "dispensedOnly": saBaiAPIEndpointsMedicationStockChangesGetEndpointQueryDispensedOnlySchema }) }),
+  }, async ({ path, query }, ctx) => {
+    return saBaiAPIEndpointsMedicationStockChangesGetEndpointHandler({ path, query }, ctx)
+  })
+
+
   server.registerTool("SaBaiAPIEndpointsMedicationStockSplitsPostEndpoint", {
     title: "Split a stock batch's unreserved units into new batches",
     description: "Make a POST request to /medication-stock/{id}/splits",
@@ -1182,7 +1198,7 @@ export function getServer() {
 
 
   server.registerTool("SaBaiAPIEndpointsOrdersUpdatePatchEndpoint", {
-    title: "Change a pending order (dosage, remarks, quantity, ingredient), dispense it or cancel it",
+    title: "Change a pending order (dosage, remarks, quantity, ingredient, stock batches), dispense it or cancel it",
     description: "Make a PATCH request to /orders/{id}",
     outputSchema: z.object({ data: saBaiAPIEndpointsOrdersUpdatePatchEndpointStatus200Schema }),
     inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsOrdersUpdatePatchEndpointPathIdSchema }), body: saBaiAPIEndpointsOrdersUpdatePatchEndpointBodySchema }),
@@ -1208,6 +1224,26 @@ export function getServer() {
     inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsOrdersDeleteDeleteEndpointPathIdSchema }) }),
   }, async ({ path }, ctx) => {
     return saBaiAPIEndpointsOrdersDeleteDeleteEndpointHandler({ path }, ctx)
+  })
+
+
+  server.registerTool("SaBaiAPIEndpointsOrdersAllocationOptionsGetEndpoint", {
+    title: "List the stock batches a pending order could be dispensed from, with what it may take from each",
+    description: "Make a GET request to /orders/{id}/allocation-options",
+    outputSchema: z.object({ data: saBaiAPIEndpointsOrdersAllocationOptionsGetEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsOrdersAllocationOptionsGetEndpointPathIdSchema }) }),
+  }, async ({ path }, ctx) => {
+    return saBaiAPIEndpointsOrdersAllocationOptionsGetEndpointHandler({ path }, ctx)
+  })
+
+
+  server.registerTool("SaBaiAPIEndpointsOrdersAllocationsPutEndpoint", {
+    title: "Replace the stock batches a pending order is dispensed from with the pharmacist's choice",
+    description: "Make a PUT request to /orders/{id}/allocations",
+    outputSchema: z.object({ data: saBaiAPIEndpointsOrdersAllocationsPutEndpointStatus200Schema }),
+    inputSchema: z.object({ path: z.object({ "id": saBaiAPIEndpointsOrdersAllocationsPutEndpointPathIdSchema }), body: saBaiAPIEndpointsOrdersAllocationsPutEndpointBodySchema }),
+  }, async ({ path, body }, ctx) => {
+    return saBaiAPIEndpointsOrdersAllocationsPutEndpointHandler({ path, body }, ctx)
   })
 
 

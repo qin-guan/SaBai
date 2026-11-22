@@ -22,6 +22,7 @@ public sealed record Response(
     string BrandName,
     string IngredientName,
     Guid IngredientId,
+    string UnitOfMeasurement,
     int FallBelow,
     bool IsLowStock
 );

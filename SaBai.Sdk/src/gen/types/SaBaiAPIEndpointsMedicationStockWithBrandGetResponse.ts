@@ -59,6 +59,7 @@ export type SaBaiAPIEndpointsMedicationStockWithBrandGetResponse = {
    * @type string
    */
   ingredientId: string;
+  unitOfMeasurement: string;
   /**
    * @description
    * Format: `int32`

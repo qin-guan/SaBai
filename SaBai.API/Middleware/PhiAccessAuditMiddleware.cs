@@ -107,6 +107,15 @@ public sealed class PhiAccessAuditMiddleware(RequestDelegate next)
             return null;
         }
 
+        // A batch's change log names the patients it was dispensed to; the other stock reads don't.
+        if (
+            path.StartsWith("/medication-stock/", StringComparison.OrdinalIgnoreCase)
+            && path.EndsWith("/changes", StringComparison.OrdinalIgnoreCase)
+        )
+        {
+            return nameof(MedicationStock);
+        }
+
         foreach (var (prefix, entityType) in PhiPrefixes)
         {
             if (path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))

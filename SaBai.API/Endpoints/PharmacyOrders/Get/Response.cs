@@ -19,13 +19,15 @@ public sealed record VisitBundle(
 
 /// <summary>
 /// A pending medication order waiting to be dispensed. <c>MedicationName</c> is the active
-/// ingredient; <c>Allocations</c> lists the brand and batch (with its location) to take each part
+/// ingredient and <c>UnitOfMeasurement</c> the unit its quantities count; <c>Allocations</c> lists the brand and batch (with its location) to take each part
 /// from. <c>IsLowStock</c>: the ingredient's available (unreserved) active stock is below its
 /// <c>FallBelow</c>.
 /// </summary>
 public sealed record PharmacyOrderItem(
     Guid OrderId,
+    Guid MedicationActiveIngredientId,
     string MedicationName,
+    string UnitOfMeasurement,
     int Quantity,
     bool IsLowStock,
     string DosageInstructions,

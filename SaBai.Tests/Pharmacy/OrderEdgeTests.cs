@@ -12,7 +12,7 @@ public sealed class OrderEdgeTests(AppFixture fixture)
     {
         // Arrange
         var client = fixture.CreateApiClient();
-        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        await client.LoginAsync();
         var suffix = ClinicSetup.Suffix();
         var brandId = await CreateBrandAsync(client, suffix);
 
@@ -38,7 +38,7 @@ public sealed class OrderEdgeTests(AppFixture fixture)
     {
         // Arrange
         var client = fixture.CreateApiClient();
-        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        await client.LoginAsync();
         var suffix = ClinicSetup.Suffix();
         var brandId = await CreateBrandAsync(client, suffix);
         var consultId = await CreateConsultIdAsync(client);
@@ -65,7 +65,7 @@ public sealed class OrderEdgeTests(AppFixture fixture)
     {
         // Arrange
         var client = fixture.CreateApiClient();
-        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        await client.LoginAsync();
         var suffix = ClinicSetup.Suffix();
         var brandId = await CreateBrandAsync(client, suffix);
         await CreateStockAsync(client, brandId, quantity: 1, $"short-{suffix}");
@@ -95,7 +95,7 @@ public sealed class OrderEdgeTests(AppFixture fixture)
     {
         // Arrange
         var client = fixture.CreateApiClient();
-        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        await client.LoginAsync();
         var suffix = ClinicSetup.Suffix();
         var brandId = await CreateBrandAsync(client, suffix);
         var stockId = await CreateStockAsync(client, brandId, quantity: 2, $"locked-{suffix}");
@@ -125,7 +125,7 @@ public sealed class OrderEdgeTests(AppFixture fixture)
     {
         // Arrange
         var client = fixture.CreateApiClient();
-        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        await client.LoginAsync();
         var suffix = ClinicSetup.Suffix();
         var brandId = await CreateBrandAsync(client, suffix);
         await CreateStockAsync(client, brandId, quantity: 10, $"again-{suffix}");
@@ -154,7 +154,7 @@ public sealed class OrderEdgeTests(AppFixture fixture)
     {
         // Arrange
         var client = fixture.CreateApiClient();
-        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        await client.LoginAsync();
         var suffix = ClinicSetup.Suffix();
         var brandId = await CreateBrandAsync(client, suffix);
         await CreateStockAsync(client, brandId, quantity: 10, $"cancel-{suffix}");
@@ -181,7 +181,7 @@ public sealed class OrderEdgeTests(AppFixture fixture)
     {
         // Arrange
         var client = fixture.CreateApiClient();
-        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        await client.LoginAsync();
         var suffix = ClinicSetup.Suffix();
         var brandName = $"Queue brand {suffix}";
         var brandId = await CreateBrandAsync(client, suffix, brandName);
@@ -206,7 +206,7 @@ public sealed class OrderEdgeTests(AppFixture fixture)
     {
         // Arrange
         var client = fixture.CreateApiClient();
-        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        await client.LoginAsync();
 
         // Act
         var response = await client.GetAsync($"/orders/{ClinicSetup.MissingId}");
@@ -243,7 +243,7 @@ public sealed class OrderEdgeTests(AppFixture fixture)
     {
         // Arrange
         var client = fixture.CreateApiClient();
-        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        await client.LoginAsync();
         var suffix = ClinicSetup.Suffix();
         var ingredientId = await CreateIngredientAsync(client, suffix);
         var brandA = await CreateBrandForAsync(client, ingredientId, $"A-{suffix}");
@@ -289,7 +289,7 @@ public sealed class OrderEdgeTests(AppFixture fixture)
     {
         // Arrange
         var client = fixture.CreateApiClient();
-        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        await client.LoginAsync();
         var suffix = ClinicSetup.Suffix();
         var ingredientId = await CreateIngredientAsync(client, suffix);
         var brandA = await CreateBrandForAsync(client, ingredientId, $"A-{suffix}");
@@ -335,7 +335,7 @@ public sealed class OrderEdgeTests(AppFixture fixture)
     {
         // Arrange
         var client = fixture.CreateApiClient();
-        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        await client.LoginAsync();
         var suffix = ClinicSetup.Suffix();
         var ingredientId = await CreateIngredientAsync(client, suffix);
         var brandId = await CreateBrandForAsync(client, ingredientId, $"race-{suffix}");
@@ -369,7 +369,7 @@ public sealed class OrderEdgeTests(AppFixture fixture)
     {
         // Arrange
         var client = fixture.CreateApiClient();
-        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        await client.LoginAsync();
         var suffix = ClinicSetup.Suffix();
         var brandId = await CreateBrandAsync(client, suffix);
         await CreateStockAsync(client, brandId, quantity: 6, $"delete-{suffix}");

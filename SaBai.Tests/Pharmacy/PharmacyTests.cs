@@ -156,7 +156,7 @@ public sealed class PharmacyTests(AppFixture fixture)
     {
         // Arrange
         var client = fixture.CreateApiClient();
-        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        await client.LoginAsync();
         var suffix = Guid.NewGuid().ToString("N")[..8];
         var ingredient = await CreateIngredientAsync(
             client,

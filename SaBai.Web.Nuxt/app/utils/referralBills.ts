@@ -1,4 +1,4 @@
-import type { PnLedgerEntryResponse } from '@sabai/sdk/types'
+import type { SaBaiAPIEndpointsPnLedgerListGetPnLedgerEntryResponse as PnLedgerEntryResponse } from '@sabai/sdk/types'
 import { cleanKhmerText, matchesSearchText } from './khmer'
 import { MAX_RIELS, USD_AMOUNT_PATTERN, type ReferralListItem } from './referral'
 

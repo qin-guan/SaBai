@@ -2,11 +2,11 @@ import type {
   SaBaiAPIDomainStockStatusKey,
   SaBaiAPIEndpointsMedicationStockWithBrandGetResponse,
   SaBaiAPIDomainOrderStatusKey,
-  SaBaiAPIEndpointsOrdersListGetResponse,
+  SaBaiAPIEndpointsMedicationStockByIngredientGetResponse,
+  SaBaiAPIEndpointsOrdersAllocationDetails,
   SaBaiAPIEndpointsPharmacyOrdersGetDiagnosisItem,
   SaBaiAPIEndpointsPharmacyOrdersGetPharmacyOrderItem,
   SaBaiAPIEndpointsPharmacyOrdersGetResponse,
-  SaBaiAPIEndpointsPharmacyOrdersGetVisitBundle,
 } from "@sabai/sdk/types";
 
 /**
@@ -16,6 +16,8 @@ import type {
  */
 
 export type StockRowData = SaBaiAPIEndpointsMedicationStockWithBrandGetResponse;
+export type IngredientAvailability = SaBaiAPIEndpointsMedicationStockByIngredientGetResponse;
+export type OrderAllocation = SaBaiAPIEndpointsOrdersAllocationDetails;
 
 export interface StockSplitData {
   id: string;
@@ -35,15 +37,98 @@ export function upsertById<T extends { id: string }>(
   return addAt === "start" ? [item, ...list] : [...list, item];
 }
 
+// ── Pending quantity changes ─────────────────────────────────────────────
+//
+// Orders change quantities the server computes (an ingredient's available
+// units, a batch's reserved and on-hand units). A queued write cannot set those
+// to an absolute value: the server's number moves with other people's orders.
+// It records a delta under its own key instead, next to the server's value the
+// deltas apply to. Recording the same key again changes nothing, so re-applying
+// a queued write never counts it twice; fresh data from the server carries no
+// deltas, so each queued write applies once on top of it.
+
+type Deltas = Record<string, number>;
+
+interface PendingQuantities {
+  /** Deltas by the key of the write that made them. */
+  pendingDeltas?: Record<string, Deltas>;
+  /** The server's values of the fields the deltas change. */
+  serverValues?: Deltas;
+}
+
+/** Numeric fields of `T`. */
+type NumericKey<T> = { [K in keyof T]-?: T[K] extends number ? K : never }[keyof T] & string;
+
 /**
- * The API flags a line as low when it is active and the active quantity of its
- * whole ingredient is at or below the ingredient's "fall below" level.
+ * Records (`delta`) or removes (`null`) the change written under `key` and
+ * recomputes the changed fields from the server's values. Returns `row`
+ * itself when there is nothing to change.
+ */
+export function withPendingDelta<T extends object>(
+  row: T,
+  key: string,
+  delta: Partial<Record<NumericKey<T>, number>> | null,
+): T {
+  const tracked = row as T & PendingQuantities;
+  const pending = { ...tracked.pendingDeltas };
+  if (delta) {
+    if (pending[key]) return row;
+    pending[key] = delta as Deltas;
+  } else {
+    if (!pending[key]) return row;
+    delete pending[key];
+  }
+
+  const fields = row as unknown as Deltas;
+  const server: Deltas = { ...tracked.serverValues };
+  for (const field of Object.keys(delta ?? {})) {
+    if (!(field in server)) server[field] = fields[field] ?? 0;
+  }
+
+  const values: Deltas = { ...server };
+  for (const change of Object.values(pending)) {
+    for (const [field, amount] of Object.entries(change)) values[field] = (values[field] ?? 0) + amount;
+  }
+
+  const { pendingDeltas: _pending, serverValues: _server, ...rest } = tracked;
+  if (Object.keys(pending).length === 0) return { ...rest, ...server } as T;
+  return { ...rest, ...values, pendingDeltas: pending, serverValues: server } as T;
+}
+
+/** True while `row` shows a change that has not reached the server. */
+export function hasPendingDelta(row: object): boolean {
+  const { pendingDeltas } = row as PendingQuantities;
+  return !!pendingDeltas && Object.keys(pendingDeltas).length > 0;
+}
+
+// ── Ingredient availability (GET /medication-stock/by-ingredient) ────────
+
+/** Adds (`delta` > 0) or takes away units an ingredient can still be ordered with, under `key`; `null` removes that change. */
+export function adjustAvailability(
+  rows: readonly IngredientAvailability[],
+  ingredientId: string,
+  key: string,
+  delta: number | null,
+): IngredientAvailability[] {
+  return rows.map((row) =>
+    row.ingredientId === ingredientId
+      ? withPendingDelta(row, key, delta === null ? null : { availableQuantity: delta })
+      : row,
+  );
+}
+
+// ── Stock lines (GET /medication-stock/with-brand) ───────────────────────
+
+/**
+ * The API flags a line as low when it is active and the available (not
+ * reserved) quantity of its whole ingredient is at or below the ingredient's
+ * "fall below" level.
  */
 export function withLowStockFlags<T extends StockRowData>(rows: readonly T[]): T[] {
   const activeTotals = new Map<string, number>();
   for (const row of rows) {
     if (row.stockStatus === "active") {
-      activeTotals.set(row.ingredientId, (activeTotals.get(row.ingredientId) ?? 0) + row.quantity);
+      activeTotals.set(row.ingredientId, (activeTotals.get(row.ingredientId) ?? 0) + row.availableQuantity);
     }
   }
   return rows.map((row) => {
@@ -77,98 +162,85 @@ export function patchStock(
 }
 
 /**
- * Applies a split: the parent line ends at zero quantity (and so leaves the
- * list) and one new line per split appears, keyed by the split's own id.
- * `parent` is the line as it was when the user split it, so the result does not
- * depend on what the cache holds now.
+ * Applies a split: the parent keeps only its reserved units (and leaves the
+ * list when it has none) and one new line per split appears, keyed by the
+ * split's own id. `parent` is the line as it was when the user split it, so the
+ * result does not depend on what the cache holds now.
  */
 export function applySplit(
   rows: readonly StockRowData[],
   parent: StockRowData,
   splits: readonly StockSplitData[],
 ): StockRowData[] {
-  let next = rows.filter((x) => x.id !== parent.id);
+  let next = patchStock(rows, parent.id, {
+    quantity: parent.reservedQuantity,
+    availableQuantity: 0,
+  });
   for (const split of splits) {
     next = upsertStock(next, {
       ...parent,
       id: split.id,
       quantity: split.quantity,
+      reservedQuantity: 0,
+      availableQuantity: split.quantity,
       location: split.location,
       stockStatus: split.stockStatus,
       remarks: split.remarks,
+      parentStockId: parent.id,
     });
   }
   return next;
 }
 
+/** How an order changes the batches it holds units of. */
+export type AllocationChange = "dispense" | "release";
+
 /**
- * Deducts quantity across active stock lots for a medication brand using FIFO (earliest expiry first, then id).
- * If `snapshotLots` is provided, first restores/merges `snapshotLots` by id into `rows` for idempotency.
- * Any lot reaching quantity === 0 is dropped. Returns visible stock.
+ * Applies a dispense or release of an order's allocations to the stock lines,
+ * under `key`; `null` change removes it. Dispensing takes the units off hand
+ * and out of the reservation (available stays the same); releasing only ends
+ * the reservation (they become available again).
  */
-export function deductStockFifo(
+export function applyAllocations(
   rows: readonly StockRowData[],
-  medicationBrandId: string,
-  quantityToDeduct: number,
-  snapshotLots?: readonly StockRowData[],
+  allocations: readonly Pick<OrderAllocation, "stockId" | "quantity">[],
+  key: string,
+  change: AllocationChange | null,
 ): StockRowData[] {
-  // Merge snapshot lots if provided
-  let working = [...rows];
-  if (snapshotLots) {
-    for (const snap of snapshotLots) {
-      if (!working.some((r) => r.id === snap.id)) {
-        working.push(snap);
-      } else {
-        working = working.map((r) => (r.id === snap.id ? { ...snap } : r));
-      }
-    }
-  }
-
-  // Find active lots for this brand with quantity > 0
-  const activeLots = working.filter(
-    (r) => r.medicationBrandId === medicationBrandId && r.stockStatus === "active" && r.quantity > 0,
-  );
-
-  // Sort by expiry ascending, then id ascending
-  activeLots.sort((a, b) => {
-    const expA = new Date(a.expiry).getTime();
-    const expB = new Date(b.expiry).getTime();
-    if (expA !== expB) return expA - expB;
-    return a.id.localeCompare(b.id);
+  const byStock = new Map<string, number>();
+  for (const a of allocations) byStock.set(a.stockId, (byStock.get(a.stockId) ?? 0) + a.quantity);
+  const next = rows.map((row) => {
+    const units = byStock.get(row.id);
+    if (units === undefined) return row;
+    if (change === null) return withPendingDelta(row, key, null);
+    return withPendingDelta(
+      row,
+      key,
+      change === "dispense"
+        ? { quantity: -units, reservedQuantity: -units }
+        : { reservedQuantity: -units, availableQuantity: units },
+    );
   });
-
-  const deductions = new Map<string, number>();
-  let remaining = quantityToDeduct;
-
-  for (const lot of activeLots) {
-    if (remaining <= 0) break;
-    const take = Math.min(lot.quantity, remaining);
-    deductions.set(lot.id, lot.quantity - take);
-    remaining -= take;
-  }
-
-  // Apply deductions across working rows
-  let updated = working.map((row) => {
-    if (deductions.has(row.id)) {
-      return { ...row, quantity: deductions.get(row.id)! };
-    }
-    return row;
-  });
-
-  return visibleStock(updated);
+  return visibleStock(next);
 }
+
+// ── Pharmacy queue (GET /pharmacy-orders) ────────────────────────────────
+
+export type PharmacyQueue = SaBaiAPIEndpointsPharmacyOrdersGetResponse;
+export type PharmacyQueueOrder = SaBaiAPIEndpointsPharmacyOrdersGetPharmacyOrderItem;
 
 /**
  * Idempotently inserts or replaces an order in the pharmacy queue.
  */
 export function upsertOrderInPharmacyQueue(
-  queue: readonly SaBaiAPIEndpointsPharmacyOrdersGetResponse[],
+  queue: readonly PharmacyQueue[],
   input: {
     orderId: string;
     medicationName: string;
     quantity: number;
     isLowStock: boolean;
     dosageInstructions: string;
+    allocations: readonly OrderAllocation[];
     patientDisplayId: string;
     patientName: string;
     villageCode: string | null;
@@ -176,20 +248,20 @@ export function upsertOrderInPharmacyQueue(
     visitDate: string;
     diagnoses: readonly SaBaiAPIEndpointsPharmacyOrdersGetDiagnosisItem[];
   },
-): SaBaiAPIEndpointsPharmacyOrdersGetResponse[] {
-  const orderItem: SaBaiAPIEndpointsPharmacyOrdersGetPharmacyOrderItem = {
+): PharmacyQueue[] {
+  const orderItem: PharmacyQueueOrder = {
     orderId: input.orderId,
     medicationName: input.medicationName,
     quantity: input.quantity,
     dosageInstructions: input.dosageInstructions,
     isLowStock: input.isLowStock,
+    allocations: [...input.allocations],
   };
 
   const queueCopy = [...queue];
-  let patientIndex = queueCopy.findIndex((p) => p.patient.displayId === input.patientDisplayId);
+  const patientIndex = queueCopy.findIndex((p) => p.patient.displayId === input.patientDisplayId);
 
   if (patientIndex === -1) {
-    // Create new patient group with new visit bundle
     queueCopy.push({
       patient: {
         displayId: input.patientDisplayId,
@@ -210,7 +282,7 @@ export function upsertOrderInPharmacyQueue(
 
   const patientGroup = { ...queueCopy[patientIndex]! };
   const visitsCopy = [...patientGroup.visits];
-  let visitIndex = visitsCopy.findIndex((v) => v.visitId === input.visitId);
+  const visitIndex = visitsCopy.findIndex((v) => v.visitId === input.visitId);
 
   if (visitIndex === -1) {
     visitsCopy.push({
@@ -238,46 +310,47 @@ export function upsertOrderInPharmacyQueue(
 }
 
 /**
- * Patches an order in the pharmacy queue. If status is APPROVED or CANCELLED, removes it.
+ * Patches an order in the pharmacy queue (the queue lists pending orders, so a
+ * dispensed or cancelled order leaves it).
  */
 export function patchOrderInPharmacyQueue(
-  queue: readonly SaBaiAPIEndpointsPharmacyOrdersGetResponse[],
+  queue: readonly PharmacyQueue[],
   orderId: string,
-  patch: { status?: SaBaiAPIDomainOrderStatusKey; dosageInstructions?: string | null },
-): SaBaiAPIEndpointsPharmacyOrdersGetResponse[] {
-  if (patch.status === "APPROVED" || patch.status === "CANCELLED") {
+  patch: {
+    status?: SaBaiAPIDomainOrderStatusKey;
+    dosageInstructions?: string;
+    medicationName?: string;
+    quantity?: number;
+    allocations?: readonly OrderAllocation[];
+  },
+): PharmacyQueue[] {
+  if (patch.status === "DISPENSED" || patch.status === "CANCELLED") {
     return removeOrderFromPharmacyQueue(queue, orderId);
   }
 
-  if (patch.dosageInstructions === undefined) {
-    return [...queue];
-  }
+  const { status: _status, allocations, ...fields } = patch;
+  const changes: Partial<PharmacyQueueOrder> = Object.fromEntries(
+    Object.entries(fields).filter(([, value]) => value !== undefined),
+  );
+  if (allocations) changes.allocations = [...allocations];
+  if (Object.keys(changes).length === 0) return [...queue];
 
-  return queue
-    .map((patientGroup) => {
-      const visits = patientGroup.visits
-        .map((visit) => {
-          const orders = visit.orders.map((order) => {
-            if (order.orderId === orderId) {
-              return { ...order, dosageInstructions: patch.dosageInstructions ?? "" };
-            }
-            return order;
-          });
-          return { ...visit, orders };
-        })
-        .filter((visit) => visit.orders.length > 0);
-      return { ...patientGroup, visits };
-    })
-    .filter((patientGroup) => patientGroup.visits.length > 0);
+  return queue.map((patientGroup) => ({
+    ...patientGroup,
+    visits: patientGroup.visits.map((visit) => ({
+      ...visit,
+      orders: visit.orders.map((order) => (order.orderId === orderId ? { ...order, ...changes } : order)),
+    })),
+  }));
 }
 
 /**
  * Removes an order from the pharmacy queue and prunes empty visits/patient groups.
  */
 export function removeOrderFromPharmacyQueue(
-  queue: readonly SaBaiAPIEndpointsPharmacyOrdersGetResponse[],
+  queue: readonly PharmacyQueue[],
   orderId: string,
-): SaBaiAPIEndpointsPharmacyOrdersGetResponse[] {
+): PharmacyQueue[] {
   return queue
     .map((patientGroup) => {
       const visits = patientGroup.visits
@@ -290,4 +363,3 @@ export function removeOrderFromPharmacyQueue(
     })
     .filter((patientGroup) => patientGroup.visits.length > 0);
 }
-

@@ -74,12 +74,30 @@ describe("validateSplits", () => {
   it("accepts splits that differ only by stock status", () => {
     const splits = [
       makeSplit({ quantity: 3, stockStatus: "active" }),
-      makeSplit({ quantity: 7, stockStatus: "reserved" }),
+      makeSplit({ quantity: 7, stockStatus: "donated" }),
     ];
 
     expect(validateSplits(splits, 10)).toEqual({
       success: true,
       message: "Splits are valid!",
     });
+  });
+
+  it("rejects a split of a batch whose units are all reserved", () => {
+    const splits = [makeSplit({ quantity: 1 }), makeSplit({ quantity: 1, location: "Shelf B" })];
+    expect(validateSplits(splits, 0, 5)).toEqual({
+      success: false,
+      message: "All of this stock is reserved for pending orders, so none of it can be split off.",
+    });
+  });
+
+  it("asks for the unreserved units when some are reserved", () => {
+    const splits = [makeSplit({ quantity: 5 }), makeSplit({ quantity: 5, location: "Shelf B" })];
+    expect(validateSplits(splits, 6, 4)).toEqual({
+      success: false,
+      message: "Child stock quantity must equal the 6 unreserved units; 4 are reserved for pending orders.",
+    });
+    const fitting = [makeSplit({ quantity: 2 }), makeSplit({ quantity: 4, location: "Shelf B" })];
+    expect(validateSplits(fitting, 6, 4).success).toBe(true);
   });
 });

@@ -6,7 +6,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 
-/** Splits one stock line into 2–10 distinct child lines whose quantities sum to the parent's. */
+/**
+ * Splits one stock line into 2–10 distinct child lines whose quantities sum to
+ * the parent's available units. Units reserved for pending orders stay in the
+ * parent with the orders that hold them.
+ */
 const props = defineProps<{ stock: MedicationStockRow }>()
 const emit = defineEmits<{ close: [] }>()
 
@@ -20,7 +24,7 @@ function addSplit() {
     key: nextKey++,
     location: props.stock.location ?? '',
     stockStatus: props.stock.stockStatus,
-    quantity: String(props.stock.quantity),
+    quantity: String(props.stock.availableQuantity),
     remarks: props.stock.remarks ?? '',
   })
   nextTick(() => {
@@ -41,7 +45,7 @@ async function submit() {
     quantity: Number.parseInt(s.quantity, 10),
     remarks: s.remarks || undefined,
   }))
-  const result = validateSplits(payload, props.stock.quantity)
+  const result = validateSplits(payload, props.stock.availableQuantity, props.stock.reservedQuantity)
   if (!result.success) {
     toast.error(result.message)
     return
@@ -75,7 +79,9 @@ const parent = computed(() => [
   ['Location', props.stock.location],
   ['Active Ingredient', props.stock.ingredientName],
   ['Brand Name', props.stock.brandName],
-  ['Quantity', String(props.stock.quantity)],
+  ['On hand', String(props.stock.quantity)],
+  ['Reserved', String(props.stock.reservedQuantity)],
+  ['Available to split', String(props.stock.availableQuantity)],
   ['Status', props.stock.stockStatus],
   ['Remarks', props.stock.remarks ?? ''],
 ])
@@ -96,7 +102,11 @@ const parent = computed(() => [
       </dl>
     </AppPanel>
 
-    <AppPanel title="Child stock details" :description="`Allocated ${total} of ${props.stock.quantity}`">
+    <p v-if="props.stock.reservedQuantity > 0" class="mb-3 border border-warning/40 bg-warning-subtle px-2 py-1.5 text-xs text-warning touch:text-sm">
+      {{ props.stock.reservedQuantity }} of these units are reserved for pending orders and stay in this batch.
+      Split the other {{ props.stock.availableQuantity }}.
+    </p>
+    <AppPanel title="Child stock details" :description="`Allocated ${total} of ${props.stock.availableQuantity}`">
       <template #actions>
         <Button size="sm" variant="outline" :disabled="splits.length >= MAX_SPLITS" @click="addSplit">
           <PhPlus aria-hidden="true" /> Add Split

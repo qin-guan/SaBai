@@ -19,7 +19,7 @@ public sealed class FileContentTypeTests(AppFixture fixture)
     {
         // Arrange
         var client = fixture.CreateApiClient();
-        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        await client.LoginAsync();
         var patientId = await CreatePatientAsync(client);
         using var content = Form(
             patientId,
@@ -44,7 +44,7 @@ public sealed class FileContentTypeTests(AppFixture fixture)
     {
         // Arrange
         var client = fixture.CreateApiClient();
-        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        await client.LoginAsync();
         var patientId = await CreatePatientAsync(client);
         using var content = Form(
             patientId,
@@ -64,7 +64,7 @@ public sealed class FileContentTypeTests(AppFixture fixture)
     {
         // Arrange
         var client = fixture.CreateApiClient();
-        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        await client.LoginAsync();
         var patientId = await CreatePatientAsync(client);
         using var content = Form(
             patientId,
@@ -84,7 +84,7 @@ public sealed class FileContentTypeTests(AppFixture fixture)
     {
         // Arrange
         var client = fixture.CreateApiClient();
-        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        await client.LoginAsync();
         var patientId = await CreatePatientAsync(client);
         using var content = Form(
             patientId,
@@ -115,7 +115,7 @@ public sealed class FileContentTypeTests(AppFixture fixture)
             _ => (SampleFiles.Docx(), SampleFiles.DocxType, ".docx"),
         };
         var client = fixture.CreateApiClient();
-        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        await client.LoginAsync();
         var patientId = await CreatePatientAsync(client);
         // The client's header is wrong on purpose: only the bytes decide the stored type.
         using var content = Form(
@@ -147,7 +147,7 @@ public sealed class FileContentTypeTests(AppFixture fixture)
     {
         // Arrange
         var client = fixture.CreateApiClient();
-        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        await client.LoginAsync();
         var patientId = await CreatePatientAsync(client);
         using var content = Form(
             patientId,
@@ -182,7 +182,7 @@ public sealed class FileContentTypeTests(AppFixture fixture)
     {
         // Arrange
         var client = fixture.CreateApiClient();
-        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        await client.LoginAsync();
 
         // Act
         var ok = await client.GetAsync("/village-codes");

@@ -3,7 +3,7 @@
 SaBai is a port of [NUS-Project-SaBai/project-sabai](https://github.com/NUS-Project-SaBai/project-sabai).
 Merges to upstream `dev` are ported here daily.
 
-Last synced upstream commit: `ba266fddbf481ba276f6ab249c713c63b3c9c9d2`
+Last synced upstream commit: `841e3f4`
 
 ## Mapping upstream changes
 
@@ -64,20 +64,27 @@ Last synced upstream commit: `ba266fddbf481ba276f6ab249c713c63b3c9c9d2`
   again, and a write that carries `If-Unmodified-Since` gets `412 Precondition Failed` when it would change a
   record another user changed after that time (`ITrackedEntity` and `AppDbContext`).
 - Upstream #329 (stock edits): ported as API rules. Create, edit and split reject a status of
-  reserved or dispensed (400), and editing a reserved or dispensed lot is a conflict (409). The
-  split rule on the parent only matters for reserved lots, which this repo's order flow never
-  creates (it dispenses at approval), but it is kept for parity. Upstream's UI part waits on the
-  frontend choice.
-- Upstream #339 (medication brands): the UI part waits on the frontend choice. Its API change makes
+  reserved or dispensed (400), and editing, splitting or adjusting a reserved or dispensed lot is a
+  conflict (409). Reserved lots are the ones set aside for pending orders, so they stay put until the
+  order is cancelled (released) or approved (dispensed).
+- Upstream #339 (medication brands): its UI part is ported in `SaBai.Web`. Its API change makes
   `remarks` optional and stores blank remarks as null. That was not ported: the brand API
   deliberately requires `remarks` ("may be an empty string") and changing it alters the contract.
-- Waiting on the frontend choice (Next, Nuxt or both), so the synced commit stays at `e16af5f`:
-  UI parts of #301, #285, #338, #262, #335 and #339. Waiting on separate decisions: #312 (reserve
-  stock when an order is placed from the consult form) and #342 (separate `users` table).
 - Upstream #346 (broadcasts send): only the list fix was ported: with `since`, every newer
   broadcast is returned and `limit` is ignored (`limit` still caps the list without `since`).
   Not ported: the Supabase Realtime outbox publish, the 5000-character body cap (it exists to stay
   under Realtime's payload limit) and `senderName` (needs the held `users` table, #342).
 - Upstream #368 (source-map-js) is a transitive lockfile bump for upstream's Next app: nothing to port.
-- Also waiting on the frontend choice: UI parts of #367 (stock table remark overflow), #360
-  (growth chart sticky on mobile), #337 (dental frontend) and #358 (village codes layout).
+- Decisions (owner): upstream UI changes are ported into `SaBai.Web` (Next.js) one by one on request;
+  `SaBai.Web.Nuxt` is not touched by the sync (a gap report lists what it lacks). Ordering follows
+  upstream #312: orders are for an active ingredient, stock is reserved when the order is placed
+  (earliest expiry first, across brands), cancelling releases it, the first order wins. Upstream
+  #342 (`users` table) is skipped.
+- Ported into `SaBai.Web` from the held range: #301 (referral pages), #285 (toast inside modals),
+  #338 (splitting modal), #339 (medication brands page), #367 (remark overflow), #262 (visit
+  summary panel), #358 and #360. #335 and #337 (dental pages) were reviewed and skipped: this repo's
+  dental UI already does more.
+- Still to do for #312: the ingredient ordering form and pharmacist lot list in `SaBai.Web`. They
+  need the SDK regenerated after the API change (new order fields, `allocations`, and
+  `GET /medication-stock/by-ingredient`).
+- Reviewed through `841e3f4`. Later upstream merges are for the next run.

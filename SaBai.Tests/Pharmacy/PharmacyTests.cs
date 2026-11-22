@@ -51,7 +51,7 @@ public sealed class PharmacyTests(AppFixture fixture)
                     {
                         quantity = 4,
                         location = $"child-b-{suffix}",
-                        stockStatus = "reserved",
+                        stockStatus = "donated",
                         remarks = "b",
                     },
                 },

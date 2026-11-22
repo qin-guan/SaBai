@@ -1,6 +1,6 @@
 namespace SaBai.API.Endpoints.MedicationHistory.Get;
 
-/// <summary>An approved dispense or a catalog quantity adjustment, newest first.</summary>
+/// <summary>A dispensed order (<c>kind</c> "order") or a quantity change made by hand (create, adjustment, split; <c>kind</c> "adjustment"), newest first.</summary>
 public sealed record Response(
     string Kind,
     string ActorName,

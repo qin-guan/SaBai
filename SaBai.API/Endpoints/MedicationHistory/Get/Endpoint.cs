@@ -13,7 +13,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, List<Response>
     {
         Get("/medication-history");
         Roles(StaffRoles.PharmacyWork);
-        Summary(s => s.Summary = "List approved dispenses and stock adjustments for a brand");
+        Summary(s => s.Summary = "List dispensed orders and stock quantity changes for a brand");
     }
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
@@ -29,23 +29,26 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, List<Response>
                 .SumAsync(x => (int?)x.Quantity, ct)
             ?? 0;
 
-        // What approved orders took from this brand's lots (an order can span several brands).
+        // What dispensed orders took from this brand's batches (an order can span several brands).
         var orders = await db
-            .OrderItems.AsNoTracking()
-            .Where(x => x.Stock.MedicationBrandId == brandId && x.Order.Status == OrderStatus.Approved)
+            .OrderAllocations.AsNoTracking()
+            .Where(x => x.Stock.MedicationBrandId == brandId && x.Order.Status == OrderStatus.Dispensed)
             .Select(x => new
             {
-                Actor = x.Order.ApprovedBy != null ? x.Order.ApprovedBy.Nickname : null,
+                Actor = x.Order.DispensedBy != null ? x.Order.DispensedBy.Nickname : null,
                 Patient = x.Order.Consult.Visit.Patient.Name,
                 x.Quantity,
-                Date = x.Order.ApprovedAt ?? x.Order.CreatedAt,
+                Date = x.Order.DispensedAt ?? x.Order.CreatedAt,
             })
             .ToListAsync(ct);
 
         var changes = await db
             .StockChanges.AsNoTracking()
+            // Dispensing also writes quantity rows; those are listed above as orders.
             .Where(x =>
-                x.Stock.MedicationBrandId == brandId && x.Field == StockChangeField.Quantity
+                x.Stock.MedicationBrandId == brandId
+                && x.Field == StockChangeField.Quantity
+                && x.OrderId == null
             )
             .Select(x => new
             {

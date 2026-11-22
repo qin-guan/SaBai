@@ -17,7 +17,11 @@ public sealed record SplitItem
     public string? Remarks { get; init; }
 }
 
-/// <summary>Split a parent stock lot into two to ten distinct children.</summary>
+/// <summary>
+/// Split a parent stock batch into two to ten distinct children. The children's quantities must add
+/// up to the parent's available (unreserved) units; units reserved for pending orders stay in the
+/// parent. Each child records the parent as <c>parentStockId</c>.
+/// </summary>
 public sealed record Request
 {
     public Guid Id { get; init; }

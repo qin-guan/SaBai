@@ -57,6 +57,13 @@ internal sealed class ApiExceptionHandler(ILogger<ApiExceptionHandler> logger) :
                 "Locked",
                 locked.Message
             ),
+            // A row version check failed: another request saved the same record (e.g. a stock
+            // batch) between this one reading and saving it.
+            DbUpdateConcurrencyException => (
+                StatusCodes.Status409Conflict,
+                "Conflict",
+                "The record was changed by another request at the same time. Reload it and try again."
+            ),
             DbUpdateException
             {
                 InnerException: PostgresException { SqlState: PostgresErrorCodes.UniqueViolation }

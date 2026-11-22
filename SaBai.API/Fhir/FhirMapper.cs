@@ -285,7 +285,7 @@ public static class FhirMapper
         var ingredient = o.MedicationActiveIngredient;
         var medConcept = new CodeableConcept
         {
-            Text = o.MedicationBrand?.Name ?? ingredient?.Name ?? $"Ingredient #{o.MedicationActiveIngredientId}",
+            Text = ingredient?.Name ?? $"Ingredient #{o.MedicationActiveIngredientId}",
         };
         if (ingredient?.RxNormCode is { Length: > 0 } rx)
         {
@@ -299,7 +299,7 @@ public static class FhirMapper
             Id = o.Id.ToString(),
             Status = o.Status switch
             {
-                OrderStatus.Approved => FhirMedicationRequest.MedicationrequestStatus.Completed,
+                OrderStatus.Dispensed => FhirMedicationRequest.MedicationrequestStatus.Completed,
                 OrderStatus.Cancelled => FhirMedicationRequest.MedicationrequestStatus.Cancelled,
                 _ => FhirMedicationRequest.MedicationrequestStatus.Active,
             },

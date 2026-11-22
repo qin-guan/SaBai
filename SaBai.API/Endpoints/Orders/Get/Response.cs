@@ -10,16 +10,14 @@ public sealed record Response(
     Guid ConsultId,
     Guid MedicationActiveIngredientId,
     string ActiveIngredientName,
-    Guid? MedicationBrandId,
-    string? BrandName,
     int Quantity,
     OrderStatus Status,
     string DosageInstructions,
     string? Remarks,
-    Guid? ApprovedById,
-    DateTimeOffset? ApprovedAt,
+    Guid? DispensedById,
+    DateTimeOffset? DispensedAt,
     DateTimeOffset CreatedAt,
-    IReadOnlyList<OrderAllocation> Allocations
+    IReadOnlyList<AllocationDetails> Allocations
 )
 {
     public static Response From(OrderDetails d) =>
@@ -28,14 +26,12 @@ public sealed record Response(
             d.ConsultId,
             d.MedicationActiveIngredientId,
             d.ActiveIngredientName,
-            d.MedicationBrandId,
-            d.BrandName,
             d.Quantity,
             d.Status,
             d.DosageInstructions,
             d.Remarks,
-            d.ApprovedById,
-            d.ApprovedAt,
+            d.DispensedById,
+            d.DispensedAt,
             d.CreatedAt,
             d.Allocations
         );

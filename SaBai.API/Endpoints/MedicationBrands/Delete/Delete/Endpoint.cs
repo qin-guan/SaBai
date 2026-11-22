@@ -26,11 +26,6 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request>
             throw new ConflictException("The brand is referenced by medication stock.");
         }
 
-        if (await db.Orders.AnyAsync(x => x.MedicationBrandId == req.Id, ct))
-        {
-            throw new ConflictException("The brand is referenced by an order.");
-        }
-
         // Removed through the change tracker (not ExecuteDelete) so the audit log records it.
         db.MedicationBrands.Remove(brand);
         await db.SaveChangesAsync(ct);

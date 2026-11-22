@@ -12,34 +12,28 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
     {
         Get("/medication-stock/by-ingredient");
         Roles(StaffRoles.OrderWork);
-        Summary(s => s.Summary = "Orderable quantity per active ingredient");
+        Summary(s =>
+            s.Summary = "Orderable quantity of every active ingredient (0 when none is available)"
+        );
     }
 
     public override async Task HandleAsync(CancellationToken ct)
     {
         var now = DateTimeOffset.UtcNow;
         var rows = await db
-            .MedicationStocks.AsNoTracking()
-            .Where(x => x.StockStatus == StockStatus.Active && x.Quantity > 0 && x.Expiry >= now)
-            .GroupBy(x => new
-            {
-                x.MedicationBrand.ActiveIngredientId,
-                x.MedicationBrand.ActiveIngredient.Name,
-                x.MedicationBrand.ActiveIngredient.UnitOfMeasurement,
-            })
-            .Select(g => new
-            {
-                g.Key.ActiveIngredientId,
-                g.Key.Name,
-                g.Key.UnitOfMeasurement,
-                Quantity = g.Sum(x => x.Quantity),
-            })
+            .MedicationActiveIngredients.AsNoTracking()
             .OrderBy(x => x.Name)
+            .ThenBy(x => x.Id)
+            .Select(x => new Response(
+                x.Id,
+                x.Name,
+                x.UnitOfMeasurement,
+                x.Brands.SelectMany(b => b.Stocks)
+                    .Where(s => s.StockStatus == StockStatus.Active && s.Expiry >= now)
+                    .Sum(s => s.Quantity - s.ReservedQuantity)
+            ))
             .ToListAsync(ct);
 
-        await Send.OkAsync(
-            [.. rows.Select(x => new Response(x.ActiveIngredientId, x.Name, x.UnitOfMeasurement, x.Quantity))],
-            ct
-        );
+        await Send.OkAsync(rows, ct);
     }
 }

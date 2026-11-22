@@ -16,8 +16,8 @@ public enum OrderStatus
     [JsonStringEnumMemberName("PENDING")]
     Pending,
 
-    [JsonStringEnumMemberName("APPROVED")]
-    Approved,
+    [JsonStringEnumMemberName("DISPENSED")]
+    Dispensed,
 
     [JsonStringEnumMemberName("CANCELLED")]
     Cancelled,
@@ -33,12 +33,6 @@ public enum StockStatus
 
     [JsonStringEnumMemberName("donated")]
     Donated,
-
-    [JsonStringEnumMemberName("dispensed")]
-    Dispensed,
-
-    [JsonStringEnumMemberName("reserved")]
-    Reserved,
 }
 
 public enum StockChangeField

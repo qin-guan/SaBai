@@ -26,8 +26,9 @@ Last synced upstream commit: `841e3f4`
   config was ported because this repo has no husky hook.
 - Upstream #243 logs stock changes with a Postgres trigger. Here the same rows are written in
   code via `Domain/StockChangeLog.cs`, in the same `SaveChanges` as the stock edit, so the
-  current staff user is recorded without session variables. Order approval keeps its own
-  quantity rows (upstream has no equivalent flow yet).
+  current staff user is recorded without session variables. Dispensing an order writes its own
+  quantity rows, tagged with the order (`StockChange.OrderId`), so medication history lists them
+  once, as the order (upstream has no equivalent flow yet).
 - Upstream #286 (friendly duplicate village code error) was already covered: the API returns
   409 with a message and the modal shows it.
 - Upstream #307 (`pnpm install --frozen-lockfile` in CI) was already covered by
@@ -63,10 +64,11 @@ Last synced upstream commit: `841e3f4`
   endpoints accept an optional client-chosen `id` and return the existing record when the same create is sent
   again, and a write that carries `If-Unmodified-Since` gets `412 Precondition Failed` when it would change a
   record another user changed after that time (`ITrackedEntity` and `AppDbContext`).
-- Upstream #329 (stock edits): ported as API rules. Create, edit and split reject a status of
-  reserved or dispensed (400), and editing, splitting or adjusting a reserved or dispensed lot is a
-  conflict (409). Reserved lots are the ones set aside for pending orders, so they stay put until the
-  order is cancelled (released) or approved (dispensed).
+- Upstream #329 (stock edits): ported as API rules, on top of this repo's reservation model (see
+  #312 below). A batch's reservations are a quantity (`ReservedQuantity`), not a status, so the
+  statuses are only active, discarded and donated. While a batch holds reservations: an adjustment
+  can't take its quantity below what is reserved, its status can't leave active, and a split moves
+  only its unreserved units (409 for each).
 - Upstream #339 (medication brands): its UI part is ported in `SaBai.Web`. Its API change makes
   `remarks` optional and stores blank remarks as null. That was not ported: the brand API
   deliberately requires `remarks` ("may be an empty string") and changing it alters the contract.
@@ -77,14 +79,17 @@ Last synced upstream commit: `841e3f4`
 - Upstream #368 (source-map-js) is a transitive lockfile bump for upstream's Next app: nothing to port.
 - Decisions (owner): upstream UI changes are ported into `SaBai.Web` (Next.js) one by one on request;
   `SaBai.Web.Nuxt` is not touched by the sync (a gap report lists what it lacks). Ordering follows
-  upstream #312: orders are for an active ingredient, stock is reserved when the order is placed
-  (earliest expiry first, across brands), cancelling releases it, the first order wins. Upstream
-  #342 (`users` table) is skipped.
+  upstream #312: orders are for an active ingredient (no brand), stock is reserved when the order is
+  placed (earliest expiry first, across brands), cancelling or deleting releases it, the first order
+  wins. Beyond upstream: a pending order's quantity and ingredient can be changed (re-allocated),
+  and dispensing is status `DISPENSED` (was `APPROVED`). The model is `MedicationStock.Quantity` /
+  `ReservedQuantity` with an `xmin` concurrency token, `OrderAllocation` rows, and
+  `Data/OrderLifecycle.cs` for every step. Upstream #342 (`users` table) is skipped.
 - Ported into `SaBai.Web` from the held range: #301 (referral pages), #285 (toast inside modals),
   #338 (splitting modal), #339 (medication brands page), #367 (remark overflow), #262 (visit
   summary panel), #358 and #360. #335 and #337 (dental pages) were reviewed and skipped: this repo's
   dental UI already does more.
 - Still to do for #312: the ingredient ordering form and pharmacist lot list in `SaBai.Web`. They
-  need the SDK regenerated after the API change (new order fields, `allocations`, and
-  `GET /medication-stock/by-ingredient`).
+  need the SDK regenerated after the API change (order fields, `allocations`, stock
+  `reservedQuantity`/`availableQuantity`/`parentStockId`, and `GET /medication-stock/by-ingredient`).
 - Reviewed through `841e3f4`. Later upstream merges are for the next run.

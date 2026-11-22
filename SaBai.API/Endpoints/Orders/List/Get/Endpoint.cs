@@ -23,7 +23,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, List<Response>
         {
             if (!TryParseStatus(req.Status, out var status))
             {
-                throw new BadRequestException("status must be PENDING, APPROVED, or CANCELLED.");
+                throw new BadRequestException("status must be PENDING, DISPENSED, or CANCELLED.");
             }
 
             query = query.Where(x => x.Status == status);
@@ -44,8 +44,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, List<Response>
             case "PENDING":
                 status = OrderStatus.Pending;
                 return true;
-            case "APPROVED":
-                status = OrderStatus.Approved;
+            case "DISPENSED":
+                status = OrderStatus.Dispensed;
                 return true;
             case "CANCELLED":
                 status = OrderStatus.Cancelled;

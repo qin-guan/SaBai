@@ -47,11 +47,8 @@ public sealed record OrderInput
     /// <summary>Id for the new order, chosen by the client; generated when omitted.</summary>
     public Guid? Id { get; init; }
 
-    /// <summary>The active ingredient to order. Required unless <see cref="MedicationBrandId"/> is given.</summary>
-    public Guid? MedicationActiveIngredientId { get; init; }
-
-    /// <summary>Optional: restrict the order to one brand's stock (its ingredient is used when none is given).</summary>
-    public Guid? MedicationBrandId { get; init; }
+    /// <summary>The active ingredient to order.</summary>
+    public Guid MedicationActiveIngredientId { get; init; }
 
     public int Quantity { get; init; }
 

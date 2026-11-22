@@ -26,10 +26,12 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
                 x.Id,
                 x.MedicationBrandId,
                 x.Quantity,
+                x.ReservedQuantity,
                 x.Expiry,
                 x.Location,
                 x.StockStatus,
                 x.Remarks,
+                x.ParentStockId,
                 BrandName = x.MedicationBrand.Name,
                 IngredientName = x.MedicationBrand.ActiveIngredient.Name,
                 IngredientId = x.MedicationBrand.ActiveIngredientId,
@@ -37,10 +39,11 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
             })
             .ToListAsync(ct);
 
+        // Low stock compares what is still available (not reserved for pending orders).
         var activeTotals = stocks
             .Where(x => x.StockStatus == StockStatus.Active)
             .GroupBy(x => x.IngredientId)
-            .ToDictionary(g => g.Key, g => g.Sum(x => x.Quantity));
+            .ToDictionary(g => g.Key, g => g.Sum(x => x.Quantity - x.ReservedQuantity));
 
         await Send.OkAsync(
             stocks
@@ -48,10 +51,13 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
                     x.Id,
                     x.MedicationBrandId,
                     x.Quantity,
+                    x.ReservedQuantity,
+                    x.Quantity - x.ReservedQuantity,
                     x.Expiry,
                     x.Location,
                     x.StockStatus,
                     x.Remarks,
+                    x.ParentStockId,
                     x.BrandName,
                     x.IngredientName,
                     x.IngredientId,

@@ -44,7 +44,11 @@ public sealed class AuditInterceptor(IHttpContextAccessor http, TimeProvider clo
     ];
 
     /// <summary>Columns that change on every Identity write and say nothing to a reader.</summary>
-    private static readonly HashSet<string> IgnoredProperties = ["ConcurrencyStamp"];
+    private static readonly HashSet<string> IgnoredProperties =
+    [
+        "ConcurrencyStamp",
+        nameof(MedicationStock.Version),
+    ];
 
     /// <summary>Columns whose change is worth knowing about but whose value is a secret.</summary>
     private static readonly HashSet<string> SecretProperties =

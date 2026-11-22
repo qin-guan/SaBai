@@ -29,17 +29,10 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
                 MedicationName = x.MedicationActiveIngredient.Name,
                 IngredientId = x.MedicationActiveIngredientId,
                 FallBelow = x.MedicationActiveIngredient.FallBelow,
-                Allocations = x.Items
+                Allocations = x.Allocations.AsQueryable()
                     .OrderBy(i => i.Stock.Expiry)
                     .ThenBy(i => i.StockId)
-                    .Select(i => new OrderAllocation(
-                        i.StockId,
-                        i.Stock.MedicationBrandId,
-                        i.Stock.MedicationBrand.Name,
-                        i.Stock.Location,
-                        i.Stock.Expiry,
-                        i.Quantity
-                    ))
+                    .Select(AllocationDetails.Projection)
                     .ToList(),
                 VisitId = (Guid?)x.Consult.Visit.Id,
                 VisitDate = (DateTimeOffset?)x.Consult.Visit.Date,
@@ -70,7 +63,12 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
                     x.StockStatus == StockStatus.Active
                     && ingredientIds.Contains(x.MedicationBrand.ActiveIngredientId)
                 )
-                .Select(x => new { x.MedicationBrand.ActiveIngredientId, x.Quantity })
+                // What is left for other orders once the pending ones are handed out.
+                .Select(x => new
+                {
+                    x.MedicationBrand.ActiveIngredientId,
+                    Quantity = x.Quantity - x.ReservedQuantity,
+                })
                 .ToListAsync(ct);
             activeByIngredient = activeRows
                 .GroupBy(x => x.ActiveIngredientId)

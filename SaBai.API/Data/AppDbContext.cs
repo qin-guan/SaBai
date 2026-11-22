@@ -63,7 +63,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<Order> Orders => Set<Order>();
 
-    public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+    public DbSet<OrderAllocation> OrderAllocations => Set<OrderAllocation>();
 
     public DbSet<StoredFile> Files => Set<StoredFile>();
 
@@ -558,10 +558,26 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             entity.Property(x => x.Location).HasMaxLength(255);
             entity.Property(x => x.StockStatus).HasConversion<string>().HasMaxLength(32);
             entity.HasIndex(x => x.StockStatus);
+            // Postgres' xmin system column: an UPDATE that read an older version affects no row
+            // and EF raises DbUpdateConcurrencyException.
+            entity.Property(x => x.Version).IsRowVersion();
+            entity.ToTable(table =>
+            {
+                table.HasCheckConstraint("ck_medication_stocks_quantity_non_negative", "\"Quantity\" >= 0");
+                table.HasCheckConstraint(
+                    "ck_medication_stocks_reserved_within_quantity",
+                    "\"ReservedQuantity\" >= 0 AND \"ReservedQuantity\" <= \"Quantity\""
+                );
+            });
             entity
                 .HasOne(x => x.MedicationBrand)
                 .WithMany(x => x.Stocks)
                 .HasForeignKey(x => x.MedicationBrandId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity
+                .HasOne(x => x.ParentStock)
+                .WithMany(x => x.SplitStocks)
+                .HasForeignKey(x => x.ParentStockId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
@@ -577,6 +593,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
                 .HasOne(x => x.User)
                 .WithMany()
                 .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity
+                .HasOne(x => x.Order)
+                .WithMany()
+                .HasForeignKey(x => x.OrderId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
@@ -598,28 +619,26 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
                 .HasForeignKey(x => x.MedicationActiveIngredientId)
                 .OnDelete(DeleteBehavior.Restrict);
             entity
-                .HasOne(x => x.MedicationBrand)
-                .WithMany(x => x.Orders)
-                .HasForeignKey(x => x.MedicationBrandId)
-                .OnDelete(DeleteBehavior.Restrict);
-            entity
-                .HasOne(x => x.ApprovedBy)
+                .HasOne(x => x.DispensedBy)
                 .WithMany()
-                .HasForeignKey(x => x.ApprovedById)
+                .HasForeignKey(x => x.DispensedById)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
-        modelBuilder.Entity<OrderItem>(entity =>
+        modelBuilder.Entity<OrderAllocation>(entity =>
         {
             entity.HasKey(x => new { x.OrderId, x.StockId });
+            entity.ToTable(table =>
+                table.HasCheckConstraint("ck_order_allocations_quantity_positive", "\"Quantity\" > 0")
+            );
             entity
                 .HasOne(x => x.Order)
-                .WithMany(x => x.Items)
+                .WithMany(x => x.Allocations)
                 .HasForeignKey(x => x.OrderId)
                 .OnDelete(DeleteBehavior.Cascade);
             entity
                 .HasOne(x => x.Stock)
-                .WithMany(x => x.OrderItems)
+                .WithMany(x => x.Allocations)
                 .HasForeignKey(x => x.StockId)
                 .OnDelete(DeleteBehavior.Restrict);
         });

@@ -212,12 +212,12 @@ public sealed class PharmacyTests(AppFixture fixture)
         var queue = await client.GetAsync("/pharmacy-orders");
         var queueBody = await queue.Content.ReadAsStringAsync();
 
-        var approved = await client.PatchAsJsonAsync(
+        var dispensed = await client.PatchAsJsonAsync(
             $"/orders/{orderId}",
-            new { status = "APPROVED" },
+            new { status = "DISPENSED" },
             ApiJson.Options
         );
-        var orderableAfterApprove = await OrderableAsync(client, ingredient.Id);
+        var orderableAfterDispense = await OrderableAsync(client, ingredient.Id);
 
         var tooLarge = await client.PostAsJsonAsync(
             "/orders",
@@ -255,16 +255,16 @@ public sealed class PharmacyTests(AppFixture fixture)
         );
         var orderableAfterCancel = await OrderableAsync(client, ingredient.Id);
 
-        var secondApprove = await client.PatchAsJsonAsync(
+        var secondDispense = await client.PatchAsJsonAsync(
             $"/orders/{orderId}",
-            new { status = "APPROVED" },
+            new { status = "DISPENSED" },
             ApiJson.Options
         );
-        var secondBody = await secondApprove.Content.ReadAsStringAsync();
+        var secondBody = await secondDispense.Content.ReadAsStringAsync();
 
         // Assert
         await Assert.That(created.StatusCode).IsEqualTo(HttpStatusCode.Created);
-        await Assert.That(order.GetProperty("medicationBrandId").ValueKind).IsEqualTo(JsonValueKind.Null);
+        await Assert.That(order.TryGetProperty("medicationBrandId", out _)).IsFalse();
         var allocations = order.GetProperty("allocations");
         await Assert.That(allocations.GetArrayLength()).IsEqualTo(1);
         await Assert.That(allocations[0].GetProperty("brandName").GetString()).IsEqualTo($"Order brand {suffix}");
@@ -278,16 +278,16 @@ public sealed class PharmacyTests(AppFixture fixture)
         await Assert.That(queueBody).Contains($"order-{suffix}");
         await Assert.That(queueBody).Contains("cough");
         await Assert.That(queueBody).Contains(visit.DisplayId);
-        await Assert.That(approved.StatusCode).IsEqualTo(HttpStatusCode.OK);
-        await Assert.That(orderableAfterApprove).IsEqualTo(6);
+        await Assert.That(dispensed.StatusCode).IsEqualTo(HttpStatusCode.OK);
+        await Assert.That(orderableAfterDispense).IsEqualTo(6);
         await Assert.That(tooLarge.StatusCode).IsEqualTo(HttpStatusCode.Conflict);
         await Assert.That(tooLargeBody).Contains("Insufficient stock");
         await Assert.That(toCancel.StatusCode).IsEqualTo(HttpStatusCode.Created);
         await Assert.That(orderableWhileHeld).IsEqualTo(4);
         await Assert.That(cancelled.StatusCode).IsEqualTo(HttpStatusCode.OK);
         await Assert.That(orderableAfterCancel).IsEqualTo(6);
-        await Assert.That(secondApprove.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
-        await Assert.That(secondBody).Contains("Order is already APPROVED.");
+        await Assert.That(secondDispense.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
+        await Assert.That(secondBody).Contains("Order is already DISPENSED.");
     }
 
     [Test]

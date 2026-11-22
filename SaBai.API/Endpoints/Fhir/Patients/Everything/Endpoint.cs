@@ -34,9 +34,6 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request>
             .Include(x => x.Consults)
                 .ThenInclude(c => c.Orders)
                     .ThenInclude(o => o.MedicationActiveIngredient)
-            .Include(x => x.Consults)
-                .ThenInclude(c => c.Orders)
-                    .ThenInclude(o => o.MedicationBrand)
             .Where(x => x.PatientId == req.Id)
             .OrderByDescending(x => x.Date)
             .ToListAsync(ct);

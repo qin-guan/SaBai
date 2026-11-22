@@ -247,7 +247,7 @@ public sealed class StockTests(AppFixture fixture)
     [Test]
     [Arguments("reserved")]
     [Arguments("dispensed")]
-    public async Task Create_ReservedOrDispensedStatus_ReturnsBadRequest(string status)
+    public async Task Create_UnknownStatus_ReturnsBadRequest(string status)
     {
         // Arrange
         var client = fixture.CreateApiClient();
@@ -280,7 +280,7 @@ public sealed class StockTests(AppFixture fixture)
     [Test]
     [Arguments("reserved")]
     [Arguments("dispensed")]
-    public async Task Update_ToReservedOrDispensed_ReturnsBadRequest(string status)
+    public async Task Update_ToUnknownStatus_ReturnsBadRequest(string status)
     {
         // Arrange
         var client = fixture.CreateApiClient();
@@ -302,7 +302,7 @@ public sealed class StockTests(AppFixture fixture)
     [Test]
     [Arguments("reserved")]
     [Arguments("dispensed")]
-    public async Task Split_ChildReservedOrDispensed_ReturnsBadRequest(string status)
+    public async Task Split_ChildUnknownStatus_ReturnsBadRequest(string status)
     {
         // Arrange
         var client = fixture.CreateApiClient();

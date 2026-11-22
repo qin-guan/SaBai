@@ -46,9 +46,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             .Select(x => new PrescriptionItem(
                 x.ConsultId,
                 x.Consult.Visit.Date,
-                x.MedicationBrand != null
-                    ? x.MedicationBrand.Name
-                    : x.MedicationActiveIngredient.Name,
+                x.MedicationActiveIngredient.Name,
                 x.Quantity,
                 x.Remarks,
                 x.Status

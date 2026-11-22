@@ -758,11 +758,17 @@ namespace SaBai.API.Migrations
                     b.Property<Guid>("MedicationBrandId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("ParentStockId")
+                        .HasColumnType("uuid");
+
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
 
                     b.Property<string>("Remarks")
                         .HasColumnType("text");
+
+                    b.Property<int>("ReservedQuantity")
+                        .HasColumnType("integer");
 
                     b.Property<string>("StockStatus")
                         .IsRequired()
@@ -775,24 +781,31 @@ namespace SaBai.API.Migrations
                     b.Property<Guid?>("UpdatedByUserId")
                         .HasColumnType("uuid");
 
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
                     b.HasKey("Id");
 
                     b.HasIndex("MedicationBrandId");
 
+                    b.HasIndex("ParentStockId");
+
                     b.HasIndex("StockStatus");
 
-                    b.ToTable("MedicationStocks");
+                    b.ToTable("MedicationStocks", t =>
+                        {
+                            t.HasCheckConstraint("ck_medication_stocks_quantity_non_negative", "\"Quantity\" >= 0");
+
+                            t.HasCheckConstraint("ck_medication_stocks_reserved_within_quantity", "\"ReservedQuantity\" >= 0 AND \"ReservedQuantity\" <= \"Quantity\"");
+                        });
                 });
 
             modelBuilder.Entity("SaBai.API.Domain.Order", b =>
                 {
                     b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset?>("ApprovedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("ApprovedById")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("ConsultId")
@@ -801,14 +814,17 @@ namespace SaBai.API.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTimeOffset?>("DispensedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DispensedById")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("DosageInstructions")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<Guid>("MedicationActiveIngredientId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("MedicationBrandId")
                         .HasColumnType("uuid");
 
                     b.Property<int>("Quantity")
@@ -830,13 +846,11 @@ namespace SaBai.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ApprovedById");
-
                     b.HasIndex("ConsultId");
 
-                    b.HasIndex("MedicationActiveIngredientId");
+                    b.HasIndex("DispensedById");
 
-                    b.HasIndex("MedicationBrandId");
+                    b.HasIndex("MedicationActiveIngredientId");
 
                     b.HasIndex("Status");
 
@@ -846,7 +860,7 @@ namespace SaBai.API.Migrations
                         });
                 });
 
-            modelBuilder.Entity("SaBai.API.Domain.OrderItem", b =>
+            modelBuilder.Entity("SaBai.API.Domain.OrderAllocation", b =>
                 {
                     b.Property<Guid>("OrderId")
                         .HasColumnType("uuid");
@@ -861,7 +875,10 @@ namespace SaBai.API.Migrations
 
                     b.HasIndex("StockId");
 
-                    b.ToTable("OrderItems");
+                    b.ToTable("OrderAllocations", t =>
+                        {
+                            t.HasCheckConstraint("ck_order_allocations_quantity_positive", "\"Quantity\" > 0");
+                        });
                 });
 
             modelBuilder.Entity("SaBai.API.Domain.Patient", b =>
@@ -1377,6 +1394,9 @@ namespace SaBai.API.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<Guid?>("OrderId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("PreviousValue")
                         .IsRequired()
                         .HasColumnType("text");
@@ -1394,6 +1414,8 @@ namespace SaBai.API.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
 
                     b.HasIndex("StockId");
 
@@ -1801,21 +1823,28 @@ namespace SaBai.API.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("SaBai.API.Domain.MedicationStock", "ParentStock")
+                        .WithMany("SplitStocks")
+                        .HasForeignKey("ParentStockId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("MedicationBrand");
+
+                    b.Navigation("ParentStock");
                 });
 
             modelBuilder.Entity("SaBai.API.Domain.Order", b =>
                 {
-                    b.HasOne("SaBai.API.Domain.StaffUser", "ApprovedBy")
-                        .WithMany()
-                        .HasForeignKey("ApprovedById")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("SaBai.API.Domain.Consult", "Consult")
                         .WithMany("Orders")
                         .HasForeignKey("ConsultId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("SaBai.API.Domain.StaffUser", "DispensedBy")
+                        .WithMany()
+                        .HasForeignKey("DispensedById")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("SaBai.API.Domain.MedicationActiveIngredient", "MedicationActiveIngredient")
                         .WithMany()
@@ -1823,30 +1852,23 @@ namespace SaBai.API.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("SaBai.API.Domain.MedicationBrand", "MedicationBrand")
-                        .WithMany("Orders")
-                        .HasForeignKey("MedicationBrandId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("ApprovedBy");
-
                     b.Navigation("Consult");
 
-                    b.Navigation("MedicationActiveIngredient");
+                    b.Navigation("DispensedBy");
 
-                    b.Navigation("MedicationBrand");
+                    b.Navigation("MedicationActiveIngredient");
                 });
 
-            modelBuilder.Entity("SaBai.API.Domain.OrderItem", b =>
+            modelBuilder.Entity("SaBai.API.Domain.OrderAllocation", b =>
                 {
                     b.HasOne("SaBai.API.Domain.Order", "Order")
-                        .WithMany("Items")
+                        .WithMany("Allocations")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("SaBai.API.Domain.MedicationStock", "Stock")
-                        .WithMany("OrderItems")
+                        .WithMany("Allocations")
                         .HasForeignKey("StockId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -2010,6 +2032,11 @@ namespace SaBai.API.Migrations
 
             modelBuilder.Entity("SaBai.API.Domain.StockChange", b =>
                 {
+                    b.HasOne("SaBai.API.Domain.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("SaBai.API.Domain.MedicationStock", "Stock")
                         .WithMany("Changes")
                         .HasForeignKey("StockId")
@@ -2021,6 +2048,8 @@ namespace SaBai.API.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Order");
 
                     b.Navigation("Stock");
 
@@ -2083,21 +2112,21 @@ namespace SaBai.API.Migrations
 
             modelBuilder.Entity("SaBai.API.Domain.MedicationBrand", b =>
                 {
-                    b.Navigation("Orders");
-
                     b.Navigation("Stocks");
                 });
 
             modelBuilder.Entity("SaBai.API.Domain.MedicationStock", b =>
                 {
+                    b.Navigation("Allocations");
+
                     b.Navigation("Changes");
 
-                    b.Navigation("OrderItems");
+                    b.Navigation("SplitStocks");
                 });
 
             modelBuilder.Entity("SaBai.API.Domain.Order", b =>
                 {
-                    b.Navigation("Items");
+                    b.Navigation("Allocations");
                 });
 
             modelBuilder.Entity("SaBai.API.Domain.Patient", b =>

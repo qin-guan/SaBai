@@ -43,9 +43,10 @@ Last synced upstream commit: `841e3f4`
   `Files` table (`StoredFile`, formerly `ClinicalFile`), with the bytes in RustFS like every
   other file. Upload with `POST /files`, then link it by id in `PUT /visits/{id}/dental`.
 - Also ported from that range, so don't redo them: #318 (zod, already newer here), #328
-  (spacing and breadcrumbs), #330 (stock page buttons), #311 (broadcast list `limit`/`since`;
-  the SDK was not regenerated for it because `pnpm generate` fails on main, kubb core 5.16.0 with
-  plugin-fetch 5.5.6; the new query params are optional and unused by the web app).
+  (spacing and breadcrumbs), #330 (stock page buttons), #311 (broadcast list `limit`/`since`).
+  `pnpm generate` works again: `@kubb/plugin-fetch` is 5.13.0, the release that goes with kubb
+  5.16.0 (5.5.6 predated its plugin API). Set `SABAI_OPENAPI_URL` to generate from an API on
+  another port.
 - Upstream #336 (undici bump) only changes upstream's lockfile for a transitive dependency. This
   repo's lockfile resolves undici on its own, so there is nothing to port.
 - Upstream #308 (`publishBroadcast` helper posting to Supabase Realtime) has no equivalent here:
@@ -89,7 +90,9 @@ Last synced upstream commit: `841e3f4`
   #338 (splitting modal), #339 (medication brands page), #367 (remark overflow), #262 (visit
   summary panel), #358 and #360. #335 and #337 (dental pages) were reviewed and skipped: this repo's
   dental UI already does more.
-- Still to do for #312: the ingredient ordering form and pharmacist lot list in `SaBai.Web`. They
-  need the SDK regenerated after the API change (order fields, `allocations`, stock
-  `reservedQuantity`/`availableQuantity`/`parentStockId`, and `GET /medication-stock/by-ingredient`).
+- #312 frontends: `SaBai.Web` has upstream's ingredient ordering form (Add Order modal in the
+  consult form) and reserved/available on the stock page; its orders page is a placeholder, as
+  upstream's is. `SaBai.Web.Nuxt` has the full flow: ordering by ingredient in the consult form,
+  change/cancel of pending orders in previous consults, and the pharmacist queue with each order's
+  allocations to pick from, dispense, change and cancel.
 - Reviewed through `841e3f4`. Later upstream merges are for the next run.

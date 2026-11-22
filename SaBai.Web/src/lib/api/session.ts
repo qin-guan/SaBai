@@ -14,7 +14,10 @@ export const SESSION_COOKIE_NAME = "sabai.auth";
  */
 export async function endSession(): Promise<void> {
   try {
-    await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" });
+    await fetch("/api/auth/logout", {
+      method: "POST",
+      credentials: "same-origin",
+    });
   } catch {
     // Offline or API down: the cookie expires on its own.
   }

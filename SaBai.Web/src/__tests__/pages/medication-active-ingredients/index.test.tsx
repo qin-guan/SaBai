@@ -36,17 +36,17 @@ vi.mock("@sabai/sdk/hooks", async (importOriginal) => {
     saBaiAPIEndpointsMedicationIngredientsCreatePostEndpointMutationOptions:
       () => ({
         mutationKey: ["medication-ingredients-create"],
-        mutationFn: mocks.create,
+        mutationFn: (variables: unknown) => mocks.create(variables),
       }),
     saBaiAPIEndpointsMedicationIngredientsUpdatePutEndpointMutationOptions:
       () => ({
         mutationKey: ["medication-ingredients-update"],
-        mutationFn: mocks.update,
+        mutationFn: (variables: unknown) => mocks.update(variables),
       }),
     saBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpointMutationOptions:
       () => ({
         mutationKey: ["medication-ingredients-delete"],
-        mutationFn: mocks.remove,
+        mutationFn: (variables: unknown) => mocks.remove(variables),
       }),
   };
 });

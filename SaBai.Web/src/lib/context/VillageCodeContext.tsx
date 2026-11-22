@@ -14,8 +14,8 @@ import { useSaveOnWrite } from "@/hooks/useSaveOnWrite";
 export type VillageCode = SaBaiAPIEndpointsVillageCodesListGetItem;
 
 interface VillageCodeContextValue {
-  selectedVillageCodeId: number | null;
-  setSelectedVillageCodeId: (id: number | null) => void;
+  selectedVillageCodeId: string | null;
+  setSelectedVillageCodeId: (id: string | null) => void;
   villageCodes: VillageCode[] | undefined;
   isLoading: boolean;
   isError: boolean;
@@ -37,13 +37,13 @@ export function VillageCodeProvider({ children }: { children: ReactNode }) {
   const villageCodes = data?.villageCodes;
 
   const [villageState, setVillageState] = useSaveOnWrite<{
-    selectedVillageCodeId: number | null;
+    selectedVillageCodeId: string | null;
   }>("villageCodeState", { selectedVillageCodeId: null }, [], 0);
 
   const selectedVillageCodeId = villageState.selectedVillageCodeId;
 
   const setSelectedVillageCodeId = useCallback(
-    (id: number | null) => {
+    (id: string | null) => {
       setVillageState({ selectedVillageCodeId: id });
     },
     [setVillageState],

@@ -31,7 +31,9 @@ function useLogin() {
     saBaiAPIEndpointsAuthLoginTwoFactorPostEndpointMutationOptions(apiConfig),
   );
   const recovery = useMutation(
-    saBaiAPIEndpointsAuthLoginRecoveryCodePostEndpointMutationOptions(apiConfig),
+    saBaiAPIEndpointsAuthLoginRecoveryCodePostEndpointMutationOptions(
+      apiConfig,
+    ),
   );
 
   const submit = (): Promise<SaBaiAPIEndpointsAuthSignInResponse> => {

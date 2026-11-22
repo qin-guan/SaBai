@@ -38,7 +38,7 @@ function PatientCard({
   onUpdateGlasses,
 }: {
   patient: SaBaiAPIEndpointsPatientsWithLatestVisitGetItem;
-  onUpdateGlasses: (patientId: number) => void;
+  onUpdateGlasses: (patientId: string) => void;
 }) {
   return (
     <div className="flex gap-10 p-4">
@@ -51,7 +51,7 @@ function PatientCard({
         <PatientCode
           villageCode={patient.villageCode}
           villageColorHex={patient.villageColorHex}
-          id={patient.id}
+          displayId={patient.displayId}
           className="text-xs font-medium text-slate-500"
         />
         <div className="break-words text-sm font-medium text-slate-900">
@@ -71,7 +71,7 @@ function PatientTable({
   onUpdateGlasses,
 }: {
   patients: SaBaiAPIEndpointsPatientsWithLatestVisitGetItem[];
-  onUpdateGlasses: (patientId: number) => void;
+  onUpdateGlasses: (patientId: string) => void;
 }) {
   return (
     <div className="hidden overflow-x-auto md:block">
@@ -84,7 +84,7 @@ function PatientTable({
                 <PatientCode
                   villageCode={patient.villageCode}
                   villageColorHex={patient.villageColorHex}
-                  id={patient.id}
+                  displayId={patient.displayId}
                   className="text-sm font-medium text-slate-900"
                 />
               </TableCell>
@@ -143,7 +143,7 @@ function VisionPage() {
    * Navigates to the update glasses page for a specific patient.
    * @param {number} patientId - The ID of the patient to update glasses for
    */
-  const handleUpdateGlasses = (patientId: number) => {
+  const handleUpdateGlasses = (patientId: string) => {
     router.push(paths.visionUpdateGlasses(patientId));
   };
 

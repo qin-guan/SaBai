@@ -13,7 +13,6 @@ import TableHeader from "@/components/TableHeader";
 import TableRow from "@/components/TableRow";
 import TableCell from "@/components/TableCell";
 import { apiConfig } from "@/lib/api/config";
-import { formatPatientCode } from "@/lib/utils/patient";
 
 function ConsultsPage() {
   const router = useRouter();
@@ -22,7 +21,7 @@ function ConsultsPage() {
   );
   const patients = data?.patients;
 
-  const startConsult = (patientId: number) =>
+  const startConsult = (patientId: string) =>
     router.push(paths.consultsDetail(patientId));
 
   function renderContent() {
@@ -58,7 +57,7 @@ function ConsultsPage() {
                         title={patient.villageCode ?? undefined}
                       />
                     )}
-                    {formatPatientCode(patient.villageCode, patient.id)}
+                    {patient.displayId}
                   </span>
                 </TableCell>
                 <TableCell>

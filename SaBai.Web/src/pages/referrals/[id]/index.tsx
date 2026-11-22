@@ -18,7 +18,7 @@ import { Button } from "@/components/interactive/Button/Button";
 import { ReferralStateDropdown } from "@/components/referrals/ReferralStateDropdown";
 import { apiConfig } from "@/lib/api/config";
 import { getApiErrorMessage } from "@/lib/api/errors";
-import { formatPatientCode } from "@/lib/utils/patient";
+import { usePatientDisplayId } from "@/lib/context/PatientsContext";
 import { formatVisitDate } from "@/lib/utils/visit";
 import { paths } from "@/utils/paths";
 
@@ -56,6 +56,7 @@ function ReferralDetailsPage() {
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
   const [outcomeDraft, setOutcomeDraft] = useState("");
+  const patientDisplayId = usePatientDisplayId(referral?.patientId);
 
   const saveOutcome = useMutation({
     ...saBaiAPIEndpointsReferralsUpdateOutcomePatchEndpointMutationOptions(
@@ -99,10 +100,7 @@ function ReferralDetailsPage() {
     );
   }
 
-  const patientCode = formatPatientCode(
-    referral.villageCode,
-    referral.patientId,
-  );
+  const patientCode = patientDisplayId ?? referral.villageCode;
 
   const startEditing = () => {
     setOutcomeDraft(referral.referralOutcome ?? "");

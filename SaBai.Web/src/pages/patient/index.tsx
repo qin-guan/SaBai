@@ -10,7 +10,6 @@ import { ReactNode } from "react";
 import TableHeader from "@/components/TableHeader";
 import TableRow from "@/components/TableRow";
 import TableCell from "@/components/TableCell";
-import { formatPatientId } from "@/lib/utils/patient";
 
 function Wrapper({ children }: { children: ReactNode }) {
   return (
@@ -80,7 +79,7 @@ function PatientsBasePage() {
                 <TableCell>
                   <div className="flex flex-col items-center gap-2">
                     <span className="text-sm font-medium text-slate-900">
-                      {formatPatientId(patient.id) || "No ID"}
+                      {patient.displayId || "No ID"}
                     </span>
                     <PatientPhoto
                       patientId={patient.id}

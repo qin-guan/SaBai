@@ -62,7 +62,7 @@ export default function CreateModal({
   const handleSubmit: SubmitHandler<CreateFormFields> = async (data) => {
     createMutation.mutate({
       body: {
-        medicationBrandId: Number(data.medicationBrandId),
+        medicationBrandId: data.medicationBrandId,
         quantity: data.quantity,
         expiry: data.expiry,
         location: data.location,

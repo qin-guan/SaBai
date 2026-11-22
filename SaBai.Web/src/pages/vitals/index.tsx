@@ -22,16 +22,12 @@ export default function VitalsPage() {
    * Navigates to the vitals form page for a specific patient.
    * @param {number} id - The ID of the patient to update vitals for
    */
-  const handlePatientVitals = (id: number) => {
+  const handlePatientVitals = (id: string) => {
     router.push(paths.vitalsDetail(id));
   };
 
   // Fetch list of patients
-  const {
-    data,
-    isLoading,
-    isError,
-  } = useQuery(
+  const { data, isLoading, isError } = useQuery(
     saBaiAPIEndpointsPatientsWithLatestVisitGetEndpointQueryOptions(apiConfig),
   );
   const patients = data?.patients;
@@ -65,7 +61,7 @@ export default function VitalsPage() {
                     <PatientCode
                       villageCode={patient.villageCode}
                       villageColorHex={patient.villageColorHex}
-                      id={patient.id}
+                      displayId={patient.displayId}
                     />
                   </span>
                 </TableCell>

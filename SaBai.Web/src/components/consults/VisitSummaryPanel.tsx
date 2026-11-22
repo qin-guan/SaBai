@@ -73,8 +73,8 @@ function VitalsGroup({
  * Read-only panel showing the vitals and vision (eyesight) recorded for a
  * visit, displayed alongside consult form for doctor / medical student to reference.
  */
-export function VisitSummaryPanel({ visitId }: { visitId: number }) {
-  const hasVisitId = Number.isFinite(visitId) && visitId > 0;
+export function VisitSummaryPanel({ visitId }: { visitId: string }) {
+  const hasVisitId = visitId.length > 0;
 
   const vitalsQuery = useQuery({
     ...saBaiAPIEndpointsVitalsGetByVisitGetEndpointQueryOptions(

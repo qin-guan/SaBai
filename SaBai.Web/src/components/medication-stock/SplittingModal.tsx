@@ -76,7 +76,11 @@ export default function SplittingModal({
       remarks: split.remarks ?? undefined,
     }));
 
-    const validationResults = validateSplits(payload, stock.quantity);
+    const validationResults = validateSplits(
+      payload,
+      stock.availableQuantity,
+      stock.reservedQuantity,
+    );
 
     if (validationResults.success) {
       splitMutation.mutate({
@@ -111,6 +115,14 @@ export default function SplittingModal({
           <tr>
             <td>Quantity:</td>
             <td>{stock.quantity}</td>
+          </tr>
+          <tr>
+            <td>Reserved for pending orders:</td>
+            <td>{stock.reservedQuantity}</td>
+          </tr>
+          <tr>
+            <td>Available to split:</td>
+            <td>{stock.availableQuantity}</td>
           </tr>
           <tr>
             <td>Status:</td>

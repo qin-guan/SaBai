@@ -39,7 +39,7 @@ export default function VillageSelector() {
     );
   }
 
-  const handleVillageSelect = (villageId: number) => {
+  const handleVillageSelect = (villageId: string) => {
     setSelectedVillageCodeId(villageId);
     setIsOpen(false);
   };

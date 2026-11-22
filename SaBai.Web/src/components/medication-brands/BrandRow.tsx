@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { FormProvider, useForm, SubmitHandler } from "react-hook-form";
+import {
+  FormProvider,
+  useForm,
+  SubmitHandler,
+  useWatch,
+} from "react-hook-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -51,7 +56,10 @@ export default function BrandRow(brand: BrandRowProps) {
     enabled: isEditing,
   });
 
-  const selectedIngredientId = form.watch("activeIngredientId");
+  const selectedIngredientId = useWatch({
+    control: form.control,
+    name: "activeIngredientId",
+  });
   const selectedIngredient = ingredients?.find(
     (ingredient) => ingredient.id === selectedIngredientId,
   );

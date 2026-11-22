@@ -95,7 +95,9 @@ function MedicationStockBasePage() {
               "Active Ingredient",
               "Brand",
               "Location",
-              "Quantity",
+              "On hand",
+              "Reserved",
+              "Available",
               "Expiry",
               "State",
               "Remarks",
@@ -151,7 +153,7 @@ function MedicationStockBasePage() {
 // Only able to edit location, stockStatus and remarks.
 // All other fields are locked from editing.
 type EditFormFields = {
-  id: number;
+  id: string;
   location: string;
   stockStatus: StockStatus;
   remarks: string;
@@ -255,18 +257,32 @@ function Row({
           </span>
         </TableCell>
         <TableCell>
+          <span className="text-sm font-medium text-slate-500">
+            {item.reservedQuantity}
+          </span>
+        </TableCell>
+        <TableCell>
+          <span className="text-sm font-semibold text-slate-900">
+            {item.availableQuantity}
+          </span>
+        </TableCell>
+        <TableCell>
           <span className="text-sm font-medium text-slate-900">
             {new Date(item.expiry).toLocaleDateString()}
           </span>
         </TableCell>
         <TableCell>
           <span className="text-sm font-medium text-slate-900">
-            {isEditing ? (
+            {isEditing && item.reservedQuantity === 0 ? (
               <RHFDropdown
                 name="stockStatus"
                 label=""
                 dropdownOptions={stockStatusDropdown}
               />
+            ) : isEditing ? (
+              <span title="The status stays active while units are reserved for pending orders.">
+                {`${form.getValues().stockStatus} (${item.reservedQuantity} reserved)`}
+              </span>
             ) : (
               form.getValues().stockStatus
             )}
@@ -316,6 +332,7 @@ function Row({
                 onClick={() => setSplittingStock(item)}
                 colour="indigo"
                 title="Split"
+                disabled={item.availableQuantity === 0}
               />
             )}
           </span>

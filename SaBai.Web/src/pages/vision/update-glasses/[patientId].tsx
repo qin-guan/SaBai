@@ -16,7 +16,6 @@ import { RHFDropdown } from "@/components/interactive/RHF/RHFDropdown";
 import { EyesightForm } from "@/components/vision/EyesightForm";
 import { EyesightFormValues } from "@/types/eyesight";
 import { formatVisitDate } from "@/lib/utils/visit";
-import { formatPatientId } from "@/lib/utils/patient";
 
 type UpdateGlassesFormValues = EyesightFormValues & { visitSelect: string };
 
@@ -30,7 +29,7 @@ function UpdateGlassesPage() {
 
   const { data: patient, isLoading: patientLoading } = useQuery({
     ...saBaiAPIEndpointsPatientsGetEndpointQueryOptions(
-      { path: { id: Number(patientId) } },
+      { path: { id: String(patientId) } },
       apiConfig,
     ),
     enabled: !!patientId,
@@ -38,7 +37,7 @@ function UpdateGlassesPage() {
 
   const { data: visitsData, isLoading: visitsLoading } = useQuery({
     ...saBaiAPIEndpointsPatientsVisitsGetEndpointQueryOptions(
-      { path: { patientId: Number(patientId) } },
+      { path: { patientId: String(patientId) } },
       apiConfig,
     ),
     enabled: !!patientId,
@@ -97,7 +96,7 @@ function UpdateGlassesPage() {
               Update Glasses — {patient.name}
             </h1>
             <p className="mt-2 text-slate-600">
-              Patient ID: {formatPatientId(patient.id)}
+              Patient ID: {patient.displayId}
             </p>
           </div>
         </div>

@@ -2,6 +2,8 @@ import { screen } from "@testing-library/react";
 import { VisitSummaryPanel } from "@/components/consults/VisitSummaryPanel";
 import { renderWithQueryClient } from "@/__tests__/utils/renderWithQueryClient";
 
+const VISIT_ID = "01930000-0000-7000-8000-000000000007";
+
 const mocks = vi.hoisted(() => ({
   vitals: undefined as unknown,
   eyesight: undefined as unknown,
@@ -42,7 +44,7 @@ describe("VisitSummaryPanel", () => {
       others: "None",
     };
 
-    renderWithQueryClient(<VisitSummaryPanel visitId={7} />);
+    renderWithQueryClient(<VisitSummaryPanel visitId={VISIT_ID} />);
 
     expect(await screen.findByText("Anthropometric")).toBeInTheDocument();
     expect(screen.getByText("Cardiovascular / General")).toBeInTheDocument();
@@ -53,7 +55,7 @@ describe("VisitSummaryPanel", () => {
   });
 
   it("shows empty states when nothing is recorded", async () => {
-    renderWithQueryClient(<VisitSummaryPanel visitId={7} />);
+    renderWithQueryClient(<VisitSummaryPanel visitId={VISIT_ID} />);
 
     expect(
       await screen.findByText("No vitals recorded for this visit."),

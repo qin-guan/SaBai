@@ -13,11 +13,12 @@ import TableRow from "@/components/TableRow";
 import TableCell from "@/components/TableCell";
 import { ReferralStateDropdown } from "@/components/referrals/ReferralStateDropdown";
 import { apiConfig } from "@/lib/api/config";
-import { formatPatientCode } from "@/lib/utils/patient";
+import { usePatientDisplayIds } from "@/lib/context/PatientsContext";
 import { formatVisitDate } from "@/lib/utils/visit";
 import { paths } from "@/utils/paths";
 
 function ReferralsPage() {
+  const displayIdOf = usePatientDisplayIds();
   const {
     data: referrals,
     isLoading,
@@ -72,10 +73,7 @@ function ReferralsPage() {
                         style={{ backgroundColor: referral.villageColorHex }}
                         title={referral.villageCode}
                       />
-                      {formatPatientCode(
-                        referral.villageCode,
-                        referral.patientId,
-                      )}
+                      {displayIdOf(referral.patientId) ?? referral.villageCode}
                     </p>
                     <p className="text-slate-900">{referral.patientName}</p>
                     <p className="text-slate-600">

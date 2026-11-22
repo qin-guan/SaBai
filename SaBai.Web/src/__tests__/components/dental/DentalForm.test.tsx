@@ -7,6 +7,9 @@ import {
 } from "@/components/dental/DentalForm";
 import { renderWithQueryClient } from "@/__tests__/utils/renderWithQueryClient";
 
+const VISIT_ID = "01930000-0000-7000-8000-000000000007";
+const DENTAL_ID = "01930000-0000-7000-8000-000000000001";
+
 const mocks = vi.hoisted(() => ({
   saved: undefined as unknown,
   put: vi.fn(),
@@ -26,7 +29,11 @@ vi.mock("@sabai/sdk/hooks", async (importOriginal) => {
     saBaiAPIEndpointsDentalUpsertByVisitPutEndpointMutationOptions: () => ({
       mutationFn: (vars: unknown) => {
         mocks.put(vars);
-        return Promise.resolve({ id: 1, visitId: 7, diagnoses: [] });
+        return Promise.resolve({
+          id: DENTAL_ID,
+          visitId: VISIT_ID,
+          diagnoses: [],
+        });
       },
     }),
   };
@@ -35,8 +42,8 @@ vi.mock("@sabai/sdk/hooks", async (importOriginal) => {
 describe("dental form mapping", () => {
   it("round-trips answers between the API and the form", () => {
     const values = toFormValues({
-      id: 1,
-      visitId: 7,
+      id: DENTAL_ID,
+      visitId: VISIT_ID,
       toothache: false,
       previousDentalVisit: "Unknown",
       caries: "NonCavitated",
@@ -74,7 +81,7 @@ describe("DentalForm", () => {
   });
 
   it("renders every clinical examination question with its options", async () => {
-    renderWithQueryClient(<DentalForm visitId={7} />);
+    renderWithQueryClient(<DentalForm visitId={VISIT_ID} />);
 
     const caries = await screen.findByLabelText("Caries");
     expect(
@@ -104,7 +111,7 @@ describe("DentalForm", () => {
 
   it("saves the selected answers for the visit", async () => {
     const user = userEvent.setup();
-    renderWithQueryClient(<DentalForm visitId={7} />);
+    renderWithQueryClient(<DentalForm visitId={VISIT_ID} />);
 
     const toothache = await screen.findByRole("radiogroup", {
       name: "Toothache",
@@ -123,7 +130,7 @@ describe("DentalForm", () => {
 
     await waitFor(() => expect(mocks.put).toHaveBeenCalled());
     const { path, body } = mocks.put.mock.calls[0][0];
-    expect(path).toEqual({ visitId: 7 });
+    expect(path).toEqual({ visitId: VISIT_ID });
     expect(body.toothache).toBe(true);
     expect(body.plaque).toBe("Heavy");
     expect(body.diagnoses).toEqual(["Gingivitis"]);

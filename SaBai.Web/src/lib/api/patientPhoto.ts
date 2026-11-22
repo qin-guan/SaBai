@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { saBaiAPIEndpointsPatientsPhotoGetEndpoint } from "@sabai/sdk/clients";
 import { apiConfig } from "./config";
 
 /** Query key for a patient's photo blob. Exported so mutations can invalidate it. */
-export const patientPhotoQueryKey = (patientId: number) =>
+export const patientPhotoQueryKey = (patientId: string) =>
   ["patient-photo", patientId] as const;
 
 /**
@@ -28,14 +28,12 @@ export async function dataUrlToFile(
  * them directly; we fetch the blob through the SDK and expose a local URL.
  */
 export function usePatientPhoto(
-  patientId: number,
+  patientId: string,
   enabled = true,
 ): string | null {
-  const [url, setUrl] = useState<string | null>(null);
-
   const { data } = useQuery({
     queryKey: patientPhotoQueryKey(patientId),
-    enabled: enabled && patientId > 0,
+    enabled: enabled && patientId.length > 0,
     staleTime: 5 * 60 * 1000,
     retry: false,
     queryFn: async () => {
@@ -50,16 +48,13 @@ export function usePatientPhoto(
     },
   });
 
+  // One object URL per loaded blob, released when the blob changes or the
+  // component unmounts.
+  const url = useMemo(() => (data ? URL.createObjectURL(data) : null), [data]);
   useEffect(() => {
-    if (!data) {
-      setUrl(null);
-      return;
-    }
-
-    const objectUrl = URL.createObjectURL(data);
-    setUrl(objectUrl);
-    return () => URL.revokeObjectURL(objectUrl);
-  }, [data]);
+    if (!url) return;
+    return () => URL.revokeObjectURL(url);
+  }, [url]);
 
   return url;
 }

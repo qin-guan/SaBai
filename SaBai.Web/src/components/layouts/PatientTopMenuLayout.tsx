@@ -6,7 +6,7 @@ import useDebounce from "@/hooks/useDebounce";
 
 interface PatientTopMenuLayoutProps {
   children: ReactNode;
-  getPatientLink?: (patientId: number) => string;
+  getPatientLink?: (patientId: string) => string;
 }
 
 export default function PatientTopMenuLayout({

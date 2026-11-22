@@ -15,7 +15,7 @@ export const stockStatusDropdown = Object.values(saBaiAPIDomainStockStatus).map(
 );
 
 export type CreateFormFields = {
-  medicationBrandId: number;
+  medicationBrandId: string;
   quantity: number;
   expiry: string;
   location: string;

@@ -68,7 +68,7 @@ export default function PatientVitalsPage() {
   // Fetch patient
   const { data: patient, isLoading: patientLoading } = useQuery({
     ...saBaiAPIEndpointsPatientsGetEndpointQueryOptions(
-      { path: { id: Number(id) } },
+      { path: { id: String(id) } },
       apiConfig,
     ),
     enabled: !!id,
@@ -77,7 +77,7 @@ export default function PatientVitalsPage() {
   // Fetch visits
   const { data: visitsData, isLoading: visitsLoading } = useQuery({
     ...saBaiAPIEndpointsPatientsVisitsGetEndpointQueryOptions(
-      { path: { patientId: Number(id) } },
+      { path: { patientId: String(id) } },
       apiConfig,
     ),
     enabled: !!id,
@@ -215,7 +215,7 @@ function VitalsForm({
   visitDate,
   patient,
 }: {
-  visitId: number;
+  visitId: string;
   visitDate: Date | string;
   patient: { dateOfBirth: Date | string; gender: SaBaiAPIDomainGenderKey };
 }) {

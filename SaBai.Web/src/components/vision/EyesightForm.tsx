@@ -106,7 +106,7 @@ export function EyesightForm({
   visitId,
   visitSelect,
 }: {
-  visitId: number;
+  visitId: string;
   visitSelect: string;
 }) {
   const {
@@ -184,10 +184,7 @@ export function EyesightForm({
       toast.error(getApiErrorMessage(error, "Failed to save vision record."));
 
     if (!eyesightData) {
-      createEyesightMutation.mutate(
-        { body: payload },
-        { onSuccess, onError },
-      );
+      createEyesightMutation.mutate({ body: payload }, { onSuccess, onError });
     } else {
       updateEyesightMutation.mutate(
         { path: { visitId }, body: payload },

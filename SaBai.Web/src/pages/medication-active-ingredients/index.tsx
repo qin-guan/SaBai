@@ -13,7 +13,9 @@ function MedicationActiveIngredientsBasePage() {
     isLoading,
     isError,
   } = useQuery(
-    saBaiAPIEndpointsMedicationIngredientsListGetEndpointQueryOptions(apiConfig),
+    saBaiAPIEndpointsMedicationIngredientsListGetEndpointQueryOptions(
+      apiConfig,
+    ),
   );
 
   function renderContent() {

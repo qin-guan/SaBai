@@ -8,6 +8,21 @@ import { renderWithQueryClient } from "@/__tests__/utils/renderWithQueryClient";
 // factory it consumes and keep the pure query-key helpers from the real module.
 const mocks = vi.hoisted(() => ({
   createConsult: vi.fn(),
+  createOrder: vi.fn(),
+  availability: [
+    {
+      ingredientId: "ing-para",
+      ingredientName: "Paracetamol",
+      unitOfMeasurement: "tablet",
+      availableQuantity: 20,
+    },
+    {
+      ingredientId: "ing-salb",
+      ingredientName: "Salbutamol",
+      unitOfMeasurement: "puff",
+      availableQuantity: 0,
+    },
+  ],
 }));
 
 vi.mock("@sabai/sdk/hooks", async (importOriginal) => {
@@ -16,12 +31,21 @@ vi.mock("@sabai/sdk/hooks", async (importOriginal) => {
     ...actual,
     saBaiAPIEndpointsConsultsCreatePostEndpointMutationOptions: () => ({
       mutationKey: ["consults-create"],
-      mutationFn: mocks.createConsult,
+      mutationFn: (variables: unknown) => mocks.createConsult(variables),
     }),
+    saBaiAPIEndpointsOrdersCreatePostEndpointMutationOptions: () => ({
+      mutationKey: ["orders-create"],
+      mutationFn: (variables: unknown) => mocks.createOrder(variables),
+    }),
+    saBaiAPIEndpointsMedicationStockByIngredientGetEndpointQueryOptions:
+      () => ({
+        queryKey: ["by-ingredient"],
+        queryFn: () => Promise.resolve(mocks.availability),
+      }),
   };
 });
 
-const VISIT_ID = 10;
+const VISIT_ID = "01930000-0000-7000-8000-000000000010";
 
 function renderForm() {
   return renderWithQueryClient(
@@ -46,7 +70,107 @@ describe("ConsultForm", () => {
     vi.clearAllMocks();
     toast.remove();
 
-    mocks.createConsult.mockResolvedValue(undefined);
+    mocks.createConsult.mockResolvedValue({ id: "consult-1" });
+    mocks.createOrder.mockResolvedValue({ id: "order-1" });
+  });
+
+  /** Opens the order modal and stages an order through it. */
+  async function stageOrder(
+    user: ReturnType<typeof userEvent.setup>,
+    medicine: RegExp,
+    quantity: string,
+    dosage: string,
+  ) {
+    await user.click(screen.getByRole("button", { name: "Add Order" }));
+    await user.click(
+      await screen.findByRole("button", { name: "Select an option" }),
+    );
+    await user.click(screen.getByRole("button", { name: medicine }));
+    await user.type(screen.getByLabelText(/Quantity to Order/), quantity);
+    await user.type(screen.getByLabelText(/Dosage Instructions/), dosage);
+    await user.click(screen.getByRole("button", { name: "Save Order" }));
+  }
+
+  test("lists every ingredient with what is available and disables the out-of-stock ones", async () => {
+    const user = userEvent.setup();
+    renderForm();
+
+    await user.click(screen.getByRole("button", { name: "Add Order" }));
+    await user.click(
+      await screen.findByRole("button", { name: "Select an option" }),
+    );
+
+    expect(
+      screen.getByRole("button", { name: "Paracetamol (tablet) (Qty: 20)" }),
+    ).toBeEnabled();
+    expect(
+      screen.getByRole("button", { name: "Salbutamol (puff) — out of stock" }),
+    ).toBeDisabled();
+  });
+
+  test("refuses a quantity above what is available, counting staged orders", async () => {
+    const user = userEvent.setup();
+    renderForm();
+
+    await stageOrder(user, /^Paracetamol/, "15", "1 tablet");
+    expect(screen.getByText("Quantity: 15 tablet")).toBeInTheDocument();
+
+    await stageOrder(
+      user,
+      /^Paracetamol \(tablet\) \(Qty: 5\)$/,
+      "6",
+      "1 tablet",
+    );
+    expect(
+      await screen.findByText("Only 5 tablet available."),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("Quantity: 6 tablet")).not.toBeInTheDocument();
+  });
+
+  test("places staged orders against the saved consult", async () => {
+    const user = userEvent.setup();
+    renderForm();
+
+    await stageOrder(user, /^Paracetamol/, "10", "2 tablets daily");
+    await fillValidForm(user);
+    await user.click(screen.getByRole("button", { name: "Save Consult" }));
+
+    await waitFor(() => expect(mocks.createOrder).toHaveBeenCalledTimes(1));
+    expect(mocks.createOrder).toHaveBeenCalledWith({
+      body: {
+        consultId: "consult-1",
+        medicationActiveIngredientId: "ing-para",
+        quantity: 10,
+        dosageInstructions: "2 tablets daily",
+      },
+    });
+    await waitFor(() =>
+      expect(screen.getByRole("status").textContent).toBe(
+        "Consult has been saved successfully!",
+      ),
+    );
+  });
+
+  test("keeps the consult and names an order the server could not fill", async () => {
+    const user = userEvent.setup();
+    mocks.createOrder.mockRejectedValue(
+      Object.assign(new Error("Conflict"), {
+        status: 409,
+        data: { detail: "Insufficient stock: 4 of 10 available." },
+      }),
+    );
+    renderForm();
+
+    await stageOrder(user, /^Paracetamol/, "10", "2 tablets daily");
+    await fillValidForm(user);
+    await user.click(screen.getByRole("button", { name: "Save Consult" }));
+
+    await waitFor(() =>
+      expect(screen.getByRole("status").textContent).toBe(
+        "Consult saved, but 1 order(s) could not be filled: Paracetamol (Insufficient stock: 4 of 10 available.). Please re-order from the pharmacy.",
+      ),
+    );
+    expect(mocks.createConsult).toHaveBeenCalledTimes(1);
   });
 
   test("renders all fields and the save button", () => {

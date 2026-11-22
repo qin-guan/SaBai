@@ -8,7 +8,7 @@ export const DEFAULT_FORM: SaBaiAPIEndpointsVillageCodesCreatePostRequest = {
 };
 
 export type FormFields = {
-  id?: number;
+  id?: string;
   name: string;
   code: string;
   colorHex: string;

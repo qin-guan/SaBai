@@ -8,11 +8,11 @@ import type { SaBaiAPIEndpointsOrdersUpdatePatchEndpointOptions, SaBaiAPIEndpoin
 import { client, withUnwrap } from '../.kubb/client'
 
 /**
- * @summary Update or approve a medication order
+ * @summary Change a pending order (dosage, remarks, quantity, ingredient), dispense it or cancel it
  * {@link /orders/:id}
  */
 export function saBaiAPIEndpointsOrdersUpdatePatchEndpoint<ThrowOnError extends boolean = true>(options: Options<SaBaiAPIEndpointsOrdersUpdatePatchEndpointOptions, ThrowOnError>): Unwrappable<RequestResult<SaBaiAPIEndpointsOrdersUpdatePatchEndpointResponses, ThrowOnError>> {
   const { client: request = client, ...config } = options
 
-  return withUnwrap(request({ method: 'PATCH', url: '/orders/{id}', security: [{ type: 'apiKey', name: 'sabai.auth', in: 'cookie', scopes: ['admin', 'member'] }], contentType: { request: 'application/json' }, ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<SaBaiAPIEndpointsOrdersUpdatePatchEndpointResponses, ThrowOnError>>)
+  return withUnwrap(request({ method: 'PATCH', url: '/orders/{id}', security: [{ type: 'apiKey', name: 'sabai.auth', in: 'cookie' }], contentType: { request: 'application/json' }, ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<SaBaiAPIEndpointsOrdersUpdatePatchEndpointResponses, ThrowOnError>>)
 }

@@ -8,8 +8,8 @@ import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsReferralsUpdateMoneyPatchRequest<TData extends Partial<SaBaiAPIEndpointsReferralsUpdateMoneyPatchRequest> = object>(data?: TData) {
   const defaultFakeData = {
-    amountPaidUsd: faker.number.float({ min: 0, max: 99999999.99 }),
-    amountPaidRiels: faker.number.int({ min: 0 }),
+    amountPaidUsd: faker.number.float(),
+    amountPaidRiels: faker.number.int(),
     memberWhoPaidId: faker.string.uuid(),
   }
   return {

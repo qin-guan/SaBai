@@ -7,7 +7,7 @@ import type { SaBaiAPIDomainBroadcastSeverityKey } from './SaBaiAPIDomainBroadca
 
 export type SaBaiAPIEndpointsBroadcastsCreatePostRequest = {
   /**
-   * @minLength 0
+   * @minLength 1
    * @maxLength 255
    * @type string
    */

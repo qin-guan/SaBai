@@ -6,7 +6,7 @@
 import * as z from 'zod'
 
 export const saBaiAPIEndpointsReferralsUpdateMoneyPatchRequestSchema = z.object({
-  amountPaidUsd: z.number().min(0).max(99999999.99).nullable(),
-  amountPaidRiels: z.int32().min(0).nullable(),
+  amountPaidUsd: z.number().nullable(),
+  amountPaidRiels: z.int32().nullable(),
   memberWhoPaidId: z.uuid().nullable(),
 })

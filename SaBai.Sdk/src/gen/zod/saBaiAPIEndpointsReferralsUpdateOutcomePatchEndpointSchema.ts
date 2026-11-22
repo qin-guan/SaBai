@@ -8,7 +8,7 @@ import { fastEndpointsProblemDetailsSchema } from './fastEndpointsProblemDetails
 import { saBaiAPIEndpointsReferralsUpdateOutcomePatchRequestSchema } from './saBaiAPIEndpointsReferralsUpdateOutcomePatchRequestSchema'
 import { saBaiAPIEndpointsReferralsUpdateOutcomePatchResponseSchema } from './saBaiAPIEndpointsReferralsUpdateOutcomePatchResponseSchema'
 
-export const saBaiAPIEndpointsReferralsUpdateOutcomePatchEndpointPathIdSchema = z.uuid()
+export const saBaiAPIEndpointsReferralsUpdateOutcomePatchEndpointPathIdSchema = z.uuid().min(1)
 
 export const saBaiAPIEndpointsReferralsUpdateOutcomePatchEndpointStatus200Schema = saBaiAPIEndpointsReferralsUpdateOutcomePatchResponseSchema
 
@@ -25,5 +25,5 @@ export const saBaiAPIEndpointsReferralsUpdateOutcomePatchEndpointErrorSchema = z
 export const saBaiAPIEndpointsReferralsUpdateOutcomePatchEndpointBodySchema = saBaiAPIEndpointsReferralsUpdateOutcomePatchRequestSchema
 
 export const saBaiAPIEndpointsReferralsUpdateOutcomePatchEndpointPathSchema = z.object({
-  id: z.uuid(),
+  id: z.uuid().min(1),
 })

@@ -9,7 +9,7 @@ import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsPushSubscribePutRequest<TData extends Partial<SaBaiAPIEndpointsPushSubscribePutRequest> = object>(data?: TData) {
   const defaultFakeData = {
-    endpoint: faker.string.alpha({ length: { min: 0, max: 2048 } }),
+    endpoint: faker.string.alpha({ length: { min: 1, max: 2048 } }),
     keys: createSaBaiAPIEndpointsPushSubscribePutSubscriptionKeys(),
   }
   return {

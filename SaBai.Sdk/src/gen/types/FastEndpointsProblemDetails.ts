@@ -13,12 +13,12 @@ export type FastEndpointsProblemDetails = {
    * @default 'https://www.rfc-editor.org/rfc/rfc7231#section-6.5.1'
    * @type string | undefined
    */
-  type?: string | null;
+  type?: string;
   /**
    * @default 'One or more validation errors occurred.'
    * @type string | undefined
    */
-  title?: string | null;
+  title?: string;
   /**
    * @description
    * Format: `int32`

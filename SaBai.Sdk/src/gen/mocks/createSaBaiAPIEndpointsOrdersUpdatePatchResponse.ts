@@ -5,21 +5,23 @@
 
 import type { SaBaiAPIEndpointsOrdersUpdatePatchResponse } from '../types/SaBaiAPIEndpointsOrdersUpdatePatchResponse'
 import { createSaBaiAPIDomainOrderStatus } from './createSaBaiAPIDomainOrderStatus'
+import { createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsOrdersAllocationDetails } from './createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsOrdersAllocationDetails'
 import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsOrdersUpdatePatchResponse<TData extends Partial<SaBaiAPIEndpointsOrdersUpdatePatchResponse> = object>(data?: TData) {
   const defaultFakeData = {
     id: faker.string.uuid(),
     consultId: faker.string.uuid(),
-    medicationBrandId: faker.string.uuid(),
-    brandName: faker.string.alpha(),
+    medicationActiveIngredientId: faker.string.uuid(),
+    activeIngredientName: faker.string.alpha(),
     quantity: faker.number.int(),
     status: createSaBaiAPIDomainOrderStatus(),
     dosageInstructions: faker.string.alpha(),
     remarks: faker.string.alpha(),
-    approvedById: faker.string.uuid(),
-    approvedAt: faker.date.anytime().toISOString(),
+    dispensedById: faker.string.uuid(),
+    dispensedAt: faker.date.anytime().toISOString(),
     createdAt: faker.date.anytime().toISOString(),
+    allocations: createSystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsOrdersAllocationDetails(),
   }
   return {
     ...defaultFakeData,

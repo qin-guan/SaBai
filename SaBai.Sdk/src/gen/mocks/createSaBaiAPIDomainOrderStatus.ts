@@ -7,5 +7,5 @@ import type { SaBaiAPIDomainOrderStatusKey } from '../types/SaBaiAPIDomainOrderS
 import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIDomainOrderStatus(data?: SaBaiAPIDomainOrderStatusKey): SaBaiAPIDomainOrderStatusKey {
-  return data ?? faker.helpers.arrayElement<SaBaiAPIDomainOrderStatusKey>(['PENDING', 'APPROVED', 'CANCELLED'])
+  return data ?? faker.helpers.arrayElement<SaBaiAPIDomainOrderStatusKey>(['PENDING', 'DISPENSED', 'CANCELLED'])
 }

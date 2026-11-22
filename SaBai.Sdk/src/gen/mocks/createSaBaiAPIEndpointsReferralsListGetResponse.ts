@@ -26,6 +26,11 @@ export function createSaBaiAPIEndpointsReferralsListGetResponse<TData extends Pa
     villageCode: faker.string.alpha(),
     villageColorHex: faker.string.alpha(),
     tags: createSystemCollectionsGenericIReadOnlyListOfSystemString(),
+    referredToId: faker.string.uuid(),
+    amountPaidUsd: faker.number.float(),
+    amountPaidRiels: faker.number.int(),
+    memberWhoPaidId: faker.string.uuid(),
+    memberOnRunId: faker.string.uuid(),
   }
   return {
     ...defaultFakeData,

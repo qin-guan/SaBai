@@ -11,6 +11,7 @@ export type SaBaiAPIEndpointsMedicationStockUpdatePatchEndpointPath = {
   /**
    * @description
    * Format: `uuid`
+   * @minLength 1
    * @type string
    */
   id: string;

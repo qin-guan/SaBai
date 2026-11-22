@@ -15,5 +15,5 @@ import { client, withUnwrap } from '../.kubb/client'
 export function saBaiAPIEndpointsAuthUsersUpdatePatchEndpoint<ThrowOnError extends boolean = true>(options: Options<SaBaiAPIEndpointsAuthUsersUpdatePatchEndpointOptions, ThrowOnError>): Unwrappable<RequestResult<SaBaiAPIEndpointsAuthUsersUpdatePatchEndpointResponses, ThrowOnError>> {
   const { client: request = client, ...config } = options
 
-  return withUnwrap(request({ method: 'PATCH', url: '/auth/users/{id}', security: [{ type: 'apiKey', name: 'sabai.auth', in: 'cookie', scopes: ['admin'] }], contentType: { request: 'application/json' }, ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<SaBaiAPIEndpointsAuthUsersUpdatePatchEndpointResponses, ThrowOnError>>)
+  return withUnwrap(request({ method: 'PATCH', url: '/auth/users/{id}', security: [{ type: 'apiKey', name: 'sabai.auth', in: 'cookie' }], contentType: { request: 'application/json' }, ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<SaBaiAPIEndpointsAuthUsersUpdatePatchEndpointResponses, ThrowOnError>>)
 }

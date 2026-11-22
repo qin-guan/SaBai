@@ -11,6 +11,7 @@ export type SaBaiAPIEndpointsMedicationStockSplitsPostEndpointPath = {
   /**
    * @description
    * Format: `uuid`
+   * @minLength 1
    * @type string
    */
   id: string;

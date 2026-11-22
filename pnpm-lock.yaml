@@ -11,9 +11,9 @@ importers:
       '@faker-js/faker':
         specifier: ^10.6.0
         version: 10.6.0
-      '@tanstack/react-query':
-        specifier: ^5.104.1
-        version: 5.106.1(@types/react@19.3.0)(react@19.3.1)
+      '@modelcontextprotocol/server':
+        specifier: ^2.4.0
+        version: 2.4.0
       msw:
         specifier: ^3.0.3
         version: 3.0.4(@types/node@26.6.6)(typescript@7.0.2)(vite@8.3.6(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))
@@ -23,25 +23,28 @@ importers:
     devDependencies:
       '@kubb/plugin-faker':
         specifier: 5.3.1
-        version: 5.3.1(@faker-js/faker@10.6.0)(@kubb/parser-ts@5.16.0)(typescript@7.0.2)
+        version: 5.3.1(@faker-js/faker@10.6.0)(typescript@7.0.2)
       '@kubb/plugin-fetch':
-        specifier: 5.5.6
-        version: 5.5.6(@kubb/parser-ts@5.16.0)(kubb@5.16.0(@nuxt/kit@4.6.4(@nuxt/schema@4.6.4)(confbox@0.3.2)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.5)(mlly@1.8.2)(oxc-parser@0.153.0)(rolldown@1.3.0)(unplugin@3.7.0(esbuild@0.28.2)(rolldown@1.3.0)(rollup@4.67.5)(vite@8.3.6(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))))(@nuxt/schema@4.6.4)(esbuild@0.28.2)(openapi-types@12.1.3)(rolldown@1.3.0)(rollup@4.67.5)(tsdown@0.23.7(@volar/typescript@2.4.30(typescript@7.0.2))(@vue/language-core@3.3.14)(typescript@7.0.2)(vue-tsc@3.3.14(typescript@7.0.2)))(typescript@7.0.2)(vite@8.3.6(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)))(typescript@7.0.2)(zod@4.6.7)
+        specifier: 5.13.0
+        version: 5.13.0(typescript@7.0.2)(zod@4.6.7)
       '@kubb/plugin-mcp':
         specifier: 5.4.1
-        version: 5.4.1(@kubb/parser-ts@5.16.0)(typescript@7.0.2)(zod@4.6.7)
+        version: 5.4.1(@modelcontextprotocol/server@2.4.0)(typescript@7.0.2)(zod@4.6.7)
       '@kubb/plugin-msw':
         specifier: 6.1.2
-        version: 6.1.2(@faker-js/faker@10.6.0)(@kubb/parser-ts@5.16.0)(msw@3.0.4(@types/node@26.6.6)(typescript@7.0.2)(vite@8.3.6(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)))(typescript@7.0.2)
+        version: 6.1.2(@faker-js/faker@10.6.0)(msw@3.0.4(@types/node@26.6.6)(typescript@7.0.2)(vite@8.3.6(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)))(typescript@7.0.2)
       '@kubb/plugin-react-query':
         specifier: 5.9.1
-        version: 5.9.1(@kubb/parser-ts@5.16.0)(@tanstack/react-query@5.106.1(@types/react@19.3.0)(react@19.3.1))(typescript@7.0.2)
+        version: 5.9.1(@tanstack/react-query@5.107.1(@types/react@19.3.0)(react@19.3.1))(typescript@7.0.2)
       '@kubb/plugin-ts':
         specifier: 5.4.1
-        version: 5.4.1(@kubb/parser-ts@5.16.0)(typescript@7.0.2)
+        version: 5.4.1(typescript@7.0.2)
       '@kubb/plugin-zod':
         specifier: 5.8.2
         version: 5.8.2(zod@4.6.7)
+      '@tanstack/react-query':
+        specifier: 5.107.1
+        version: 5.107.1(@types/react@19.3.0)(react@19.3.1)
       kubb:
         specifier: 5.16.0
         version: 5.16.0(@nuxt/kit@4.6.4(@nuxt/schema@4.6.4)(confbox@0.3.2)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.5)(mlly@1.8.2)(oxc-parser@0.153.0)(rolldown@1.3.0)(unplugin@3.7.0(esbuild@0.28.2)(rolldown@1.3.0)(rollup@4.67.5)(vite@8.3.6(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))))(@nuxt/schema@4.6.4)(esbuild@0.28.2)(openapi-types@12.1.3)(rolldown@1.3.0)(rollup@4.67.5)(tsdown@0.23.7(@volar/typescript@2.4.30(typescript@7.0.2))(@vue/language-core@3.3.14)(typescript@7.0.2)(vue-tsc@3.3.14(typescript@7.0.2)))(typescript@7.0.2)(vite@8.3.6(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))
@@ -1492,6 +1495,10 @@ packages:
     resolution: {integrity: sha512-TSECJjYs2+RaBM/SNUh0vqN/Yu/Yz92dzHYouQY6r5M+5MCVklwqcLX0+wfDbePHK5K4SPWEbH4+ps8psqQmdA==}
     engines: {node: '>=22.22'}
 
+  '@kubb/ast@5.23.1':
+    resolution: {integrity: sha512-JdjDii0VZB4G79oJiq7MlbXlQ+OjQV8+wySJDdQfXoHMA2dw46O14ZQQj5lGci87lE2CoKLqveGSTszudVdd8A==}
+    engines: {node: '>=22.22'}
+
   '@kubb/cli@5.16.0':
     resolution: {integrity: sha512-+qZ670oOpG4fjkM8ifUx1QUUIUqd199aTND260Z4xqgBfmsQ8amitg+0R47fMhuWGOqDD047nHVHRQzqnrqdgg==}
     engines: {node: '>=22.22'}
@@ -1512,8 +1519,16 @@ packages:
     resolution: {integrity: sha512-UlprzWKUHmdcbiJucPv7f7JVpiKC3V9muVBNSr9BzP7KUAy2qneG6U9CvSHEjMh1ZGEmY4Ym71MTdTdtNwaNYQ==}
     engines: {node: '>=22.22'}
 
+  '@kubb/core@5.23.1':
+    resolution: {integrity: sha512-KMvuOSiyfx4lY4uOgtORu7GMdmNxX+gRbCKBC4fc6EJHyXU3WPbXrf9rV6OCxKPjK0fM5PqPwEfX9LzCA1yl2g==}
+    engines: {node: '>=22.22'}
+
   '@kubb/kit@5.16.0':
     resolution: {integrity: sha512-kF7TXawcCSqyy9j+W/19OCQ5FyqZYveWNWnEW+PIMkQvrwad4Y8Ghyiq7/zq8Th5YznuubmnMyJiJLJ6p1YjUA==}
+    engines: {node: '>=22.22'}
+
+  '@kubb/kit@5.23.1':
+    resolution: {integrity: sha512-46Kg4D1ziIiJMAAcCo90IZF7KhuDD3sjdiChF+bC/BqOoJfd1lnUotuxKL1T20uEAj9hQw/F6d8KOaH9EwDbKQ==}
     engines: {node: '>=22.22'}
 
   '@kubb/mcp@5.16.0':
@@ -1535,6 +1550,10 @@ packages:
     resolution: {integrity: sha512-xmLgcMt1TcquoOtIA3R9i35nutqJYL6yloSCufuWbsD7oDAg8dtbB5orq8GqU9/T4kS34DQ+IdNBJyFMOk4O1g==}
     engines: {node: '>=22.22'}
 
+  '@kubb/plugin-client@5.12.0':
+    resolution: {integrity: sha512-fNQ7rg+CVezFZxIXAV+gsViShhSG4x5qH73fPlBD9IqYPepRj/o8kQICQYQJ59ThAitEoTKSzhQPEtjAwj/odg==}
+    engines: {node: '>=22.22'}
+
   '@kubb/plugin-faker@5.3.1':
     resolution: {integrity: sha512-gUgCBHClTxHdDmMjNJrNhzNTW2PxQg9Tl6/ZK0bJvrNX6cII4nL++t/HnflxGCJVrCk41VyLS3x0H8XAHq2GFQ==}
     engines: {node: '>=22.22'}
@@ -1544,11 +1563,9 @@ packages:
       '@faker-js/faker':
         optional: true
 
-  '@kubb/plugin-fetch@5.5.6':
-    resolution: {integrity: sha512-vqU3b0FsTLk2zNzhzl3PUK1TjRaE/xeQwgRLs+fuGd/Vn8sRqtVzLGF5Bt7d9/aCyJROpiDXUisPL6SZF4pggQ==}
-    engines: {node: '>=22'}
-    peerDependencies:
-      kubb: ^5.5.2
+  '@kubb/plugin-fetch@5.13.0':
+    resolution: {integrity: sha512-2IcMID9idkLHBG/IC6h2lur4R8aOiZNMX+AdoAOXhOXeKpK533OTmrmyUSMusxesHim69Kb6uOScEmpI+kwglQ==}
+    engines: {node: '>=22.22'}
 
   '@kubb/plugin-mcp@5.4.1':
     resolution: {integrity: sha512-ek3lYF9Tsf/xt/bQIkvMc2idINxJPQkQt8N9aJHtYmHwEDEG7wVvtIfJQWadrRbw5lzYTUqg7eD+uPjTjKC/6A==}
@@ -1595,6 +1612,30 @@ packages:
       typescript:
         optional: true
 
+  '@kubb/plugin-ts@5.6.0':
+    resolution: {integrity: sha512-yHJYk+2Sr9ZrMLpHHA1abLBOzwDPvVIVqJoHkZKPatxXl/jzpk5uS07btK7vhVKdKApN587wHN/DYjeuMeOiUA==}
+    engines: {node: '>=22.22'}
+    peerDependencies:
+      '@kubb/parser-ts': ^5.23.1
+      '@typescript/typescript6': ^6.0.2
+      typescript: '>=5.0.0'
+    peerDependenciesMeta:
+      '@kubb/parser-ts':
+        optional: true
+      '@typescript/typescript6':
+        optional: true
+      typescript:
+        optional: true
+
+  '@kubb/plugin-zod@5.11.0':
+    resolution: {integrity: sha512-2OjVd1myIeSnTBO9WYUJFKVsDEa0Xz2XpILvvoZPEncLcmW3jqQVD5hZuMwr797PC8atTWvAg9dBzOQ3uVi/mg==}
+    engines: {node: '>=22.22'}
+    peerDependencies:
+      zod: ^4.0.0
+    peerDependenciesMeta:
+      zod:
+        optional: true
+
   '@kubb/plugin-zod@5.8.2':
     resolution: {integrity: sha512-M0rq4cPx+oxRZOUSFqU27M/qRJX8kDI50O+R/jstwG9qudbEgoV9Fg6C7qTva6suxO2ZPBiLDCT5WVeuiqDaKA==}
     engines: {node: '>=22.22'}
@@ -1606,6 +1647,10 @@ packages:
 
   '@kubb/renderer-jsx@5.16.0':
     resolution: {integrity: sha512-XYhD2jreGcEF2m28xvjTv0hMoLLV9RxWLOoKHn9+UptJ8tfroHOCOQE6czoA3+W/VmySM5FDcT0oW6I/RkwMbQ==}
+    engines: {node: '>=22.22'}
+
+  '@kubb/renderer-jsx@5.23.1':
+    resolution: {integrity: sha512-pUXcZsfOKgdmBl7BHIyrp4nWDZhlRNMhSTIVOp6TRGukAe3sG37rP2xJ7qJylVMy+fjrKAvZ9cSo6mM+083sIQ==}
     engines: {node: '>=22.22'}
 
   '@kubb/studio@5.16.0':
@@ -1621,6 +1666,14 @@ packages:
     resolution: {integrity: sha512-uwPAhccfFJlsfCxMYTwOdVfOz3xqyj8xYL3zJj8f0pb30tLohnnFPhLuqp4/qoEz8sNxe4SESZedcBojRefIzg==}
     engines: {node: '>=18'}
     hasBin: true
+
+  '@modelcontextprotocol/core@2.4.0':
+    resolution: {integrity: sha512-z8QBKqdfXLPzkLQuG4xp8hrVEMm1PZ1IgxMN2sMbJiFiAKOWXnAzogXn2W4aqIBlP1ea6U5yiqVquvUNM1Cj6Q==}
+    engines: {node: '>=20'}
+
+  '@modelcontextprotocol/server@2.4.0':
+    resolution: {integrity: sha512-rgR9yxSaAJ+bcsi/XroT/S2AfPiIWloXAnrdfYSCms9ivVju0ishu/wW0J21Ho6+ZOR1r7RyeRbjiRuF87ix5Q==}
+    engines: {node: '>=20'}
 
   '@msw/url@0.1.2':
     resolution: {integrity: sha512-DdeBLQxQ+ZrtmwEmaj7GQ7lbzPCgbbbyAqOz/I4ulo68hwBpfdNvQJ5bmihJUkAAKOeCmqCIG3OFZGosqFN4mA==}
@@ -2838,23 +2891,11 @@ packages:
   '@tanstack/query-async-storage-persister@5.107.1':
     resolution: {integrity: sha512-yBUPWoe3mclko1NcjIXXeXyoO3oLwzgQaCppxK5KS73gTDA+bJtRJ1hIRHc5tKwMdD0ZDi9TzWqOCWnLsbrNDQ==}
 
-  '@tanstack/query-core@5.106.1':
-    resolution: {integrity: sha512-erYv/UACddcdgjOL2ixmFdK6tO/AVBeUcTCOtX2N51yZpDQ2U7KJ+xgB/bCNfsF3uoCDTqGHEEbDiFsIO9YUmQ==}
-
   '@tanstack/query-core@5.107.1':
     resolution: {integrity: sha512-PSyAik11oQBEVOiVy5hjZWHmoUqOXqK1WYy4v55mcxozEfKaQgpUMsgnXhWjuESzSht8JfzqMS1m6M/9CpNgvg==}
 
   '@tanstack/query-persist-client-core@5.107.1':
     resolution: {integrity: sha512-/qDxEcKh44xViKKFlf8MUoeITritIn58XcT3YkCOQ0Ovj4Wa2EgZtqvHSlw+tnQQGhtq9+gLVZSeUtSfkIL9Kg==}
-
-  '@tanstack/react-query@5.106.1':
-    resolution: {integrity: sha512-ORDvJG/DSfmlFL9lQ8GDkE0VjtQbLeRDY7BL8xjKkQFGLfjFGfNWNuteWgPqA2gPJgLLuWfQ7IX0FlsHCJriyg==}
-    peerDependencies:
-      '@types/react': ^18 || ^19
-      react: ^18 || ^19
-    peerDependenciesMeta:
-      '@types/react':
-        optional: true
 
   '@tanstack/react-query@5.107.1':
     resolution: {integrity: sha512-udCOOLp3ZAheUrIHLCe+ZZge6nr2ZUrGMSWcCuXsjY1Bf2JeeE09oxst97PILiCY6N8xo/7bIo3Hvz13zh06FA==}
@@ -8672,6 +8713,8 @@ snapshots:
 
   '@kubb/ast@5.16.0': {}
 
+  '@kubb/ast@5.23.1': {}
+
   '@kubb/cli@5.16.0(@kubb/adapter-oas@5.16.0(openapi-types@12.1.3))(@kubb/mcp@5.16.0(@kubb/renderer-jsx@5.16.0)(openapi-types@12.1.3)(typescript@7.0.2))(@kubb/studio@5.16.0(tsdown@0.23.7(@volar/typescript@2.4.30(typescript@7.0.2))(@vue/language-core@3.3.14)(typescript@7.0.2)(vue-tsc@3.3.14(typescript@7.0.2))))':
     dependencies:
       '@clack/prompts': 1.8.1
@@ -8695,10 +8738,21 @@ snapshots:
       tinyexec: 1.3.1
       verkit: 0.5.0
 
+  '@kubb/core@5.23.1':
+    dependencies:
+      '@kubb/ast': 5.23.1
+      tinyexec: 1.3.1
+      verkit: 0.5.0
+
   '@kubb/kit@5.16.0':
     dependencies:
       '@kubb/ast': 5.16.0
       '@kubb/core': 5.16.0
+
+  '@kubb/kit@5.23.1':
+    dependencies:
+      '@kubb/ast': 5.23.1
+      '@kubb/core': 5.23.1
 
   '@kubb/mcp@5.16.0(@kubb/renderer-jsx@5.16.0)(openapi-types@12.1.3)(typescript@7.0.2)':
     dependencies:
@@ -8730,10 +8784,22 @@ snapshots:
     dependencies:
       '@kubb/kit': 5.16.0
 
-  '@kubb/plugin-faker@5.3.1(@faker-js/faker@10.6.0)(@kubb/parser-ts@5.16.0)(typescript@7.0.2)':
+  '@kubb/plugin-client@5.12.0(typescript@7.0.2)(zod@4.6.7)':
     dependencies:
       '@kubb/kit': 5.16.0
-      '@kubb/plugin-ts': 5.4.1(@kubb/parser-ts@5.16.0)(typescript@7.0.2)
+      '@kubb/plugin-ts': 5.6.0(typescript@7.0.2)
+      '@kubb/plugin-zod': 5.11.0(zod@4.6.7)
+      '@kubb/renderer-jsx': 5.16.0
+    transitivePeerDependencies:
+      - '@kubb/parser-ts'
+      - '@typescript/typescript6'
+      - typescript
+      - zod
+
+  '@kubb/plugin-faker@5.3.1(@faker-js/faker@10.6.0)(typescript@7.0.2)':
+    dependencies:
+      '@kubb/kit': 5.16.0
+      '@kubb/plugin-ts': 5.4.1(typescript@7.0.2)
       '@kubb/renderer-jsx': 5.16.0
     optionalDependencies:
       '@faker-js/faker': 10.6.0
@@ -8742,35 +8808,38 @@ snapshots:
       - '@typescript/typescript6'
       - typescript
 
-  '@kubb/plugin-fetch@5.5.6(@kubb/parser-ts@5.16.0)(kubb@5.16.0(@nuxt/kit@4.6.4(@nuxt/schema@4.6.4)(confbox@0.3.2)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.5)(mlly@1.8.2)(oxc-parser@0.153.0)(rolldown@1.3.0)(unplugin@3.7.0(esbuild@0.28.2)(rolldown@1.3.0)(rollup@4.67.5)(vite@8.3.6(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))))(@nuxt/schema@4.6.4)(esbuild@0.28.2)(openapi-types@12.1.3)(rolldown@1.3.0)(rollup@4.67.5)(tsdown@0.23.7(@volar/typescript@2.4.30(typescript@7.0.2))(@vue/language-core@3.3.14)(typescript@7.0.2)(vue-tsc@3.3.14(typescript@7.0.2)))(typescript@7.0.2)(vite@8.3.6(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)))(typescript@7.0.2)(zod@4.6.7)':
+  '@kubb/plugin-fetch@5.13.0(typescript@7.0.2)(zod@4.6.7)':
     dependencies:
-      '@kubb/plugin-ts': 5.4.1(@kubb/parser-ts@5.16.0)(typescript@7.0.2)
+      '@kubb/kit': 5.16.0
+      '@kubb/plugin-client': 5.12.0(typescript@7.0.2)(zod@4.6.7)
+      '@kubb/plugin-ts': 5.4.1(typescript@7.0.2)
       '@kubb/plugin-zod': 5.8.2(zod@4.6.7)
-      kubb: 5.16.0(@nuxt/kit@4.6.4(@nuxt/schema@4.6.4)(confbox@0.3.2)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.5)(mlly@1.8.2)(oxc-parser@0.153.0)(rolldown@1.3.0)(unplugin@3.7.0(esbuild@0.28.2)(rolldown@1.3.0)(rollup@4.67.5)(vite@8.3.6(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))))(@nuxt/schema@4.6.4)(esbuild@0.28.2)(openapi-types@12.1.3)(rolldown@1.3.0)(rollup@4.67.5)(tsdown@0.23.7(@volar/typescript@2.4.30(typescript@7.0.2))(@vue/language-core@3.3.14)(typescript@7.0.2)(vue-tsc@3.3.14(typescript@7.0.2)))(typescript@7.0.2)(vite@8.3.6(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))
+      '@kubb/renderer-jsx': 5.16.0
     transitivePeerDependencies:
       - '@kubb/parser-ts'
       - '@typescript/typescript6'
       - typescript
       - zod
 
-  '@kubb/plugin-mcp@5.4.1(@kubb/parser-ts@5.16.0)(typescript@7.0.2)(zod@4.6.7)':
+  '@kubb/plugin-mcp@5.4.1(@modelcontextprotocol/server@2.4.0)(typescript@7.0.2)(zod@4.6.7)':
     dependencies:
       '@kubb/kit': 5.16.0
-      '@kubb/plugin-ts': 5.4.1(@kubb/parser-ts@5.16.0)(typescript@7.0.2)
+      '@kubb/plugin-ts': 5.4.1(typescript@7.0.2)
       '@kubb/plugin-zod': 5.8.2(zod@4.6.7)
       '@kubb/renderer-jsx': 5.16.0
     optionalDependencies:
+      '@modelcontextprotocol/server': 2.4.0
       zod: 4.6.7
     transitivePeerDependencies:
       - '@kubb/parser-ts'
       - '@typescript/typescript6'
       - typescript
 
-  '@kubb/plugin-msw@6.1.2(@faker-js/faker@10.6.0)(@kubb/parser-ts@5.16.0)(msw@3.0.4(@types/node@26.6.6)(typescript@7.0.2)(vite@8.3.6(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)))(typescript@7.0.2)':
+  '@kubb/plugin-msw@6.1.2(@faker-js/faker@10.6.0)(msw@3.0.4(@types/node@26.6.6)(typescript@7.0.2)(vite@8.3.6(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)))(typescript@7.0.2)':
     dependencies:
       '@kubb/kit': 5.16.0
-      '@kubb/plugin-faker': 5.3.1(@faker-js/faker@10.6.0)(@kubb/parser-ts@5.16.0)(typescript@7.0.2)
-      '@kubb/plugin-ts': 5.4.1(@kubb/parser-ts@5.16.0)(typescript@7.0.2)
+      '@kubb/plugin-faker': 5.3.1(@faker-js/faker@10.6.0)(typescript@7.0.2)
+      '@kubb/plugin-ts': 5.4.1(typescript@7.0.2)
       '@kubb/renderer-jsx': 5.16.0
     optionalDependencies:
       msw: 3.0.4(@types/node@26.6.6)(typescript@7.0.2)(vite@8.3.6(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))
@@ -8780,26 +8849,42 @@ snapshots:
       - '@typescript/typescript6'
       - typescript
 
-  '@kubb/plugin-react-query@5.9.1(@kubb/parser-ts@5.16.0)(@tanstack/react-query@5.106.1(@types/react@19.3.0)(react@19.3.1))(typescript@7.0.2)':
+  '@kubb/plugin-react-query@5.9.1(@tanstack/react-query@5.107.1(@types/react@19.3.0)(react@19.3.1))(typescript@7.0.2)':
     dependencies:
       '@kubb/kit': 5.16.0
-      '@kubb/plugin-ts': 5.4.1(@kubb/parser-ts@5.16.0)(typescript@7.0.2)
+      '@kubb/plugin-ts': 5.4.1(typescript@7.0.2)
       '@kubb/renderer-jsx': 5.16.0
     optionalDependencies:
-      '@tanstack/react-query': 5.106.1(@types/react@19.3.0)(react@19.3.1)
+      '@tanstack/react-query': 5.107.1(@types/react@19.3.0)(react@19.3.1)
     transitivePeerDependencies:
       - '@kubb/parser-ts'
       - '@typescript/typescript6'
       - typescript
 
-  '@kubb/plugin-ts@5.4.1(@kubb/parser-ts@5.16.0)(typescript@7.0.2)':
+  '@kubb/plugin-ts@5.4.1(typescript@7.0.2)':
     dependencies:
       '@kubb/kit': 5.16.0
       '@kubb/renderer-jsx': 5.16.0
       yuku-codegen: 0.19.0
     optionalDependencies:
-      '@kubb/parser-ts': 5.16.0
       typescript: 7.0.2
+
+  '@kubb/plugin-ts@5.6.0(typescript@7.0.2)':
+    dependencies:
+      '@kubb/ast': 5.23.1
+      '@kubb/kit': 5.23.1
+      '@kubb/renderer-jsx': 5.23.1
+      yuku-codegen: 0.19.0
+    optionalDependencies:
+      typescript: 7.0.2
+
+  '@kubb/plugin-zod@5.11.0(zod@4.6.7)':
+    dependencies:
+      '@kubb/ast': 5.23.1
+      '@kubb/kit': 5.23.1
+      '@kubb/renderer-jsx': 5.23.1
+    optionalDependencies:
+      zod: 4.6.7
 
   '@kubb/plugin-zod@5.8.2(zod@4.6.7)':
     dependencies:
@@ -8811,6 +8896,11 @@ snapshots:
   '@kubb/renderer-jsx@5.16.0':
     dependencies:
       '@kubb/ast': 5.16.0
+      yaml: 2.9.1
+
+  '@kubb/renderer-jsx@5.23.1':
+    dependencies:
+      '@kubb/ast': 5.23.1
       yaml: 2.9.1
 
   '@kubb/studio@5.16.0(tsdown@0.23.7(@volar/typescript@2.4.30(typescript@7.0.2))(@vue/language-core@3.3.14)(typescript@7.0.2)(vue-tsc@3.3.14(typescript@7.0.2)))':
@@ -8837,6 +8927,15 @@ snapshots:
     transitivePeerDependencies:
       - encoding
       - supports-color
+
+  '@modelcontextprotocol/core@2.4.0':
+    dependencies:
+      zod: 4.6.7
+
+  '@modelcontextprotocol/server@2.4.0':
+    dependencies:
+      '@modelcontextprotocol/core': 2.4.0
+      zod: 4.6.7
 
   '@msw/url@0.1.2': {}
 
@@ -10253,20 +10352,11 @@ snapshots:
       '@tanstack/query-core': 5.107.1
       '@tanstack/query-persist-client-core': 5.107.1
 
-  '@tanstack/query-core@5.106.1': {}
-
   '@tanstack/query-core@5.107.1': {}
 
   '@tanstack/query-persist-client-core@5.107.1':
     dependencies:
       '@tanstack/query-core': 5.107.1
-
-  '@tanstack/react-query@5.106.1(@types/react@19.3.0)(react@19.3.1)':
-    dependencies:
-      '@tanstack/query-core': 5.106.1
-      react: 19.3.1
-    optionalDependencies:
-      '@types/react': 19.3.0
 
   '@tanstack/react-query@5.107.1(@types/react@19.3.0)(react@19.3.1)':
     dependencies:
@@ -10750,7 +10840,7 @@ snapshots:
       obug: 3.0.0
       std-env: 4.3.0
       tinyrainbow: 3.2.0
-      vitest: 5.1.0(@types/node@26.6.6)(@vitest/coverage-v8@5.1.0)(@vitest/ui@5.1.0)(jsdom@31.0.0(@noble/hashes@2.4.0))(msw@3.0.4(@types/node@26.6.6)(typescript@5.9.3)(vite@8.3.6(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)))(vite@8.3.6(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))
+      vitest: 5.1.0(@types/node@26.6.6)(@vitest/coverage-v8@5.1.0)(@vitest/ui@5.1.0)(jsdom@31.0.0(@noble/hashes@2.4.0))(msw@3.0.4(@types/node@26.6.6)(typescript@7.0.2)(vite@8.3.6(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)))(vite@8.3.6(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))
 
   '@vitest/istanbul-lib-coverage@2.1.0': {}
 
@@ -10792,7 +10882,7 @@ snapshots:
       pathe: 2.0.3
       sirv: 3.0.2
       tinyrainbow: 3.2.0
-      vitest: 5.1.0(@types/node@26.6.6)(@vitest/coverage-v8@5.1.0)(@vitest/ui@5.1.0)(jsdom@31.0.0(@noble/hashes@2.4.0))(msw@3.0.4(@types/node@26.6.6)(typescript@5.9.3)(vite@8.3.6(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)))(vite@8.3.6(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))
+      vitest: 5.1.0(@types/node@26.6.6)(@vitest/coverage-v8@5.1.0)(@vitest/ui@5.1.0)(jsdom@31.0.0(@noble/hashes@2.4.0))(msw@3.0.4(@types/node@26.6.6)(typescript@7.0.2)(vite@8.3.6(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)))(vite@8.3.6(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))
 
   '@vitest/utils@5.1.0':
     dependencies:

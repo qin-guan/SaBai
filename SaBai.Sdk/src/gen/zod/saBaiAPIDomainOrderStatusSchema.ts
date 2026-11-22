@@ -5,4 +5,4 @@
 
 import * as z from 'zod'
 
-export const saBaiAPIDomainOrderStatusSchema = z.enum(['PENDING', 'APPROVED', 'CANCELLED'])
+export const saBaiAPIDomainOrderStatusSchema = z.enum(['PENDING', 'DISPENSED', 'CANCELLED'])

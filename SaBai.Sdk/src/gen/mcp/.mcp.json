@@ -5,7 +5,7 @@
       "command": "npx",
       "args": [
         "tsx",
-        "../gen-out2/mcp/start.ts"
+        "./src/gen/mcp/start.ts"
       ]
     }
   }

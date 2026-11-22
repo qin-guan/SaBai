@@ -9,5 +9,5 @@ export const saBaiAPIEndpointsVisitsUpdatePatchRequestSchema = z.object({
   patientId: z.uuid().nullish(),
   villageCodeId: z.uuid().nullish(),
   date: z.iso.datetime().nullish(),
-  status: z.string().min(0).max(100).nullish(),
+  status: z.string().nullish(),
 })

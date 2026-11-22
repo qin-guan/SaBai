@@ -8,9 +8,9 @@ import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsVillageCodesUpdatePatchRequest<TData extends Partial<SaBaiAPIEndpointsVillageCodesUpdatePatchRequest> = object>(data?: TData) {
   const defaultFakeData = {
-    code: faker.string.alpha({ length: { min: 0, max: 255 } }),
-    name: faker.string.alpha({ length: { min: 0, max: 255 } }),
-    colorHex: faker.helpers.fromRegExp(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/),
+    code: faker.string.alpha(),
+    name: faker.string.alpha(),
+    colorHex: faker.string.alpha(),
     isVisible: faker.datatype.boolean(),
   }
   return {

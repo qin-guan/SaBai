@@ -7,7 +7,7 @@ import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server
 import { saBaiAPIEndpointsMedicationStockListGetEndpoint } from '../clients/saBaiAPIEndpointsMedicationStockListGetEndpoint'
 
 /**
- * @summary List medication stock excluding empty lots
+ * @summary List medication stock batches excluding empty ones, with what is reserved for pending orders
  * {@link /medication-stock}
  */
 export async function saBaiAPIEndpointsMedicationStockListGetEndpointHandler(ctx: ServerContext): Promise<CallToolResult> {

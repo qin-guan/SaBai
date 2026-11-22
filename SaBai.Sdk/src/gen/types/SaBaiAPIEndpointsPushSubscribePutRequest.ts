@@ -7,7 +7,7 @@ import type { SaBaiAPIEndpointsPushSubscribePutSubscriptionKeys } from './SaBaiA
 
 export type SaBaiAPIEndpointsPushSubscribePutRequest = {
   /**
-   * @minLength 0
+   * @minLength 1
    * @maxLength 2048
    * @type string
    */

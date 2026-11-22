@@ -62,7 +62,7 @@ export type SaBaiAPIEndpointsDentalUpsertByVisitPutRequest = {
   fracturedTeeth?: null | SaBaiAPIDomainAbsentPresentKey;
   mucosalLesions?: null | SaBaiAPIDomainAbsentPresentKey;
   malocclusion?: null | SaBaiAPIDomainMalocclusionKey;
-  diagnoses: string[] | null;
+  diagnoses?: string[] | null;
   fluorideDone?: boolean | null;
   fluorideDate?: null | SystemNullableOfSystemDateOnly;
   /**

@@ -7,8 +7,8 @@ import * as z from 'zod'
 
 export const saBaiAPIEndpointsVillageCodesCreatePostRequestSchema = z.object({
   id: z.uuid().nullish(),
-  code: z.string().min(0).max(255),
-  name: z.string().min(0).max(255),
+  code: z.string().min(1).max(255),
+  name: z.string().min(1).max(255),
   colorHex: z.string().min(1).regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/),
   isVisible: z.boolean().optional(),
 })

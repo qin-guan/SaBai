@@ -8,7 +8,7 @@ import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server
 import { saBaiAPIEndpointsMedicationHistoryGetEndpoint } from '../clients/saBaiAPIEndpointsMedicationHistoryGetEndpoint'
 
 /**
- * @summary List approved dispenses and stock adjustments for a brand
+ * @summary List dispensed orders and stock quantity changes for a brand
  * {@link /medication-history}
  */
 export async function saBaiAPIEndpointsMedicationHistoryGetEndpointHandler({ query }: SaBaiAPIEndpointsMedicationHistoryGetEndpointOptions = {}, ctx: ServerContext): Promise<CallToolResult> {

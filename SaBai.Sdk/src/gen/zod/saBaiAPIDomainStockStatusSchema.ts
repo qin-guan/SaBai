@@ -5,4 +5,4 @@
 
 import * as z from 'zod'
 
-export const saBaiAPIDomainStockStatusSchema = z.enum(['active', 'discarded', 'donated', 'dispensed', 'reserved'])
+export const saBaiAPIDomainStockStatusSchema = z.enum(['active', 'discarded', 'donated'])

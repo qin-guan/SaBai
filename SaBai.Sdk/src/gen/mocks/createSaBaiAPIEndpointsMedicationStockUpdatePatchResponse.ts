@@ -12,10 +12,13 @@ export function createSaBaiAPIEndpointsMedicationStockUpdatePatchResponse<TData 
     id: faker.string.uuid(),
     medicationBrandId: faker.string.uuid(),
     quantity: faker.number.int(),
+    reservedQuantity: faker.number.int(),
+    availableQuantity: faker.number.int(),
     expiry: faker.date.anytime().toISOString(),
     location: faker.string.alpha(),
     stockStatus: createSaBaiAPIDomainStockStatus(),
     remarks: faker.string.alpha(),
+    parentStockId: faker.string.uuid(),
   }
   return {
     ...defaultFakeData,

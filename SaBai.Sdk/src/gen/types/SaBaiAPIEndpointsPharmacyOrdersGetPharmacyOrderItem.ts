@@ -3,6 +3,8 @@
 * Do not edit manually.
 */
 
+import type { SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsOrdersAllocationDetails } from './SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsOrdersAllocationDetails'
+
 export type SaBaiAPIEndpointsPharmacyOrdersGetPharmacyOrderItem = {
   /**
    * @description
@@ -19,4 +21,5 @@ export type SaBaiAPIEndpointsPharmacyOrdersGetPharmacyOrderItem = {
   quantity: number;
   isLowStock: boolean;
   dosageInstructions: string;
+  allocations: SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsOrdersAllocationDetails;
 };

@@ -6,7 +6,7 @@
 import * as z from 'zod'
 
 export const saBaiAPIEndpointsReferralPartnersCreatePostRequestSchema = z.object({
-  name: z.string().min(0).max(255),
+  name: z.string().min(1).max(255),
   remarks: z.string().nullish(),
   isActive: z.boolean().optional().default(true),
   id: z.uuid().nullish(),

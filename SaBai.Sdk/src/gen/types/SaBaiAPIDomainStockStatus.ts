@@ -7,8 +7,6 @@ export const saBaiAPIDomainStockStatus = {
   active: 'active',
   discarded: 'discarded',
   donated: 'donated',
-  dispensed: 'dispensed',
-  reserved: 'reserved',
 } as const;
 
 export type SaBaiAPIDomainStockStatusKey = (typeof saBaiAPIDomainStockStatus)[keyof typeof saBaiAPIDomainStockStatus];

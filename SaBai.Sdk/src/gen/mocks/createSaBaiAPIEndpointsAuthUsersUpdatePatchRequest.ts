@@ -8,9 +8,9 @@ import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsAuthUsersUpdatePatchRequest<TData extends Partial<SaBaiAPIEndpointsAuthUsersUpdatePatchRequest> = object>(data?: TData) {
   const defaultFakeData = {
-    userName: faker.string.alpha({ length: { min: 0, max: 150 } }),
-    email: faker.internet.email(),
-    nickname: faker.string.alpha({ length: { min: 0, max: 255 } }),
+    userName: faker.string.alpha(),
+    email: faker.string.alpha(),
+    nickname: faker.string.alpha(),
     roles: faker.helpers.multiple(() => (faker.string.alpha())),
     tags: faker.helpers.multiple(() => (faker.string.alpha())),
   }

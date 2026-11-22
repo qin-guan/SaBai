@@ -12,6 +12,8 @@ export function createSaBaiAPIEndpointsOrdersUpdatePatchRequest<TData extends Pa
     status: faker.helpers.arrayElement([null, createSaBaiAPIDomainOrderStatus()]),
     dosageInstructions: faker.string.alpha(),
     remarks: faker.string.alpha(),
+    quantity: faker.number.int(),
+    medicationActiveIngredientId: faker.string.uuid(),
   }
   return {
     ...defaultFakeData,

@@ -10,8 +10,11 @@ export const saBaiAPIEndpointsMedicationStockAdjustmentsPostResponseSchema = z.o
   id: z.uuid(),
   medicationBrandId: z.uuid(),
   quantity: z.int32(),
+  reservedQuantity: z.int32(),
+  availableQuantity: z.int32(),
   expiry: z.iso.datetime(),
   location: z.string(),
   stockStatus: saBaiAPIDomainStockStatusSchema,
   remarks: z.string().nullable(),
+  parentStockId: z.uuid().nullable(),
 })

@@ -7,6 +7,6 @@ import * as z from 'zod'
 import { saBaiAPIEndpointsPushSubscribePutSubscriptionKeysSchema } from './saBaiAPIEndpointsPushSubscribePutSubscriptionKeysSchema'
 
 export const saBaiAPIEndpointsPushSubscribePutRequestSchema = z.object({
-  endpoint: z.string().min(0).max(2048),
+  endpoint: z.string().min(1).max(2048),
   keys: saBaiAPIEndpointsPushSubscribePutSubscriptionKeysSchema,
 })

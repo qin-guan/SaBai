@@ -8,7 +8,7 @@ import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsReferralPartnersCreatePostRequest<TData extends Partial<SaBaiAPIEndpointsReferralPartnersCreatePostRequest> = object>(data?: TData) {
   const defaultFakeData = {
-    name: faker.string.alpha({ length: { min: 0, max: 255 } }),
+    name: faker.string.alpha({ length: { min: 1, max: 255 } }),
     remarks: faker.string.alpha(),
     isActive: faker.datatype.boolean(),
     id: faker.string.uuid(),

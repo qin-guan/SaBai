@@ -4,6 +4,7 @@
 */
 
 import * as z from 'zod'
+import { systemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsOrdersAllocationDetailsSchema } from './systemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsOrdersAllocationDetailsSchema'
 
 export const saBaiAPIEndpointsPharmacyOrdersGetPharmacyOrderItemSchema = z.object({
   orderId: z.uuid(),
@@ -11,4 +12,5 @@ export const saBaiAPIEndpointsPharmacyOrdersGetPharmacyOrderItemSchema = z.objec
   quantity: z.int32(),
   isLowStock: z.boolean(),
   dosageInstructions: z.string(),
+  allocations: systemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsOrdersAllocationDetailsSchema,
 })

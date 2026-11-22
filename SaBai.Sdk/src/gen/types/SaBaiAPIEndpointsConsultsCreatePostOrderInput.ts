@@ -15,7 +15,7 @@ export type SaBaiAPIEndpointsConsultsCreatePostOrderInput = {
    * Format: `uuid`
    * @type string | undefined
    */
-  medicationBrandId?: string;
+  medicationActiveIngredientId?: string;
   /**
    * @description
    * Format: `int32`

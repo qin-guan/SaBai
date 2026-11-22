@@ -10,6 +10,7 @@ export type SaBaiAPIEndpointsChildVitalsGetByVitalsGetEndpointPath = {
   /**
    * @description
    * Format: `uuid`
+   * @minLength 1
    * @type string
    */
   vitalsId: string;

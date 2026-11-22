@@ -6,5 +6,5 @@
 import * as z from 'zod'
 
 export const saBaiAPIEndpointsAuthAccountTwoFactorEnablePostRequestSchema = z.object({
-  code: z.string().min(0).max(16),
+  code: z.string().min(1).max(16),
 })

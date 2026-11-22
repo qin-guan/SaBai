@@ -5,7 +5,7 @@
 
 export type SaBaiAPIEndpointsAuthLoginRecoveryCodePostRequest = {
   /**
-   * @minLength 0
+   * @minLength 1
    * @maxLength 32
    * @type string
    */

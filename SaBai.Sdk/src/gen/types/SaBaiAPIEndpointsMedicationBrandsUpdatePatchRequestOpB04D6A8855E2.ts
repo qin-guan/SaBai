@@ -11,11 +11,6 @@ export type SaBaiAPIEndpointsMedicationBrandsUpdatePatchRequestOpB04D6A8855E2 = 
    * @type string
    */
   id: string;
-  /**
-   * @minLength 0
-   * @maxLength 255
-   * @type string | undefined
-   */
   name?: string | null;
   /**
    * @description

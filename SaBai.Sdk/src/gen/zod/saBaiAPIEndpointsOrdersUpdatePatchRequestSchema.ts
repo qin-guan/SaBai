@@ -7,7 +7,9 @@ import * as z from 'zod'
 import { saBaiAPIDomainOrderStatusSchema } from './saBaiAPIDomainOrderStatusSchema'
 
 export const saBaiAPIEndpointsOrdersUpdatePatchRequestSchema = z.object({
-  status: z.union([z.null(), saBaiAPIDomainOrderStatusSchema]),
+  status: z.union([z.null(), saBaiAPIDomainOrderStatusSchema]).optional(),
   dosageInstructions: z.string().nullish(),
   remarks: z.string().nullish(),
+  quantity: z.int32().nullish(),
+  medicationActiveIngredientId: z.uuid().nullish(),
 })

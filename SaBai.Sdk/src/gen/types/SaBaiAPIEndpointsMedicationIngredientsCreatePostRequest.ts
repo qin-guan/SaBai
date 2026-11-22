@@ -11,13 +11,13 @@ export type SaBaiAPIEndpointsMedicationIngredientsCreatePostRequest = {
    */
   id?: string | null;
   /**
-   * @minLength 0
+   * @minLength 1
    * @maxLength 255
    * @type string
    */
   name: string;
   /**
-   * @minLength 0
+   * @minLength 1
    * @maxLength 255
    * @type string
    */

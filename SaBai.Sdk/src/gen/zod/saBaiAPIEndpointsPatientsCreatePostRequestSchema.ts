@@ -9,7 +9,7 @@ import { saBaiAPIEndpointsPatientsCreatePostVitalsRequestSchema } from './saBaiA
 
 export const saBaiAPIEndpointsPatientsCreatePostRequestSchema = z.object({
   id: z.uuid().nullish(),
-  name: z.string().min(0).max(255),
+  name: z.string().min(1).max(255),
   identificationNumber: z.string().min(0).max(255).nullish(),
   contactNo: z.string().min(0).max(255).nullish(),
   gender: z.union([z.null(), saBaiAPIDomainGenderSchema]),

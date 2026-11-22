@@ -24,4 +24,9 @@ export const saBaiAPIEndpointsReferralsListGetResponseSchema = z.object({
   villageCode: z.string(),
   villageColorHex: z.string(),
   tags: systemCollectionsGenericIReadOnlyListOfSystemStringSchema,
+  referredToId: z.uuid().nullable(),
+  amountPaidUsd: z.number().nullable(),
+  amountPaidRiels: z.int32().nullable(),
+  memberWhoPaidId: z.uuid().nullable(),
+  memberOnRunId: z.uuid().nullable(),
 })

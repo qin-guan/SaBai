@@ -30,10 +30,5 @@ export type SaBaiAPIEndpointsVisitsCreatePostRequest = {
    * @type string | undefined
    */
   date?: string | null;
-  /**
-   * @minLength 0
-   * @maxLength 100
-   * @type string | undefined
-   */
   status?: string | null;
 };

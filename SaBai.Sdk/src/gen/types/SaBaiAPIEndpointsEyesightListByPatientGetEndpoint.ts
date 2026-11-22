@@ -10,6 +10,7 @@ export type SaBaiAPIEndpointsEyesightListByPatientGetEndpointPath = {
   /**
    * @description
    * Format: `uuid`
+   * @minLength 1
    * @type string
    */
   patientId: string;

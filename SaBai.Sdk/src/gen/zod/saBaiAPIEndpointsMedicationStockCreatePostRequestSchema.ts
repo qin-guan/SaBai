@@ -11,7 +11,7 @@ export const saBaiAPIEndpointsMedicationStockCreatePostRequestSchema = z.object(
   medicationBrandId: z.uuid().min(1),
   quantity: z.int32().min(0).optional(),
   expiry: z.iso.datetime().optional(),
-  location: z.string().min(0).max(255),
+  location: z.string().min(1).max(255),
   stockStatus: saBaiAPIDomainStockStatusSchema.optional(),
   remarks: z.string().nullish(),
 })

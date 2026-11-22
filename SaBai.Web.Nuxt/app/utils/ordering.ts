@@ -1,5 +1,6 @@
 import type { SaBaiAPIDomainOrderStatusKey } from "@sabai/sdk/types";
 import type { IngredientAvailability } from "./medicationCache";
+import { formatQuantity } from "./quantity";
 
 /**
  * Ordering by active ingredient. The server reserves stock when an order is
@@ -16,6 +17,8 @@ export interface OrderableIngredient {
   remaining: number;
   /** Nothing left to order: shown, but not selectable. */
   outOfStock: boolean;
+  /** Brands of this ingredient, when the user may read them: searchable in the picker. */
+  brandNames: string[];
 }
 
 export interface OrderableOptions {
@@ -26,6 +29,8 @@ export interface OrderableOptions {
    * it (they are released when it is re-allocated).
    */
   holding?: { ingredientId: string; quantity: number };
+  /** Brand names by ingredient id (see `brandNamesByIngredient`). */
+  brands?: ReadonlyMap<string, readonly string[]>;
 }
 
 /** Every ingredient, by name, with what can still be ordered of it. */
@@ -47,15 +52,67 @@ export function orderableIngredients(
         unit: row.unitOfMeasurement,
         remaining,
         outOfStock: remaining <= 0,
+        brandNames: [...(options.brands?.get(row.ingredientId) ?? [])],
       };
     });
 }
 
-/** "Paracetamol — 120 tablet available" / "Amoxicillin — out of stock". */
+/** "120 tablets available" / "Out of stock". */
+export function orderableAvailability(option: Pick<OrderableIngredient, "remaining" | "unit" | "outOfStock">): string {
+  return option.outOfStock ? "Out of stock" : `${formatQuantity(option.remaining, option.unit)} available`;
+}
+
+/** "Paracetamol — 120 tablets available" / "Amoxicillin — out of stock". */
 export function orderableLabel(option: OrderableIngredient): string {
   return option.outOfStock
     ? `${option.name} — out of stock`
-    : `${option.name} — ${option.remaining} ${option.unit} available`;
+    : `${option.name} — ${orderableAvailability(option)}`;
+}
+
+/** Brand names of each ingredient, sorted, without repeats. */
+export function brandNamesByIngredient(
+  brands: readonly { name: string; activeIngredientId: string }[],
+): Map<string, string[]> {
+  const result = new Map<string, string[]>();
+  for (const brand of brands) {
+    const names = result.get(brand.activeIngredientId) ?? [];
+    if (!names.includes(brand.name)) names.push(brand.name);
+    result.set(brand.activeIngredientId, names);
+  }
+  for (const names of result.values()) names.sort((a, b) => a.localeCompare(b));
+  return result;
+}
+
+const searchText = (text: string) => text.normalize("NFKD").replace(/\p{M}/gu, "").toLowerCase();
+
+/**
+ * The options matching what was typed: every word must be in the ingredient
+ * name or one of its brand names (any order, case and accents ignored).
+ * Names starting with the query come first; the rest keep their order.
+ */
+export function searchOrderableIngredients<T extends Pick<OrderableIngredient, "name" | "brandNames">>(
+  options: readonly T[],
+  query: string,
+): T[] {
+  const words = searchText(query).split(/\s+/).filter(Boolean);
+  if (words.length === 0) return [...options];
+  const first = searchText(query).trim();
+  const starts: T[] = [];
+  const rest: T[] = [];
+  for (const option of options) {
+    const name = searchText(option.name);
+    const haystack = [name, ...option.brandNames.map(searchText)].join("\n");
+    if (!words.every((word) => haystack.includes(word))) continue;
+    (name.startsWith(first) ? starts : rest).push(option);
+  }
+  return [...starts, ...rest];
+}
+
+/** The brand names of `option` that `query` matches, to show why a result is listed. */
+export function matchingBrandNames(option: Pick<OrderableIngredient, "brandNames">, query: string): string[] {
+  const words = searchText(query).split(/\s+/).filter(Boolean);
+  if (words.length === 0) return [];
+  return option.brandNames.filter((brand) => words.some((word) => searchText(brand).includes(word)));
 }
 
 /** Sums the quantity asked for each ingredient across order lines (ignores blank or invalid lines). */
@@ -84,7 +141,7 @@ export function orderQuantityError(
   if (!Number.isInteger(quantity) || quantity < 1) return "Quantity must be a whole number of at least 1";
   if (!option) return null;
   if (option.remaining <= 0) return "Out of stock: choose another medication";
-  if (quantity > option.remaining) return `Only ${option.remaining} ${option.unit} available`;
+  if (quantity > option.remaining) return `Only ${formatQuantity(option.remaining, option.unit)} available`;
   return null;
 }
 
@@ -101,7 +158,10 @@ export const ORDER_STATUS_CLASSES: Record<SaBaiAPIDomainOrderStatusKey, string> 
   CANCELLED: "border-destructive/40 bg-destructive-subtle text-destructive",
 };
 
-/** " tablet" after a quantity, or nothing when the unit is unknown. */
+/**
+ * " tablet" after a quantity, or nothing when the unit is unknown.
+ * @deprecated Use `formatQuantity(quantity, unit)` from `./quantity`, which also handles plurals.
+ */
 export function formatQuantityUnit(unit: string | null | undefined): string {
   return unit ? ` ${unit}` : "";
 }

@@ -126,6 +126,29 @@ The referral page is one form like the station forms: status, booth, party,
 payment and outcome are always editable and `Ctrl/⌘+S` saves every part that
 changed (each through its own endpoint, so only changed parts are sent).
 
+## Sidebar
+
+Five sections, defined once in `app/utils/navigation.ts` (`NAV_GROUPS`):
+**Patients** (Scan face, Patient list), **Stations** (Vitals, Vision, Consult,
+Dental), **Pharmacy** (Stock, Orders), **Referrals** (Referral list, PN bills)
+and **Admin** (Settings, with its pages nested). Sidebar labels are sentence
+case (`navLabel`); a page keeps its own title (`name`), which is what universal
+search lists. Stock also stands for the brands and active-ingredients routes
+(`alsoActiveOn`), and the pharmacy filter of the patient list is no longer a
+sidebar entry (Orders is the pharmacist's queue); those three pages stay in
+universal search.
+
+## Medication quantities
+
+A quantity is always shown with the active ingredient's unit
+(`formatQuantity(quantity, unit)` in `app/utils/quantity.ts`: "10 tablets",
+"1 tablet", "5 mL"), so an order of "1" is never ambiguous. The order
+responses do not carry the unit; it is looked up by ingredient id in
+`GET /medication-stock/by-ingredient`, which every role that can order may
+read. The medication picker on the consult form and in the order dialog
+(`components/orders/IngredientPicker.vue`) is searchable by ingredient name,
+and by brand name for the roles the API lets list brands.
+
 ## Patient journey and station backlog
 
 Every visit moves through **Vitals → Vision → Consult → Dental (optional) →

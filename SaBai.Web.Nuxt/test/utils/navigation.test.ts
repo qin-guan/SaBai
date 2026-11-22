@@ -1,5 +1,6 @@
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-import { ADMIN_NAV_ITEMS, CHANGELOG_PAGE, currentStation, isInNavSection, isNavItemActive, logicalBackTarget, patientTargetFor, SUB_PAGES } from '~/utils/navigation'
+import type { NavItem } from '~/utils/navigation'
+import { ADMIN_NAV_ITEMS, ALL_NAV_ITEMS, CHANGELOG_PAGE, currentStation, isInNavSection, isNavItemActive, logicalBackTarget, MEDICATION_PAGES, NAV_GROUPS, navLabelOf, PATIENT_NAV_ITEMS, patientTargetFor, PHARMACY_NAV_ITEMS, PHARMACY_STATION_PAGE, REFERRAL_NAV_ITEMS, SUB_PAGES } from '~/utils/navigation'
 
 type Route = Pick<RouteLocationNormalizedLoaded, 'path' | 'query' | 'meta'>
 
@@ -85,14 +86,70 @@ describe('paths.orders and pharmacy patientLinkFor', () => {
   })
 })
 
+describe('sidebar', () => {
+  const labels = (items: NavItem[]) => items.map(navLabelOf)
+
+  it('groups the entries as Patients, Stations, Pharmacy, Referrals and Admin', () => {
+    expect(NAV_GROUPS.map(group => [group.label, labels(group.items)])).toEqual([
+      ['Patients', ['Scan face', 'Patient list']],
+      ['Stations', ['Vitals', 'Vision', 'Consult', 'Dental']],
+      ['Pharmacy', ['Stock', 'Orders']],
+      ['Referrals', ['Referral list', 'PN bills']],
+      ['Admin', ['Settings']],
+    ])
+    expect(ALL_NAV_ITEMS).toEqual(NAV_GROUPS.flatMap(group => group.items))
+  })
+
+  it('links Stock and Orders to their pages', () => {
+    expect(PHARMACY_NAV_ITEMS.map(item => item.href)).toEqual(['/medication-stock', '/orders'])
+  })
+
+  it('has no pharmacy station entry, but keeps the page searchable', () => {
+    expect(ALL_NAV_ITEMS.some(item => item.station === 'pharmacy')).toBe(false)
+    expect(SUB_PAGES).toContain(PHARMACY_STATION_PAGE)
+    expect(PHARMACY_STATION_PAGE.href).toBe('/patient?station=pharmacy')
+    expect(isNavItemActive(PHARMACY_STATION_PAGE, route('/patient', { station: 'pharmacy' }))).toBe(true)
+  })
+
+  it('lists every page once for search', () => {
+    const hrefs = [...ALL_NAV_ITEMS, ...SUB_PAGES].map(item => item.href)
+    expect(new Set(hrefs).size).toBe(hrefs.length)
+  })
+
+  it('shows Stock as active on the stock, brands and active ingredients routes', () => {
+    const stock = PHARMACY_NAV_ITEMS[0]!
+    expect(stock.children).toBeUndefined()
+    for (const path of ['/medication-stock', '/medication-brands', '/medication-active-ingredients'])
+      expect(isInNavSection(stock, route(path))).toBe(true)
+    expect(isInNavSection(stock, route('/orders'))).toBe(false)
+    for (const page of MEDICATION_PAGES)
+      expect(SUB_PAGES).toContain(page)
+  })
+
+  it('marks one referral entry at a time', () => {
+    const [list, bills] = REFERRAL_NAV_ITEMS as [NavItem, NavItem]
+    expect(isInNavSection(list, route('/referrals'))).toBe(true)
+    expect(isInNavSection(list, route('/referrals/42'))).toBe(true)
+    expect(isInNavSection(list, route('/referrals/bills'))).toBe(false)
+    expect(isInNavSection(bills, route('/referrals/bills'))).toBe(true)
+    expect(isInNavSection(bills, route('/referrals'))).toBe(false)
+  })
+
+  it('marks the patient list only when no station is chosen', () => {
+    const list = PATIENT_NAV_ITEMS[1]!
+    expect(isInNavSection(list, route('/patient'))).toBe(true)
+    expect(isInNavSection(list, route('/patient/42'))).toBe(true)
+    expect(isInNavSection(list, route('/patient', { station: 'pharmacy' }))).toBe(false)
+  })
+})
+
 describe('nested pages', () => {
   const settings = ADMIN_NAV_ITEMS.find(item => item.href === '/settings')!
-  const stock = ADMIN_NAV_ITEMS.find(item => item.href === '/medication-stock')!
 
   it('counts a nested page as part of its parent section', () => {
     expect(isInNavSection(settings, route('/settings/audit-log'))).toBe(true)
-    expect(isInNavSection(stock, route('/medication-brands'))).toBe(true)
-    expect(isInNavSection(stock, route('/orders'))).toBe(false)
+    expect(isInNavSection(settings, route('/settings'))).toBe(true)
+    expect(isInNavSection(settings, route('/orders'))).toBe(false)
   })
 
   it('marks the nested page itself, ignoring audit log filters', () => {
@@ -102,7 +159,7 @@ describe('nested pages', () => {
   })
 
   it('makes every nested page searchable', () => {
-    for (const child of [...settings.children!, ...stock.children!])
+    for (const child of settings.children!)
       expect(SUB_PAGES).toContain(child)
     expect(SUB_PAGES).toContain(CHANGELOG_PAGE)
   })

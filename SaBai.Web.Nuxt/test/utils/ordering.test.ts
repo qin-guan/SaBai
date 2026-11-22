@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { orderableIngredients, orderableLabel, orderQuantityError, stagedQuantities } from "~/utils/ordering";
+import {
+  brandNamesByIngredient,
+  matchingBrandNames,
+  orderableAvailability,
+  orderableIngredients,
+  orderableLabel,
+  orderQuantityError,
+  searchOrderableIngredients,
+  stagedQuantities,
+} from "~/utils/ordering";
 import type { IngredientAvailability } from "~/utils/medicationCache";
 
 const rows: IngredientAvailability[] = [
@@ -32,7 +41,7 @@ describe("orderableIngredients", () => {
 describe("orderableLabel", () => {
   it("says what is available or that it is out of stock", () => {
     const [amox, para] = orderableIngredients(rows);
-    expect(orderableLabel(para!)).toBe("Paracetamol — 20 tablet available");
+    expect(orderableLabel(para!)).toBe("Paracetamol — 20 tablets available");
     expect(orderableLabel(amox!)).toBe("Amoxicillin — out of stock");
   });
 });
@@ -60,7 +69,56 @@ describe("orderQuantityError", () => {
 
   it("caps the quantity at what is available", () => {
     expect(orderQuantityError("5", option)).toBeNull();
-    expect(orderQuantityError("6", option)).toBe("Only 5 tablet available");
+    expect(orderQuantityError("6", option)).toBe("Only 5 tablets available");
     expect(orderQuantityError("1", { remaining: 0, unit: "tablet" })).toBe("Out of stock: choose another medication");
+  });
+});
+
+describe("orderableAvailability", () => {
+  it("names the unit", () => {
+    expect(orderableAvailability({ remaining: 1, unit: "tablet", outOfStock: false })).toBe("1 tablet available");
+    expect(orderableAvailability({ remaining: 60, unit: "mL", outOfStock: false })).toBe("60 mL available");
+    expect(orderableAvailability({ remaining: 0, unit: "mL", outOfStock: true })).toBe("Out of stock");
+  });
+});
+
+describe("searching the medication picker", () => {
+  const brands = brandNamesByIngredient([
+    { name: "Panadol", activeIngredientId: "p" },
+    { name: "Calpol", activeIngredientId: "p" },
+    { name: "Panadol", activeIngredientId: "p" },
+    { name: "Amoxil", activeIngredientId: "a" },
+  ]);
+  const options = orderableIngredients(
+    [...rows, { ingredientId: "c", ingredientName: "Co-amoxiclav 625 mg", unitOfMeasurement: "tablet", availableQuantity: 4 }],
+    { brands },
+  );
+  const names = (query: string) => searchOrderableIngredients(options, query).map((o) => o.name);
+
+  it("groups brand names by ingredient, sorted and without repeats", () => {
+    expect(brands.get("p")).toEqual(["Calpol", "Panadol"]);
+    expect(options.find((o) => o.ingredientId === "p")?.brandNames).toEqual(["Calpol", "Panadol"]);
+    expect(options.find((o) => o.ingredientId === "c")?.brandNames).toEqual([]);
+  });
+
+  it("lists everything for an empty query", () => {
+    expect(names("  ")).toEqual(["Amoxicillin", "Co-amoxiclav 625 mg", "Paracetamol"]);
+  });
+
+  it("matches the ingredient name anywhere, ignoring case, names that start with it first", () => {
+    expect(names("AMOX")).toEqual(["Amoxicillin", "Co-amoxiclav 625 mg"]);
+    expect(names("cetam")).toEqual(["Paracetamol"]);
+  });
+
+  it("matches brand names", () => {
+    expect(names("panadol")).toEqual(["Paracetamol"]);
+    expect(names("amoxil")).toEqual(["Amoxicillin"]);
+    expect(matchingBrandNames(options.find((o) => o.ingredientId === "p")!, "pana")).toEqual(["Panadol"]);
+    expect(matchingBrandNames(options.find((o) => o.ingredientId === "p")!, "")).toEqual([]);
+  });
+
+  it("needs every word to match", () => {
+    expect(names("amox 625")).toEqual(["Co-amoxiclav 625 mg"]);
+    expect(names("amox zzz")).toEqual([]);
   });
 });

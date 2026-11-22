@@ -13,6 +13,7 @@ import {
   createOrder,
   updateOrder,
   deleteOrder,
+  PHARMACY_ROLES,
 } from '~/offline/mutations/medication'
 
 export {
@@ -58,11 +59,25 @@ export function useIngredientAvailability(options: { enabled?: MaybeRefOrGetter<
   })
 }
 
-export function useMedicationBrands() {
+export function useMedicationBrands(options: { enabled?: MaybeRefOrGetter<boolean> } = {}) {
   return useQuery({
     queryKey: queryKeys.medicationBrands(),
     queryFn: ({ signal }) => fetchMedicationBrands(signal),
+    enabled: () => toValue(options.enabled) ?? true,
   })
+}
+
+/**
+ * Brand names by active ingredient id, so the order picker can be searched by
+ * brand. The API only lets the pharmacy roles list brands (`PHARMACY_ROLES`);
+ * for anyone else (a doctor-only account) the map stays empty and the picker
+ * searches ingredient names alone.
+ */
+export function useOrderableBrandNames() {
+  const { user } = useCurrentUser()
+  const canReadBrands = computed(() => !!user.value?.roles.some(role => PHARMACY_ROLES.includes(role)))
+  const { data } = useMedicationBrands({ enabled: canReadBrands })
+  return computed(() => brandNamesByIngredient(canReadBrands.value ? data.value ?? [] : []))
 }
 
 export function useMedicationBrandsWithIngredient() {

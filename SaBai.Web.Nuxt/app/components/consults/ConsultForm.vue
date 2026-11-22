@@ -93,7 +93,7 @@ function removeDiagnosis(index: number) {
 function addOrder() {
   form.value.orders.push({ key: nextKey++, medicationActiveIngredientId: '', quantity: '1', dosageInstructions: '', remarks: '' })
   nextTick(() => {
-    const selects = formEl.value?.querySelectorAll<HTMLSelectElement>('[data-order-medication]')
+    const selects = formEl.value?.querySelectorAll<HTMLElement>('[data-order-medication]')
     selects?.[selects.length - 1]?.focus()
   })
 }
@@ -107,17 +107,23 @@ function removeOrder(index: number) {
 // reserves stock when the order is placed). Several lines for one ingredient
 // share what is available.
 const availability = useIngredientAvailability()
+const brands = useOrderableBrandNames()
 
 /** What each order line may still ask for: the ingredient's available units less the other lines' quantities. */
 function optionsForLine(index: number) {
   const others = form.value.orders
     .filter((_, i) => i !== index)
     .map(o => ({ ingredientId: o.medicationActiveIngredientId, quantity: Number(o.quantity) }))
-  return orderableIngredients(availability.data.value ?? [], { staged: stagedQuantities(others) })
+  return orderableIngredients(availability.data.value ?? [], { staged: stagedQuantities(others), brands: brands.value })
 }
 const lineOptions = computed(() => form.value.orders.map((_, index) => optionsForLine(index)))
 const lineChoice = (index: number) =>
   lineOptions.value[index]?.find(o => o.ingredientId === form.value.orders[index]?.medicationActiveIngredientId)
+/** The unit beside a line's quantity field, following the number typed ("1 tablet", "2 tablets"). */
+function lineUnit(index: number) {
+  const text = form.value.orders[index]?.quantity.trim()
+  return quantityUnit(lineChoice(index)?.unit, text ? Number(text) : null) || undefined
+}
 
 /** Stock errors for the order lines (on top of the schema's checks). */
 function orderStockErrors(): Record<string, string> {
@@ -143,7 +149,7 @@ function liveQuantityError(index: number) {
   const quantity = Number(form.value.orders[index]?.quantity)
   if (!choice || choice.outOfStock || !Number.isFinite(quantity) || quantity <= choice.remaining)
     return undefined
-  return `Only ${choice.remaining} ${choice.unit} available`
+  return `Only ${formatQuantity(choice.remaining, choice.unit)} available`
 }
 
 function ingredientName(id: string) {
@@ -400,7 +406,7 @@ useSaveShortcut(submit)
                 <PhTrash aria-hidden="true" /> Remove
               </Button>
             </div>
-            <div class="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_10rem]">
+            <div class="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_11rem]">
               <FormField v-slot="{ id: fieldId, describedby, invalid }" label="Medication (active ingredient)" required :error="errors[`orders.${index}.medicationActiveIngredientId`]">
                 <IngredientPicker
                   :id="fieldId"
@@ -416,7 +422,7 @@ useSaveShortcut(submit)
                 label="Quantity"
                 required
                 :error="errors[`orders.${index}.quantity`] ?? liveQuantityError(index)"
-                :hint="lineChoice(index) && !lineChoice(index)!.outOfStock ? `Up to ${lineChoice(index)!.remaining} ${lineChoice(index)!.unit}` : undefined"
+                :hint="lineChoice(index) && !lineChoice(index)!.outOfStock ? `Up to ${formatQuantity(lineChoice(index)!.remaining, lineChoice(index)!.unit)}` : undefined"
               >
                 <NumericInput
                   :id="fieldId"
@@ -424,7 +430,7 @@ useSaveShortcut(submit)
                   step="1"
                   min="1"
                   :max="lineChoice(index)?.remaining"
-                  :unit="lineChoice(index)?.unit"
+                  :unit="lineUnit(index)"
                   :aria-describedby="describedby"
                   :aria-invalid="invalid || undefined"
                 />

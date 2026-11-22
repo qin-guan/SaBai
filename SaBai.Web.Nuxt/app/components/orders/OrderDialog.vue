@@ -22,6 +22,7 @@ const emit = defineEmits<{ close: [] }>()
 
 const isEdit = computed(() => !!props.order)
 const availability = useIngredientAvailability()
+const brands = useOrderableBrandNames()
 const createOrderMutation = useCreateOrder()
 const updateOrderMutation = useUpdateOrder()
 const isPending = computed(() => createOrderMutation.isPending.value || updateOrderMutation.isPending.value)
@@ -37,11 +38,14 @@ const serverError = ref<string | null>(null)
 
 const options = computed(() => orderableIngredients(availability.data.value ?? [], {
   holding: props.order ? { ingredientId: props.order.medicationActiveIngredientId, quantity: props.order.quantity } : undefined,
+  brands: brands.value,
 }))
 const selected = computed(() => options.value.find(o => o.ingredientId === form.value.ingredientId))
 const quantityHint = computed(() => selected.value && !selected.value.outOfStock
-  ? `Up to ${selected.value.remaining} ${selected.value.unit}`
+  ? `Up to ${formatQuantity(selected.value.remaining, selected.value.unit)}`
   : undefined)
+/** The unit beside the quantity field, following the number typed ("1 tablet", "2 tablets"). */
+const quantityUnitLabel = computed(() => quantityUnit(selected.value?.unit, form.value.quantity.trim() ? Number(form.value.quantity) : null) || undefined)
 
 function validate() {
   const next: Record<string, string | null> = {}
@@ -99,7 +103,7 @@ async function save() {
         remarks,
         context: props.context,
       })
-      notifySaved(outcome, `Ordered ${ingredientName} × ${quantity}.`)
+      notifySaved(outcome, `Ordered ${ingredientName}: ${formatQuantity(quantity, selected.value?.unit)}.`)
     }
     emit('close')
   }
@@ -128,7 +132,7 @@ useSaveShortcut(save)
         {{ serverError }}
       </div>
       <StateMessage v-if="!availability.data.value && availability.isError.value" kind="error" :message="describeLoadError(availability.error.value, 'Could not load the medication list.')" />
-      <div class="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_9rem]">
+      <div class="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_11rem]">
         <FormField v-slot="{ id, describedby, invalid }" label="Medication (active ingredient)" required :error="errors.ingredientId">
           <IngredientPicker
             :id="id"
@@ -146,7 +150,7 @@ useSaveShortcut(save)
             step="1"
             min="1"
             :max="selected?.remaining"
-            :unit="selected?.unit"
+            :unit="quantityUnitLabel"
             :aria-describedby="describedby"
             :aria-invalid="invalid || undefined"
           />

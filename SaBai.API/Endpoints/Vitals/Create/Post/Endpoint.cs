@@ -22,7 +22,18 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             .Visits.AsNoTracking()
             .FirstOrNotFoundAsync(x => x.Id == req.VisitId, "Visit was not found.", ct);
 
-        if (await db.Vitals.FindExistingAsync(req.Id, x => x.VisitId == req.VisitId, ct) is { } existing)
+        var existing = await db.Vitals.FindExistingAsync(req.Id, x => x.VisitId == req.VisitId, ct);
+        if (existing is null && await db.Vitals.AnyAsync(x => x.VisitId == req.VisitId, ct))
+        {
+            // A resend of this same create may have been saved between the two reads above:
+            // look again before calling it someone else's record.
+            existing = await db.Vitals.FindExistingAsync(req.Id, x => x.VisitId == req.VisitId, ct)
+                ?? throw new ConflictException(
+                    "Vitals were already recorded for this visit, perhaps on another device. Open the visit's vitals to change them."
+                );
+        }
+
+        if (existing is not null)
         {
             await Send.CreatedAtAsync<Get.Endpoint>(
                 new { existing.Id },
@@ -30,13 +41,6 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
                 cancellation: ct
             );
             return;
-        }
-
-        if (await db.Vitals.AnyAsync(x => x.VisitId == req.VisitId, ct))
-        {
-            throw new ConflictException(
-                "Vitals were already recorded for this visit, perhaps on another device. Open the visit's vitals to change them."
-            );
         }
 
         var vitals = new global::SaBai.API.Domain.Vitals

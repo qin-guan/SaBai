@@ -28,7 +28,7 @@ async function confirm() {
       visitId: props.visitId,
       patientName: props.patientName,
     })
-    notifySaved(outcome, `Cancelled ${props.order.activeIngredientName}.`)
+    notifySaved(outcome, `Cancelled the order for ${formatQuantity(props.order.quantity, props.unit ?? props.order.unitOfMeasurement)} of ${props.order.activeIngredientName}.`)
     emit('close')
   }
   catch (error) {
@@ -44,7 +44,13 @@ async function confirm() {
         Medication
       </dt>
       <dd class="font-semibold">
-        {{ order.activeIngredientName }} × {{ order.quantity }}{{ formatQuantityUnit(unit) }}
+        {{ order.activeIngredientName }}
+      </dd>
+      <dt class="text-muted-foreground">
+        Quantity
+      </dt>
+      <dd class="font-semibold tabular-nums">
+        {{ formatQuantity(order.quantity, unit ?? order.unitOfMeasurement) }}
       </dd>
       <dt class="text-muted-foreground">
         Dosage
@@ -58,11 +64,9 @@ async function confirm() {
       </template>
     </dl>
     <p class="mt-2 text-xs text-muted-foreground touch:text-sm">
-      The stock reserved for it becomes available again. A cancelled order cannot be reopened.
+      The {{ formatQuantity(order.quantity, unit ?? order.unitOfMeasurement) }} reserved for it become available again. A cancelled order cannot be reopened.
     </p>
-    <p v-if="serverError" class="mt-2 text-xs font-medium text-destructive touch:text-sm" role="alert">
-      {{ serverError }}
-    </p>
+    <FormErrorNote v-if="serverError" :message="serverError" class="mt-2" />
     <template #footer>
       <Button variant="outline" @click="emit('close')">
         Keep order

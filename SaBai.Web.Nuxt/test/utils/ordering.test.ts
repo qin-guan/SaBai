@@ -82,6 +82,25 @@ describe("orderableAvailability", () => {
   });
 });
 
+describe("brand names from the availability rows", () => {
+  const withBrands = [
+    { ...rows[0]!, brandNames: ["Panadol", "Calpol"] },
+    { ...rows[1]!, brandNames: [] },
+  ];
+
+  it("uses the names each row carries, sorted, so any ordering role can search by brand", () => {
+    const options = orderableIngredients(withBrands);
+    expect(options.find((o) => o.ingredientId === "p")!.brandNames).toEqual(["Calpol", "Panadol"]);
+    expect(searchOrderableIngredients(options, "calpol").map((o) => o.name)).toEqual(["Paracetamol"]);
+    expect(matchingBrandNames(options.find((o) => o.ingredientId === "p")!, "pana")).toEqual(["Panadol"]);
+  });
+
+  it("an explicit brand map still wins", () => {
+    const options = orderableIngredients(withBrands, { brands: new Map([["p", ["Tylenol"]]]) });
+    expect(options.find((o) => o.ingredientId === "p")!.brandNames).toEqual(["Tylenol"]);
+  });
+});
+
 describe("searching the medication picker", () => {
   const brands = brandNamesByIngredient([
     { name: "Panadol", activeIngredientId: "p" },

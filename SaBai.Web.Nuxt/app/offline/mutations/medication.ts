@@ -9,12 +9,16 @@ import {
   saBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpoint,
   saBaiAPIEndpointsMedicationIngredientsListGetEndpoint,
   saBaiAPIEndpointsMedicationIngredientsUpdatePutEndpoint,
+  saBaiAPIEndpointsMedicationStockAdjustmentsPostEndpoint,
   saBaiAPIEndpointsMedicationStockByIngredientGetEndpoint,
+  saBaiAPIEndpointsMedicationStockChangesGetEndpoint,
   saBaiAPIEndpointsMedicationStockCreatePostEndpoint,
   saBaiAPIEndpointsMedicationStockSplitsPostEndpoint,
   saBaiAPIEndpointsMedicationStockUpdatePatchEndpoint,
   saBaiAPIEndpointsMedicationStockWithBrandGetEndpoint,
   saBaiAPIEndpointsMedicationHistoryGetEndpoint,
+  saBaiAPIEndpointsOrdersAllocationOptionsGetEndpoint,
+  saBaiAPIEndpointsOrdersAllocationsPutEndpoint,
   saBaiAPIEndpointsOrdersCreatePostEndpoint,
   saBaiAPIEndpointsOrdersDeleteDeleteEndpoint,
   saBaiAPIEndpointsOrdersListGetEndpoint,
@@ -30,6 +34,9 @@ import type {
   SaBaiAPIEndpointsMedicationStockWithBrandGetResponse,
   SaBaiAPIDomainOrderStatusKey,
   SaBaiAPIEndpointsMedicationHistoryGetResponse,
+  SaBaiAPIEndpointsMedicationStockChangesGetResponse,
+  SaBaiAPIEndpointsOrdersAllocationOptionsGetBatchOption,
+  SaBaiAPIEndpointsOrdersAllocationOptionsGetResponse,
   SaBaiAPIEndpointsOrdersListGetResponse,
   SaBaiAPIEndpointsPharmacyOrdersGetDiagnosisItem,
   SaBaiAPIEndpointsPharmacyOrdersGetPharmacyOrderItem,
@@ -40,10 +47,12 @@ import { defineOfflineMutation, requestOptions } from '~/offline/defineOfflineMu
 import { registerOfflinePrefetch } from '~/offline/prefetch'
 import { apiConfig, queryKeys } from '~/utils/api'
 import { getApiErrorStatus } from '~/utils/apiErrors'
+import { formatQuantity } from '~/utils/quantity'
 import {
   adjustAvailability,
   applyAllocations,
   applySplit,
+  applyStockAdjustment,
   patchOrderInPharmacyQueue,
   patchStock,
   removeOrderFromPharmacyQueue,
@@ -86,6 +95,9 @@ export type PharmacyVisitBundle = SaBaiAPIEndpointsPharmacyOrdersGetVisitBundle
 export type PharmacyOrderItem = SaBaiAPIEndpointsPharmacyOrdersGetPharmacyOrderItem
 export type PharmacyDiagnosisItem = SaBaiAPIEndpointsPharmacyOrdersGetDiagnosisItem
 export type MedicationHistoryEntry = SaBaiAPIEndpointsMedicationHistoryGetResponse
+export type StockChange = SaBaiAPIEndpointsMedicationStockChangesGetResponse
+export type OrderAllocationOptions = SaBaiAPIEndpointsOrdersAllocationOptionsGetResponse
+export type OrderBatchOption = SaBaiAPIEndpointsOrdersAllocationOptionsGetBatchOption
 
 // ── Reads ────────────────────────────────────────────────────────────────
 
@@ -120,6 +132,16 @@ export function fetchPharmacyOrders(signal?: AbortSignal) {
 
 export function fetchMedicationHistory(brandId: string, signal?: AbortSignal) {
   return saBaiAPIEndpointsMedicationHistoryGetEndpoint({ ...apiConfig, query: { brandId }, signal }).unwrap()
+}
+
+/** A batch's change log, newest first; `dispensedOnly` keeps the dispensings. */
+export function fetchStockChanges(stockId: string, dispensedOnly: boolean, signal?: AbortSignal) {
+  return saBaiAPIEndpointsMedicationStockChangesGetEndpoint({ ...apiConfig, path: { id: stockId }, query: { dispensedOnly }, signal }).unwrap()
+}
+
+/** The batches a pending order can be dispensed from, earliest expiry first. */
+export function fetchOrderAllocationOptions(orderId: string, signal?: AbortSignal) {
+  return saBaiAPIEndpointsOrdersAllocationOptionsGetEndpoint({ ...apiConfig, path: { id: orderId }, signal }).unwrap()
 }
 
 /** The roles the API lets manage medication, stock and the pharmacy queue (PharmacyWork). */
@@ -403,6 +425,8 @@ export interface StockBrandInfo {
   brandName: string
   ingredientId: string
   ingredientName: string
+  /** The ingredient's unit ("tablet"), for the list and the pending-changes list. */
+  unitOfMeasurement?: string
   fallBelow: number
 }
 
@@ -423,6 +447,20 @@ export interface UpdateStockVars {
   remarks: string | null
   /** For the pending-changes list. */
   brandName: string
+}
+
+export interface AdjustStockVars {
+  id: string
+  /** Chosen here: resending the adjustment with the same id does not apply it twice. */
+  adjustmentId: string
+  /** Units added (+) or removed (−). */
+  quantityChange: number
+  /** Why (a stock count, damage…); replaces the batch's remarks when given. */
+  remarks: string | null
+  /** For the pending-changes list. */
+  brandName: string
+  location: string
+  unit?: string
 }
 
 export interface SplitStockVars {
@@ -447,6 +485,7 @@ function stockRecord(vars: CreateStockVars): MedicationStockLine {
     brandName: vars.brandName,
     ingredientName: vars.ingredientName,
     ingredientId: vars.ingredientId,
+    unitOfMeasurement: vars.unitOfMeasurement ?? '',
     fallBelow: vars.fallBelow,
     isLowStock: false,
   }
@@ -455,7 +494,7 @@ function stockRecord(vars: CreateStockVars): MedicationStockLine {
 export const createMedicationStock = defineOfflineMutation({
   key: 'medication.stock.create',
   creates: true,
-  describe: (vars: CreateStockVars) => `New stock ${vars.brandName} × ${vars.quantity} at ${vars.location}`,
+  describe: (vars: CreateStockVars) => `New stock ${vars.brandName}: ${formatQuantity(vars.quantity, vars.unitOfMeasurement)} at ${vars.location}`,
   recordIds: vars => [vars.id],
   dependsOn: vars => [vars.medicationBrandId],
   send: (vars, ctx) =>
@@ -507,7 +546,7 @@ export const updateMedicationStock = defineOfflineMutation({
 export const splitMedicationStock = defineOfflineMutation({
   key: 'medication.stock.split',
   describe: (vars: SplitStockVars) =>
-    `Split stock ${vars.parent.brandName} at ${vars.parent.location} into ${vars.splits.length}`,
+    `Split ${formatQuantity(vars.splits.reduce((sum, s) => sum + s.quantity, 0), vars.parent.unitOfMeasurement)} of ${vars.parent.brandName} at ${vars.parent.location} into ${vars.splits.length} batches`,
   recordIds: vars => [vars.stockId, ...vars.splits.map(s => s.id)],
   send: (vars, ctx) =>
     saBaiAPIEndpointsMedicationStockSplitsPostEndpoint({
@@ -529,6 +568,36 @@ export const splitMedicationStock = defineOfflineMutation({
   onSuccess: (_saved, _vars, queryClient) => invalidateStock(queryClient),
 })
 
+/**
+ * Corrects a batch's quantity after a stock count (units found, damaged or
+ * lost). The server refuses going below zero (400) or below the units reserved
+ * for pending orders (409).
+ */
+export const adjustMedicationStock = defineOfflineMutation({
+  key: 'medication.stock.adjust',
+  describe: (vars: AdjustStockVars) =>
+    `Adjust ${vars.brandName} at ${vars.location}: ${vars.quantityChange > 0 ? '+' : '−'}${formatQuantity(Math.abs(vars.quantityChange), vars.unit)}`,
+  recordIds: vars => [vars.id],
+  send: (vars, ctx) =>
+    saBaiAPIEndpointsMedicationStockAdjustmentsPostEndpoint({
+      ...apiConfig,
+      ...requestOptions(ctx),
+      path: { id: vars.id },
+      body: { adjustmentId: vars.adjustmentId, quantityChange: vars.quantityChange, remarks: vars.remarks },
+    }).unwrap(),
+  optimistic: (vars, queryClient) =>
+    editStock(queryClient, (list) => {
+      const adjusted = applyStockAdjustment(list, vars.id, `adjust:${vars.adjustmentId}`, vars.quantityChange)
+      return vars.remarks ? patchStock(adjusted, vars.id, { remarks: vars.remarks }) : adjusted
+    }),
+  onSuccess: async (_saved, vars, queryClient) => {
+    await Promise.all([
+      invalidateStock(queryClient),
+      queryClient.invalidateQueries({ queryKey: queryKeys.stockChanges(vars.id) }),
+    ])
+  },
+})
+
 // ── Orders & pharmacy queue ──────────────────────────────────────────────
 
 export interface CreateOrderContext {
@@ -548,6 +617,8 @@ export interface CreateOrderVars {
   medicationActiveIngredientId: string
   /** For the lists and the pending-changes list. */
   ingredientName: string
+  /** The ingredient's unit ("tablet"). */
+  unit?: string
   quantity: number
   dosageInstructions: string
   remarks: string | null
@@ -560,6 +631,8 @@ export interface CreateOrderVars {
 export interface OrderSnapshot {
   medicationActiveIngredientId: string
   ingredientName: string
+  /** The ingredient's unit ("tablet"), for messages. */
+  unit?: string
   quantity: number
   allocations: OrderAllocation[]
 }
@@ -577,12 +650,30 @@ export interface UpdateOrderVars {
   medicationActiveIngredientId?: string
   /** The new ingredient's name, with `medicationActiveIngredientId`. */
   ingredientName?: string
+  /** The new ingredient's unit, with `medicationActiveIngredientId`. */
+  unit?: string
   before: OrderSnapshot
   visitId?: string
   patientName?: string
   dispensedById?: string | null
   /** When the user dispensed it (device time; the server records its own). */
   dispensedAt?: string
+  /**
+   * With `status: 'DISPENSED'`: the batches the pharmacist chose instead of the
+   * reserved ones; the order is moved to them and dispensed in one step.
+   */
+  allocations?: OrderAllocation[]
+}
+
+/** The pharmacist's choice of batches for a pending order (`PUT /orders/{id}/allocations`). */
+export interface SetOrderAllocationsVars {
+  id: string
+  /** Unique per change, so a re-applied optimistic edit counts once. */
+  changeId: string
+  /** The chosen batches, with the details the lists show. */
+  allocations: OrderAllocation[]
+  before: OrderSnapshot
+  patientName?: string
 }
 
 export interface DeleteOrderVars {
@@ -703,7 +794,7 @@ const orderKey = (id: string) => `order:${id}`
 export const createOrder = defineOfflineMutation({
   key: 'medication.order.create',
   creates: true,
-  describe: (vars: CreateOrderVars) => `Order ${vars.ingredientName} × ${vars.quantity}${vars.context?.patientName ? ` for ${vars.context.patientName}` : ''}`,
+  describe: (vars: CreateOrderVars) => `Order ${vars.ingredientName}: ${formatQuantity(vars.quantity, vars.unit)}${vars.context?.patientName ? ` for ${vars.context.patientName}` : ''}`,
   recordIds: vars => [vars.id],
   dependsOn: vars => [vars.consultId, ...(vars.context?.visitId ? [vars.context.visitId] : []), ...(vars.context?.patientId ? [vars.context.patientId] : [])],
   send: (vars, ctx) =>
@@ -726,6 +817,7 @@ export const createOrder = defineOfflineMutation({
       consultId: vars.consultId,
       medicationActiveIngredientId: vars.medicationActiveIngredientId,
       activeIngredientName: vars.ingredientName,
+      unitOfMeasurement: vars.unit ?? existing?.unitOfMeasurement ?? '',
       quantity: vars.quantity,
       status: 'PENDING',
       dosageInstructions: vars.dosageInstructions,
@@ -744,7 +836,9 @@ export const createOrder = defineOfflineMutation({
       queryClient.setQueryData<PharmacyPatientOrders[]>(queryKeys.pharmacyOrders(), old =>
         upsertOrderInPharmacyQueue(old ?? [], {
           orderId: vars.id,
+          medicationActiveIngredientId: vars.medicationActiveIngredientId,
           medicationName: vars.ingredientName,
+          unitOfMeasurement: vars.unit,
           quantity: vars.quantity,
           isLowStock: c.isLowStock,
           dosageInstructions: vars.dosageInstructions,
@@ -781,7 +875,8 @@ export const createOrder = defineOfflineMutation({
 function describeOrderUpdate(vars: UpdateOrderVars) {
   const name = vars.ingredientName ?? vars.before.ingredientName
   const forPatient = vars.patientName ? ` for ${vars.patientName}` : ''
-  if (vars.status === 'DISPENSED') return `Dispense ${name} × ${vars.quantity ?? vars.before.quantity}${forPatient}`
+  if (vars.status === 'DISPENSED')
+    return `Dispense ${name}: ${formatQuantity(vars.quantity ?? vars.before.quantity, vars.before.unit)}${forPatient}${vars.allocations ? ' from chosen batches' : ''}`
   if (vars.status === 'CANCELLED') return `Cancel order ${name}${forPatient}`
   return `Change order ${name}${forPatient}`
 }
@@ -802,6 +897,7 @@ export const updateOrder = defineOfflineMutation({
         remarks: vars.remarks,
         quantity: vars.quantity,
         medicationActiveIngredientId: vars.medicationActiveIngredientId,
+        allocations: vars.allocations?.map(a => ({ stockId: a.stockId, quantity: a.quantity })),
       },
     }).unwrap(),
   optimistic: (vars, queryClient) => {
@@ -822,10 +918,22 @@ export const updateOrder = defineOfflineMutation({
       // The old batches are released; the new ones are chosen by the server.
       editStock(queryClient, list => applyAllocations(list, before.allocations, key, 'release'))
     }
-    const allocations = reallocates ? [] : before.allocations
+    const held = reallocates ? [] : before.allocations
+    const chosen = vars.status === 'DISPENSED' ? vars.allocations : undefined
+    const allocations = chosen ?? held
 
-    if (vars.status === 'DISPENSED')
+    if (vars.status === 'DISPENSED' && chosen) {
+      // Dispensed from the pharmacist's batches: what was reserved is freed, the chosen units leave the shelf.
+      editStock(queryClient, list => applyAllocations(
+        applyAllocations(list, held, `${key}:rebatch`, 'release'),
+        chosen,
+        `${key}:dispense`,
+        'take',
+      ))
+    }
+    else if (vars.status === 'DISPENSED') {
       editStock(queryClient, list => applyAllocations(list, allocations, `${key}:dispense`, 'dispense'))
+    }
     if (vars.status === 'CANCELLED') {
       editAvailability(queryClient, rows => adjustAvailability(rows, ingredientId, `${key}:cancel`, quantity))
       editStock(queryClient, list => applyAllocations(list, allocations, `${key}:cancel`, 'release'))
@@ -837,6 +945,7 @@ export const updateOrder = defineOfflineMutation({
         ...current,
         medicationActiveIngredientId: ingredientId,
         activeIngredientName: vars.ingredientName ?? current.activeIngredientName,
+        unitOfMeasurement: vars.unit ?? current.unitOfMeasurement,
         quantity,
         dosageInstructions: vars.dosageInstructions ?? current.dosageInstructions,
         remarks: vars.remarks !== undefined ? vars.remarks : current.remarks,
@@ -852,6 +961,8 @@ export const updateOrder = defineOfflineMutation({
       status: vars.status,
       dosageInstructions: vars.dosageInstructions,
       medicationName: vars.ingredientName,
+      medicationActiveIngredientId: vars.medicationActiveIngredientId,
+      unitOfMeasurement: vars.unit,
       quantity: vars.quantity,
       allocations: reallocates ? [] : undefined,
     }))
@@ -868,6 +979,45 @@ export const updateOrder = defineOfflineMutation({
     }
   },
   onSuccess: (saved, _vars, queryClient) => refreshAfterOrderWrite(queryClient, saved),
+})
+
+/**
+ * Moves a pending order to the batches the pharmacist chose. The order stays
+ * pending; the server refuses a choice that does not add up to the order, uses
+ * an expired batch or takes more than a batch has free (400/409), with the
+ * reason in the problem's `detail`.
+ */
+export const setOrderAllocations = defineOfflineMutation({
+  key: 'medication.order.allocations',
+  describe: (vars: SetOrderAllocationsVars) =>
+    `Choose batches for ${vars.before.ingredientName}${vars.patientName ? ` for ${vars.patientName}` : ''}`,
+  recordIds: vars => [vars.id],
+  dependsOn: vars => [vars.id],
+  send: (vars, ctx) =>
+    saBaiAPIEndpointsOrdersAllocationsPutEndpoint({
+      ...apiConfig,
+      ...requestOptions(ctx),
+      path: { id: vars.id },
+      body: { allocations: vars.allocations.map(a => ({ stockId: a.stockId, quantity: a.quantity })) },
+    }).unwrap(),
+  optimistic: (vars, queryClient) => {
+    const key = `${vars.id}:${vars.changeId}`
+    editStock(queryClient, list => applyAllocations(
+      applyAllocations(list, vars.before.allocations, `${key}:release`, 'release'),
+      vars.allocations,
+      `${key}:reserve`,
+      'reserve',
+    ))
+    const current = findOrder(queryClient, vars.id)
+    if (current) placeOrderInLists(queryClient, { ...current, allocations: [...vars.allocations] })
+    editPharmacyQueue(queryClient, queue => patchOrderInPharmacyQueue(queue, vars.id, { allocations: vars.allocations }))
+  },
+  onSuccess: async (saved, vars, queryClient) => {
+    await Promise.all([
+      refreshAfterOrderWrite(queryClient, saved),
+      queryClient.invalidateQueries({ queryKey: queryKeys.orderAllocationOptions(vars.id) }),
+    ])
+  },
 })
 
 /** Deletes an order. A pending order's reservation is released; a dispensed order cannot be deleted (409). */
@@ -908,10 +1058,11 @@ export const deleteOrder = defineOfflineMutation({
 })
 
 /** The snapshot `updateOrder` and `deleteOrder` need, from an order as listed. */
-export function orderSnapshot(order: Pick<MedicationOrder, 'medicationActiveIngredientId' | 'activeIngredientName' | 'quantity' | 'allocations'>): OrderSnapshot {
+export function orderSnapshot(order: Pick<MedicationOrder, 'medicationActiveIngredientId' | 'activeIngredientName' | 'quantity' | 'allocations'> & { unitOfMeasurement?: string }): OrderSnapshot {
   return {
     medicationActiveIngredientId: order.medicationActiveIngredientId,
     ingredientName: order.activeIngredientName,
+    unit: order.unitOfMeasurement || undefined,
     quantity: order.quantity,
     allocations: [...order.allocations],
   }

@@ -17,7 +17,7 @@ export interface OrderableIngredient {
   remaining: number;
   /** Nothing left to order: shown, but not selectable. */
   outOfStock: boolean;
-  /** Brands of this ingredient, when the user may read them: searchable in the picker. */
+  /** Brands of this ingredient: searchable in the picker. */
   brandNames: string[];
 }
 
@@ -29,7 +29,11 @@ export interface OrderableOptions {
    * it (they are released when it is re-allocated).
    */
   holding?: { ingredientId: string; quantity: number };
-  /** Brand names by ingredient id (see `brandNamesByIngredient`). */
+  /**
+   * Brand names by ingredient id (see `brandNamesByIngredient`), for callers
+   * that have the brand list. Without it the names the availability rows carry
+   * (`brandNames`, which every ordering role may read) are used.
+   */
   brands?: ReadonlyMap<string, readonly string[]>;
 }
 
@@ -52,7 +56,7 @@ export function orderableIngredients(
         unit: row.unitOfMeasurement,
         remaining,
         outOfStock: remaining <= 0,
-        brandNames: [...(options.brands?.get(row.ingredientId) ?? [])],
+        brandNames: [...(options.brands?.get(row.ingredientId) ?? row.brandNames ?? [])].sort((a, b) => a.localeCompare(b)),
       };
     });
 }
@@ -157,11 +161,3 @@ export const ORDER_STATUS_CLASSES: Record<SaBaiAPIDomainOrderStatusKey, string> 
   DISPENSED: "border-success/40 bg-success-subtle text-success",
   CANCELLED: "border-destructive/40 bg-destructive-subtle text-destructive",
 };
-
-/**
- * " tablet" after a quantity, or nothing when the unit is unknown.
- * @deprecated Use `formatQuantity(quantity, unit)` from `./quantity`, which also handles plurals.
- */
-export function formatQuantityUnit(unit: string | null | undefined): string {
-  return unit ? ` ${unit}` : "";
-}

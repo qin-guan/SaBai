@@ -30,6 +30,8 @@ pnpm dev
 | `app/composables` | Vue Query hooks over `@sabai/sdk`, `useOfflineMutation`, `useSyncState`, village selection, shortcuts. |
 | `app/offline` | Offline core: outbox, replay, connectivity, server time, query-cache persistence, prefetch, the SDK transport. `mutations/` holds each domain's offline writes. |
 | `app/service-worker` | Service worker of the installed PWA: Workbox app-shell precaching, SPA offline navigation, runtime asset caching, and Web Push. |
+| `app/components/medication` | The Stock screen: `StockArea` (shared header, tabs and filter bar of the three stock routes), batch rows, the batch dialogs (add, edit, adjust, split) and `StockLogSheet`. |
+| `app/components/orders` | The pharmacist's orders: `OrderQueueCard` (one patient's pending orders), `OrderHistoryTable`, `ChangeBatchDialog`, and the order, cancel and medication-picker pieces shared with the consult form. |
 | `app/utils` | Framework-free logic ported from SaBai.Web (UUIDv7 generator, formatting, vitals, splits, eyesight, dental mapping). |
 
 ## Offline
@@ -142,12 +144,55 @@ universal search.
 
 A quantity is always shown with the active ingredient's unit
 (`formatQuantity(quantity, unit)` in `app/utils/quantity.ts`: "10 tablets",
-"1 tablet", "5 mL"), so an order of "1" is never ambiguous. The order
-responses do not carry the unit; it is looked up by ingredient id in
-`GET /medication-stock/by-ingredient`, which every role that can order may
-read. The medication picker on the consult form and in the order dialog
-(`components/orders/IngredientPicker.vue`) is searchable by ingredient name,
-and by brand name for the roles the API lets list brands.
+"1 tablet", "5 mL"; `quantityUnit` for the suffix inside a number field), so an
+order of "1" is never ambiguous: stock on hand / reserved / available, the
+low-stock level, order quantities and their batches, every dialog and the
+pending-change descriptions on `/settings/sync`. Order, pharmacy-queue and stock
+responses carry `unitOfMeasurement`. The medication picker on the consult form
+and in the order dialog (`components/orders/IngredientPicker.vue`) is searchable
+by ingredient name and by brand name (`brandNames` on
+`GET /medication-stock/by-ingredient`, which every role that can order may read).
+
+## Pharmacy: stock and orders
+
+**Stock** is one screen with three tabs that keep their own routes
+(`/medication-stock`, `/medication-brands`, `/medication-active-ingredients`);
+`components/medication/StockArea.vue` gives them the same header, tab strip,
+search/filter bar and primary action.
+
+- **Batches** lists every batch under its active ingredient, by brand and
+  earliest expiry (`app/utils/stockView.ts`). The ingredient row shows what is
+  available, reserved and on hand against its low-stock level ("Low at"); a
+  batch shows its expiry flagged when past or within 90 days
+  (`EXPIRING_SOON_DAYS`), location and status. Filters: low stock, expiring
+  soon, expired, status, and a search over ingredient, brand, location and
+  remarks. An ingredient with no batch at all is listed as out of stock.
+- Per batch: **Log** opens `StockLogSheet` (a side sheet): what was dispensed
+  from the batch — patient (a link to the record), quantity, who and when, with
+  the total — or *All changes* (added, split, adjusted, edited, dispensed, with
+  the quantity left). Rows the API writes together are one event
+  (`app/utils/stockChanges.ts`). **Manage** holds *Edit details* (location,
+  status, remarks), *Adjust quantity* (remove, add or set the counted total
+  after a stock count; `POST /medication-stock/{id}/adjustments`) and *Split
+  batch*.
+
+**Orders** (`pages/orders.vue`) opens on the pharmacist's queue: pending orders
+by patient and visit, each with the batches it will be dispensed from. The
+other cells are the history (dispensed, cancelled, all); the view is kept in
+the URL (`?view=dispensed`).
+
+- *Dispense* uses the batches shown. They are the system's (earliest expiry
+  first) unless the pharmacist chose others.
+- *Change batch* (`ChangeBatchDialog`) lists the candidates from
+  `GET /orders/{id}/allocation-options`. One tap on a batch takes the whole
+  order from it (or all it has, the rest from the next ones); the quantity
+  fields split it by hand, with a running total and *Reset to system default*.
+  *Save choice* keeps the order pending (`PUT /orders/{id}/allocations`);
+  *Save and dispense* does both at once (`PATCH /orders/{id}` with
+  `allocations`). The rules are in `app/utils/allocationChoice.ts`; the server
+  checks again and its refusal is shown in the dialog. It needs a connection
+  (the candidates are never read from the offline cache); dispensing from the
+  batches already reserved works offline as before.
 
 ## Patient journey and station backlog
 

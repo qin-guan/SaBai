@@ -193,13 +193,22 @@ export function applySplit(
 }
 
 /** How an order changes the batches it holds units of. */
-export type AllocationChange = "dispense" | "release";
+export type AllocationChange = "dispense" | "release" | "reserve" | "take";
+
+const ALLOCATION_DELTAS: Record<AllocationChange, (units: number) => Partial<Record<"quantity" | "reservedQuantity" | "availableQuantity", number>>> = {
+  dispense: (units) => ({ quantity: -units, reservedQuantity: -units }),
+  release: (units) => ({ reservedQuantity: -units, availableQuantity: units }),
+  reserve: (units) => ({ reservedQuantity: units, availableQuantity: -units }),
+  take: (units) => ({ quantity: -units, availableQuantity: -units }),
+};
 
 /**
  * Applies a dispense or release of an order's allocations to the stock lines,
  * under `key`; `null` change removes it. Dispensing takes the units off hand
  * and out of the reservation (available stays the same); releasing only ends
- * the reservation (they become available again).
+ * the reservation (they become available again). When the pharmacist picks
+ * other batches, the new ones are reserved (`reserve`), or, when dispensing
+ * straight from them, taken off hand without having been reserved (`take`).
  */
 export function applyAllocations(
   rows: readonly StockRowData[],
@@ -213,15 +222,28 @@ export function applyAllocations(
     const units = byStock.get(row.id);
     if (units === undefined) return row;
     if (change === null) return withPendingDelta(row, key, null);
-    return withPendingDelta(
-      row,
-      key,
-      change === "dispense"
-        ? { quantity: -units, reservedQuantity: -units }
-        : { reservedQuantity: -units, availableQuantity: units },
-    );
+    return withPendingDelta(row, key, ALLOCATION_DELTAS[change](units));
   });
   return visibleStock(next);
+}
+
+/**
+ * A manual quantity adjustment of one batch (a stock count correction), under
+ * `key`: its on-hand and available units move by `quantityChange`.
+ */
+export function applyStockAdjustment(
+  rows: readonly StockRowData[],
+  stockId: string,
+  key: string,
+  quantityChange: number,
+): StockRowData[] {
+  return visibleStock(
+    rows.map((row) =>
+      row.id === stockId
+        ? withPendingDelta(row, key, { quantity: quantityChange, availableQuantity: quantityChange })
+        : row,
+    ),
+  );
 }
 
 // ── Pharmacy queue (GET /pharmacy-orders) ────────────────────────────────
@@ -236,7 +258,10 @@ export function upsertOrderInPharmacyQueue(
   queue: readonly PharmacyQueue[],
   input: {
     orderId: string;
+    medicationActiveIngredientId?: string;
     medicationName: string;
+    /** The ingredient's unit, when known ("tablet"). */
+    unitOfMeasurement?: string;
     quantity: number;
     isLowStock: boolean;
     dosageInstructions: string;
@@ -251,7 +276,9 @@ export function upsertOrderInPharmacyQueue(
 ): PharmacyQueue[] {
   const orderItem: PharmacyQueueOrder = {
     orderId: input.orderId,
+    medicationActiveIngredientId: input.medicationActiveIngredientId ?? "",
     medicationName: input.medicationName,
+    unitOfMeasurement: input.unitOfMeasurement ?? "",
     quantity: input.quantity,
     dosageInstructions: input.dosageInstructions,
     isLowStock: input.isLowStock,
@@ -320,6 +347,8 @@ export function patchOrderInPharmacyQueue(
     status?: SaBaiAPIDomainOrderStatusKey;
     dosageInstructions?: string;
     medicationName?: string;
+    medicationActiveIngredientId?: string;
+    unitOfMeasurement?: string;
     quantity?: number;
     allocations?: readonly OrderAllocation[];
   },

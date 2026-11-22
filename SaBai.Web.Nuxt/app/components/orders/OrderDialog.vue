@@ -22,7 +22,6 @@ const emit = defineEmits<{ close: [] }>()
 
 const isEdit = computed(() => !!props.order)
 const availability = useIngredientAvailability()
-const brands = useOrderableBrandNames()
 const createOrderMutation = useCreateOrder()
 const updateOrderMutation = useUpdateOrder()
 const isPending = computed(() => createOrderMutation.isPending.value || updateOrderMutation.isPending.value)
@@ -38,7 +37,6 @@ const serverError = ref<string | null>(null)
 
 const options = computed(() => orderableIngredients(availability.data.value ?? [], {
   holding: props.order ? { ingredientId: props.order.medicationActiveIngredientId, quantity: props.order.quantity } : undefined,
-  brands: brands.value,
 }))
 const selected = computed(() => options.value.find(o => o.ingredientId === form.value.ingredientId))
 const quantityHint = computed(() => selected.value && !selected.value.outOfStock
@@ -86,6 +84,7 @@ async function save() {
         changeId: uuidv7(),
         ...changes,
         ingredientName: changes.medicationActiveIngredientId ? ingredientName : undefined,
+        unit: changes.medicationActiveIngredientId ? selected.value?.unit : undefined,
         before: orderSnapshot(order),
         visitId: props.visitId,
         patientName: props.patientName,
@@ -98,6 +97,7 @@ async function save() {
         consultId: props.consultId,
         medicationActiveIngredientId: form.value.ingredientId,
         ingredientName,
+        unit: selected.value?.unit,
         quantity,
         dosageInstructions,
         remarks,

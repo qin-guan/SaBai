@@ -1,189 +1,122 @@
 <script setup lang="ts">
-import { PhArrowsSplit, PhFloppyDisk, PhPencilSimple, PhX } from '@phosphor-icons/vue'
-import { toast } from 'vue-sonner'
-import { updateMedicationStock } from '~/offline/mutations/medication'
-import { Badge } from '@/components/ui/badge'
+import { PhArrowsSplit, PhCaretDown, PhClockCounterClockwise, PhPencilSimple, PhPlusMinus } from '@phosphor-icons/vue'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { TableCell, TableRow } from '@/components/ui/table'
 
 /**
- * One stock line. Only location, status and remarks are editable inline; the
- * other fields are locked. While units are reserved for pending orders the
- * status stays active and only the unreserved units can be split off.
- * Esc cancels, Enter / Ctrl+S saves while editing.
+ * One batch in the stock list: where it is, what is on hand / reserved /
+ * available (always with the unit), its expiry (flagged when past or close)
+ * and status. "Log" opens what was dispensed from it; "Manage" holds edit,
+ * adjust and split.
  */
-const props = defineProps<{ item: MedicationStockRow }>()
-const emit = defineEmits<{ split: [item: MedicationStockRow] }>()
+const props = defineProps<{
+  item: MedicationStockRow
+  /** The row above is the same brand: its name is shown quietly. */
+  repeatedBrand?: boolean
+}>()
+const emit = defineEmits<{
+  log: [item: MedicationStockRow]
+  edit: [item: MedicationStockRow]
+  adjust: [item: MedicationStockRow]
+  split: [item: MedicationStockRow]
+}>()
 
-const isEditing = ref(false)
-const hasReservations = computed(() => props.item.reservedQuantity > 0)
+const unit = computed(() => props.item.unitOfMeasurement)
 const canSplit = computed(() => props.item.availableQuantity > 0)
-const update = useOfflineMutation(updateMedicationStock)
-const initial = () => ({
-  location: props.item.location,
-  stockStatus: props.item.stockStatus as string,
-  remarks: props.item.remarks ?? '',
-})
-const form = ref(initial())
-const locationError = ref<string | null>(null)
-const isDirty = computed(() => JSON.stringify(form.value) !== JSON.stringify(initial()))
-const firstInput = ref<InstanceType<typeof Input>>()
-const editButton = ref<InstanceType<typeof Button>>()
-
-function startEditing() {
-  form.value = initial()
-  isEditing.value = true
-  nextTick(() => (firstInput.value?.$el as HTMLInputElement | undefined)?.focus())
-}
-
-function cancel() {
-  isEditing.value = false
-  form.value = initial()
-  locationError.value = null
-  nextTick(() => (editButton.value?.$el as HTMLElement | undefined)?.focus())
-}
-
-async function save() {
-  if (update.isPending.value)
-    return
-  locationError.value = form.value.location.trim() ? null : 'Missing Location!'
-  if (locationError.value)
-    return
-  if (!isDirty.value) {
-    toast.error('No fields changed!')
-    return
-  }
-
-  try {
-    const outcome = await update.mutateAsync({
-      id: props.item.id,
-      location: form.value.location.trim(),
-      stockStatus: form.value.stockStatus as StockStatus,
-      remarks: form.value.remarks.trim() || null,
-      brandName: props.item.brandName,
-    })
-    isEditing.value = false
-    notifySaved(outcome, 'Successfully updated!')
-  }
-  catch (err) {
-    console.error(err)
-    toast.error(getApiErrorMessage(err, 'An error has occurred while updating the stock. Refresh and try again.'))
-  }
-}
-
-function onKeydown(event: KeyboardEvent) {
-  if (!isEditing.value)
-    return
-  if (event.key === 'Escape') {
-    event.preventDefault()
-    cancel()
-  }
-  else if (event.key === 'Enter' && event.target instanceof HTMLInputElement) {
-    event.preventDefault()
-    save()
-  }
-}
+const expiry = computed(() => batchExpiryFlag(props.item))
+const expiryText = computed(() => expiryNote(props.item.expiry))
+const inactive = computed(() => props.item.stockStatus !== 'active')
+const label = computed(() => `${props.item.brandName} at ${props.item.location}`)
 </script>
 
 <template>
-  <TableRow
-    :class="item.isLowStock && 'bg-destructive-subtle! hover:bg-destructive-subtle/70!'"
-    @keydown="onKeydown"
-  >
-    <TableCell data-stack="title" class="font-semibold">
-      <NuxtLink :to="paths.medicationActiveIngredients()" class="hover:text-primary hover:underline">
-        {{ item.ingredientName }}
-      </NuxtLink>
-      <Badge v-if="item.isLowStock" variant="destructive" class="ml-1">
-        Low
-      </Badge>
+  <TableRow :data-stock-id="item.id" :class="inactive && 'text-muted-foreground'">
+    <TableCell data-stack="title" class="min-w-32">
+      <span :class="props.repeatedBrand ? 'md:font-normal md:text-muted-foreground' : 'font-semibold'">{{ item.brandName }}</span>
+      <span class="font-normal text-muted-foreground md:hidden"> · {{ item.location }}</span>
     </TableCell>
-    <TableCell data-label="Brand">
-      <NuxtLink :to="paths.medicationBrands()" class="hover:text-primary hover:underline">
-        {{ item.brandName }}
-      </NuxtLink>
+    <TableCell data-label="Location" class="min-w-28 max-md:hidden!">
+      {{ item.location }}
     </TableCell>
-    <TableCell data-label="Location" class="min-w-36">
-      <template v-if="isEditing">
-        <Input
-          ref="firstInput"
-          v-model="form.location"
-          :aria-label="`Location for ${item.brandName}`"
-          :aria-invalid="!!locationError || undefined"
-        />
-        <p v-if="locationError" class="mt-0.5 text-xs text-destructive touch:text-sm" role="alert">
-          {{ locationError }}
-        </p>
+    <TableCell data-label="On hand" class="text-right whitespace-nowrap tabular-nums">
+      {{ formatQuantity(item.quantity, unit) }}
+    </TableCell>
+    <TableCell data-label="Reserved" class="text-right whitespace-nowrap tabular-nums" :class="item.reservedQuantity === 0 && 'max-md:hidden!'">
+      <template v-if="item.reservedQuantity > 0">
+        {{ formatQuantity(item.reservedQuantity, unit) }}
       </template>
-      <template v-else>
-        {{ item.location }}
-      </template>
+      <span v-else class="text-muted-foreground">
+        <span aria-hidden="true">–</span><span class="sr-only">None reserved</span>
+      </span>
     </TableCell>
-    <TableCell data-label="On hand" class="text-right tabular-nums">
-      {{ item.quantity }}
+    <TableCell data-label="Available" class="text-right font-semibold whitespace-nowrap tabular-nums">
+      {{ formatQuantity(item.availableQuantity, unit) }}
     </TableCell>
-    <TableCell data-label="Reserved" class="text-right tabular-nums" :class="item.reservedQuantity === 0 && 'text-muted-foreground'">
-      {{ item.reservedQuantity }}
+    <TableCell data-label="Expiry" class="whitespace-nowrap tabular-nums">
+      <span class="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+        <span>{{ formatExpiryDate(item.expiry) }}</span>
+        <span
+          v-if="expiry === 'expired'"
+          class="inline-flex items-center border border-destructive/40 bg-destructive-subtle px-1.5 py-0.5 text-[0.6875rem] font-semibold text-destructive"
+          :title="expiryText"
+        >Expired</span>
+        <span
+          v-else-if="expiry === 'soon'"
+          class="inline-flex items-center border border-warning-border bg-warning-subtle px-1.5 py-0.5 text-[0.6875rem] font-semibold text-warning"
+        >{{ expiryText.replace('Expires ', '') }}</span>
+      </span>
     </TableCell>
-    <TableCell data-label="Available" class="text-right font-semibold tabular-nums">
-      {{ item.availableQuantity }}
+    <TableCell data-label="Status">
+      <StockStatusBadge :status="item.stockStatus" />
     </TableCell>
-    <TableCell data-label="Expiry" class="tabular-nums">
-      {{ item.expiry ? new Date(item.expiry).toLocaleDateString() : '-' }}
-    </TableCell>
-    <TableCell data-label="State" class="min-w-32">
-      <template v-if="isEditing">
-        <NativeSelect
-          v-model="form.stockStatus"
-          :disabled="hasReservations"
-          :aria-label="`Status for ${item.brandName}`"
-          :aria-describedby="hasReservations ? `status-locked-${item.id}` : undefined"
-        >
-          <NativeSelectOption v-for="o in stockStatusOptions" :key="o.value" :value="o.value">
-            {{ o.label }}
-          </NativeSelectOption>
-        </NativeSelect>
-        <p v-if="hasReservations" :id="`status-locked-${item.id}`" class="mt-0.5 text-xs text-muted-foreground touch:text-sm">
-          Stays active while {{ item.reservedQuantity }} are reserved.
-        </p>
-      </template>
-      <template v-else>
-        {{ item.stockStatus }}
-      </template>
-    </TableCell>
-    <TableCell data-label="Remarks" class="min-w-36">
-      <Input v-if="isEditing" v-model="form.remarks" :aria-label="`Remarks for ${item.brandName}`" />
-      <template v-else>
-        {{ item.remarks }}
-      </template>
+    <TableCell data-label="Remarks" class="max-w-56 min-w-24 whitespace-normal" :class="!item.remarks && 'max-md:hidden!'">
+      <span class="line-clamp-2 text-xs touch:text-sm" :title="item.remarks ?? undefined">{{ item.remarks }}</span>
     </TableCell>
     <TableCell data-stack="actions">
       <div class="flex justify-end gap-1">
-        <template v-if="isEditing">
-          <Button size="sm" variant="success" :disabled="update.isPending.value" @click="save">
-            <PhFloppyDisk aria-hidden="true" /> {{ update.isPending.value ? 'Saving…' : 'Save' }}
-          </Button>
-          <Button size="sm" variant="outline" @click="cancel">
-            <PhX aria-hidden="true" /> Cancel
-          </Button>
-        </template>
-        <template v-else>
-          <Button ref="editButton" size="sm" variant="outline" :aria-label="`Edit ${item.brandName} at ${item.location}`" @click="startEditing">
-            <PhPencilSimple aria-hidden="true" /> Edit
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            :disabled="!canSplit"
-            :title="canSplit ? undefined : 'All of this stock is reserved for pending orders'"
-            :aria-label="`Split ${item.brandName} at ${item.location}`"
-            @click="emit('split', item)"
-          >
-            <PhArrowsSplit aria-hidden="true" /> Split
-          </Button>
-        </template>
+        <Button
+          size="sm"
+          variant="outline"
+          class="max-md:flex-1 touch:h-11"
+          :aria-label="`Dispensed log for ${label}`"
+          data-stock-action="log"
+          @click="emit('log', item)"
+        >
+          <PhClockCounterClockwise aria-hidden="true" /> Log
+        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger as-child>
+            <Button size="sm" variant="outline" class="max-md:flex-1 touch:h-11" :aria-label="`Manage ${label}`" data-stock-action="manage">
+              Manage <PhCaretDown aria-hidden="true" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" class="min-w-44">
+            <DropdownMenuItem class="touch:min-h-11 touch:text-sm" data-stock-action="edit" @select="emit('edit', item)">
+              <PhPencilSimple aria-hidden="true" /> Edit details
+            </DropdownMenuItem>
+            <DropdownMenuItem class="touch:min-h-11 touch:text-sm" data-stock-action="adjust" @select="emit('adjust', item)">
+              <PhPlusMinus aria-hidden="true" /> Adjust quantity
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              class="touch:min-h-11 touch:text-sm"
+              :disabled="!canSplit"
+              data-stock-action="split"
+              @select="emit('split', item)"
+            >
+              <PhArrowsSplit aria-hidden="true" />
+              <span class="flex flex-col">
+                <span>Split batch</span>
+                <span v-if="!canSplit" class="text-[0.6875rem] text-muted-foreground">All of it is reserved</span>
+              </span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </TableCell>
   </TableRow>

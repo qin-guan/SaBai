@@ -107,14 +107,13 @@ function removeOrder(index: number) {
 // reserves stock when the order is placed). Several lines for one ingredient
 // share what is available.
 const availability = useIngredientAvailability()
-const brands = useOrderableBrandNames()
 
 /** What each order line may still ask for: the ingredient's available units less the other lines' quantities. */
 function optionsForLine(index: number) {
   const others = form.value.orders
     .filter((_, i) => i !== index)
     .map(o => ({ ingredientId: o.medicationActiveIngredientId, quantity: Number(o.quantity) }))
-  return orderableIngredients(availability.data.value ?? [], { staged: stagedQuantities(others), brands: brands.value })
+  return orderableIngredients(availability.data.value ?? [], { staged: stagedQuantities(others) })
 }
 const lineOptions = computed(() => form.value.orders.map((_, index) => optionsForLine(index)))
 const lineChoice = (index: number) =>
@@ -257,6 +256,7 @@ async function submit() {
         consultId,
         medicationActiveIngredientId: order.medicationActiveIngredientId,
         ingredientName: name,
+        unit: availability.data.value?.find(a => a.ingredientId === order.medicationActiveIngredientId)?.unitOfMeasurement,
         quantity: Number(order.quantity),
         dosageInstructions: order.dosageInstructions.trim(),
         remarks: order.remarks?.trim() || null,

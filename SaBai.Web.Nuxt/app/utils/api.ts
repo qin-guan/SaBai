@@ -47,6 +47,9 @@ export const queryKeys = {
   medicationStock: () => ["medication-stock"] as const,
   /** Under `medicationStock()`, so refreshing the stock list refreshes what can be ordered too. */
   medicationAvailability: () => ["medication-stock", "by-ingredient"] as const,
+  /** A batch's change log; not under `medicationStock()` so list refreshes do not refetch every open log. */
+  stockChanges: (stockId: string) => ["stock-changes", stockId] as const,
+  stockChangesList: (stockId: string, dispensedOnly: boolean) => ["stock-changes", stockId, dispensedOnly] as const,
   medicationBrands: () => ["medication-brands"] as const,
   medicationBrandsWithIngredient: () => ["medication-brands", "with-ingredient"] as const,
   medicationIngredients: () => ["medication-ingredients"] as const,
@@ -59,6 +62,7 @@ export const queryKeys = {
   tags: () => ["tags"] as const,
   orders: () => ["orders"] as const,
   ordersList: (status?: string) => status ? (["orders", "list", status] as const) : (["orders", "list"] as const),
+  orderAllocationOptions: (orderId: string) => ["order-allocation-options", orderId] as const,
   pharmacyOrders: () => ["pharmacy-orders"] as const,
   medicationHistory: (brandId: string | number) => ["medication-history", brandId] as const,
 };

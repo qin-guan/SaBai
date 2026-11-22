@@ -95,8 +95,12 @@ describe("validateSplits", () => {
     const splits = [makeSplit({ quantity: 5 }), makeSplit({ quantity: 5, location: "Shelf B" })];
     expect(validateSplits(splits, 6, 4)).toEqual({
       success: false,
-      message: "Child stock quantity must equal the 6 unreserved units; 4 are reserved for pending orders.",
+      message: "The new batches must add up to the 6 units that are not reserved (now 10); 4 are reserved for pending orders.",
     });
+    expect(validateSplits(splits, 6, 4, "tablet").message).toBe(
+      "The new batches must add up to the 6 tablets that are not reserved (now 10 tablets); 4 tablets are reserved for pending orders.",
+    );
+    expect(validateSplits(splits, 6, 0, "mL").message).toBe("The new batches must add up to 6 mL (now 10 mL).");
     const fitting = [makeSplit({ quantity: 2 }), makeSplit({ quantity: 4, location: "Shelf B" })];
     expect(validateSplits(fitting, 6, 4).success).toBe(true);
   });

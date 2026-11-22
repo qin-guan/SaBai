@@ -1,23 +1,36 @@
 <script setup lang="ts">
 import { PhFloppyDisk } from '@phosphor-icons/vue'
-import { toast } from 'vue-sonner'
 import { createMedicationIngredient } from '~/offline/mutations/medication'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
+/**
+ * Adds an active ingredient: its name (with strength), the unit every
+ * quantity of it is counted in, and the level at or below which it is flagged
+ * as low stock.
+ */
 const emit = defineEmits<{ close: [] }>()
 const form = ref({ name: '', unitOfMeasurement: '', fallBelow: '', remarks: '' })
-const fallBelowError = ref<string | null>(null)
+const errors = ref<{ name?: string, unitOfMeasurement?: string, fallBelow?: string }>({})
+const serverError = ref<string | null>(null)
 const formEl = ref<HTMLFormElement>()
 const create = useOfflineMutation(createMedicationIngredient)
+
+const fallBelowUnit = computed(() =>
+  quantityUnit(form.value.unitOfMeasurement, form.value.fallBelow.trim() ? Number(form.value.fallBelow) : null) || undefined)
 
 async function submit() {
   if (create.isPending.value)
     return
+  serverError.value = null
   const n = Number(form.value.fallBelow)
-  fallBelowError.value = form.value.fallBelow === '' ? 'Missing Fall below!' : n < 1 ? 'Please input only positive values.' : null
-  if (fallBelowError.value) {
-    focusFirstInvalid(formEl.value)
+  errors.value = {
+    name: form.value.name.trim() ? undefined : 'Enter the name',
+    unitOfMeasurement: form.value.unitOfMeasurement.trim() ? undefined : 'Enter the unit, e.g. tablet or mL',
+    fallBelow: form.value.fallBelow === '' ? 'Enter the low-stock level' : (!Number.isInteger(n) || n < 1) ? 'Must be a whole number of at least 1' : undefined,
+  }
+  if (Object.values(errors.value).some(Boolean)) {
+    nextTick(() => focusFirstInvalid(formEl.value))
     return
   }
 
@@ -31,11 +44,10 @@ async function submit() {
       remarks: form.value.remarks.trim() || null,
     })
     emit('close')
-    notifySaved(outcome, 'Successfully created!')
+    notifySaved(outcome, `Added ${form.value.name.trim()}.`)
   }
   catch (err) {
-    console.error(err)
-    toast.error(getApiErrorMessage(err, 'An error has occurred.'))
+    serverError.value = getApiErrorMessage(err, 'The active ingredient could not be added.')
   }
 }
 
@@ -43,16 +55,26 @@ useSaveShortcut(submit)
 </script>
 
 <template>
-  <AppDialog title="Add New Active Ingredient" size="sm" @close="emit('close')">
+  <AppDialog title="Add active ingredient" size="sm" @close="emit('close')">
     <form id="add-ingredient-form" ref="formEl" novalidate class="flex flex-col gap-3" @submit.prevent="submit">
-      <FormField v-slot="{ id }" label="Name">
-        <Input :id="id" v-model="form.name" />
+      <FormErrorNote v-if="serverError" :message="serverError" />
+      <FormField v-slot="{ id, describedby, invalid }" label="Name" required :error="errors.name" hint="With the strength, e.g. Paracetamol 500mg">
+        <Input :id="id" v-model="form.name" :aria-describedby="describedby" :aria-invalid="invalid || undefined" />
       </FormField>
-      <FormField v-slot="{ id }" label="Unit of Measurement">
-        <Input :id="id" v-model="form.unitOfMeasurement" />
+      <FormField v-slot="{ id, describedby, invalid }" label="Counted in" required :error="errors.unitOfMeasurement" hint="One unit, singular: tablet, capsule, mL, sachet, bottle…">
+        <Input :id="id" v-model="form.unitOfMeasurement" autocapitalize="off" :aria-describedby="describedby" :aria-invalid="invalid || undefined" />
       </FormField>
-      <FormField v-slot="{ id, describedby, invalid }" label="Fall below" required :error="fallBelowError">
-        <NumericInput :id="id" v-model="form.fallBelow" step="1" min="1" :aria-describedby="describedby" :aria-invalid="invalid || undefined" />
+      <FormField v-slot="{ id, describedby, invalid }" label="Low-stock level" required :error="errors.fallBelow" hint="Flagged as low when this many or fewer are available.">
+        <NumericInput
+          :id="id"
+          v-model="form.fallBelow"
+          step="1"
+          min="1"
+          inputmode="numeric"
+          :unit="fallBelowUnit"
+          :aria-describedby="describedby"
+          :aria-invalid="invalid || undefined"
+        />
       </FormField>
       <FormField v-slot="{ id }" label="Remarks">
         <Input :id="id" v-model="form.remarks" />
@@ -63,7 +85,7 @@ useSaveShortcut(submit)
         Cancel
       </Button>
       <Button type="submit" form="add-ingredient-form" variant="success" :disabled="create.isPending.value">
-        <PhFloppyDisk aria-hidden="true" /> {{ create.isPending.value ? 'Saving...' : 'Save' }}
+        <PhFloppyDisk aria-hidden="true" /> {{ create.isPending.value ? 'Saving…' : 'Add active ingredient' }}
       </Button>
     </template>
   </AppDialog>

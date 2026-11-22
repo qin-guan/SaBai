@@ -5,6 +5,7 @@ import type {
   SaBaiAPIEndpointsMedicationStockWithBrandGetResponse,
 } from "@sabai/sdk/types";
 import { saBaiAPIDomainStockStatus } from "@sabai/sdk/types";
+import { formatQuantity } from "./quantity";
 
 export const MAX_SPLITS = 10;
 export const MIN_SPLITS = 2;
@@ -14,8 +15,13 @@ export type MedicationStockRow = SaBaiAPIEndpointsMedicationStockWithBrandGetRes
 
 export const STOCK_STATUSES = Object.values(saBaiAPIDomainStockStatus) as StockStatus[];
 
+/** "active" → "Active": statuses are shown capitalised, like every other badge. */
+export function stockStatusLabel(status: string): string {
+  return status ? status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, " ") : "";
+}
+
 export const stockStatusOptions: Option[] = STOCK_STATUSES.map((status) => ({
-  label: status,
+  label: stockStatusLabel(status),
   value: status,
 }));
 
@@ -39,9 +45,10 @@ function areSplitsDistinct(splits: SplitPayload[]) {
 /**
  * Checks a split before it is sent. Only a batch's unreserved units can be
  * split off (units reserved for pending orders stay in it), so `parentQty` is
- * the batch's available quantity and `reservedQty` what stays behind.
+ * the batch's available quantity and `reservedQty` what stays behind. `unit`
+ * (the ingredient's, "tablet") makes the quantities in the messages explicit.
  */
-export function validateSplits(splits: SplitPayload[], parentQty: number, reservedQty = 0) {
+export function validateSplits(splits: SplitPayload[], parentQty: number, reservedQty = 0, unit?: string | null) {
   if (parentQty <= 0) {
     return {
       success: false,
@@ -71,8 +78,10 @@ export function validateSplits(splits: SplitPayload[], parentQty: number, reserv
       success: false,
       message:
         reservedQty > 0
-          ? `Child stock quantity must equal the ${parentQty} unreserved units; ${reservedQty} are reserved for pending orders.`
-          : "Child stock quantity does not equal parent stock quantity!",
+          ? `The new batches must add up to the ${unit ? formatQuantity(parentQty, unit) : `${parentQty} units`} that are not reserved (now ${unit ? formatQuantity(quantity, unit) : quantity}); ${unit ? formatQuantity(reservedQty, unit) : reservedQty} are reserved for pending orders.`
+          : unit
+            ? `The new batches must add up to ${formatQuantity(parentQty, unit)} (now ${formatQuantity(quantity, unit)}).`
+            : "Child stock quantity does not equal parent stock quantity!",
     };
   }
 

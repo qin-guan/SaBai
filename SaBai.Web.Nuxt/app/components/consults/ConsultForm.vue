@@ -38,7 +38,7 @@ const consultFormSchema = z.object({
   ),
   orders: z.array(
     z.object({
-      medicationBrandId: z.string().min(1, 'Please select a medication'),
+      medicationActiveIngredientId: z.string().min(1, 'Please select a medication'),
       quantity: z.string().trim().min(1, 'Quantity is required').refine((val) => {
         const n = Number(val)
         return Number.isInteger(n) && n >= 1
@@ -60,14 +60,17 @@ const blank = () => ({
   referredFor: 'Not Referred',
   referralNotes: '',
   diagnoses: [{ key: 0, details: '', category: '' }],
-  orders: [] as Array<{ key: number, medicationBrandId: string, quantity: string, dosageInstructions: string, remarks: string }>,
+  orders: [] as OrderLine[],
 })
+
+interface OrderLine { key: number, medicationActiveIngredientId: string, quantity: string, dosageInstructions: string, remarks: string }
 
 const form = ref(blank())
 // Each save appends a consult, so the draft is the consult being written now.
 const draft = useFormDraft(() => `consult:${props.visitId}`, form)
 form.value = draft.resume(blank())
-form.value.orders ??= []
+// Drafts saved before orders were by active ingredient named a brand instead; that choice cannot carry over.
+form.value.orders = (form.value.orders ?? []).map(o => ({ ...o, medicationActiveIngredientId: o.medicationActiveIngredientId ?? '' }))
 nextKey = Math.max(0, ...form.value.diagnoses.map(d => d.key), ...form.value.orders.map(o => o.key)) + 1
 const errors = ref<Record<string, string>>({})
 const formEl = ref<HTMLFormElement>()
@@ -88,7 +91,7 @@ function removeDiagnosis(index: number) {
 }
 
 function addOrder() {
-  form.value.orders.push({ key: nextKey++, medicationBrandId: '', quantity: '1', dosageInstructions: '', remarks: '' })
+  form.value.orders.push({ key: nextKey++, medicationActiveIngredientId: '', quantity: '1', dosageInstructions: '', remarks: '' })
   nextTick(() => {
     const selects = formEl.value?.querySelectorAll<HTMLSelectElement>('[data-order-medication]')
     selects?.[selects.length - 1]?.focus()
@@ -100,66 +103,52 @@ function removeOrder(index: number) {
   errors.value = {}
 }
 
-const brandsWithIngredient = useMedicationBrandsWithIngredient()
-const brandRecords = useMedicationBrands()
-const ingredients = useMedicationIngredients()
-const stock = useMedicationStock()
+// Doctors order by active ingredient from what is available now (the server
+// reserves stock when the order is placed). Several lines for one ingredient
+// share what is available.
+const availability = useIngredientAvailability()
 
-const brandMetaById = computed(() => {
-  const map = new Map<string, { brandName: string, unitOfMeasurement: string | null, isLowStock: boolean, activeQty: number }>()
-  const rawStock = stock.data.value ?? []
-  const rawBrands = brandsWithIngredient.data.value ?? []
-  const rawIngredients = ingredients.data.value ?? []
+/** What each order line may still ask for: the ingredient's available units less the other lines' quantities. */
+function optionsForLine(index: number) {
+  const others = form.value.orders
+    .filter((_, i) => i !== index)
+    .map(o => ({ ingredientId: o.medicationActiveIngredientId, quantity: Number(o.quantity) }))
+  return orderableIngredients(availability.data.value ?? [], { staged: stagedQuantities(others) })
+}
+const lineOptions = computed(() => form.value.orders.map((_, index) => optionsForLine(index)))
+const lineChoice = (index: number) =>
+  lineOptions.value[index]?.find(o => o.ingredientId === form.value.orders[index]?.medicationActiveIngredientId)
 
-  const activeQtyByBrand = new Map<string, number>()
-  const activeQtyByIngredient = new Map<string, number>()
-
-  for (const s of rawStock) {
-    if (s.stockStatus === 'active' && s.quantity > 0) {
-      activeQtyByBrand.set(s.medicationBrandId, (activeQtyByBrand.get(s.medicationBrandId) ?? 0) + s.quantity)
-      activeQtyByIngredient.set(s.ingredientId, (activeQtyByIngredient.get(s.ingredientId) ?? 0) + s.quantity)
+/** Stock errors for the order lines (on top of the schema's checks). */
+function orderStockErrors(): Record<string, string> {
+  const result: Record<string, string> = {}
+  form.value.orders.forEach((order, index) => {
+    const choice = lineChoice(index)
+    if (!order.medicationActiveIngredientId || !choice)
+      return
+    if (choice.outOfStock) {
+      result[`orders.${index}.medicationActiveIngredientId`] = `${choice.name} is out of stock: choose another medication`
+      return
     }
-  }
+    const message = orderQuantityError(order.quantity, choice)
+    if (message)
+      result[`orders.${index}.quantity`] = message
+  })
+  return result
+}
 
-  const ingredientMap = new Map(rawIngredients.map(i => [i.id, i]))
+/** Shown while typing, before a save is tried: asking for more than is available. */
+function liveQuantityError(index: number) {
+  const choice = lineChoice(index)
+  const quantity = Number(form.value.orders[index]?.quantity)
+  if (!choice || choice.outOfStock || !Number.isFinite(quantity) || quantity <= choice.remaining)
+    return undefined
+  return `Only ${choice.remaining} ${choice.unit} available`
+}
 
-  for (const b of rawBrands) {
-    const fullBrand = (brandRecords.data.value ?? []).find(x => x.id === b.id)
-    const ingredientId = fullBrand?.activeIngredientId ?? ''
-    const ing = ingredientMap.get(ingredientId)
-    const activeQty = activeQtyByBrand.get(b.id) ?? 0
-    const ingredientQty = activeQtyByIngredient.get(ingredientId) ?? 0
-    const fallBelow = ing?.fallBelow ?? 0
-    const isLowStock = ingredientQty <= fallBelow
-
-    map.set(b.id, {
-      brandName: b.name,
-      unitOfMeasurement: ing?.unitOfMeasurement ?? null,
-      isLowStock,
-      activeQty,
-    })
-  }
-
-  return map
-})
-
-const medicationOptions = computed(() => {
-  const raw = brandsWithIngredient.data.value ?? []
-  return [...raw]
-    .sort((a, b) => {
-      const cmp = a.activeIngredientName.localeCompare(b.activeIngredientName)
-      return cmp !== 0 ? cmp : a.name.localeCompare(b.name)
-    })
-    .map(b => {
-      const meta = brandMetaById.value.get(b.id)
-      const activeQty = meta?.activeQty ?? 0
-      const unit = meta?.unitOfMeasurement
-      const isLowStock = meta?.isLowStock ?? false
-      const statusSuffix = activeQty === 0 ? ' (Out of stock)' : isLowStock ? ' (Low stock)' : ''
-      const label = `${b.activeIngredientName} (${b.name}) — ${activeQty} ${unit ? `${unit} ` : ''}in stock${statusSuffix}`
-      return { value: b.id, label }
-    })
-})
+function ingredientName(id: string) {
+  return availability.data.value?.find(a => a.ingredientId === id)?.ingredientName ?? 'Medication'
+}
 
 const { user } = useCurrentUser()
 const consultMutation = useOfflineMutation(createConsult)
@@ -190,9 +179,14 @@ async function submit() {
   if (isSaving.value)
     return
   const parsed = consultFormSchema.safeParse(form.value)
-  if (!parsed.success) {
-    errors.value = Object.fromEntries(parsed.error.issues.map(i => [i.path.join('.'), i.message]))
-    toast.error('Please fill in all required fields before saving.')
+  const stockErrors = orderStockErrors()
+  if (!parsed.success || Object.keys(stockErrors).length > 0) {
+    errors.value = {
+      ...stockErrors,
+      ...(parsed.success ? {} : Object.fromEntries(parsed.error.issues.map(i => [i.path.join('.'), i.message]))),
+    }
+    toast.error(parsed.success ? 'Some medication orders are more than is available.' : 'Please fill in all required fields before saving.')
+    await nextTick()
     focusFirstInvalid(formEl.value)
     return
   }
@@ -245,40 +239,51 @@ async function submit() {
     }
   }
 
-  if (data.orders.length > 0) {
-    for (const order of data.orders) {
-      try {
-        const meta = brandMetaById.value.get(order.medicationBrandId)
-        await createOrderMutation.mutateAsync({
-          id: uuidv7(),
-          consultId,
-          medicationBrandId: order.medicationBrandId,
-          brandName: meta?.brandName ?? 'Medication',
-          quantity: Number(order.quantity),
-          dosageInstructions: order.dosageInstructions.trim(),
-          remarks: order.remarks?.trim() || null,
-          createdAt: consultDate,
-          context: props.patient && props.visit
-            ? {
-                patientId: props.patient.id,
-                patientDisplayId: props.patient.displayId,
-                patientName: props.patient.name,
-                villageCode: props.visit.villageCode ?? props.patient.villageCode ?? null,
-                visitId: props.visit.id,
-                visitDate: props.visit.date,
-                diagnoses: data.diagnoses.map(d => ({ category: d.category as DiagnosisCategory, details: d.details })),
-                isLowStock: meta?.isLowStock ?? false,
-              }
-            : undefined,
-        })
-      }
-      catch (error) {
-        toast.error(getApiErrorMessage(error, 'Failed to create medication order.'))
-      }
+  // Each order is placed against the saved consult (queued behind it when the
+  // consult is waiting to be sent). One the server cannot cover (409: someone
+  // else took the stock meanwhile) does not stop the others or the consult.
+  const notPlaced: string[] = []
+  for (const order of data.orders) {
+    const name = ingredientName(order.medicationActiveIngredientId)
+    try {
+      await createOrderMutation.mutateAsync({
+        id: uuidv7(),
+        consultId,
+        medicationActiveIngredientId: order.medicationActiveIngredientId,
+        ingredientName: name,
+        quantity: Number(order.quantity),
+        dosageInstructions: order.dosageInstructions.trim(),
+        remarks: order.remarks?.trim() || null,
+        createdAt: consultDate,
+        context: props.patient && props.visit
+          ? {
+              patientId: props.patient.id,
+              patientDisplayId: props.patient.displayId,
+              patientName: props.patient.name,
+              villageCode: props.visit.villageCode ?? props.patient.villageCode ?? null,
+              visitId: props.visit.id,
+              visitDate: props.visit.date,
+              diagnoses: data.diagnoses.map(d => ({ category: d.category as DiagnosisCategory, details: d.details })),
+              isLowStock: false,
+            }
+          : undefined,
+      })
     }
-    if (!outcome.queued) {
-      toast.success('Medication orders placed!')
+    catch (error) {
+      notPlaced.push(`${name}: ${getApiErrorMessage(error, 'could not be placed')}`)
     }
+  }
+  if (notPlaced.length > 0) {
+    toast.error(
+      `Consult saved, but ${notPlaced.length === 1 ? '1 medication order was' : `${notPlaced.length} medication orders were`} not placed`,
+      {
+        description: `${notPlaced.join('; ')}. Add it again from Previous consults, with another medication or a smaller quantity.`,
+        duration: 15_000,
+      },
+    )
+  }
+  else if (data.orders.length > 0 && !outcome.queued) {
+    toast.success(data.orders.length === 1 ? 'Medication order placed.' : `${data.orders.length} medication orders placed.`)
   }
 
   form.value = blank()
@@ -365,6 +370,9 @@ useSaveShortcut(submit)
 
         <fieldset class="flex flex-col gap-2">
           <legend class="mb-1 text-xs font-semibold touch:text-sm">Medication Orders</legend>
+          <p v-if="!availability.data.value && availability.isError.value" class="text-xs text-destructive touch:text-sm" role="alert">
+            {{ describeLoadError(availability.error.value, 'Could not load what medication is available.') }}
+          </p>
           <div v-if="form.orders.length === 0">
             <Button variant="outline" class="self-start" type="button" @click="addOrder">
               <PhPlus aria-hidden="true" /> Add Medication
@@ -380,26 +388,6 @@ useSaveShortcut(submit)
                 <p class="text-xs font-bold text-muted-foreground touch:text-sm">
                   Medication {{ index + 1 }}
                 </p>
-                <template v-if="order.medicationBrandId">
-                  <span
-                    v-if="brandMetaById.get(order.medicationBrandId)?.activeQty === 0"
-                    class="border border-destructive/40 bg-destructive-subtle px-1.5 py-0.5 text-[0.6875rem] font-semibold text-destructive"
-                  >
-                    Out of stock
-                  </span>
-                  <span
-                    v-else-if="Number(order.quantity) > (brandMetaById.get(order.medicationBrandId)?.activeQty ?? 0)"
-                    class="border border-warning/40 bg-warning-subtle px-1.5 py-0.5 text-[0.6875rem] font-semibold text-warning"
-                  >
-                    Exceeds active stock ({{ brandMetaById.get(order.medicationBrandId)?.activeQty }} available)
-                  </span>
-                  <span
-                    v-else-if="brandMetaById.get(order.medicationBrandId)?.isLowStock"
-                    class="border border-warning/40 bg-warning-subtle px-1.5 py-0.5 text-[0.6875rem] font-semibold text-warning"
-                  >
-                    Low stock
-                  </span>
-                </template>
               </div>
               <Button
                 variant="ghost"
@@ -412,30 +400,31 @@ useSaveShortcut(submit)
                 <PhTrash aria-hidden="true" /> Remove
               </Button>
             </div>
-            <div class="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_8rem]">
-              <FormField v-slot="{ id: fieldId, describedby, invalid }" label="Medication (Brand + Active Ingredient)" required :error="errors[`orders.${index}.medicationBrandId`]">
-                <NativeSelect
+            <div class="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_10rem]">
+              <FormField v-slot="{ id: fieldId, describedby, invalid }" label="Medication (active ingredient)" required :error="errors[`orders.${index}.medicationActiveIngredientId`]">
+                <IngredientPicker
                   :id="fieldId"
-                  v-model="order.medicationBrandId"
+                  v-model="order.medicationActiveIngredientId"
+                  :options="lineOptions[index] ?? []"
                   data-order-medication
                   :aria-describedby="describedby"
                   :aria-invalid="invalid || undefined"
-                >
-                  <NativeSelectOption value="">
-                    Choose a medication
-                  </NativeSelectOption>
-                  <NativeSelectOption v-for="opt in medicationOptions" :key="opt.value" :value="opt.value">
-                    {{ opt.label }}
-                  </NativeSelectOption>
-                </NativeSelect>
+                />
               </FormField>
-              <FormField v-slot="{ id: fieldId, describedby, invalid }" label="Quantity" required :error="errors[`orders.${index}.quantity`]">
+              <FormField
+                v-slot="{ id: fieldId, describedby, invalid }"
+                label="Quantity"
+                required
+                :error="errors[`orders.${index}.quantity`] ?? liveQuantityError(index)"
+                :hint="lineChoice(index) && !lineChoice(index)!.outOfStock ? `Up to ${lineChoice(index)!.remaining} ${lineChoice(index)!.unit}` : undefined"
+              >
                 <NumericInput
                   :id="fieldId"
                   v-model="order.quantity"
                   step="1"
                   min="1"
-                  :unit="brandMetaById.get(order.medicationBrandId)?.unitOfMeasurement ?? undefined"
+                  :max="lineChoice(index)?.remaining"
+                  :unit="lineChoice(index)?.unit"
                   :aria-describedby="describedby"
                   :aria-invalid="invalid || undefined"
                 />

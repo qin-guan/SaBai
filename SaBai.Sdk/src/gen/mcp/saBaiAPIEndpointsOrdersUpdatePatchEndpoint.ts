@@ -8,7 +8,7 @@ import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server
 import { saBaiAPIEndpointsOrdersUpdatePatchEndpoint } from '../clients/saBaiAPIEndpointsOrdersUpdatePatchEndpoint'
 
 /**
- * @summary Update or approve a medication order
+ * @summary Change a pending order (dosage, remarks, quantity, ingredient), dispense it or cancel it
  * {@link /orders/:id}
  */
 export async function saBaiAPIEndpointsOrdersUpdatePatchEndpointHandler({ path, body }: SaBaiAPIEndpointsOrdersUpdatePatchEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {

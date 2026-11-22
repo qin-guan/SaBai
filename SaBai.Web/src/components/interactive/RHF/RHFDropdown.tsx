@@ -8,6 +8,8 @@ import { FaChevronDown } from "react-icons/fa";
 export type DropdownOption = {
   label: string;
   value: string;
+  /** Listed but cannot be chosen (e.g. a medication that is out of stock). */
+  disabled?: boolean;
 };
 
 interface RHFDropdownButtonProps {
@@ -100,9 +102,13 @@ function RHFDropdownMenu({
           key={option.value}
           type="button"
           onClick={() => handleSelect(option.value)}
+          disabled={option.disabled}
+          aria-disabled={option.disabled || undefined}
           className={clsx([
             "w-full px-4 py-2 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none first:rounded-t-lg last:rounded-b-lg text-gray-800 hover:text-gray-900",
             option.value === selectedValue && "bg-blue-50 text-blue-700",
+            option.disabled &&
+              "cursor-not-allowed text-gray-400 hover:bg-white hover:text-gray-400",
           ])}
           name={`${name}-${option.value}-dropdown-option`}
         >

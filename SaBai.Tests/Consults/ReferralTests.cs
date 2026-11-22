@@ -392,9 +392,24 @@ public sealed class ReferralTests(AppFixture fixture)
         await client.LoginAsync();
         var suffix = ClinicSetup.Suffix();
 
-        var meRes = await client.GetAsync("/auth/whoami");
-        var meBody = await meRes.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
-        var memberId = ClinicSetup.ReadGuid(meBody.GetProperty("user"), "id");
+        // A member of its own, so the balance starts at zero whatever other tests (or earlier
+        // runs against the same database) recorded for the shared seeded users.
+        var memberRes = await client.PostAsJsonAsync(
+            "/auth/users",
+            new
+            {
+                userName = $"ledger_{suffix}",
+                password = ClinicApi.Password,
+                nickname = $"Ledger member {suffix}",
+                roles = new[] { "member" },
+            },
+            ApiJson.Options
+        );
+        memberRes.EnsureSuccessStatusCode();
+        var memberId = ClinicSetup.ReadGuid(
+            await memberRes.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
+            "id"
+        );
 
         var (consultId, _) = await CreateConsultAsync(client, $"RunMember {suffix}");
         var created = await client.PostAsJsonAsync(
@@ -441,9 +456,24 @@ public sealed class ReferralTests(AppFixture fixture)
         await client.LoginAsync();
         var suffix = ClinicSetup.Suffix();
 
-        var meRes = await client.GetAsync("/auth/whoami");
-        var meBody = await meRes.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
-        var memberId = ClinicSetup.ReadGuid(meBody.GetProperty("user"), "id");
+        // A member of its own, so the balance starts at zero whatever other tests (or earlier
+        // runs against the same database) recorded for the shared seeded users.
+        var memberRes = await client.PostAsJsonAsync(
+            "/auth/users",
+            new
+            {
+                userName = $"ledger_{suffix}",
+                password = ClinicApi.Password,
+                nickname = $"Ledger member {suffix}",
+                roles = new[] { "member" },
+            },
+            ApiJson.Options
+        );
+        memberRes.EnsureSuccessStatusCode();
+        var memberId = ClinicSetup.ReadGuid(
+            await memberRes.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
+            "id"
+        );
 
         var (c1, _) = await CreateConsultAsync(client, $"Ledger1 {suffix}");
         var (c2, _) = await CreateConsultAsync(client, $"Ledger2 {suffix}");

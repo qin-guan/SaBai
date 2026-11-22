@@ -28,6 +28,11 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request>
             throw new ConflictException("The ingredient is referenced by a medication brand.");
         }
 
+        if (await db.Orders.AnyAsync(x => x.MedicationActiveIngredientId == ingredient.Id, ct))
+        {
+            throw new ConflictException("The ingredient is referenced by a medication order.");
+        }
+
         db.MedicationActiveIngredients.Remove(ingredient);
         await db.SaveChangesAsync(ct);
         await Send.NoContentAsync(ct);

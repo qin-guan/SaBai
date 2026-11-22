@@ -19,9 +19,9 @@ import {
   saBaiAPIEndpointsReferralsUpdateStatePatchEndpoint,
 } from '@sabai/sdk/clients'
 import type {
-  PnLedgerEntryResponse,
-  PnMemberBalanceResponse,
   SaBaiAPIDomainReferralStateKey,
+  SaBaiAPIEndpointsPnLedgerListGetPnLedgerEntryResponse,
+  SaBaiAPIEndpointsPnLedgerListGetPnMemberBalanceResponse,
   SaBaiAPIEndpointsPnLedgerListGetResponse,
   SaBaiAPIEndpointsReferralPartnersListGetResponse,
   SaBaiAPIEndpointsReferralsGetResponse,
@@ -49,7 +49,8 @@ export type ReferralListEntry = SaBaiAPIEndpointsReferralsListGetResponse
 export type ConsultReferral = SaBaiAPIEndpointsReferralsListByConsultGetResponse
 export type ReferralPartner = SaBaiAPIEndpointsReferralPartnersListGetResponse
 export type PnLedgerData = SaBaiAPIEndpointsPnLedgerListGetResponse
-export type { PnLedgerEntryResponse, PnMemberBalanceResponse }
+export type PnLedgerEntryResponse = SaBaiAPIEndpointsPnLedgerListGetPnLedgerEntryResponse
+export type PnMemberBalanceResponse = SaBaiAPIEndpointsPnLedgerListGetPnMemberBalanceResponse
 
 // ── Reads ────────────────────────────────────────────────────────────────
 
@@ -583,9 +584,8 @@ export const reversePnLedgerEntry = defineOfflineMutation({
     saBaiAPIEndpointsPnLedgerReversePostEndpoint({
       ...apiConfig,
       ...requestOptions(ctx),
-      path: { Id: vars.id },
+      path: { id: vars.id },
       body: {
-        id: vars.id,
         notes: vars.notes ?? null,
       },
     }).unwrap(),

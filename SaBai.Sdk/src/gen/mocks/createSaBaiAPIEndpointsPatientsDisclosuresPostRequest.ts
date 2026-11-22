@@ -8,8 +8,8 @@ import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsPatientsDisclosuresPostRequest<TData extends Partial<SaBaiAPIEndpointsPatientsDisclosuresPostRequest> = object>(data?: TData) {
   const defaultFakeData = {
-    recipient: faker.string.alpha({ length: { min: 0, max: 255 } }),
-    purpose: faker.string.alpha({ length: { min: 0, max: 255 } }),
+    recipient: faker.string.alpha({ length: { min: 1, max: 255 } }),
+    purpose: faker.string.alpha({ length: { min: 1, max: 255 } }),
     description: faker.string.alpha(),
     id: faker.string.uuid(),
   }

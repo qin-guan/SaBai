@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using System.Text.Json;
+using SaBai.API.Auth;
 using SaBai.API.Domain;
 using SaBai.Tests.Support;
 using AuditLogResponse = SaBai.API.Endpoints.AuditLogs.List.Get.Response;
@@ -143,11 +144,11 @@ public sealed class OfflineReplayTests(AppFixture fixture)
         // Arrange
         var admin = fixture.CreateApiClient();
         await admin.LoginAsync();
-        var doctor = fixture.CreateApiClient();
-        await doctor.LoginAsync(ClinicApi.DoctorEmail);
+        // Another user who may edit vitals (nurse work); no nurse is seeded, so make one.
+        var nurse = await CreateUserClientAsync(admin, StaffRoles.Nurse);
         var vitalsId = await CreateVitalsAsync(admin);
         var queuedAt = DateTimeOffset.UtcNow.AddMinutes(-5);
-        (await doctor.PatchAsJsonAsync($"/vitals/{vitalsId}", new { temperature = 37.2m }, ApiJson.Options))
+        (await nurse.PatchAsJsonAsync($"/vitals/{vitalsId}", new { temperature = 37.2m }, ApiJson.Options))
             .EnsureSuccessStatusCode();
 
         // Act
@@ -187,10 +188,10 @@ public sealed class OfflineReplayTests(AppFixture fixture)
         // Arrange
         var admin = fixture.CreateApiClient();
         await admin.LoginAsync();
-        var doctor = fixture.CreateApiClient();
-        await doctor.LoginAsync(ClinicApi.DoctorEmail);
+        // Another user who may edit vitals (nurse work); no nurse is seeded, so make one.
+        var nurse = await CreateUserClientAsync(admin, StaffRoles.Nurse);
         var vitalsId = await CreateVitalsAsync(admin);
-        (await doctor.PatchAsJsonAsync($"/vitals/{vitalsId}", new { temperature = 37.2m }, ApiJson.Options))
+        (await nurse.PatchAsJsonAsync($"/vitals/{vitalsId}", new { temperature = 37.2m }, ApiJson.Options))
             .EnsureSuccessStatusCode();
 
         // Act
@@ -268,12 +269,13 @@ public sealed class OfflineReplayTests(AppFixture fixture)
         // Arrange
         var admin = fixture.CreateApiClient();
         await admin.LoginAsync();
-        var doctor = fixture.CreateApiClient();
-        await doctor.LoginAsync(ClinicApi.DoctorEmail);
+        // Another user who may edit patients and village codes (registration work).
+        var registration = fixture.CreateApiClient();
+        await registration.LoginAsync(ClinicApi.RegistrationEmail);
         var villageId = await ClinicSetup.CreateVillageAsync(admin);
         var (patientId, _) = await ClinicSetup.RegisterPatientAsync(admin, villageId);
         var queuedAt = DateTimeOffset.UtcNow.AddMinutes(-5);
-        (await doctor.PatchAsJsonAsync(
+        (await registration.PatchAsJsonAsync(
             $"/patients/{patientId}",
             new { tags = new[] { $"Follow-Up {ClinicSetup.Suffix()}" } },
             ApiJson.Options
@@ -299,10 +301,11 @@ public sealed class OfflineReplayTests(AppFixture fixture)
         // Arrange
         var admin = fixture.CreateApiClient();
         await admin.LoginAsync();
-        var doctor = fixture.CreateApiClient();
-        await doctor.LoginAsync(ClinicApi.DoctorEmail);
+        // Another user who may edit patients and village codes (registration work).
+        var registration = fixture.CreateApiClient();
+        await registration.LoginAsync(ClinicApi.RegistrationEmail);
         var villageId = await ClinicSetup.CreateVillageAsync(admin);
-        var edited = await doctor.PatchAsJsonAsync(
+        var edited = await registration.PatchAsJsonAsync(
             $"/village-codes/{villageId}",
             new { name = $"Renamed {ClinicSetup.Suffix()}" },
             ApiJson.Options
@@ -451,6 +454,27 @@ public sealed class OfflineReplayTests(AppFixture fixture)
         // Assert
         await Assert.That(responses.All(x => x.StatusCode == HttpStatusCode.Created)).IsTrue();
         await Assert.That(ClinicSetup.ReadGuid(saved, "id")).IsEqualTo(id);
+    }
+
+    /// <summary>A client signed in as a new staff user with <paramref name="role"/>, created by <paramref name="admin"/>.</summary>
+    private async Task<HttpClient> CreateUserClientAsync(HttpClient admin, string role)
+    {
+        var userName = $"{role}_{ClinicSetup.Suffix()}";
+        var created = await admin.PostAsJsonAsync(
+            "/auth/users",
+            new
+            {
+                userName,
+                password = ClinicApi.Password,
+                nickname = $"{role} {userName}",
+                roles = new[] { role },
+            },
+            ApiJson.Options
+        );
+        created.EnsureSuccessStatusCode();
+        var client = fixture.CreateApiClient();
+        await client.LoginAsync(userName);
+        return client;
     }
 
     private static async Task<Guid> CreateStockAsync(HttpClient client, int quantity)

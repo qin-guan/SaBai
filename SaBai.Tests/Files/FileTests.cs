@@ -13,7 +13,7 @@ public sealed class FileTests(AppFixture fixture)
     {
         // Arrange
         var client = fixture.CreateApiClient();
-        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        await client.LoginAsync();
         var suffix = Guid.NewGuid().ToString("N")[..8];
         var patientId = await CreatePatientAsync(client, suffix);
         var fileName = $"note-{suffix}.pdf";
@@ -66,7 +66,7 @@ public sealed class FileTests(AppFixture fixture)
     {
         // Arrange
         var client = fixture.CreateApiClient();
-        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        await client.LoginAsync();
         var patientId = await CreatePatientAsync(client, Guid.NewGuid().ToString("N")[..8]);
         using var content = new MultipartFormDataContent();
         content.Add(new StringContent(patientId.ToString()), "patientId");

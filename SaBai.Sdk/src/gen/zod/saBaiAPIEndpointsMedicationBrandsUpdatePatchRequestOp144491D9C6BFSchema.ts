@@ -6,7 +6,7 @@
 import * as z from 'zod'
 
 export const saBaiAPIEndpointsMedicationBrandsUpdatePatchRequestOp144491D9C6BFSchema = z.object({
-  name: z.string().min(0).max(255).nullish(),
+  name: z.string().nullish(),
   activeIngredientId: z.uuid().min(1),
   remarks: z.string(),
 })

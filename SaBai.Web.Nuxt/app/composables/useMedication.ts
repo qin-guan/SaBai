@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/vue-query'
 import type { MaybeRefOrGetter } from 'vue'
 import { computed, toValue } from 'vue'
 import {
+  fetchIngredientAvailability,
   fetchMedicationBrands,
   fetchMedicationBrandsWithIngredient,
   fetchMedicationIngredients,
@@ -18,12 +19,16 @@ export {
   createOrder,
   updateOrder,
   deleteOrder,
+  orderSnapshot,
+  type IngredientAvailability,
   type MedicationStockLine,
   type MedicationBrand,
   type MedicationBrandWithIngredient,
   type MedicationIngredient,
   type MedicationOrder,
+  type OrderStatusKey,
   type PharmacyPatientOrders,
+  type PharmacyOrderItem,
   type MedicationHistoryEntry,
   type CreateOrderContext,
   type CreateOrderVars,
@@ -41,6 +46,15 @@ export function useMedicationStock() {
   return useQuery({
     queryKey: queryKeys.medicationStock(),
     queryFn: ({ signal }) => fetchMedicationStock(signal),
+  })
+}
+
+/** What can still be ordered of every active ingredient (doctors and pharmacists may read it). */
+export function useIngredientAvailability(options: { enabled?: MaybeRefOrGetter<boolean> } = {}) {
+  return useQuery({
+    queryKey: queryKeys.medicationAvailability(),
+    queryFn: ({ signal }) => fetchIngredientAvailability(signal),
+    enabled: () => toValue(options.enabled) ?? true,
   })
 }
 
@@ -65,10 +79,14 @@ export function useMedicationIngredients() {
   })
 }
 
-export function useOrders(status?: MaybeRefOrGetter<string | undefined>) {
+export function useOrders(
+  status?: MaybeRefOrGetter<string | undefined>,
+  options: { enabled?: MaybeRefOrGetter<boolean> } = {},
+) {
   return useQuery({
     queryKey: computed(() => queryKeys.ordersList(toValue(status))),
     queryFn: ({ signal }) => fetchOrders(toValue(status), signal),
+    enabled: () => toValue(options.enabled) ?? true,
   })
 }
 
@@ -98,5 +116,3 @@ export function useUpdateOrder() {
 export function useDeleteOrder() {
   return useOfflineMutation(deleteOrder)
 }
-
-

@@ -10,7 +10,7 @@ export function createSaBaiAPIEndpointsOrdersCreatePostRequest<TData extends Par
   const defaultFakeData = {
     id: faker.string.uuid(),
     consultId: faker.string.uuid(),
-    medicationBrandId: faker.string.uuid(),
+    medicationActiveIngredientId: faker.string.uuid(),
     quantity: faker.number.int(),
     dosageInstructions: faker.string.alpha({ length: 1 }),
     remarks: faker.string.alpha(),

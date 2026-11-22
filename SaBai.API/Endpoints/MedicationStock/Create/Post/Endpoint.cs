@@ -29,16 +29,15 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
         );
         if (stock is null)
         {
-            stock = new SaBai.API.Domain.MedicationStock
-            {
-                Id = req.Id ?? Guid.CreateVersion7(),
-                MedicationBrandId = req.MedicationBrandId,
-                Quantity = req.Quantity,
-                Expiry = req.Expiry,
-                Location = req.Location.Trim(),
-                StockStatus = req.StockStatus,
-                Remarks = string.IsNullOrWhiteSpace(req.Remarks) ? null : req.Remarks.Trim(),
-            };
+            stock = SaBai.API.Domain.MedicationStock.Create(
+                req.Id ?? Guid.CreateVersion7(),
+                req.MedicationBrandId,
+                req.Quantity,
+                req.Expiry,
+                req.Location.Trim(),
+                req.StockStatus,
+                string.IsNullOrWhiteSpace(req.Remarks) ? null : req.Remarks.Trim()
+            );
             db.MedicationStocks.Add(stock);
             db.StockChanges.AddRange(
                 StockChangeLog.ForCreate(stock, User.Id(), DateTimeOffset.UtcNow)
@@ -48,15 +47,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
         await Send.CreatedAtAsync<List.Get.Endpoint>(
             new { },
-            new Response(
-                stock.Id,
-                stock.MedicationBrandId,
-                stock.Quantity,
-                stock.Expiry,
-                stock.Location,
-                stock.StockStatus,
-                stock.Remarks
-            ),
+            Response.From(stock),
             cancellation: ct
         );
     }

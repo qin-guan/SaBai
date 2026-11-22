@@ -5,17 +5,19 @@
 
 import * as z from 'zod'
 import { saBaiAPIDomainOrderStatusSchema } from './saBaiAPIDomainOrderStatusSchema'
+import { systemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsOrdersAllocationDetailsSchema } from './systemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsOrdersAllocationDetailsSchema'
 
 export const saBaiAPIEndpointsOrdersCreatePostResponseSchema = z.object({
   id: z.uuid(),
   consultId: z.uuid(),
-  medicationBrandId: z.uuid(),
-  brandName: z.string(),
+  medicationActiveIngredientId: z.uuid(),
+  activeIngredientName: z.string(),
   quantity: z.int32(),
   status: saBaiAPIDomainOrderStatusSchema,
   dosageInstructions: z.string(),
   remarks: z.string().nullable(),
-  approvedById: z.uuid().nullable(),
-  approvedAt: z.iso.datetime().nullable(),
+  dispensedById: z.uuid().nullable(),
+  dispensedAt: z.iso.datetime().nullable(),
   createdAt: z.iso.datetime(),
+  allocations: systemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsOrdersAllocationDetailsSchema,
 })

@@ -34,14 +34,9 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             return;
         }
 
-        var newQuantity = stock.Quantity + req.QuantityChange;
-        if (newQuantity < 0)
-        {
-            throw new BadRequestException("Stock quantity cannot be negative.");
-        }
-
         var before = StockChangeLog.Snapshot.Of(stock);
-        stock.Quantity = newQuantity;
+        // 400 below zero; 409 below the units reserved for pending orders.
+        stock.AdjustQuantity(req.QuantityChange);
         if (req.Remarks is not null)
         {
             stock.Remarks = string.IsNullOrWhiteSpace(req.Remarks) ? null : req.Remarks.Trim();
@@ -65,17 +60,6 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
     private async Task SendAsync(SaBai.API.Domain.MedicationStock stock, CancellationToken ct)
     {
-        await Send.OkAsync(
-            new Response(
-                stock.Id,
-                stock.MedicationBrandId,
-                stock.Quantity,
-                stock.Expiry,
-                stock.Location,
-                stock.StockStatus,
-                stock.Remarks
-            ),
-            ct
-        );
+        await Send.OkAsync(Response.From(stock), ct);
     }
 }

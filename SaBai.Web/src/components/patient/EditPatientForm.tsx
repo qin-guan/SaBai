@@ -90,7 +90,10 @@ export default function EditPatientForm({
       // generic message otherwise.
       toast.error(
         getApiErrorStatus(error) === 409
-          ? getApiErrorMessage(error, "Failed to update patient. Please try again.")
+          ? getApiErrorMessage(
+              error,
+              "Failed to update patient. Please try again.",
+            )
           : "Failed to update patient. Please try again.",
       );
       return;

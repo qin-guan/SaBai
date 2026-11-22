@@ -13,7 +13,7 @@ public sealed class FileEdgeTests(AppFixture fixture)
     {
         // Arrange
         var client = fixture.CreateApiClient();
-        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        await client.LoginAsync();
         using var content = Form(ClinicSetup.MissingId, $"orphan-{ClinicSetup.Suffix()}.pdf", "orphan note");
 
         // Act
@@ -28,7 +28,7 @@ public sealed class FileEdgeTests(AppFixture fixture)
     {
         // Arrange
         var client = fixture.CreateApiClient();
-        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        await client.LoginAsync();
         var patientId = await CreatePatientAsync(client);
         var suffix = ClinicSetup.Suffix();
         using var content = new MultipartFormDataContent();
@@ -49,7 +49,7 @@ public sealed class FileEdgeTests(AppFixture fixture)
     {
         // Arrange
         var client = fixture.CreateApiClient();
-        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        await client.LoginAsync();
 
         // Act
         var response = await client.GetAsync("/files?deleted=maybe");
@@ -63,7 +63,7 @@ public sealed class FileEdgeTests(AppFixture fixture)
     {
         // Arrange
         var client = fixture.CreateApiClient();
-        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        await client.LoginAsync();
 
         // Act
         var response = await client.GetAsync($"/files/{ClinicSetup.MissingId}");
@@ -77,7 +77,7 @@ public sealed class FileEdgeTests(AppFixture fixture)
     {
         // Arrange
         var client = fixture.CreateApiClient();
-        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        await client.LoginAsync();
         var patientId = await CreatePatientAsync(client);
         var fileId = await UploadAsync(
             client,
@@ -99,7 +99,7 @@ public sealed class FileEdgeTests(AppFixture fixture)
     {
         // Arrange
         var client = fixture.CreateApiClient();
-        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        await client.LoginAsync();
         var suffix = ClinicSetup.Suffix();
         var patientId = await CreatePatientAsync(client);
         var fileId = await UploadAsync(client, patientId, $"note-{suffix}.pdf", "original note");
@@ -125,7 +125,7 @@ public sealed class FileEdgeTests(AppFixture fixture)
     {
         // Arrange
         var client = fixture.CreateApiClient();
-        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        await client.LoginAsync();
         var patientId = await CreatePatientAsync(client);
         var fileName = $"deleted-{ClinicSetup.Suffix()}.pdf";
         var fileId = await UploadAsync(client, patientId, fileName, "to delete");
@@ -152,7 +152,7 @@ public sealed class FileEdgeTests(AppFixture fixture)
     {
         // Arrange
         var client = fixture.CreateApiClient();
-        await client.LoginAsync(ClinicApi.PharmacistEmail);
+        await client.LoginAsync();
         var patientId = await CreatePatientAsync(client);
         using var content = new MultipartFormDataContent();
         content.Add(new StringContent(patientId.ToString()), "patientId");

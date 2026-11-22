@@ -1,5 +1,5 @@
 export type EditFormFields = {
-  id: number;
+  id: string;
   name: string;
   unitOfMeasurement: string;
   fallBelow: number;

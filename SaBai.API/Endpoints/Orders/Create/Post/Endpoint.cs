@@ -12,7 +12,9 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
     {
         Post("/orders");
         Roles(StaffRoles.DoctorWork);
-        Summary(s => s.Summary = "Create a pending medication order");
+        Summary(s =>
+            s.Summary = "Place a medication order for an active ingredient and reserve its stock (earliest expiry first)"
+        );
     }
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
@@ -22,52 +24,49 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             "Consult was not found.",
             ct
         );
-        var brand = await db.MedicationBrands.FirstOrNotFoundAsync(
-            x => x.Id == req.MedicationBrandId,
-            "Medication brand was not found.",
+
+        var existing = await db.Orders.FindExistingAsync(
+            req.Id,
+            x => x.ConsultId == req.ConsultId,
             ct
         );
-
-        var order = await db
-            .Orders.Include(x => x.MedicationBrand)
-            .FindExistingAsync(req.Id, x => x.ConsultId == req.ConsultId, ct);
-        if (order is not null)
+        var orderId = existing?.Id;
+        if (orderId is null)
         {
-            // A resent create: answer with the order as it is now (it may have been approved).
-            brand = order.MedicationBrand;
-        }
-        else
-        {
-            order = new SaBai.API.Domain.Order
-            {
-                Id = req.Id ?? Guid.CreateVersion7(),
-                ConsultId = req.ConsultId,
-                MedicationBrandId = brand.Id,
-                Quantity = req.Quantity,
-                DosageInstructions = req.DosageInstructions.Trim(),
-                Remarks = string.IsNullOrWhiteSpace(req.Remarks) ? null : req.Remarks.Trim(),
-                Status = OrderStatus.Pending,
-                CreatedAt = DateTimeOffset.UtcNow,
-            };
-            db.Orders.Add(order);
-            await db.SaveChangesAsync(ct);
+            await db.MedicationActiveIngredients.FirstOrNotFoundAsync(
+                x => x.Id == req.MedicationActiveIngredientId,
+                "Medication ingredient was not found.",
+                ct
+            );
+            orderId = await OrderLifecycle.RunAsync(
+                db,
+                async token =>
+                {
+                    var order = new SaBai.API.Domain.Order
+                    {
+                        Id = req.Id ?? Guid.CreateVersion7(),
+                        ConsultId = req.ConsultId,
+                        MedicationActiveIngredientId = req.MedicationActiveIngredientId,
+                        Quantity = req.Quantity,
+                        DosageInstructions = req.DosageInstructions.Trim(),
+                        Remarks = string.IsNullOrWhiteSpace(req.Remarks) ? null : req.Remarks.Trim(),
+                        CreatedAt = DateTimeOffset.UtcNow,
+                    };
+                    await OrderLifecycle.PlaceAsync(db, order, token);
+                    return order.Id;
+                },
+                ct
+            );
         }
 
+        var details = await db
+            .Orders.AsNoTracking()
+            .Where(x => x.Id == orderId)
+            .Select(OrderDetails.Projection)
+            .FirstAsync(ct);
         await Send.CreatedAtAsync<Get.Endpoint>(
-            new { order.Id },
-            new Response(
-                order.Id,
-                order.ConsultId,
-                order.MedicationBrandId,
-                brand.Name,
-                order.Quantity,
-                order.Status,
-                order.DosageInstructions,
-                order.Remarks,
-                order.ApprovedById,
-                order.ApprovedAt,
-                order.CreatedAt
-            ),
+            new { Id = orderId },
+            Response.From(details),
             cancellation: ct
         );
     }

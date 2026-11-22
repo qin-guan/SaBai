@@ -23,7 +23,7 @@ export type SaBaiAPIEndpointsOrdersCreatePostRequest = {
    * @minLength 1
    * @type string
    */
-  medicationBrandId: string;
+  medicationActiveIngredientId: string;
   /**
    * @description
    * Format: `int32`

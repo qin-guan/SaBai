@@ -39,6 +39,10 @@ public sealed class BroadcastEdgeTests(AppFixture fixture)
             $"/broadcasts?since={ids[0]}",
             ApiJson.Options
         );
+        var afterFirstLimited = await client.GetFromJsonAsync<List<BroadcastCreated>>(
+            $"/broadcasts?since={ids[0]}&limit=1",
+            ApiJson.Options
+        );
         var tooMany = await client.GetAsync("/broadcasts?limit=201");
         var zero = await client.GetAsync("/broadcasts?limit=0");
 
@@ -46,6 +50,9 @@ public sealed class BroadcastEdgeTests(AppFixture fixture)
         await Assert.That(newestTwo!.Select(x => x.Id)).IsEquivalentTo(new[] { ids[2], ids[1] });
         await Assert.That(afterFirst!.Select(x => x.Id).Take(2)).IsEquivalentTo(new[] { ids[2], ids[1] });
         await Assert.That(afterFirst!.All(x => x.Id.CompareTo(ids[0]) > 0)).IsTrue();
+        await Assert
+            .That(afterFirstLimited!.Select(x => x.Id).Take(2))
+            .IsEquivalentTo(new[] { ids[2], ids[1] });
         await Assert.That(tooMany.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
         await Assert.That(zero.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
     }

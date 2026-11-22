@@ -6,8 +6,8 @@
 import * as z from 'zod'
 
 export const saBaiAPIEndpointsAuthUsersCreatePostRequestSchema = z.object({
-  userName: z.string().min(0).max(150),
-  email: z.email().min(0).max(255).nullish(),
+  userName: z.string().min(1).max(150),
+  email: z.string().nullish(),
   password: z.string().min(1),
   nickname: z.string().min(0).max(255).nullish(),
   roles: z.array(z.string()).nullish(),

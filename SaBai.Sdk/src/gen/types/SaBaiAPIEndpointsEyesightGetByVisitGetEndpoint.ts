@@ -10,6 +10,7 @@ export type SaBaiAPIEndpointsEyesightGetByVisitGetEndpointPath = {
   /**
    * @description
    * Format: `uuid`
+   * @minLength 1
    * @type string
    */
   visitId: string;

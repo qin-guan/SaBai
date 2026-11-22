@@ -6,3 +6,5 @@ riderModule.iml
 .idea/
 *.onnx
 node_modules/
+# Test run reports
+SaBai.Tests/TestResults/

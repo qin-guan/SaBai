@@ -5,7 +5,7 @@
 
 export const saBaiAPIDomainOrderStatus = {
   PENDING: 'PENDING',
-  APPROVED: 'APPROVED',
+  DISPENSED: 'DISPENSED',
   CANCELLED: 'CANCELLED',
 } as const;
 

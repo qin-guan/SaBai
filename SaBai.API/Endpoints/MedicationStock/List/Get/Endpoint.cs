@@ -11,7 +11,7 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
     {
         Get("/medication-stock");
         Roles(StaffRoles.PharmacyWork);
-        Summary(s => s.Summary = "List medication stock excluding empty lots");
+        Summary(s => s.Summary = "List medication stock batches excluding empty ones, with what is reserved for pending orders");
     }
 
     public override async Task HandleAsync(CancellationToken ct)
@@ -24,10 +24,13 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
                 x.Id,
                 x.MedicationBrandId,
                 x.Quantity,
+                x.ReservedQuantity,
+                x.Quantity - x.ReservedQuantity,
                 x.Expiry,
                 x.Location,
                 x.StockStatus,
-                x.Remarks
+                x.Remarks,
+                x.ParentStockId
             ))
             .ToListAsync(ct);
 

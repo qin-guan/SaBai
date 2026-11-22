@@ -30,7 +30,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
 
         if (req.StockStatus is { } status)
         {
-            stock.StockStatus = status;
+            // A batch holding reservations for pending orders must stay active.
+            stock.ChangeStatus(status);
         }
 
         stock.Remarks = string.IsNullOrWhiteSpace(req.Remarks) ? null : req.Remarks.Trim();
@@ -40,15 +41,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
         await db.SaveChangesAsync(ct);
 
         await Send.OkAsync(
-            new Response(
-                stock.Id,
-                stock.MedicationBrandId,
-                stock.Quantity,
-                stock.Expiry,
-                stock.Location,
-                stock.StockStatus,
-                stock.Remarks
-            ),
+            Response.From(stock),
             ct
         );
     }

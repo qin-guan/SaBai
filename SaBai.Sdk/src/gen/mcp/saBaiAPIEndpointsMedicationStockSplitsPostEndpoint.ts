@@ -8,7 +8,7 @@ import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server
 import { saBaiAPIEndpointsMedicationStockSplitsPostEndpoint } from '../clients/saBaiAPIEndpointsMedicationStockSplitsPostEndpoint'
 
 /**
- * @summary Split a stock lot into child lots
+ * @summary Split a stock batch's unreserved units into new batches
  * {@link /medication-stock/:id/splits}
  */
 export async function saBaiAPIEndpointsMedicationStockSplitsPostEndpointHandler({ path, body }: SaBaiAPIEndpointsMedicationStockSplitsPostEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {

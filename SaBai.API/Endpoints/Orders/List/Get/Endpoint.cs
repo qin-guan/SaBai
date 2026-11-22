@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using SaBai.API.Auth;
 using SaBai.API.Data;
 using SaBai.API.Domain;
+using OrderResponse = SaBai.API.Endpoints.Orders.List.Get.Response;
 
 namespace SaBai.API.Endpoints.Orders.List.Get;
 
@@ -22,7 +23,7 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, List<Response>
         {
             if (!TryParseStatus(req.Status, out var status))
             {
-                throw new BadRequestException("status must be PENDING, APPROVED, or CANCELLED.");
+                throw new BadRequestException("status must be PENDING, DISPENSED, or CANCELLED.");
             }
 
             query = query.Where(x => x.Status == status);
@@ -30,22 +31,10 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, List<Response>
 
         var orders = await query
             .OrderByDescending(x => x.Id)
-            .Select(x => new Response(
-                x.Id,
-                x.ConsultId,
-                x.MedicationBrandId,
-                x.MedicationBrand.Name,
-                x.Quantity,
-                x.Status,
-                x.DosageInstructions,
-                x.Remarks,
-                x.ApprovedById,
-                x.ApprovedAt,
-                x.CreatedAt
-            ))
+            .Select(OrderDetails.Projection)
             .ToListAsync(ct);
 
-        await Send.OkAsync(orders, ct);
+        await Send.OkAsync([.. orders.Select(OrderResponse.From)], ct);
     }
 
     private static bool TryParseStatus(string value, out OrderStatus status)
@@ -55,8 +44,8 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, List<Response>
             case "PENDING":
                 status = OrderStatus.Pending;
                 return true;
-            case "APPROVED":
-                status = OrderStatus.Approved;
+            case "DISPENSED":
+                status = OrderStatus.Dispensed;
                 return true;
             case "CANCELLED":
                 status = OrderStatus.Cancelled;

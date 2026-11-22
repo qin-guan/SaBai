@@ -15,7 +15,6 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { RHFDropdown } from "@/components/interactive/RHF/RHFDropdown";
 import { DentalForm } from "@/components/dental/DentalForm";
 import { formatVisitDate } from "@/lib/utils/visit";
-import { formatPatientId } from "@/lib/utils/patient";
 
 function DentalConsultationPage() {
   const router = useRouter();
@@ -25,7 +24,7 @@ function DentalConsultationPage() {
 
   const { data: patient, isLoading: patientLoading } = useQuery({
     ...saBaiAPIEndpointsPatientsGetEndpointQueryOptions(
-      { path: { id: Number(patientId) } },
+      { path: { id: String(patientId) } },
       apiConfig,
     ),
     enabled: !!patientId,
@@ -33,7 +32,7 @@ function DentalConsultationPage() {
 
   const { data: visitsData, isLoading: visitsLoading } = useQuery({
     ...saBaiAPIEndpointsPatientsVisitsGetEndpointQueryOptions(
-      { path: { patientId: Number(patientId) } },
+      { path: { patientId: String(patientId) } },
       apiConfig,
     ),
     enabled: !!patientId,
@@ -92,7 +91,7 @@ function DentalConsultationPage() {
             Dental Consultation
           </h1>
           <p className="mt-2 text-slate-600">
-            {patient.name} · Patient ID: {formatPatientId(patient.id)}
+            {patient.name} · Patient ID: {patient.displayId}
           </p>
         </div>
 

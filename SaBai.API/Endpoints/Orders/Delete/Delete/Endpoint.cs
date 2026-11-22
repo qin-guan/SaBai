@@ -10,18 +10,23 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request>
     {
         Delete("/orders/{Id}");
         Roles(StaffRoles.DoctorWork);
-        Summary(s => s.Summary = "Delete a medication order without reversing stock");
+        Summary(s =>
+            s.Summary = "Delete a medication order that was not dispensed (a pending order gives its reserved stock back)"
+        );
     }
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var order = await db.Orders.FirstOrNotFoundAsync(
-            x => x.Id == req.Id,
-            "Order was not found.",
+        await OrderLifecycle.RunAsync(
+            db,
+            async token =>
+            {
+                var order = await OrderLifecycle.LoadAsync(db, req.Id, token);
+                OrderLifecycle.Remove(db, order);
+            },
             ct
         );
-        db.Orders.Remove(order);
-        await db.SaveChangesAsync(ct);
+
         await Send.NoContentAsync(ct);
     }
 }

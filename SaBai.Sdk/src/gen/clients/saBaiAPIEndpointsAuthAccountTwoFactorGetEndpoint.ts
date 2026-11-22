@@ -14,5 +14,5 @@ import { client, withUnwrap } from '../.kubb/client'
 export function saBaiAPIEndpointsAuthAccountTwoFactorGetEndpoint<ThrowOnError extends boolean = true>(options: Options<SaBaiAPIEndpointsAuthAccountTwoFactorGetEndpointOptions, ThrowOnError> = {}): Unwrappable<RequestResult<SaBaiAPIEndpointsAuthAccountTwoFactorGetEndpointResponses, ThrowOnError>> {
   const { client: request = client, ...config } = options
 
-  return withUnwrap(request({ method: 'GET', url: '/auth/account/two-factor', security: [{ type: 'apiKey', name: 'sabai.auth', in: 'cookie', scopes: ['admin', 'member'] }], ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<SaBaiAPIEndpointsAuthAccountTwoFactorGetEndpointResponses, ThrowOnError>>)
+  return withUnwrap(request({ method: 'GET', url: '/auth/account/two-factor', security: [{ type: 'apiKey', name: 'sabai.auth', in: 'cookie' }], ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<SaBaiAPIEndpointsAuthAccountTwoFactorGetEndpointResponses, ThrowOnError>>)
 }

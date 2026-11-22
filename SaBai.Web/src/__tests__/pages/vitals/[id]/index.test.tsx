@@ -61,11 +61,11 @@ vi.mock("@sabai/sdk/hooks", async (importOriginal) => {
     }),
     saBaiAPIEndpointsVitalsCreatePostEndpointMutationOptions: () => ({
       mutationKey: ["vitals-create"],
-      mutationFn: mocks.createVitals,
+      mutationFn: (variables: unknown) => mocks.createVitals(variables),
     }),
     saBaiAPIEndpointsVitalsUpdateByVisitPatchEndpointMutationOptions: () => ({
       mutationKey: ["vitals-update"],
-      mutationFn: mocks.updateVitals,
+      mutationFn: (variables: unknown) => mocks.updateVitals(variables),
     }),
   };
 });

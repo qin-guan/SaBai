@@ -8,11 +8,11 @@ import type { SaBaiAPIEndpointsMedicationHistoryGetEndpointOptions, SaBaiAPIEndp
 import { client, withUnwrap } from '../.kubb/client'
 
 /**
- * @summary List approved dispenses and stock adjustments for a brand
+ * @summary List dispensed orders and stock quantity changes for a brand
  * {@link /medication-history}
  */
 export function saBaiAPIEndpointsMedicationHistoryGetEndpoint<ThrowOnError extends boolean = true>(options: Options<SaBaiAPIEndpointsMedicationHistoryGetEndpointOptions, ThrowOnError> = {}): Unwrappable<RequestResult<SaBaiAPIEndpointsMedicationHistoryGetEndpointResponses, ThrowOnError>> {
   const { client: request = client, ...config } = options
 
-  return withUnwrap(request({ method: 'GET', url: '/medication-history', security: [{ type: 'apiKey', name: 'sabai.auth', in: 'cookie', scopes: ['admin', 'member'] }], ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<SaBaiAPIEndpointsMedicationHistoryGetEndpointResponses, ThrowOnError>>)
+  return withUnwrap(request({ method: 'GET', url: '/medication-history', security: [{ type: 'apiKey', name: 'sabai.auth', in: 'cookie' }], ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<SaBaiAPIEndpointsMedicationHistoryGetEndpointResponses, ThrowOnError>>)
 }

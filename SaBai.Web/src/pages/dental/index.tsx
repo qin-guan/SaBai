@@ -38,7 +38,7 @@ function PatientCard({
   onOpenDental,
 }: {
   patient: SaBaiAPIEndpointsPatientsWithLatestVisitGetItem;
-  onOpenDental: (patientId: number) => void;
+  onOpenDental: (patientId: string) => void;
 }) {
   return (
     <div className="flex gap-10 p-4">
@@ -51,7 +51,7 @@ function PatientCard({
         <PatientCode
           villageCode={patient.villageCode}
           villageColorHex={patient.villageColorHex}
-          id={patient.id}
+          displayId={patient.displayId}
           className="text-xs font-medium text-slate-500"
         />
         <div className="break-words text-sm font-medium text-slate-900">
@@ -71,7 +71,7 @@ function PatientTable({
   onOpenDental,
 }: {
   patients: SaBaiAPIEndpointsPatientsWithLatestVisitGetItem[];
-  onOpenDental: (patientId: number) => void;
+  onOpenDental: (patientId: string) => void;
 }) {
   return (
     <div className="hidden overflow-x-auto md:block">
@@ -84,7 +84,7 @@ function PatientTable({
                 <PatientCode
                   villageCode={patient.villageCode}
                   villageColorHex={patient.villageColorHex}
-                  id={patient.id}
+                  displayId={patient.displayId}
                   className="text-sm font-medium text-slate-900"
                 />
               </TableCell>
@@ -137,7 +137,7 @@ function DentalPage() {
   );
   const patients = data?.patients;
 
-  const handleOpenDental = (patientId: number) => {
+  const handleOpenDental = (patientId: string) => {
     router.push(paths.dentalDetail(patientId));
   };
 

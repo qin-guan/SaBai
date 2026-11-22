@@ -10,6 +10,7 @@ export type SaBaiAPIEndpointsVitalsListByPatientGetEndpointPath = {
   /**
    * @description
    * Format: `uuid`
+   * @minLength 1
    * @type string
    */
   patientId: string;

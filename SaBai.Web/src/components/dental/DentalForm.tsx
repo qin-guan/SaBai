@@ -519,7 +519,7 @@ function SectionTabs() {
  * The dental station's consultation for one visit. Loads any saved consultation
  * and saves the whole form back with a single PUT.
  */
-export function DentalForm({ visitId }: { visitId: number }) {
+export function DentalForm({ visitId }: { visitId: string }) {
   const methods = useForm<DentalFormValues>({
     defaultValues: toFormValues(null),
   });

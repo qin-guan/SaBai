@@ -6,9 +6,9 @@
 import * as z from 'zod'
 
 export const saBaiAPIEndpointsAuthUsersUpdatePatchRequestSchema = z.object({
-  userName: z.string().min(0).max(150).nullish(),
-  email: z.email().min(0).max(255).nullish(),
-  nickname: z.string().min(0).max(255).nullish(),
+  userName: z.string().nullish(),
+  email: z.string().nullish(),
+  nickname: z.string().nullish(),
   roles: z.array(z.string()).nullish(),
   tags: z.array(z.string()).nullish(),
 })

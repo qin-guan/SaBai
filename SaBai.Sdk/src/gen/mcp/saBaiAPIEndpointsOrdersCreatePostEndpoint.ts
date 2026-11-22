@@ -8,7 +8,7 @@ import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server
 import { saBaiAPIEndpointsOrdersCreatePostEndpoint } from '../clients/saBaiAPIEndpointsOrdersCreatePostEndpoint'
 
 /**
- * @summary Create a pending medication order
+ * @summary Place a medication order for an active ingredient and reserve its stock (earliest expiry first)
  * {@link /orders}
  */
 export async function saBaiAPIEndpointsOrdersCreatePostEndpointHandler({ body }: SaBaiAPIEndpointsOrdersCreatePostEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {

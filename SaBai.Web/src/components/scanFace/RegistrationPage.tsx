@@ -74,7 +74,10 @@ export default function RegistrationPage({
     } catch (error) {
       console.error("Error creating patient:", error);
       toast.error(
-        getApiErrorMessage(error, "Failed to create patient. Please try again."),
+        getApiErrorMessage(
+          error,
+          "Failed to create patient. Please try again.",
+        ),
       );
       return;
     }

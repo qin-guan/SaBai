@@ -48,7 +48,7 @@ export const saBaiAPIEndpointsDentalUpsertByVisitPutRequestSchema = z.object({
   fracturedTeeth: z.union([z.null(), saBaiAPIDomainAbsentPresentSchema]).optional(),
   mucosalLesions: z.union([z.null(), saBaiAPIDomainAbsentPresentSchema]).optional(),
   malocclusion: z.union([z.null(), saBaiAPIDomainMalocclusionSchema]).optional(),
-  diagnoses: z.array(z.string()).nullable(),
+  diagnoses: z.array(z.string().min(0).max(500)).nullish(),
   fluorideDone: z.boolean().nullish(),
   fluorideDate: z.union([z.null(), systemNullableOfSystemDateOnlySchema]).optional(),
   fluorideOperator: z.string().min(0).max(200).nullish(),

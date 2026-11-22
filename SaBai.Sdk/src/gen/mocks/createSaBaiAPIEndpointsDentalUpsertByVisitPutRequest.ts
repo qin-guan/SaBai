@@ -50,7 +50,7 @@ export function createSaBaiAPIEndpointsDentalUpsertByVisitPutRequest<TData exten
     fracturedTeeth: faker.helpers.arrayElement([null, createSaBaiAPIDomainAbsentPresent()]),
     mucosalLesions: faker.helpers.arrayElement([null, createSaBaiAPIDomainAbsentPresent()]),
     malocclusion: faker.helpers.arrayElement([null, createSaBaiAPIDomainMalocclusion()]),
-    diagnoses: faker.helpers.multiple(() => (faker.string.alpha())),
+    diagnoses: faker.helpers.multiple(() => (faker.string.alpha({ length: { min: 0, max: 500 } }))),
     fluorideDone: faker.datatype.boolean(),
     fluorideDate: faker.helpers.arrayElement([null, createSystemNullableOfSystemDateOnly()]),
     fluorideOperator: faker.string.alpha({ length: { min: 0, max: 200 } }),

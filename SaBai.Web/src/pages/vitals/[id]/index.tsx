@@ -68,7 +68,7 @@ export default function PatientVitalsPage() {
   // Fetch patient
   const { data: patient, isLoading: patientLoading } = useQuery({
     ...saBaiAPIEndpointsPatientsGetEndpointQueryOptions(
-      { path: { id: Number(id) } },
+      { path: { id: String(id) } },
       apiConfig,
     ),
     enabled: !!id,
@@ -77,7 +77,7 @@ export default function PatientVitalsPage() {
   // Fetch visits
   const { data: visitsData, isLoading: visitsLoading } = useQuery({
     ...saBaiAPIEndpointsPatientsVisitsGetEndpointQueryOptions(
-      { path: { patientId: Number(id) } },
+      { path: { patientId: String(id) } },
       apiConfig,
     ),
     enabled: !!id,
@@ -140,7 +140,7 @@ export default function PatientVitalsPage() {
             title="Edit Patient Details"
             colour="indigo"
             onClick={() => setIsEditingPatient(true)}
-            className="shrink-0"
+            className="shrink-0 max-w-min text-center sm:max-w-none"
           />
         </div>
 
@@ -215,7 +215,7 @@ function VitalsForm({
   visitDate,
   patient,
 }: {
-  visitId: number;
+  visitId: string;
   visitDate: Date | string;
   patient: { dateOfBirth: Date | string; gender: SaBaiAPIDomainGenderKey };
 }) {
@@ -408,10 +408,11 @@ function VitalsForm({
       </FormSection>
 
       {/* Growth chart: below Body Measurements on narrow screens, pinned in a
-          side column spanning every form row on wide screens. */}
+          side column spanning every form row on wide screens, offset below the
+          sticky patient search bar. */}
       {showChart && (
         <div
-          className="min-[1128px]:col-start-2 min-[1128px]:row-start-1 min-[1128px]:row-span-6 self-start sticky top-4"
+          className="min-[1128px]:col-start-2 min-[1128px]:row-start-1 min-[1128px]:row-span-6 self-start min-[1128px]:sticky min-[1128px]:top-20"
           data-growth-chart
         >
           <FormSection

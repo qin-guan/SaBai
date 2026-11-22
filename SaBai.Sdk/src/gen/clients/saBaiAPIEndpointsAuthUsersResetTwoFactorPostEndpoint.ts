@@ -15,5 +15,5 @@ import { client, withUnwrap } from '../.kubb/client'
 export function saBaiAPIEndpointsAuthUsersResetTwoFactorPostEndpoint<ThrowOnError extends boolean = true>(options: Options<SaBaiAPIEndpointsAuthUsersResetTwoFactorPostEndpointOptions, ThrowOnError>): Unwrappable<RequestResult<SaBaiAPIEndpointsAuthUsersResetTwoFactorPostEndpointResponses, ThrowOnError>> {
   const { client: request = client, ...config } = options
 
-  return withUnwrap(request({ method: 'POST', url: '/auth/users/{id}/two-factor/reset', security: [{ type: 'apiKey', name: 'sabai.auth', in: 'cookie', scopes: ['admin'] }], ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<SaBaiAPIEndpointsAuthUsersResetTwoFactorPostEndpointResponses, ThrowOnError>>)
+  return withUnwrap(request({ method: 'POST', url: '/auth/users/{id}/two-factor/reset', security: [{ type: 'apiKey', name: 'sabai.auth', in: 'cookie' }], ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<SaBaiAPIEndpointsAuthUsersResetTwoFactorPostEndpointResponses, ThrowOnError>>)
 }

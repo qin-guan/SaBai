@@ -13,6 +13,7 @@ import { apiConfig } from "@/lib/api/config";
 import { getApiErrorMessage } from "@/lib/api/errors";
 import { positiveNumberOptions } from "@/lib/utils/medication";
 import { AddFormFields } from "./types";
+import ModalToast from "@/components/interactive/ModalToast";
 
 export default function AddIngredientModal() {
   const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
@@ -28,14 +29,17 @@ export default function AddIngredientModal() {
     onSuccess: () => {
       toast.success("Successfully created!");
       queryClient.invalidateQueries({
-        queryKey: saBaiAPIEndpointsMedicationIngredientsListGetEndpointQueryKey(),
+        queryKey:
+          saBaiAPIEndpointsMedicationIngredientsListGetEndpointQueryKey(),
       });
       form.reset();
       setModalIsOpen(false);
     },
     onError: (err) => {
       console.error(err);
-      toast.error(getApiErrorMessage(err, "An error has occurred."));
+      toast.error(getApiErrorMessage(err, "An error has occurred."), {
+        toasterId: "modal",
+      });
     },
   });
 
@@ -57,6 +61,7 @@ export default function AddIngredientModal() {
           <h2 className="text-xl font-bold tracking-tight text-slate-900 mb-4">
             Add New Active Ingredient
           </h2>
+          <ModalToast />
           <FormProvider {...form}>
             <form
               onSubmit={(e) => {

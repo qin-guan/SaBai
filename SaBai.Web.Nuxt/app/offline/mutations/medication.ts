@@ -9,6 +9,7 @@ import {
   saBaiAPIEndpointsMedicationIngredientsDeleteDeleteEndpoint,
   saBaiAPIEndpointsMedicationIngredientsListGetEndpoint,
   saBaiAPIEndpointsMedicationIngredientsUpdatePutEndpoint,
+  saBaiAPIEndpointsMedicationStockByIngredientGetEndpoint,
   saBaiAPIEndpointsMedicationStockCreatePostEndpoint,
   saBaiAPIEndpointsMedicationStockSplitsPostEndpoint,
   saBaiAPIEndpointsMedicationStockUpdatePatchEndpoint,
@@ -22,6 +23,7 @@ import {
 } from '@sabai/sdk/clients'
 import type {
   SaBaiAPIDomainStockStatusKey,
+  SaBaiAPIEndpointsMedicationStockByIngredientGetResponse,
   SaBaiAPIEndpointsMedicationBrandsListGetResponse,
   SaBaiAPIEndpointsMedicationBrandsWithIngredientGetResponse,
   SaBaiAPIEndpointsMedicationIngredientsListGetResponse,
@@ -35,14 +37,20 @@ import type {
   SaBaiAPIEndpointsPharmacyOrdersGetVisitBundle,
 } from '@sabai/sdk/types'
 import { defineOfflineMutation, requestOptions } from '~/offline/defineOfflineMutation'
-import { CLINIC_STAFF_ROLES, registerOfflinePrefetch } from '~/offline/prefetch'
+import { registerOfflinePrefetch } from '~/offline/prefetch'
 import { apiConfig, queryKeys } from '~/utils/api'
 import { getApiErrorStatus } from '~/utils/apiErrors'
 import {
+  adjustAvailability,
+  applyAllocations,
   applySplit,
+  patchOrderInPharmacyQueue,
   patchStock,
+  removeOrderFromPharmacyQueue,
   upsertById,
+  upsertOrderInPharmacyQueue,
   upsertStock,
+  type OrderAllocation,
   type StockSplitData,
 } from '~/utils/medicationCache'
 
@@ -55,6 +63,13 @@ import {
  * Four lists are cached and edited together, because one change shows in
  * several: ingredients, brands, brands with their ingredient name (the stock
  * form's picker) and stock lines with brand and ingredient names.
+ *
+ * Orders are for an active ingredient. The server reserves stock for an order
+ * when it is placed (earliest expiry first, across brands: the order's
+ * `allocations`), takes the reserved units off hand when it is dispensed, and
+ * releases them when it is cancelled or deleted. The optimistic edits follow
+ * the same steps as deltas keyed by the write (see `withPendingDelta`), so a
+ * queued write re-applied after a refetch never counts twice.
  */
 
 export type MedicationIngredient = SaBaiAPIEndpointsMedicationIngredientsListGetResponse
@@ -63,6 +78,7 @@ export type MedicationBrandWithIngredient = SaBaiAPIEndpointsMedicationBrandsWit
 export type MedicationStockLine = SaBaiAPIEndpointsMedicationStockWithBrandGetResponse
 export type StockStatusKey = SaBaiAPIDomainStockStatusKey
 
+export type IngredientAvailability = SaBaiAPIEndpointsMedicationStockByIngredientGetResponse
 export type MedicationOrder = SaBaiAPIEndpointsOrdersListGetResponse
 export type OrderStatusKey = SaBaiAPIDomainOrderStatusKey
 export type PharmacyPatientOrders = SaBaiAPIEndpointsPharmacyOrdersGetResponse
@@ -89,6 +105,11 @@ export function fetchMedicationStock(signal?: AbortSignal) {
   return saBaiAPIEndpointsMedicationStockWithBrandGetEndpoint({ ...apiConfig, signal }).unwrap()
 }
 
+/** Every active ingredient with the units that can still be ordered (0 when none). */
+export function fetchIngredientAvailability(signal?: AbortSignal) {
+  return saBaiAPIEndpointsMedicationStockByIngredientGetEndpoint({ ...apiConfig, signal }).unwrap()
+}
+
 export function fetchOrders(status?: string, signal?: AbortSignal) {
   return saBaiAPIEndpointsOrdersListGetEndpoint({ ...apiConfig, query: status ? { status } : undefined, signal }).unwrap()
 }
@@ -101,17 +122,29 @@ export function fetchMedicationHistory(brandId: string, signal?: AbortSignal) {
   return saBaiAPIEndpointsMedicationHistoryGetEndpoint({ ...apiConfig, query: { brandId }, signal }).unwrap()
 }
 
-// The consult form picks medication offline, so a device needs all four lists.
+/** The roles the API lets manage medication, stock and the pharmacy queue (PharmacyWork). */
+export const PHARMACY_ROLES: readonly string[] = ['admin', 'member', 'pharmacist']
+/** The roles the API lets place, change and list orders (OrderWork). */
+export const ORDER_ROLES: readonly string[] = ['admin', 'member', 'doctor', 'pharmacist']
+
+// The stock pages and the pharmacy queue work offline for the pharmacy.
 registerOfflinePrefetch('medication', async (queryClient) => {
   await Promise.all([
     queryClient.fetchQuery({ queryKey: queryKeys.medicationIngredients(), queryFn: ({ signal }) => fetchMedicationIngredients(signal) }),
     queryClient.fetchQuery({ queryKey: queryKeys.medicationBrands(), queryFn: ({ signal }) => fetchMedicationBrands(signal) }),
     queryClient.fetchQuery({ queryKey: queryKeys.medicationBrandsWithIngredient(), queryFn: ({ signal }) => fetchMedicationBrandsWithIngredient(signal) }),
     queryClient.fetchQuery({ queryKey: queryKeys.medicationStock(), queryFn: ({ signal }) => fetchMedicationStock(signal) }),
-    queryClient.fetchQuery({ queryKey: queryKeys.ordersList(), queryFn: ({ signal }) => fetchOrders(undefined, signal) }),
     queryClient.fetchQuery({ queryKey: queryKeys.pharmacyOrders(), queryFn: ({ signal }) => fetchPharmacyOrders(signal) }),
   ])
-}, { roles: CLINIC_STAFF_ROLES })
+}, { roles: PHARMACY_ROLES })
+
+// The consult form orders offline from what was last known to be available.
+registerOfflinePrefetch('medication.orders', async (queryClient) => {
+  await Promise.all([
+    queryClient.fetchQuery({ queryKey: queryKeys.medicationAvailability(), queryFn: ({ signal }) => fetchIngredientAvailability(signal) }),
+    queryClient.fetchQuery({ queryKey: queryKeys.ordersList(), queryFn: ({ signal }) => fetchOrders(undefined, signal) }),
+  ])
+}, { roles: ORDER_ROLES })
 
 // ── Cache edits ──────────────────────────────────────────────────────────
 
@@ -405,9 +438,12 @@ function stockRecord(vars: CreateStockVars): MedicationStockLine {
     medicationBrandId: vars.medicationBrandId,
     quantity: vars.quantity,
     expiry: vars.expiry,
+    reservedQuantity: 0,
+    availableQuantity: vars.quantity,
     location: vars.location,
     stockStatus: vars.stockStatus,
     remarks: vars.remarks,
+    parentStockId: null,
     brandName: vars.brandName,
     ingredientName: vars.ingredientName,
     ingredientId: vars.ingredientId,
@@ -462,8 +498,9 @@ export const updateMedicationStock = defineOfflineMutation({
 })
 
 /**
- * Splits a lot into child lots. Idempotent by construction: the parent ends at
- * zero quantity and each child line is upserted under the client id in
+ * Splits a lot's unreserved units into child lots (the parent keeps what is
+ * reserved for pending orders). Idempotent by construction: the parent ends at
+ * its reserved quantity and each child line is upserted under the client id in
  * `vars.splits`, built from `vars.parent` (a snapshot), so re-applying yields
  * the same list. The API replays safely on the same ids.
  */
@@ -492,14 +529,7 @@ export const splitMedicationStock = defineOfflineMutation({
   onSuccess: (_saved, _vars, queryClient) => invalidateStock(queryClient),
 })
 
-// ── Orders & Pharmacy Queue ──────────────────────────────────────────────
-
-import {
-  upsertOrderInPharmacyQueue,
-  patchOrderInPharmacyQueue,
-  removeOrderFromPharmacyQueue,
-  deductStockFifo,
-} from '~/utils/medicationCache'
+// ── Orders & pharmacy queue ──────────────────────────────────────────────
 
 export interface CreateOrderContext {
   patientId?: string
@@ -515,108 +545,167 @@ export interface CreateOrderContext {
 export interface CreateOrderVars {
   id: string
   consultId: string
-  medicationBrandId: string
-  brandName: string
+  medicationActiveIngredientId: string
+  /** For the lists and the pending-changes list. */
+  ingredientName: string
   quantity: number
   dosageInstructions: string
   remarks: string | null
   createdAt?: string
+  /** The patient and visit, so the order shows in the pharmacy queue before it reaches the server. */
   context?: CreateOrderContext
 }
 
+/** The order as the user saw it when acting on it: what the optimistic stock edits undo or move. */
+export interface OrderSnapshot {
+  medicationActiveIngredientId: string
+  ingredientName: string
+  quantity: number
+  allocations: OrderAllocation[]
+}
+
+/** A change to a pending order: new fields, then dispensing or cancelling it (as `PATCH /orders/{id}`). */
 export interface UpdateOrderVars {
   id: string
-  status: OrderStatusKey
-  dosageInstructions?: string | null
+  /** Unique per change, so two queued edits of one order each count once. */
+  changeId: string
+  /** Omitted: only the fields change and the order stays pending. */
+  status?: Exclude<OrderStatusKey, 'PENDING'>
+  dosageInstructions?: string
   remarks?: string | null
-  medicationBrandId?: string
-  brandName?: string
   quantity?: number
+  medicationActiveIngredientId?: string
+  /** The new ingredient's name, with `medicationActiveIngredientId`. */
+  ingredientName?: string
+  before: OrderSnapshot
   visitId?: string
   patientName?: string
-  approvedById?: string | null
-  approvedAt?: string | null
-  /** Snapshot of active stock lots for this brand when the user approved, so optimistic FIFO deduction is idempotent. */
-  stockSnapshot?: MedicationStockLine[]
+  dispensedById?: string | null
+  /** When the user dispensed it (device time; the server records its own). */
+  dispensedAt?: string
 }
 
 export interface DeleteOrderVars {
   id: string
-  brandName?: string
+  before: OrderSnapshot & { status: OrderStatusKey }
   visitId?: string
 }
 
-const journeyAppliedActions = new WeakMap<object, Set<string>>()
+/** Edits every cached order list: all orders (`status` undefined) and the per-status lists. */
+function editOrderLists(queryClient: QueryClient, edit: (list: MedicationOrder[], status: string | undefined) => MedicationOrder[]) {
+  for (const query of queryClient.getQueryCache().findAll({ queryKey: queryKeys.ordersList() })) {
+    const status = typeof query.queryKey[2] === 'string' ? query.queryKey[2] : undefined
+    queryClient.setQueryData<MedicationOrder[]>(query.queryKey, old => old && edit(old, status))
+  }
+}
+
+/**
+ * Puts `order` in every cached order list it belongs in (by status) and takes
+ * it out of the others. `ensureLists` also starts the all-orders and status
+ * lists when they are not cached (a new order shows before any list was read).
+ */
+function placeOrderInLists(queryClient: QueryClient, order: MedicationOrder, ensureLists = false) {
+  if (ensureLists) {
+    for (const key of [queryKeys.ordersList(), queryKeys.ordersList(order.status)])
+      queryClient.setQueryData<MedicationOrder[]>(key, old => old ?? [])
+  }
+  editOrderLists(queryClient, (list, status) =>
+    !status || status === order.status
+      ? upsertById(list, order, 'start')
+      : list.filter(o => o.id !== order.id))
+}
+
+function findOrder(queryClient: QueryClient, id: string): MedicationOrder | undefined {
+  for (const [, list] of queryClient.getQueriesData<MedicationOrder[]>({ queryKey: queryKeys.ordersList() })) {
+    const found = list?.find(o => o.id === id)
+    if (found) return found
+  }
+  return undefined
+}
+
+function editAvailability(queryClient: QueryClient, edit: (rows: IngredientAvailability[]) => IngredientAvailability[]) {
+  queryClient.setQueryData<IngredientAvailability[]>(queryKeys.medicationAvailability(), old => old && edit(old))
+}
+
+function editPharmacyQueue(queryClient: QueryClient, edit: (queue: PharmacyPatientOrders[]) => PharmacyPatientOrders[]) {
+  queryClient.setQueryData<PharmacyPatientOrders[]>(queryKeys.pharmacyOrders(), old => old && edit(old))
+}
+
+/** After any order write: the server's orders, reservations and stock numbers replace the optimistic ones. */
+function refreshAfterOrderWrite(queryClient: QueryClient, saved?: MedicationOrder) {
+  if (saved) placeOrderInLists(queryClient, saved)
+  return Promise.all([
+    queryClient.invalidateQueries({ queryKey: queryKeys.orders() }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.pharmacyOrders() }),
+    // Covers the stock list and the by-ingredient availability.
+    queryClient.invalidateQueries({ queryKey: queryKeys.medicationStock() }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.patients() }),
+  ]).then(() => {})
+}
+
+type PharmacyJourney = {
+  pharmacyPending?: number
+  pharmacyOrders?: number
+  pharmacyAt?: string | null
+  /** Keys of the optimistic order actions already counted in this journey (not on server data). */
+  pendingOrderActions?: string[]
+}
+
+/**
+ * Applies `adjust` to a journey once per action key. The keys are kept on the
+ * journey itself (the query cache copies objects, so they cannot be tracked by
+ * identity); fresh data from the server has none, so a queued action counts
+ * once on top of it.
+ */
+function adjustJourneyOnce(journey: PharmacyJourney, actionKey: string, adjust: (journey: PharmacyJourney) => PharmacyJourney): PharmacyJourney {
+  const seen = journey.pendingOrderActions ?? []
+  if (seen.includes(actionKey)) return journey
+  return { ...adjust(journey), pendingOrderActions: [...seen, actionKey] }
+}
 
 function adjustVisitPharmacyJourney(
   queryClient: QueryClient,
   visitId: string,
   actionKey: string,
-  adjust: (journey: { pharmacyPending: number; pharmacyOrders: number; pharmacyAt?: string | null }) => any,
+  adjust: (journey: PharmacyJourney) => PharmacyJourney,
 ) {
-  queryClient.setQueriesData<{ visits?: Array<{ id: string; journey?: any }> }>(
+  queryClient.setQueriesData<{ visits?: Array<{ id: string, journey?: PharmacyJourney | null }> }>(
     { queryKey: ['patients', 'visits'] },
     (old) => {
       if (!old || !Array.isArray(old.visits)) return old
       if (!old.visits.some(v => v.id === visitId && v.journey)) return old
       return {
         ...old,
-        visits: old.visits.map(v => {
-          if (v.id === visitId && v.journey) {
-            const journey = v.journey
-            let set = journeyAppliedActions.get(journey)
-            if (!set) {
-              set = new Set()
-              journeyAppliedActions.set(journey, set)
-            }
-            if (set.has(actionKey)) return v
-            const nextSet = new Set(set)
-            nextSet.add(actionKey)
-            const updatedJourney = adjust(journey)
-            journeyAppliedActions.set(updatedJourney, nextSet)
-            return { ...v, journey: updatedJourney }
-          }
-          return v
-        }),
+        visits: old.visits.map(v =>
+          v.id === visitId && v.journey ? { ...v, journey: adjustJourneyOnce(v.journey, actionKey, adjust) } : v),
       }
     },
   )
 
-  queryClient.setQueryData<{ patients?: Array<{ id: string; lastVisitId?: string | null; lastVisitJourney?: any }> }>(
+  queryClient.setQueryData<{ patients?: Array<{ id: string, lastVisitId?: string | null, lastVisitJourney?: PharmacyJourney | null }> }>(
     queryKeys.patientsWithLatestVisit(),
     (old) => {
       if (!old || !Array.isArray(old.patients)) return old
       if (!old.patients.some(p => p.lastVisitId === visitId && p.lastVisitJourney)) return old
       return {
         ...old,
-        patients: old.patients.map(p => {
-          if (p.lastVisitId === visitId && p.lastVisitJourney) {
-            const journey = p.lastVisitJourney
-            let set = journeyAppliedActions.get(journey)
-            if (!set) {
-              set = new Set()
-              journeyAppliedActions.set(journey, set)
-            }
-            if (set.has(actionKey)) return p
-            const nextSet = new Set(set)
-            nextSet.add(actionKey)
-            const updatedJourney = adjust(journey)
-            journeyAppliedActions.set(updatedJourney, nextSet)
-            return { ...p, lastVisitJourney: updatedJourney }
-          }
-          return p
-        }),
+        patients: old.patients.map(p =>
+          p.lastVisitId === visitId && p.lastVisitJourney
+            ? { ...p, lastVisitJourney: adjustJourneyOnce(p.lastVisitJourney, actionKey, adjust) }
+            : p),
       }
     },
   )
 }
 
+const orderKey = (id: string) => `order:${id}`
+
 export const createOrder = defineOfflineMutation({
   key: 'medication.order.create',
   creates: true,
-  describe: (vars: CreateOrderVars) => `Order ${vars.brandName} × ${vars.quantity}${vars.context?.patientName ? ` for ${vars.context.patientName}` : ''}`,
+  describe: (vars: CreateOrderVars) => `Order ${vars.ingredientName} × ${vars.quantity}${vars.context?.patientName ? ` for ${vars.context.patientName}` : ''}`,
   recordIds: vars => [vars.id],
-  dependsOn: vars => [vars.consultId, vars.medicationBrandId, ...(vars.context?.visitId ? [vars.context.visitId] : []), ...(vars.context?.patientId ? [vars.context.patientId] : [])],
+  dependsOn: vars => [vars.consultId, ...(vars.context?.visitId ? [vars.context.visitId] : []), ...(vars.context?.patientId ? [vars.context.patientId] : [])],
   send: (vars, ctx) =>
     saBaiAPIEndpointsOrdersCreatePostEndpoint({
       ...apiConfig,
@@ -624,49 +713,49 @@ export const createOrder = defineOfflineMutation({
       body: {
         id: vars.id,
         consultId: vars.consultId,
-        medicationBrandId: vars.medicationBrandId,
+        medicationActiveIngredientId: vars.medicationActiveIngredientId,
         quantity: vars.quantity,
         dosageInstructions: vars.dosageInstructions,
         remarks: vars.remarks,
       },
     }).unwrap(),
   optimistic: (vars, queryClient) => {
-    const existing = queryClient.getQueryData<MedicationOrder[]>(queryKeys.ordersList())?.find(o => o.id === vars.id)
-    const order: MedicationOrder = {
+    const existing = findOrder(queryClient, vars.id)
+    placeOrderInLists(queryClient, {
       id: vars.id,
       consultId: vars.consultId,
-      medicationBrandId: vars.medicationBrandId,
-      brandName: vars.brandName,
+      medicationActiveIngredientId: vars.medicationActiveIngredientId,
+      activeIngredientName: vars.ingredientName,
       quantity: vars.quantity,
+      status: 'PENDING',
       dosageInstructions: vars.dosageInstructions,
       remarks: vars.remarks,
-      status: 'PENDING',
+      dispensedById: null,
+      dispensedAt: null,
       createdAt: vars.createdAt ?? existing?.createdAt ?? new Date().toISOString(),
-      approvedById: null,
-      approvedAt: null,
-    }
-
-    // Upsert into orders list & PENDING orders list
-    queryClient.setQueryData<MedicationOrder[]>(queryKeys.ordersList(), old => upsertById(old ?? [], order, 'start'))
-    queryClient.setQueryData<MedicationOrder[]>(queryKeys.ordersList('PENDING'), old => upsertById(old ?? [], order, 'start'))
+      // Which batches it reserves is decided by the server.
+      allocations: existing?.allocations ?? [],
+    }, true)
+    // The server reserves the units when it places the order.
+    editAvailability(queryClient, rows => adjustAvailability(rows, vars.medicationActiveIngredientId, orderKey(vars.id), -vars.quantity))
 
     const c = vars.context
     if (c) {
       queryClient.setQueryData<PharmacyPatientOrders[]>(queryKeys.pharmacyOrders(), old =>
         upsertOrderInPharmacyQueue(old ?? [], {
           orderId: vars.id,
-          medicationName: vars.brandName,
+          medicationName: vars.ingredientName,
           quantity: vars.quantity,
           isLowStock: c.isLowStock,
           dosageInstructions: vars.dosageInstructions,
+          allocations: [],
           patientDisplayId: c.patientDisplayId,
           patientName: c.patientName,
           villageCode: c.villageCode,
           visitId: c.visitId,
           visitDate: c.visitDate,
           diagnoses: c.diagnoses,
-        }),
-      )
+        }))
       adjustVisitPharmacyJourney(queryClient, c.visitId, `${vars.id}:create`, journey => ({
         ...journey,
         pharmacyPending: (journey.pharmacyPending ?? 0) + 1,
@@ -675,9 +764,9 @@ export const createOrder = defineOfflineMutation({
     }
   },
   revert: (vars, queryClient) => {
-    queryClient.setQueryData<MedicationOrder[]>(queryKeys.ordersList(), old => old?.filter(o => o.id !== vars.id))
-    queryClient.setQueryData<MedicationOrder[]>(queryKeys.ordersList('PENDING'), old => old?.filter(o => o.id !== vars.id))
-    queryClient.setQueryData<PharmacyPatientOrders[]>(queryKeys.pharmacyOrders(), old => old ? removeOrderFromPharmacyQueue(old, vars.id) : old)
+    editOrderLists(queryClient, list => list.filter(o => o.id !== vars.id))
+    editAvailability(queryClient, rows => adjustAvailability(rows, vars.medicationActiveIngredientId, orderKey(vars.id), null))
+    editPharmacyQueue(queryClient, queue => removeOrderFromPharmacyQueue(queue, vars.id))
     if (vars.context?.visitId) {
       adjustVisitPharmacyJourney(queryClient, vars.context.visitId, `${vars.id}:create:revert`, journey => ({
         ...journey,
@@ -686,16 +775,20 @@ export const createOrder = defineOfflineMutation({
       }))
     }
   },
-  onSuccess: (_saved, _vars, queryClient) => {
-    queryClient.invalidateQueries({ queryKey: queryKeys.orders() })
-    queryClient.invalidateQueries({ queryKey: queryKeys.pharmacyOrders() })
-    queryClient.invalidateQueries({ queryKey: queryKeys.patients() })
-  },
+  onSuccess: (saved, _vars, queryClient) => refreshAfterOrderWrite(queryClient, saved),
 })
+
+function describeOrderUpdate(vars: UpdateOrderVars) {
+  const name = vars.ingredientName ?? vars.before.ingredientName
+  const forPatient = vars.patientName ? ` for ${vars.patientName}` : ''
+  if (vars.status === 'DISPENSED') return `Dispense ${name} × ${vars.quantity ?? vars.before.quantity}${forPatient}`
+  if (vars.status === 'CANCELLED') return `Cancel order ${name}${forPatient}`
+  return `Change order ${name}${forPatient}`
+}
 
 export const updateOrder = defineOfflineMutation({
   key: 'medication.order.update',
-  describe: (vars: UpdateOrderVars) => vars.status === 'APPROVED' ? `Dispense ${vars.brandName ?? 'order'}${vars.patientName ? ` for ${vars.patientName}` : ''}` : vars.status === 'CANCELLED' ? `Cancel order ${vars.brandName ?? ''}`.trim() : `Edit order ${vars.brandName ?? ''}`.trim(),
+  describe: describeOrderUpdate,
   recordIds: vars => [vars.id],
   dependsOn: vars => [vars.id],
   send: (vars, ctx) =>
@@ -705,71 +798,82 @@ export const updateOrder = defineOfflineMutation({
       path: { id: vars.id },
       body: {
         status: vars.status,
-        dosageInstructions: vars.dosageInstructions ?? undefined,
-        remarks: vars.remarks ?? undefined,
+        dosageInstructions: vars.dosageInstructions,
+        remarks: vars.remarks,
+        quantity: vars.quantity,
+        medicationActiveIngredientId: vars.medicationActiveIngredientId,
       },
     }).unwrap(),
   optimistic: (vars, queryClient) => {
-    const patch: Partial<MedicationOrder> = {
+    const key = `${vars.id}:${vars.changeId}`
+    const { before } = vars
+    const ingredientId = vars.medicationActiveIngredientId ?? before.medicationActiveIngredientId
+    const quantity = vars.quantity ?? before.quantity
+    const reallocates = ingredientId !== before.medicationActiveIngredientId || quantity !== before.quantity
+
+    // Field changes first, as on the server: a new quantity or ingredient moves the reservation.
+    if (reallocates) {
+      editAvailability(queryClient, (rows) => {
+        if (ingredientId === before.medicationActiveIngredientId)
+          return adjustAvailability(rows, ingredientId, key, before.quantity - quantity)
+        const released = adjustAvailability(rows, before.medicationActiveIngredientId, key, before.quantity)
+        return adjustAvailability(released, ingredientId, key, -quantity)
+      })
+      // The old batches are released; the new ones are chosen by the server.
+      editStock(queryClient, list => applyAllocations(list, before.allocations, key, 'release'))
+    }
+    const allocations = reallocates ? [] : before.allocations
+
+    if (vars.status === 'DISPENSED')
+      editStock(queryClient, list => applyAllocations(list, allocations, `${key}:dispense`, 'dispense'))
+    if (vars.status === 'CANCELLED') {
+      editAvailability(queryClient, rows => adjustAvailability(rows, ingredientId, `${key}:cancel`, quantity))
+      editStock(queryClient, list => applyAllocations(list, allocations, `${key}:cancel`, 'release'))
+    }
+
+    const current = findOrder(queryClient, vars.id)
+    if (current) {
+      placeOrderInLists(queryClient, {
+        ...current,
+        medicationActiveIngredientId: ingredientId,
+        activeIngredientName: vars.ingredientName ?? current.activeIngredientName,
+        quantity,
+        dosageInstructions: vars.dosageInstructions ?? current.dosageInstructions,
+        remarks: vars.remarks !== undefined ? vars.remarks : current.remarks,
+        status: vars.status ?? current.status,
+        dispensedById: vars.status === 'DISPENSED' ? (vars.dispensedById ?? null) : current.dispensedById,
+        dispensedAt: vars.status === 'DISPENSED' ? (vars.dispensedAt ?? current.dispensedAt) : current.dispensedAt,
+        // A cancelled order holds nothing; a dispensed one keeps what it took.
+        allocations: vars.status === 'CANCELLED' ? [] : allocations,
+      })
+    }
+
+    editPharmacyQueue(queryClient, queue => patchOrderInPharmacyQueue(queue, vars.id, {
       status: vars.status,
-    }
-    if (vars.dosageInstructions != null) patch.dosageInstructions = vars.dosageInstructions
-    if (vars.remarks !== undefined) patch.remarks = vars.remarks
-    if (vars.status === 'APPROVED') {
-      patch.approvedAt = vars.approvedAt ?? new Date().toISOString()
-    }
+      dosageInstructions: vars.dosageInstructions,
+      medicationName: vars.ingredientName,
+      quantity: vars.quantity,
+      allocations: reallocates ? [] : undefined,
+    }))
 
-    queryClient.setQueriesData<MedicationOrder[]>({ queryKey: ['orders', 'list'] }, old => {
-      if (!old) return old
-      return old.map(o => {
-        if (o.id === vars.id) {
-          return { ...o, ...patch }
-        }
-        return o
-      }).filter(o => {
-        // If queryKey is status-specific (e.g. ['orders', 'list', 'PENDING']), filter out if status changed
-        // but wait, setQueriesData with queryKey: ['orders', 'list'] matches all starting with ['orders', 'list']
-        return true
-      })
-    })
-
-    // Also specifically handle status-filtered lists if cached
-    for (const statusKey of ['PENDING', 'APPROVED', 'CANCELLED']) {
-      const qKey = queryKeys.ordersList(statusKey)
-      queryClient.setQueryData<MedicationOrder[]>(qKey, old => {
-        if (!old) return old
-        return old.map(o => o.id === vars.id ? { ...o, ...patch } : o).filter(o => o.status === statusKey)
-      })
-    }
-
-    queryClient.setQueryData<PharmacyPatientOrders[]>(queryKeys.pharmacyOrders(), old =>
-      old ? patchOrderInPharmacyQueue(old, vars.id, { status: vars.status, dosageInstructions: vars.dosageInstructions }) : old,
-    )
-
-    if (vars.status === 'APPROVED' && vars.medicationBrandId && vars.quantity) {
-      editStock(queryClient, list => deductStockFifo(list, vars.medicationBrandId!, vars.quantity!, vars.stockSnapshot))
-    }
-
-    if (vars.visitId && (vars.status === 'APPROVED' || vars.status === 'CANCELLED')) {
-      const isApproved = vars.status === 'APPROVED'
+    if (vars.visitId && vars.status) {
+      const dispensed = vars.status === 'DISPENSED'
       adjustVisitPharmacyJourney(queryClient, vars.visitId, `${vars.id}:${vars.status}`, journey => ({
         ...journey,
         pharmacyPending: Math.max(0, (journey.pharmacyPending ?? 0) - 1),
-        ...(isApproved ? { pharmacyAt: vars.approvedAt ?? new Date().toISOString() } : { pharmacyOrders: Math.max(0, (journey.pharmacyOrders ?? 0) - 1) }),
+        ...(dispensed
+          ? { pharmacyAt: vars.dispensedAt ?? new Date().toISOString() }
+          : { pharmacyOrders: Math.max(0, (journey.pharmacyOrders ?? 0) - 1) }),
       }))
     }
   },
-  onSuccess: (_saved, _vars, queryClient) => {
-    queryClient.invalidateQueries({ queryKey: queryKeys.orders() })
-    queryClient.invalidateQueries({ queryKey: queryKeys.pharmacyOrders() })
-    queryClient.invalidateQueries({ queryKey: queryKeys.medicationStock() })
-    queryClient.invalidateQueries({ queryKey: queryKeys.patients() })
-  },
+  onSuccess: (saved, _vars, queryClient) => refreshAfterOrderWrite(queryClient, saved),
 })
 
+/** Deletes an order. A pending order's reservation is released; a dispensed order cannot be deleted (409). */
 export const deleteOrder = defineOfflineMutation({
   key: 'medication.order.delete',
-  describe: (vars: DeleteOrderVars) => `Delete order ${vars.brandName ?? ''}`.trim(),
+  describe: (vars: DeleteOrderVars) => `Delete order ${vars.before.ingredientName}`,
   recordIds: vars => [vars.id],
   send: async (vars, ctx) => {
     try {
@@ -778,20 +882,37 @@ export const deleteOrder = defineOfflineMutation({
         ...requestOptions(ctx),
         path: { id: vars.id },
       }).unwrap()
-    } catch (error) {
+    }
+    catch (error) {
+      // Already gone: done.
       if (getApiErrorStatus(error) !== 404) throw error
     }
   },
   optimistic: (vars, queryClient) => {
-    queryClient.setQueriesData<MedicationOrder[]>({ queryKey: ['orders', 'list'] }, old =>
-      old?.filter(o => o.id !== vars.id))
-    queryClient.setQueryData<PharmacyPatientOrders[]>(queryKeys.pharmacyOrders(), old =>
-      old ? removeOrderFromPharmacyQueue(old, vars.id) : old)
+    const key = `${vars.id}:delete`
+    editOrderLists(queryClient, list => list.filter(o => o.id !== vars.id))
+    editPharmacyQueue(queryClient, queue => removeOrderFromPharmacyQueue(queue, vars.id))
+    if (vars.before.status === 'PENDING') {
+      editAvailability(queryClient, rows => adjustAvailability(rows, vars.before.medicationActiveIngredientId, key, vars.before.quantity))
+      editStock(queryClient, list => applyAllocations(list, vars.before.allocations, key, 'release'))
+      if (vars.visitId) {
+        adjustVisitPharmacyJourney(queryClient, vars.visitId, key, journey => ({
+          ...journey,
+          pharmacyPending: Math.max(0, (journey.pharmacyPending ?? 0) - 1),
+          pharmacyOrders: Math.max(0, (journey.pharmacyOrders ?? 0) - 1),
+        }))
+      }
+    }
   },
-  onSuccess: (_saved, _vars, queryClient) => {
-    queryClient.invalidateQueries({ queryKey: queryKeys.orders() })
-    queryClient.invalidateQueries({ queryKey: queryKeys.pharmacyOrders() })
-    queryClient.invalidateQueries({ queryKey: queryKeys.patients() })
-  },
+  onSuccess: (_saved, _vars, queryClient) => refreshAfterOrderWrite(queryClient),
 })
 
+/** The snapshot `updateOrder` and `deleteOrder` need, from an order as listed. */
+export function orderSnapshot(order: Pick<MedicationOrder, 'medicationActiveIngredientId' | 'activeIngredientName' | 'quantity' | 'allocations'>): OrderSnapshot {
+  return {
+    medicationActiveIngredientId: order.medicationActiveIngredientId,
+    ingredientName: order.activeIngredientName,
+    quantity: order.quantity,
+    allocations: [...order.allocations],
+  }
+}

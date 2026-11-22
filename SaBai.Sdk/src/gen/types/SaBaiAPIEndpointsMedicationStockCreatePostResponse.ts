@@ -26,6 +26,18 @@ export type SaBaiAPIEndpointsMedicationStockCreatePostResponse = {
   quantity: number;
   /**
    * @description
+   * Format: `int32`
+   * @type integer
+   */
+  reservedQuantity: number;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
+  availableQuantity: number;
+  /**
+   * @description
    * Format: `date-time`
    * @type string
    */
@@ -33,4 +45,10 @@ export type SaBaiAPIEndpointsMedicationStockCreatePostResponse = {
   location: string;
   stockStatus: SaBaiAPIDomainStockStatusKey;
   remarks: string | null;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string
+   */
+  parentStockId: string | null;
 };

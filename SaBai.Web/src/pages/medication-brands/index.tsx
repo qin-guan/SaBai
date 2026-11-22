@@ -1,11 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
-import { saBaiAPIEndpointsMedicationBrandsListGetEndpointQueryOptions } from "@sabai/sdk/hooks";
+import {
+  saBaiAPIEndpointsMedicationBrandsListGetEndpointQueryOptions,
+  saBaiAPIEndpointsMedicationIngredientsListGetEndpointQueryOptions,
+} from "@sabai/sdk/hooks";
 import { apiConfig } from "@/lib/api/config";
 import PageHeader from "@/components/PageHeader";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import TableHeader from "@/components/TableHeader";
-import TableRow from "@/components/TableRow";
-import TableCell from "@/components/TableCell";
+import BrandRow from "@/components/medication-brands/BrandRow";
+import AddBrandModal from "@/components/medication-brands/AddBrandModal";
 
 function Header() {
   return (
@@ -17,16 +20,26 @@ function Header() {
       ]}
       title="Medication Brands"
       description="Manage medication brands."
+      actions={<AddBrandModal />}
     />
   );
 }
 
 function MedicationBrandsBasePage() {
-  const {
-    data: brands,
-    isLoading,
-    isError,
-  } = useQuery(saBaiAPIEndpointsMedicationBrandsListGetEndpointQueryOptions(apiConfig));
+  const brandsQuery = useQuery(
+    saBaiAPIEndpointsMedicationBrandsListGetEndpointQueryOptions(apiConfig),
+  );
+  // the brands list only has the ingredient id, so the name and unit come from the ingredients list
+  const ingredientsQuery = useQuery(
+    saBaiAPIEndpointsMedicationIngredientsListGetEndpointQueryOptions(
+      apiConfig,
+    ),
+  );
+
+  const brands = brandsQuery.data;
+  const ingredients = ingredientsQuery.data;
+  const isLoading = brandsQuery.isLoading || ingredientsQuery.isLoading;
+  const isError = brandsQuery.isError || ingredientsQuery.isError;
 
   function renderContent() {
     if (isError) {
@@ -49,33 +62,29 @@ function MedicationBrandsBasePage() {
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-slate-200">
           <TableHeader
-            headers={["Brand ID", "Name", "Remarks", "Active Ingredient ID"]}
+            headers={[
+              "Brand ID",
+              "Brand Name",
+              "Active Ingredient Name",
+              "Unit of Measurement",
+              "Remarks",
+              "Actions",
+            ]}
           />
           <tbody className="bg-white divide-y divide-slate-200">
-            {brands.map((brand) => (
-              <TableRow key={brand.id}>
-                <TableCell>
-                  <span className="text-sm font-medium text-slate-900">
-                    {brand.id}
-                  </span>
-                </TableCell>
-                <TableCell>
-                  <span className="text-sm font-medium text-slate-900">
-                    {brand.name}
-                  </span>
-                </TableCell>
-                <TableCell>
-                  <span className="text-sm font-medium text-slate-900">
-                    {brand.remarks}
-                  </span>
-                </TableCell>
-                <TableCell>
-                  <span className="text-sm font-medium text-slate-900">
-                    {brand.activeIngredientId}
-                  </span>
-                </TableCell>
-              </TableRow>
-            ))}
+            {brands.map((brand) => {
+              const ingredient = ingredients?.find(
+                (item) => item.id === brand.activeIngredientId,
+              );
+              return (
+                <BrandRow
+                  key={brand.id}
+                  {...brand}
+                  activeIngredientName={ingredient?.name ?? ""}
+                  unitOfMeasurement={ingredient?.unitOfMeasurement ?? ""}
+                />
+              );
+            })}
           </tbody>
         </table>
       </div>

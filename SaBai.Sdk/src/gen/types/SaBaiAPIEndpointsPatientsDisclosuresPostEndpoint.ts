@@ -11,6 +11,7 @@ export type SaBaiAPIEndpointsPatientsDisclosuresPostEndpointPath = {
   /**
    * @description
    * Format: `uuid`
+   * @minLength 1
    * @type string
    */
   patientId: string;

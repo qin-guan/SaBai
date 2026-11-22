@@ -8,7 +8,7 @@ import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsAuthLoginRecoveryCodePostRequest<TData extends Partial<SaBaiAPIEndpointsAuthLoginRecoveryCodePostRequest> = object>(data?: TData) {
   const defaultFakeData = {
-    recoveryCode: faker.string.alpha({ length: { min: 0, max: 32 } }),
+    recoveryCode: faker.string.alpha({ length: { min: 1, max: 32 } }),
   }
   return {
     ...defaultFakeData,

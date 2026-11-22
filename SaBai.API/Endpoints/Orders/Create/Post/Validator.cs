@@ -10,7 +10,7 @@ public sealed class Validator : Validator<Request>
     {
         RuleFor(x => x.Id).ClientId();
         RuleFor(x => x.ConsultId).NotEmpty();
-        RuleFor(x => x.MedicationBrandId).NotEmpty();
+        RuleFor(x => x.MedicationActiveIngredientId).NotEmpty();
         RuleFor(x => x.Quantity).GreaterThan(0);
         RuleFor(x => x.DosageInstructions).NotEmpty();
     }

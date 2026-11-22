@@ -58,9 +58,42 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             throw new BadRequestException("At least one diagnosis is required.");
         }
 
-        await EnsureOrdersAsync(req, ct);
+        await CheckOrdersAsync(req, ct);
 
         var now = DateTimeOffset.UtcNow;
+
+        // The consult and its orders succeed or fail together: if any order can't be covered by
+        // the available stock, nothing is saved. Built inside the unit, which may run again.
+        return await OrderLifecycle.RunAsync(
+            db,
+            async token =>
+            {
+                var consult = BuildConsult(req, doctorId, now);
+                db.Consults.Add(consult);
+                foreach (var input in req.Orders ?? [])
+                {
+                    var order = new SaBai.API.Domain.Order
+                    {
+                        Id = input.Id ?? Guid.CreateVersion7(),
+                        ConsultId = consult.Id,
+                        Consult = consult,
+                        MedicationActiveIngredientId = input.MedicationActiveIngredientId,
+                        DosageInstructions = input.DosageInstructions?.Trim() ?? "",
+                        Remarks = string.IsNullOrWhiteSpace(input.Remarks) ? null : input.Remarks.Trim(),
+                        Quantity = input.Quantity,
+                        CreatedAt = now,
+                    };
+                    await OrderLifecycle.PlaceAsync(db, order, token);
+                }
+
+                return consult;
+            },
+            ct
+        );
+    }
+
+    private static Consult BuildConsult(Request req, Guid doctorId, DateTimeOffset now)
+    {
         var consult = new Consult
         {
             Id = req.Id ?? Guid.CreateVersion7(),
@@ -93,28 +126,10 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             );
         }
 
-        foreach (var order in req.Orders ?? [])
-        {
-            consult.Orders.Add(
-                new SaBai.API.Domain.Order
-                {
-                    Id = order.Id ?? Guid.CreateVersion7(),
-                    MedicationBrandId = order.MedicationBrandId,
-                    DosageInstructions = order.DosageInstructions ?? "",
-                    Remarks = order.Remarks,
-                    Status = OrderStatus.Pending,
-                    Quantity = order.Quantity,
-                    CreatedAt = now,
-                }
-            );
-        }
-
-        db.Consults.Add(consult);
-        await db.SaveChangesAsync(ct);
         return consult;
     }
 
-    private async Task EnsureOrdersAsync(Request req, CancellationToken ct)
+    private async Task CheckOrdersAsync(Request req, CancellationToken ct)
     {
         var orders = req.Orders ?? [];
         if (orders.Count == 0)
@@ -127,11 +142,13 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             throw new BadRequestException("Order quantity must be at least 1.");
         }
 
-        var brandIds = orders.Select(x => x.MedicationBrandId).Distinct().ToArray();
-        var found = await db.MedicationBrands.CountAsync(x => brandIds.Contains(x.Id), ct);
-        if (found != brandIds.Length)
+        var ingredientIds = orders.Select(x => x.MedicationActiveIngredientId).Distinct().ToArray();
+        var knownIngredients = await db
+            .MedicationActiveIngredients.AsNoTracking()
+            .CountAsync(x => ingredientIds.Contains(x.Id), ct);
+        if (knownIngredients != ingredientIds.Length)
         {
-            throw new BadRequestException("Medication brand was not found.");
+            throw new BadRequestException("Medication ingredient was not found.");
         }
     }
 }

@@ -12,7 +12,7 @@ export function createSaBaiAPIEndpointsVisitsCreatePostRequest<TData extends Par
     patientId: faker.string.uuid(),
     villageCodeId: faker.string.uuid(),
     date: faker.date.anytime().toISOString(),
-    status: faker.string.alpha({ length: { min: 0, max: 100 } }),
+    status: faker.string.alpha(),
   }
   return {
     ...defaultFakeData,

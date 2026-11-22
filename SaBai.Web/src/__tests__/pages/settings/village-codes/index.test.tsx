@@ -27,15 +27,15 @@ vi.mock("@sabai/sdk/hooks", async (importOriginal) => {
     ) => mocks.listQueryOptions(args, config),
     saBaiAPIEndpointsVillageCodesCreatePostEndpointMutationOptions: () => ({
       mutationKey: ["village-codes-create"],
-      mutationFn: mocks.create,
+      mutationFn: (variables: unknown) => mocks.create(variables),
     }),
     saBaiAPIEndpointsVillageCodesUpdatePatchEndpointMutationOptions: () => ({
       mutationKey: ["village-codes-update"],
-      mutationFn: mocks.update,
+      mutationFn: (variables: unknown) => mocks.update(variables),
     }),
     saBaiAPIEndpointsVillageCodesDeleteDeleteEndpointMutationOptions: () => ({
       mutationKey: ["village-codes-delete"],
-      mutationFn: mocks.remove,
+      mutationFn: (variables: unknown) => mocks.remove(variables),
     }),
   };
 });

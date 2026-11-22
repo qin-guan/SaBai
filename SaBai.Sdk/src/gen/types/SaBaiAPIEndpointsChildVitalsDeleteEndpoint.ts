@@ -9,6 +9,7 @@ export type SaBaiAPIEndpointsChildVitalsDeleteEndpointPath = {
   /**
    * @description
    * Format: `uuid`
+   * @minLength 1
    * @type string
    */
   id: string;

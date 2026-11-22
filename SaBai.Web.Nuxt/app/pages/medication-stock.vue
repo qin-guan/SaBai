@@ -35,7 +35,7 @@ const splitting = ref<MedicationStockRow | null>(null)
       </template>
     </PageHeader>
 
-    <AppPanel title="Stock" :description="stock ? `${stock.length} lines · low stock highlighted red` : undefined" flush>
+    <AppPanel title="Stock" :description="stock ? `${stock.length} lines · reserved units are held for pending orders · low stock highlighted red` : undefined" flush>
       <StateMessage v-if="!stock && isError" kind="error" :message="describeLoadError(error, 'An error has occurred!')" />
       <StateMessage v-else-if="!stock && isPending" kind="loading" message="Loading stock..." />
       <StateMessage v-else-if="!stock || stock.length === 0" message="No stock found. Seed the database or add a new record." />
@@ -46,7 +46,13 @@ const splitting = ref<MedicationStockRow | null>(null)
             <TableHead>Brand</TableHead>
             <TableHead>Location</TableHead>
             <TableHead class="text-right">
-              Quantity
+              On hand
+            </TableHead>
+            <TableHead class="text-right">
+              Reserved
+            </TableHead>
+            <TableHead class="text-right">
+              Available
             </TableHead>
             <TableHead>Expiry</TableHead>
             <TableHead>State</TableHead>

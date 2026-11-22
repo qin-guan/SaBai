@@ -10,12 +10,16 @@ import { TableCell, TableRow } from '@/components/ui/table'
 
 /**
  * One stock line. Only location, status and remarks are editable inline; the
- * other fields are locked. Esc cancels, Enter / Ctrl+S saves while editing.
+ * other fields are locked. While units are reserved for pending orders the
+ * status stays active and only the unreserved units can be split off.
+ * Esc cancels, Enter / Ctrl+S saves while editing.
  */
 const props = defineProps<{ item: MedicationStockRow }>()
 const emit = defineEmits<{ split: [item: MedicationStockRow] }>()
 
 const isEditing = ref(false)
+const hasReservations = computed(() => props.item.reservedQuantity > 0)
+const canSplit = computed(() => props.item.availableQuantity > 0)
 const update = useOfflineMutation(updateMedicationStock)
 const initial = () => ({
   location: props.item.location,
@@ -117,18 +121,34 @@ function onKeydown(event: KeyboardEvent) {
         {{ item.location }}
       </template>
     </TableCell>
-    <TableCell data-label="Quantity" class="text-right tabular-nums">
+    <TableCell data-label="On hand" class="text-right tabular-nums">
       {{ item.quantity }}
+    </TableCell>
+    <TableCell data-label="Reserved" class="text-right tabular-nums" :class="item.reservedQuantity === 0 && 'text-muted-foreground'">
+      {{ item.reservedQuantity }}
+    </TableCell>
+    <TableCell data-label="Available" class="text-right font-semibold tabular-nums">
+      {{ item.availableQuantity }}
     </TableCell>
     <TableCell data-label="Expiry" class="tabular-nums">
       {{ item.expiry ? new Date(item.expiry).toLocaleDateString() : '-' }}
     </TableCell>
     <TableCell data-label="State" class="min-w-32">
-      <NativeSelect v-if="isEditing" v-model="form.stockStatus" :aria-label="`Status for ${item.brandName}`">
-        <NativeSelectOption v-for="o in stockStatusOptions" :key="o.value" :value="o.value">
-          {{ o.label }}
-        </NativeSelectOption>
-      </NativeSelect>
+      <template v-if="isEditing">
+        <NativeSelect
+          v-model="form.stockStatus"
+          :disabled="hasReservations"
+          :aria-label="`Status for ${item.brandName}`"
+          :aria-describedby="hasReservations ? `status-locked-${item.id}` : undefined"
+        >
+          <NativeSelectOption v-for="o in stockStatusOptions" :key="o.value" :value="o.value">
+            {{ o.label }}
+          </NativeSelectOption>
+        </NativeSelect>
+        <p v-if="hasReservations" :id="`status-locked-${item.id}`" class="mt-0.5 text-xs text-muted-foreground touch:text-sm">
+          Stays active while {{ item.reservedQuantity }} are reserved.
+        </p>
+      </template>
       <template v-else>
         {{ item.stockStatus }}
       </template>
@@ -153,7 +173,14 @@ function onKeydown(event: KeyboardEvent) {
           <Button ref="editButton" size="sm" variant="outline" :aria-label="`Edit ${item.brandName} at ${item.location}`" @click="startEditing">
             <PhPencilSimple aria-hidden="true" /> Edit
           </Button>
-          <Button size="sm" variant="outline" :aria-label="`Split ${item.brandName} at ${item.location}`" @click="emit('split', item)">
+          <Button
+            size="sm"
+            variant="outline"
+            :disabled="!canSplit"
+            :title="canSplit ? undefined : 'All of this stock is reserved for pending orders'"
+            :aria-label="`Split ${item.brandName} at ${item.location}`"
+            @click="emit('split', item)"
+          >
             <PhArrowsSplit aria-hidden="true" /> Split
           </Button>
         </template>

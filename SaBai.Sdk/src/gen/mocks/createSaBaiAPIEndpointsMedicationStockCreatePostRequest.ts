@@ -13,7 +13,7 @@ export function createSaBaiAPIEndpointsMedicationStockCreatePostRequest<TData ex
     medicationBrandId: faker.string.uuid(),
     quantity: faker.number.int({ min: 0 }),
     expiry: faker.date.anytime().toISOString(),
-    location: faker.string.alpha({ length: { min: 0, max: 255 } }),
+    location: faker.string.alpha({ length: { min: 1, max: 255 } }),
     stockStatus: createSaBaiAPIDomainStockStatus(),
     remarks: faker.string.alpha(),
   }

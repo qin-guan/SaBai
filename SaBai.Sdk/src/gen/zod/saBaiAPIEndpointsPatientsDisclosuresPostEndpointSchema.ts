@@ -8,7 +8,7 @@ import { fastEndpointsProblemDetailsSchema } from './fastEndpointsProblemDetails
 import { saBaiAPIEndpointsPatientsDisclosuresPostRequestSchema } from './saBaiAPIEndpointsPatientsDisclosuresPostRequestSchema'
 import { saBaiAPIEndpointsPatientsDisclosuresPostResponseSchema } from './saBaiAPIEndpointsPatientsDisclosuresPostResponseSchema'
 
-export const saBaiAPIEndpointsPatientsDisclosuresPostEndpointPathPatientIdSchema = z.uuid()
+export const saBaiAPIEndpointsPatientsDisclosuresPostEndpointPathPatientIdSchema = z.uuid().min(1)
 
 export const saBaiAPIEndpointsPatientsDisclosuresPostEndpointStatus200Schema = saBaiAPIEndpointsPatientsDisclosuresPostResponseSchema
 
@@ -25,5 +25,5 @@ export const saBaiAPIEndpointsPatientsDisclosuresPostEndpointErrorSchema = z.uni
 export const saBaiAPIEndpointsPatientsDisclosuresPostEndpointBodySchema = saBaiAPIEndpointsPatientsDisclosuresPostRequestSchema
 
 export const saBaiAPIEndpointsPatientsDisclosuresPostEndpointPathSchema = z.object({
-  patientId: z.uuid(),
+  patientId: z.uuid().min(1),
 })

@@ -47,7 +47,7 @@ vi.mock("@sabai/sdk/hooks", async (importOriginal) => {
     }),
     saBaiAPIEndpointsPatientsCreatePostEndpointMutationOptions: () => ({
       mutationKey: ["patients-create"],
-      mutationFn: mocks.createPatient,
+      mutationFn: (variables: unknown) => mocks.createPatient(variables),
     }),
   };
 });

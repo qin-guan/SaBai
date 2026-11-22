@@ -7,7 +7,7 @@ import * as z from 'zod'
 import { saBaiAPIDomainGenderSchema } from './saBaiAPIDomainGenderSchema'
 
 export const saBaiAPIEndpointsPatientsUpdatePatchRequestSchema = z.object({
-  name: z.string().min(0).max(255).nullish(),
+  name: z.string().nullish(),
   identificationNumber: z.string().min(0).max(255).nullish(),
   contactNo: z.string().min(0).max(255).nullish(),
   gender: z.union([z.null(), saBaiAPIDomainGenderSchema]).optional(),

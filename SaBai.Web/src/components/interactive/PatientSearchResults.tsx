@@ -7,7 +7,7 @@ interface PatientSearchResultsProps {
   isLoading: boolean;
   isRefetching: boolean;
   onSelect: () => void;
-  getPatientLink?: (patientId: number) => string;
+  getPatientLink?: (patientId: string) => string;
 }
 
 export default function PatientSearchResults({

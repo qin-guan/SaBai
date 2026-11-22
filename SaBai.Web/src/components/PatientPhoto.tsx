@@ -13,7 +13,7 @@ export function PatientPhoto({
   patientId,
   hasPhoto = false,
   ...imgProps
-}: { patientId: number; hasPhoto?: boolean } & Partial<ImgProps>) {
+}: { patientId: string; hasPhoto?: boolean } & Partial<ImgProps>) {
   const pictureUrl = usePatientPhoto(patientId, hasPhoto);
 
   return (

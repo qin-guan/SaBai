@@ -4,25 +4,8 @@
 */
 
 export type SaBaiAPIEndpointsAuthUsersUpdatePatchRequest = {
-  /**
-   * @minLength 0
-   * @maxLength 150
-   * @type string | undefined
-   */
   userName?: string | null;
-  /**
-   * @description
-   * Format: `email`
-   * @minLength 0
-   * @maxLength 255
-   * @type string | undefined
-   */
   email?: string | null;
-  /**
-   * @minLength 0
-   * @maxLength 255
-   * @type string | undefined
-   */
   nickname?: string | null;
   roles?: string[] | null;
   tags?: string[] | null;

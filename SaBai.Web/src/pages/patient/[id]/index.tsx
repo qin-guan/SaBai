@@ -18,12 +18,7 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import { paths } from "@/utils/paths";
 
 function parsePatientId(id: string | string[] | undefined) {
-  if (typeof id !== "string") {
-    return null;
-  }
-
-  const parsedId = Number.parseInt(id, 10);
-  return Number.isNaN(parsedId) ? null : parsedId;
+  return typeof id === "string" && id.length > 0 ? id : null;
 }
 
 export default function PatientPage() {
@@ -37,7 +32,7 @@ export default function PatientPage() {
     isRefetching,
   } = useQuery({
     ...saBaiAPIEndpointsPatientsGetEndpointQueryOptions(
-      { path: { id: patientId ?? 0 } },
+      { path: { id: patientId ?? "" } },
       apiConfig,
     ),
     enabled: !!patientId,
@@ -45,7 +40,7 @@ export default function PatientPage() {
 
   const { data: visitsData, isLoading: visitsLoading } = useQuery({
     ...saBaiAPIEndpointsPatientsVisitsGetEndpointQueryOptions(
-      { path: { patientId: patientId ?? 0 } },
+      { path: { patientId: patientId ?? "" } },
       apiConfig,
     ),
     enabled: !!patientId,
@@ -129,7 +124,7 @@ export default function PatientPage() {
               title="Edit Patient Details"
               colour="indigo"
               onClick={() => setIsEditingPatient(true)}
-              className="shrink-0"
+              className="shrink-0 max-w-min text-center sm:max-w-none"
             />
           </div>
 

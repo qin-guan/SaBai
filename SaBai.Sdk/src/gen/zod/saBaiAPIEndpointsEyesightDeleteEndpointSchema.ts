@@ -6,7 +6,7 @@
 import * as z from 'zod'
 import { fastEndpointsProblemDetailsSchema } from './fastEndpointsProblemDetailsSchema'
 
-export const saBaiAPIEndpointsEyesightDeleteEndpointPathIdSchema = z.uuid()
+export const saBaiAPIEndpointsEyesightDeleteEndpointPathIdSchema = z.uuid().min(1)
 
 export const saBaiAPIEndpointsEyesightDeleteEndpointStatus204Schema = z.unknown()
 
@@ -21,5 +21,5 @@ export const saBaiAPIEndpointsEyesightDeleteEndpointResponseSchema = saBaiAPIEnd
 export const saBaiAPIEndpointsEyesightDeleteEndpointErrorSchema = z.union([saBaiAPIEndpointsEyesightDeleteEndpointStatus400Schema, saBaiAPIEndpointsEyesightDeleteEndpointStatus401Schema, saBaiAPIEndpointsEyesightDeleteEndpointStatus403Schema])
 
 export const saBaiAPIEndpointsEyesightDeleteEndpointPathSchema = z.object({
-  id: z.uuid(),
+  id: z.uuid().min(1),
 })

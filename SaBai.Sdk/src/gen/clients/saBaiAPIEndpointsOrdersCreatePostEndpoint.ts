@@ -8,11 +8,11 @@ import type { SaBaiAPIEndpointsOrdersCreatePostEndpointOptions, SaBaiAPIEndpoint
 import { client, withUnwrap } from '../.kubb/client'
 
 /**
- * @summary Create a pending medication order
+ * @summary Place a medication order for an active ingredient and reserve its stock (earliest expiry first)
  * {@link /orders}
  */
 export function saBaiAPIEndpointsOrdersCreatePostEndpoint<ThrowOnError extends boolean = true>(options: Options<SaBaiAPIEndpointsOrdersCreatePostEndpointOptions, ThrowOnError>): Unwrappable<RequestResult<SaBaiAPIEndpointsOrdersCreatePostEndpointResponses, ThrowOnError>> {
   const { client: request = client, ...config } = options
 
-  return withUnwrap(request({ method: 'POST', url: '/orders', security: [{ type: 'apiKey', name: 'sabai.auth', in: 'cookie', scopes: ['admin', 'member'] }], contentType: { request: 'application/json' }, ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<SaBaiAPIEndpointsOrdersCreatePostEndpointResponses, ThrowOnError>>)
+  return withUnwrap(request({ method: 'POST', url: '/orders', security: [{ type: 'apiKey', name: 'sabai.auth', in: 'cookie' }], contentType: { request: 'application/json' }, ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<SaBaiAPIEndpointsOrdersCreatePostEndpointResponses, ThrowOnError>>)
 }

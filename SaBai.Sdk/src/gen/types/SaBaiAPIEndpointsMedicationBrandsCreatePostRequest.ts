@@ -11,7 +11,7 @@ export type SaBaiAPIEndpointsMedicationBrandsCreatePostRequest = {
    */
   id?: string | null;
   /**
-   * @minLength 0
+   * @minLength 1
    * @maxLength 255
    * @type string
    */

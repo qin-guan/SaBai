@@ -8,7 +8,7 @@ import type { CallToolResult, ServerContext } from '@modelcontextprotocol/server
 import { saBaiAPIEndpointsOrdersDeleteDeleteEndpoint } from '../clients/saBaiAPIEndpointsOrdersDeleteDeleteEndpoint'
 
 /**
- * @summary Delete a medication order without reversing stock
+ * @summary Delete a medication order that was not dispensed (a pending order gives its reserved stock back)
  * {@link /orders/:id}
  */
 export async function saBaiAPIEndpointsOrdersDeleteDeleteEndpointHandler({ path }: SaBaiAPIEndpointsOrdersDeleteDeleteEndpointOptions, ctx: ServerContext): Promise<CallToolResult> {

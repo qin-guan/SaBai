@@ -7,15 +7,12 @@ export type SaBaiAPIEndpointsReferralsUpdateMoneyPatchRequest = {
   /**
    * @description
    * Format: `double`
-   * @minimum 0
-   * @maximum 99999999.99
    * @type number
    */
   amountPaidUsd: number | null;
   /**
    * @description
    * Format: `int32`
-   * @minimum 0
    * @type integer
    */
   amountPaidRiels: number | null;

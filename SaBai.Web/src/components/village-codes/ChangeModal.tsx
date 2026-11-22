@@ -20,6 +20,7 @@ import { RHFInput } from "@/components/interactive/RHF/RHFInput";
 import { useSaveOnWrite } from "@/hooks/useSaveOnWrite";
 import { useEffect } from "react";
 import { Button } from "@/components/interactive/Button/Button";
+import ModalToast from "@/components/interactive/ModalToast";
 
 export default function ChangeModal({
   onClose,
@@ -93,7 +94,9 @@ export default function ChangeModal({
   }, [form, isEditing, setFormData]);
 
   const createMutation = useMutation({
-    ...saBaiAPIEndpointsVillageCodesCreatePostEndpointMutationOptions(apiConfig),
+    ...saBaiAPIEndpointsVillageCodesCreatePostEndpointMutationOptions(
+      apiConfig,
+    ),
     onSuccess: () => {
       invalidateVillageCodes();
       form.reset();
@@ -103,12 +106,16 @@ export default function ChangeModal({
     },
     onError: (err) => {
       console.error(err);
-      toast.error(getApiErrorMessage(err, "Unable to create village code."));
+      toast.error(getApiErrorMessage(err, "Unable to create village code."), {
+        toasterId: "modal",
+      });
     },
   });
 
   const updateMutation = useMutation({
-    ...saBaiAPIEndpointsVillageCodesUpdatePatchEndpointMutationOptions(apiConfig),
+    ...saBaiAPIEndpointsVillageCodesUpdatePatchEndpointMutationOptions(
+      apiConfig,
+    ),
     onSuccess: () => {
       invalidateVillageCodes();
       form.reset();
@@ -117,7 +124,9 @@ export default function ChangeModal({
     },
     onError: (err) => {
       console.error(err);
-      toast.error(getApiErrorMessage(err, "Unable to update village code."));
+      toast.error(getApiErrorMessage(err, "Unable to update village code."), {
+        toasterId: "modal",
+      });
     },
   });
 
@@ -148,7 +157,7 @@ export default function ChangeModal({
         },
       });
     } else {
-      toast.error("Fields not changed!");
+      toast.error("Fields not changed!", { toasterId: "modal" });
     }
   };
 
@@ -157,6 +166,7 @@ export default function ChangeModal({
       <h2 className="text-xl font-bold mb-4">
         {activeForm?.id ? "Edit Village Code" : "New Village Code"}
       </h2>
+      <ModalToast />
       <FormProvider {...form}>
         <form
           onSubmit={(e) => {

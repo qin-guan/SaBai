@@ -6,7 +6,7 @@ import { apiConfig } from "./config";
 import { dataUrlToFile } from "./patientPhoto";
 
 /** Uploads (or replaces) a patient's profile photo in RustFS. */
-export async function uploadPatientPhoto(patientId: number, image: Blob) {
+export async function uploadPatientPhoto(patientId: string, image: Blob) {
   return saBaiAPIEndpointsPatientsPhotoPutEndpoint({
     ...apiConfig,
     path: { id: patientId },
@@ -16,7 +16,7 @@ export async function uploadPatientPhoto(patientId: number, image: Blob) {
 }
 
 /** Enrolls a face for a patient in the Qdrant face index. */
-export async function enrollPatientFace(patientId: number, image: Blob) {
+export async function enrollPatientFace(patientId: string, image: Blob) {
   return saBaiAPIEndpointsPatientsFacesPostEndpoint({
     ...apiConfig,
     path: { id: patientId },
@@ -30,7 +30,7 @@ export async function enrollPatientFace(patientId: number, image: Blob) {
  * face. Callers should treat a failure as non-fatal to the wider flow.
  */
 export async function setPatientPhotoAndFace(
-  patientId: number,
+  patientId: string,
   dataUrl: string,
 ): Promise<void> {
   const file = await dataUrlToFile(dataUrl, `patient-${patientId}`);

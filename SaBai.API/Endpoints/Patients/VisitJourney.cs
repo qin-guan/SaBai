@@ -85,7 +85,7 @@ public sealed record VisitJourney(
                     x.Eyesight != null ? x.Eyesight.RecordedAt : null,
                     x.Consults.Min(c => (DateTimeOffset?)c.Date),
                     x.DentalConsult != null ? x.DentalConsult.RecordedAt : null,
-                    x.Consults.SelectMany(c => c.Orders).Max(o => o.ApprovedAt)
+                    x.Consults.SelectMany(c => c.Orders).Max(o => o.DispensedAt)
                 ),
             })
             .ToListAsync(ct);

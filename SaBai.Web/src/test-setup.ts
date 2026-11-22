@@ -1,4 +1,4 @@
-import "@testing-library/jest-dom";
+import "@testing-library/jest-dom/vitest";
 
 // Workaround for vitest - mock HTMLDialogElement methods
 // https://github.com/jsdom/jsdom/issues/3294

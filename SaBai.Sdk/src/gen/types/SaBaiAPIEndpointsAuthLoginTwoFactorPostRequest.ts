@@ -5,7 +5,7 @@
 
 export type SaBaiAPIEndpointsAuthLoginTwoFactorPostRequest = {
   /**
-   * @minLength 0
+   * @minLength 1
    * @maxLength 16
    * @type string
    */

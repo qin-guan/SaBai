@@ -41,7 +41,7 @@ watch(
       <div class="grid grid-cols-1 gap-3 lg:grid-cols-2 lg:items-start">
         <aside class="flex min-w-0 flex-col gap-3" aria-label="This visit's vitals, vision and previous consults">
           <VisitSummaryPanel :patient-id="p.id" :visit-id="visit.id" />
-          <PreviousConsults :visit-id="visit.id" :highlight-consult-id="requestedConsultId" />
+          <PreviousConsults :visit-id="visit.id" :highlight-consult-id="requestedConsultId" :patient="p" :visit="visit" />
         </aside>
         <ConsultForm :key="visit.id" :visit-id="visit.id" :patient-name="p.name" :patient="p" :visit="visit" />
       </div>

@@ -10,5 +10,5 @@ export const saBaiAPIEndpointsVisitsCreatePostRequestSchema = z.object({
   patientId: z.uuid().min(1),
   villageCodeId: z.uuid().min(1),
   date: z.iso.datetime().nullish(),
-  status: z.string().min(0).max(100).nullish(),
+  status: z.string().nullish(),
 })

@@ -4,6 +4,7 @@
 */
 
 import type { SaBaiAPIDomainOrderStatusKey } from './SaBaiAPIDomainOrderStatus'
+import type { SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsOrdersAllocationDetails } from './SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsOrdersAllocationDetails'
 
 export type SaBaiAPIEndpointsOrdersUpdatePatchResponse = {
   /**
@@ -23,8 +24,8 @@ export type SaBaiAPIEndpointsOrdersUpdatePatchResponse = {
    * Format: `uuid`
    * @type string
    */
-  medicationBrandId: string;
-  brandName: string;
+  medicationActiveIngredientId: string;
+  activeIngredientName: string;
   /**
    * @description
    * Format: `int32`
@@ -39,17 +40,18 @@ export type SaBaiAPIEndpointsOrdersUpdatePatchResponse = {
    * Format: `uuid`
    * @type string
    */
-  approvedById: string | null;
+  dispensedById: string | null;
   /**
    * @description
    * Format: `date-time`
    * @type string
    */
-  approvedAt: string | null;
+  dispensedAt: string | null;
   /**
    * @description
    * Format: `date-time`
    * @type string
    */
   createdAt: string;
+  allocations: SystemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsOrdersAllocationDetails;
 };

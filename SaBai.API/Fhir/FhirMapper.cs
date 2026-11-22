@@ -282,14 +282,15 @@ public static class FhirMapper
 
     public static FhirMedicationRequest ToFhirMedicationRequest(Order o, Guid patientId, Guid visitId)
     {
+        var ingredient = o.MedicationActiveIngredient;
         var medConcept = new CodeableConcept
         {
-            Text = o.MedicationBrand?.Name ?? $"Brand #{o.MedicationBrandId}",
+            Text = ingredient?.Name ?? $"Ingredient #{o.MedicationActiveIngredientId}",
         };
-        if (o.MedicationBrand?.ActiveIngredient?.RxNormCode is { Length: > 0 } rx)
+        if (ingredient?.RxNormCode is { Length: > 0 } rx)
         {
             medConcept.Coding.Add(
-                new Coding("http://www.nlm.nih.gov/research/umls/rxnorm", rx, o.MedicationBrand.ActiveIngredient.Name)
+                new Coding("http://www.nlm.nih.gov/research/umls/rxnorm", rx, ingredient.Name)
             );
         }
 
@@ -298,7 +299,7 @@ public static class FhirMapper
             Id = o.Id.ToString(),
             Status = o.Status switch
             {
-                OrderStatus.Approved => FhirMedicationRequest.MedicationrequestStatus.Completed,
+                OrderStatus.Dispensed => FhirMedicationRequest.MedicationrequestStatus.Completed,
                 OrderStatus.Cancelled => FhirMedicationRequest.MedicationrequestStatus.Cancelled,
                 _ => FhirMedicationRequest.MedicationrequestStatus.Active,
             },

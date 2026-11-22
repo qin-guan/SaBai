@@ -34,7 +34,7 @@ export default function MatchingPatients({
   const router = useRouter();
   const { selectedVillageCodeId, isLoading: villageLoading } = useVillageCode();
   const [duplicateVisitConfirmation, setDuplicateVisitConfirmation] = useState<{
-    patientId: number;
+    patientId: string;
     existingVisitDate: Date | null;
   } | null>(null);
   const [isCheckingDuplicate, setIsCheckingDuplicate] = useState(false);
@@ -55,7 +55,7 @@ export default function MatchingPatients({
   });
 
   const createVisit = useMutation({
-    mutationFn: async (patientId: number) => {
+    mutationFn: async (patientId: string) => {
       if (!selectedVillageCodeId) {
         throw new Error("Please select a village code first.");
       }
@@ -68,7 +68,7 @@ export default function MatchingPatients({
     },
   });
 
-  const submitCreateVisit = async (patientId: number) => {
+  const submitCreateVisit = async (patientId: string) => {
     try {
       await createVisit.mutateAsync(patientId);
       setDuplicateVisitConfirmation(null);
@@ -80,7 +80,7 @@ export default function MatchingPatients({
     }
   };
 
-  const handleSelect = async (patientId: number) => {
+  const handleSelect = async (patientId: string) => {
     if (!selectedVillageCodeId) {
       toast.error("Please select a village code before starting a visit.");
       return;

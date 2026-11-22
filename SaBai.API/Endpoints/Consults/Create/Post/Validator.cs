@@ -21,7 +21,7 @@ public sealed class Validator : Validator<Request>
             .ChildRules(order =>
             {
                 order.RuleFor(x => x.Id).ClientId();
-                order.RuleFor(x => x.MedicationBrandId).NotEmpty();
+                order.RuleFor(x => x.MedicationActiveIngredientId).NotEmpty();
                 order.RuleFor(x => x.Quantity).GreaterThan(0);
             });
     }

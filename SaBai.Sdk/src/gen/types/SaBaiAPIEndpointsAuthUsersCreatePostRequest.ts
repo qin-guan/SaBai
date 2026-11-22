@@ -5,18 +5,11 @@
 
 export type SaBaiAPIEndpointsAuthUsersCreatePostRequest = {
   /**
-   * @minLength 0
+   * @minLength 1
    * @maxLength 150
    * @type string
    */
   userName: string;
-  /**
-   * @description
-   * Format: `email`
-   * @minLength 0
-   * @maxLength 255
-   * @type string | undefined
-   */
   email?: string | null;
   /**
    * @minLength 1

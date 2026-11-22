@@ -11,6 +11,7 @@ export type SaBaiAPIEndpointsReferralsUpdateOutcomePatchEndpointPath = {
   /**
    * @description
    * Format: `uuid`
+   * @minLength 1
    * @type string
    */
   id: string;

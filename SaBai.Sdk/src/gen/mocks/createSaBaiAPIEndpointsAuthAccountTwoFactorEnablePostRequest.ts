@@ -8,7 +8,7 @@ import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsAuthAccountTwoFactorEnablePostRequest<TData extends Partial<SaBaiAPIEndpointsAuthAccountTwoFactorEnablePostRequest> = object>(data?: TData) {
   const defaultFakeData = {
-    code: faker.string.alpha({ length: { min: 0, max: 16 } }),
+    code: faker.string.alpha({ length: { min: 1, max: 16 } }),
   }
   return {
     ...defaultFakeData,

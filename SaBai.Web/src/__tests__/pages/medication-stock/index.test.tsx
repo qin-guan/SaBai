@@ -53,31 +53,34 @@ vi.mock("@sabai/sdk/hooks", async (importOriginal) => {
       }),
     saBaiAPIEndpointsMedicationStockCreatePostEndpointMutationOptions: () => ({
       mutationKey: ["medication-stock-create"],
-      mutationFn: mocks.create,
+      mutationFn: (variables: unknown) => mocks.create(variables),
     }),
     saBaiAPIEndpointsMedicationStockUpdatePatchEndpointMutationOptions: () => ({
       mutationKey: ["medication-stock-update"],
-      mutationFn: mocks.update,
+      mutationFn: (variables: unknown) => mocks.update(variables),
     }),
     saBaiAPIEndpointsMedicationStockSplitsPostEndpointMutationOptions: () => ({
       mutationKey: ["medication-stock-splits"],
-      mutationFn: mocks.createSplits,
+      mutationFn: (variables: unknown) => mocks.createSplits(variables),
     }),
   };
 });
 
 const MOCK_STOCK = [
   {
-    id: 1,
-    medicationBrandId: 1,
+    id: "01930000-0000-7000-8000-000000000001",
+    medicationBrandId: "1",
     quantity: 200,
+    reservedQuantity: 0,
+    availableQuantity: 200,
+    parentStockId: null,
     expiry: new Date("2026-05-21 09:30:00+00"),
     location: "Shelf 1",
     stockStatus: "active",
     remarks: "test remark",
     brandName: "Panadol",
     ingredientName: "Paracetamol",
-    ingredientId: 1,
+    ingredientId: "01930000-0000-7000-8000-0000000000a1",
     fallBelow: 10,
     isLowStock: false,
   },
@@ -149,7 +152,9 @@ describe("MedicationStockPage", () => {
         "Active Ingredient",
         "Brand",
         "Location",
-        "Quantity",
+        "On hand",
+        "Reserved",
+        "Available",
         "Expiry",
         "State",
         "Remarks",
@@ -160,12 +165,52 @@ describe("MedicationStockPage", () => {
         "Panadol",
         "Shelf 1",
         "200",
+        "0",
+        "200",
         "5/21/2026",
         "active",
         "test remark",
         "EditSplit",
       ],
     ]);
+  });
+
+  it("shows reserved and available units of a batch held by pending orders", async () => {
+    mocks.stock.data = [
+      { ...MOCK_STOCK[0], reservedQuantity: 150, availableQuantity: 50 },
+    ];
+
+    renderPage();
+    const table = await screen.findByRole("table");
+    const cells = within(table).getAllByRole("row")[1].querySelectorAll("td");
+    expect([...cells].slice(3, 6).map((c) => c.textContent)).toEqual([
+      "200",
+      "150",
+      "50",
+    ]);
+  });
+
+  it("disables splitting a batch whose units are all reserved", () => {
+    mocks.stock.data = [
+      { ...MOCK_STOCK[0], reservedQuantity: 200, availableQuantity: 0 },
+    ];
+
+    renderPage();
+    expect(screen.getByRole("button", { name: "Split" })).toBeDisabled();
+  });
+
+  it("keeps the status locked while a batch holds reservations", async () => {
+    const user = userEvent.setup();
+    mocks.stock.data = [
+      { ...MOCK_STOCK[0], reservedQuantity: 20, availableQuantity: 180 },
+    ];
+
+    renderPage();
+    await user.click(screen.getByRole("button", { name: "Edit" }));
+    expect(screen.getByText("active (20 reserved)")).toBeInTheDocument();
+    expect(
+      document.querySelector('button[name="stockStatus-dropdown-button"]'),
+    ).toBeNull();
   });
 
   it("highlights low stock rows in red", () => {
@@ -189,13 +234,13 @@ describe("MedicationStockPage", () => {
     mocks.stock.data = [
       {
         ...MOCK_STOCK[0],
-        id: 1,
+        id: "01930000-0000-7000-8000-000000000001",
         ingredientName: "Low stock ingredient",
         isLowStock: true,
       },
       {
         ...MOCK_STOCK[0],
-        id: 2,
+        id: "01930000-0000-7000-8000-000000000002",
         ingredientName: "Normal stock ingredient",
         isLowStock: false,
       },
@@ -257,7 +302,7 @@ describe("MedicationStockPage", () => {
 
     mocks.brands.data = [
       {
-        id: 1,
+        id: "1",
         name: "Panadol",
         activeIngredientName: "Paracetamol 500mg",
       },
@@ -318,7 +363,7 @@ describe("MedicationStockPage", () => {
 
     mocks.brands.data = [
       {
-        id: 1,
+        id: "1",
         name: "Panadol",
         activeIngredientName: "Paracetamol 500mg",
       },
@@ -373,7 +418,7 @@ describe("MedicationStockPage", () => {
     );
     expect(mocks.create).toHaveBeenCalledWith({
       body: expect.objectContaining({
-        medicationBrandId: 1,
+        medicationBrandId: "1",
         quantity: 100,
         expiry: "2026-12-31",
         location: "valid location",
@@ -394,8 +439,11 @@ describe("MedicationStockPage", () => {
 
     await user.click(screen.getByRole("button", { name: "Edit" }));
 
-    // Location and remarks field (free text)
-    expect(document.querySelectorAll("input").length).toBe(2);
+    // Location field (free text input) and remarks field (free text textarea)
+    expect(document.querySelectorAll("input").length).toBe(1);
+    expect(document.querySelectorAll('textarea[name="remarks"]').length).toBe(
+      1,
+    );
 
     // Dropdown field
     expect(
@@ -444,7 +492,7 @@ describe("MedicationStockPage", () => {
 
     await user.click(screen.getByRole("button", { name: "Edit" }));
 
-    const remarksInput = document.querySelector('input[name="remarks"]');
+    const remarksInput = document.querySelector('textarea[name="remarks"]');
 
     await user.type(remarksInput!, "valid remarks");
 
@@ -492,7 +540,7 @@ describe("MedicationStockPage", () => {
 
     await user.click(screen.getByRole("button", { name: "Edit" }));
 
-    const remarksInput = document.querySelector('input[name="remarks"]');
+    const remarksInput = document.querySelector('textarea[name="remarks"]');
 
     await user.type(remarksInput!, "valid remarks");
 
@@ -519,7 +567,7 @@ describe("MedicationStockPage", () => {
     expect(mocks.update).toHaveBeenCalledTimes(1);
 
     const variables = mocks.update.mock.calls[0][0] as {
-      path: { id: number };
+      path: { id: string };
       body: Record<string, unknown>;
     };
 
@@ -610,9 +658,11 @@ describe("MedicationStockPage", () => {
       // expect parent stock details to be in table format
       assertTableContents(parentStockTable, [
         ["Location:", MOCK_STOCK[0].location],
-        ["Active Ingredient", MOCK_STOCK[0].ingredientName],
-        ["Brand Name", MOCK_STOCK[0].brandName],
+        ["Active Ingredient:", MOCK_STOCK[0].ingredientName],
+        ["Brand Name:", MOCK_STOCK[0].brandName],
         ["Quantity", String(MOCK_STOCK[0].quantity)],
+        ["Reserved for pending orders:", "0"],
+        ["Available to split:", String(MOCK_STOCK[0].availableQuantity)],
         ["Status:", MOCK_STOCK[0].stockStatus],
         ["Remarks", MOCK_STOCK[0].remarks],
       ]);
@@ -624,6 +674,18 @@ describe("MedicationStockPage", () => {
         screen.getByRole("button", { name: "Confirm" }),
       ).toBeInTheDocument();
     });
+  });
+
+  it("shows 'No remarks added' in the 'Split Stock' modal when the parent stock has no remarks", async () => {
+    const user = userEvent.setup();
+    mocks.stock.data = [{ ...MOCK_STOCK[0], remarks: null }];
+
+    renderPage();
+
+    await user.click(await screen.findByRole("button", { name: "Split" }));
+
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByText("No remarks added")).toBeInTheDocument();
   });
 
   it("shows 'No splits added, add a split to begin' only when there are 0 child stocks added", async () => {

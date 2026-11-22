@@ -15,5 +15,5 @@ import { client, withUnwrap } from '../.kubb/client'
 export function saBaiAPIEndpointsPushSubscribePutEndpoint<ThrowOnError extends boolean = true>(options: Options<SaBaiAPIEndpointsPushSubscribePutEndpointOptions, ThrowOnError>): Unwrappable<RequestResult<SaBaiAPIEndpointsPushSubscribePutEndpointResponses, ThrowOnError>> {
   const { client: request = client, ...config } = options
 
-  return withUnwrap(request({ method: 'PUT', url: '/push/subscriptions', security: [{ type: 'apiKey', name: 'sabai.auth', in: 'cookie', scopes: ['admin', 'member'] }], contentType: { request: 'application/json' }, ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<SaBaiAPIEndpointsPushSubscribePutEndpointResponses, ThrowOnError>>)
+  return withUnwrap(request({ method: 'PUT', url: '/push/subscriptions', security: [{ type: 'apiKey', name: 'sabai.auth', in: 'cookie' }], contentType: { request: 'application/json' }, ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<SaBaiAPIEndpointsPushSubscribePutEndpointResponses, ThrowOnError>>)
 }

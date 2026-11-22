@@ -7,5 +7,5 @@ import type { SaBaiAPIDomainStockStatusKey } from '../types/SaBaiAPIDomainStockS
 import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIDomainStockStatus(data?: SaBaiAPIDomainStockStatusKey): SaBaiAPIDomainStockStatusKey {
-  return data ?? faker.helpers.arrayElement<SaBaiAPIDomainStockStatusKey>(['active', 'discarded', 'donated', 'dispensed', 'reserved'])
+  return data ?? faker.helpers.arrayElement<SaBaiAPIDomainStockStatusKey>(['active', 'discarded', 'donated'])
 }

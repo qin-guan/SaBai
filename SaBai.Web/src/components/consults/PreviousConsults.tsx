@@ -64,7 +64,7 @@ function ConsultCard({ consult }: { consult: Consult }) {
  * A visit can accumulate multiple consults (append log), so this shows the
  * history alongside the form for recording a new one.
  */
-export function PreviousConsults({ visitId }: { visitId: number }) {
+export function PreviousConsults({ visitId }: { visitId: string }) {
   const { data: consults, isLoading } = useQuery(
     saBaiAPIEndpointsConsultsListByVisitGetEndpointQueryOptions(
       { path: { visitId } },

@@ -45,6 +45,8 @@ export const queryKeys = {
   villageCodes: () => ["village-codes"] as const,
   villageCodesList: (includeHidden: boolean) => ["village-codes", includeHidden] as const,
   medicationStock: () => ["medication-stock"] as const,
+  /** Under `medicationStock()`, so refreshing the stock list refreshes what can be ordered too. */
+  medicationAvailability: () => ["medication-stock", "by-ingredient"] as const,
   medicationBrands: () => ["medication-brands"] as const,
   medicationBrandsWithIngredient: () => ["medication-brands", "with-ingredient"] as const,
   medicationIngredients: () => ["medication-ingredients"] as const,

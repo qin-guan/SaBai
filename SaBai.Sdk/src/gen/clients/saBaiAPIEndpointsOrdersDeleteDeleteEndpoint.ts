@@ -8,11 +8,11 @@ import type { SaBaiAPIEndpointsOrdersDeleteDeleteEndpointOptions, SaBaiAPIEndpoi
 import { client, withUnwrap } from '../.kubb/client'
 
 /**
- * @summary Delete a medication order without reversing stock
+ * @summary Delete a medication order that was not dispensed (a pending order gives its reserved stock back)
  * {@link /orders/:id}
  */
 export function saBaiAPIEndpointsOrdersDeleteDeleteEndpoint<ThrowOnError extends boolean = true>(options: Options<SaBaiAPIEndpointsOrdersDeleteDeleteEndpointOptions, ThrowOnError>): Unwrappable<RequestResult<SaBaiAPIEndpointsOrdersDeleteDeleteEndpointResponses, ThrowOnError>> {
   const { client: request = client, ...config } = options
 
-  return withUnwrap(request({ method: 'DELETE', url: '/orders/{id}', security: [{ type: 'apiKey', name: 'sabai.auth', in: 'cookie', scopes: ['admin', 'member'] }], ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<SaBaiAPIEndpointsOrdersDeleteDeleteEndpointResponses, ThrowOnError>>)
+  return withUnwrap(request({ method: 'DELETE', url: '/orders/{id}', security: [{ type: 'apiKey', name: 'sabai.auth', in: 'cookie' }], ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<SaBaiAPIEndpointsOrdersDeleteDeleteEndpointResponses, ThrowOnError>>)
 }

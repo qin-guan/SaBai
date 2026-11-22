@@ -1,14 +1,13 @@
-import { formatPatientCode } from "@/lib/utils/patient";
-
 export function PatientCode({
   villageCode,
   villageColorHex,
-  id,
+  displayId,
   className = "",
 }: {
   villageCode: string | null;
   villageColorHex: string | null;
-  id: number;
+  /** The patient's display code from the API (village code + number), e.g. "PC0012". */
+  displayId: string;
   className?: string;
 }) {
   return (
@@ -20,7 +19,7 @@ export function PatientCode({
           title={villageCode ?? undefined}
         />
       )}
-      {formatPatientCode(villageCode, id)}
+      {displayId}
     </span>
   );
 }

@@ -58,9 +58,29 @@ export type SaBaiAPIEndpointsReferralsListGetResponse = {
   villageCode: string;
   villageColorHex: string;
   tags: SystemCollectionsGenericIReadOnlyListOfSystemString;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string
+   */
   referredToId: string | null;
+  /**
+   * @description
+   * Format: `double`
+   * @type number
+   */
   amountPaidUsd: number | null;
+  /**
+   * @description
+   * Format: `int32`
+   * @type integer
+   */
   amountPaidRiels: number | null;
+  /**
+   * @description
+   * Format: `uuid`
+   * @type string
+   */
   memberWhoPaidId: string | null;
   /**
    * @description

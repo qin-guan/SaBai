@@ -8,11 +8,11 @@ import type { SaBaiAPIEndpointsMedicationStockSplitsPostEndpointOptions, SaBaiAP
 import { client, withUnwrap } from '../.kubb/client'
 
 /**
- * @summary Split a stock lot into child lots
+ * @summary Split a stock batch's unreserved units into new batches
  * {@link /medication-stock/:id/splits}
  */
 export function saBaiAPIEndpointsMedicationStockSplitsPostEndpoint<ThrowOnError extends boolean = true>(options: Options<SaBaiAPIEndpointsMedicationStockSplitsPostEndpointOptions, ThrowOnError>): Unwrappable<RequestResult<SaBaiAPIEndpointsMedicationStockSplitsPostEndpointResponses, ThrowOnError>> {
   const { client: request = client, ...config } = options
 
-  return withUnwrap(request({ method: 'POST', url: '/medication-stock/{id}/splits', security: [{ type: 'apiKey', name: 'sabai.auth', in: 'cookie', scopes: ['admin', 'member'] }], contentType: { request: 'application/json' }, ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<SaBaiAPIEndpointsMedicationStockSplitsPostEndpointResponses, ThrowOnError>>)
+  return withUnwrap(request({ method: 'POST', url: '/medication-stock/{id}/splits', security: [{ type: 'apiKey', name: 'sabai.auth', in: 'cookie' }], contentType: { request: 'application/json' }, ...config, throwOnError: config.throwOnError ?? true }) as Promise<RequestResult<SaBaiAPIEndpointsMedicationStockSplitsPostEndpointResponses, ThrowOnError>>)
 }

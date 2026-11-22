@@ -8,7 +8,7 @@ import { pluginMsw } from '@kubb/plugin-msw'
 import { pluginMcp } from '@kubb/plugin-mcp'
 
 export default defineConfig({
-  input: 'http://localhost:5250/openapi/v1.json',
+  input: process.env.SABAI_OPENAPI_URL ?? 'http://localhost:5250/openapi/v1.json',
   output: {
     path: './src/gen',
     clean: true,

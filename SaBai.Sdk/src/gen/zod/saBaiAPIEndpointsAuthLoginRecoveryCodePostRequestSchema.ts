@@ -6,5 +6,5 @@
 import * as z from 'zod'
 
 export const saBaiAPIEndpointsAuthLoginRecoveryCodePostRequestSchema = z.object({
-  recoveryCode: z.string().min(0).max(32),
+  recoveryCode: z.string().min(1).max(32),
 })

@@ -1,0 +1,74 @@
+{
+  "_comment": "Results of upstream (project-sabai) tRPC queries, shaped after the select lists in src/server/routers/*.ts. Keys are procedure names; per-record queries are keyed by their input id. {IMAGE_HOST} is replaced by the fake image host. Dates are ISO strings as superjson puts them in its 'json' part.",
+  "villageCodesRouter.list": [
+    { "id": 71002, "code": "UPV2", "name": "Import Hidden Village", "colorHex": "#aa3300", "isVisible": false, "createdAt": "2025-01-02T03:04:05.000Z", "updatedAt": "2025-02-02T03:04:05.000Z" },
+    { "id": 71001, "code": "UPV1", "name": "Import Village", "colorHex": "#336699", "isVisible": true, "createdAt": "2025-01-01T00:00:00.000Z", "updatedAt": "2025-01-01T00:00:00.000Z" }
+  ],
+  "patientsRouter.list": [
+    { "id": 710001, "name": "Sok Dara", "identificationNumber": "ID-710001", "contactNo": "012345678", "gender": "female", "dateOfBirth": "2014-05-06T00:00:00.000Z", "hasPoorCard": true, "hasBS2Card": false, "drugAllergy": "Penicillin", "hasSabaiCard": true, "patientImagePublicId": "image/upload/v1700000001/p710001", "rekognitionFaceId": "rk-face-710001", "patientImageUrl": "{IMAGE_HOST}/demo/image/upload/v1700000001/p710001" },
+    { "id": 710002, "name": "Chan Vuthy", "identificationNumber": "", "contactNo": null, "gender": "male", "dateOfBirth": "1970-01-15T00:00:00.000Z", "hasPoorCard": false, "hasBS2Card": true, "drugAllergy": "", "hasSabaiCard": false, "patientImagePublicId": "image/upload/v1700000002/p710002", "rekognitionFaceId": null, "patientImageUrl": "{IMAGE_HOST}/demo/image/upload/v1700000002/p710002" },
+    { "id": 710003, "name": "Missing Photo", "identificationNumber": null, "contactNo": null, "gender": "female", "dateOfBirth": "1990-09-09T00:00:00.000Z", "hasPoorCard": false, "hasBS2Card": false, "drugAllergy": "None", "hasSabaiCard": false, "patientImagePublicId": "image/upload/v1700000003/gone", "rekognitionFaceId": "rk-face-710003", "patientImageUrl": "{IMAGE_HOST}/demo/image/upload/v1700000003/gone" }
+  ],
+  "visitsRouter.list": [
+    { "id": 720002, "date": "2025-07-01T02:00:00.000Z", "patientId": 710001, "villageCodeId": 71002, "patientName": "Sok Dara", "villageCodeName": "Import Hidden Village", "villageCodeColor": "#aa3300" },
+    { "id": 720003, "date": "2025-06-15T02:00:00.000Z", "patientId": 710002, "villageCodeId": 71001, "patientName": "Chan Vuthy", "villageCodeName": "Import Village", "villageCodeColor": "#336699" },
+    { "id": 720001, "date": "2025-06-01T02:00:00.000Z", "patientId": 710001, "villageCodeId": 71001, "patientName": "Sok Dara", "villageCodeName": "Import Village", "villageCodeColor": "#336699" }
+  ],
+  "vitalsRouter.getByVisitId": {
+    "720001": { "id": 730001, "height": "120.50", "weight": "23.40", "temperature": "36.80", "systolic": 110, "diastolic": 70, "heartRate": 88, "hemocueCount": "12.10", "diabetesMellitus": false, "urineTest": "NAD", "bloodGlucoseNonFasting": null, "bloodGlucoseFasting": "5.20", "hba1c": null, "others": "Shy", "visitId": 720001 },
+    "720002": null,
+    "720003": { "id": 730003, "height": null, "weight": "70.00", "temperature": null, "systolic": 150, "diastolic": 95, "heartRate": null, "hemocueCount": null, "diabetesMellitus": true, "urineTest": null, "bloodGlucoseNonFasting": "9.80", "bloodGlucoseFasting": null, "hba1c": "7.10", "others": null, "visitId": 720003 }
+  },
+  "pubertyRouter.getByVitalId": {
+    "730001": { "id": 740001, "pubarche": true, "pubarcheAge": 11, "thelarche": false, "thelarcheAge": null, "menarche": null, "menarcheAge": null, "voiceChange": null, "voiceChangeAge": null, "testicularGrowth": null, "testicularGrowthAge": null, "additionalNotes": "Tanner 2", "vitalId": 730001 },
+    "730003": null
+  },
+  "eyesightRouter.getByVisitId": {
+    "720001": { "id": 750001, "visitId": 720001, "leftEyeDegree": "6/9", "rightEyeDegree": "6/12", "leftEyePinhole": "6/6", "rightEyePinhole": null, "leftAstigmatism": null, "rightAstigmatism": "-0.75", "comments": "Refer for glasses", "leftPrescribedGlassesDegree": null, "rightPrescribedGlassesDegree": "-1.00" },
+    "720002": null,
+    "720003": null
+  },
+  "consultsRouter.getByVisitId": {
+    "720001": [
+      { "id": 760001, "date": "2025-06-01T03:30:00.000Z", "pastMedicalHistory": "Nil", "consultation": "Cough 3 days", "treatmentPlan": "Paracetamol", "remarks": null, "doctorId": "1f0c6a52-4e0b-4f5c-9d61-2b9a8d1c0001", "visitId": 720001,
+        "diagnoses": [
+          { "id": 770001, "details": "URTI", "category": "Respiratory", "consultId": 760001 },
+          { "id": 770002, "details": "Rash", "category": "Skin stuff", "consultId": 760001 },
+          { "id": 770004, "details": "Earache", "category": "Ear Nose Throat", "consultId": 760001 }
+        ] }
+    ],
+    "720002": [],
+    "720003": [
+      { "id": 760003, "date": "2025-06-15T04:00:00.000Z", "pastMedicalHistory": null, "consultation": "BP high", "treatmentPlan": null, "remarks": "Recheck", "doctorId": "1f0c6a52-4e0b-4f5c-9d61-2b9a8d1c0002", "visitId": 720003,
+        "diagnoses": [ { "id": 770003, "details": "Hypertension", "category": "Cardiovascular", "consultId": 760003 } ] }
+    ]
+  },
+  "referralRouter.list": [
+    { "id": 780001, "referredFor": "Chronic", "referralNotes": "Needs BP follow-up", "referralState": "Seen", "referralOutcome": null, "consultId": 760003, "createdAt": "2025-06-15T04:05:00.000Z", "consultDate": "2025-06-15T04:00:00.000Z", "doctorId": "1f0c6a52-4e0b-4f5c-9d61-2b9a8d1c0002", "patientId": 710002, "patientName": "Chan Vuthy", "patientImagePublicId": "image/upload/v1700000002/p710002", "villageCodeId": 71001, "villageCode": "UPV1", "villageColorHex": "#336699", "patientImageUrl": "{IMAGE_HOST}/demo/image/upload/v1700000002/p710002" }
+  ],
+  "referralPartnersRouter.list": [
+    { "id": "6b1d6f1e-2c3a-4b5d-8e9f-0a1b2c3d4e5f", "name": "Import Partner Hospital", "remarks": null, "isActive": true, "createdAt": "2025-01-05T00:00:00.000Z", "updatedAt": "2025-01-05T00:00:00.000Z" }
+  ],
+  "medicationActiveIngredientsRouter.list": [
+    { "id": 790001, "name": "Import Paracetamol 500mg", "unitOfMeasurement": "tablets", "fallBelow": 100, "remarks": null }
+  ],
+  "medicationBrandRouter.list": [
+    { "id": 790101, "name": "Import Panadol", "activeIngredientId": 790001, "remarks": null }
+  ],
+  "medicationStockRouter.list": [
+    { "id": 790201, "medicationBrandId": 790101, "quantity": 200, "expiry": "2027-12-31T00:00:00.000Z", "location": "Shelf A", "stockStatus": "active", "remarks": null },
+    { "id": 790202, "medicationBrandId": 790101, "quantity": 30, "expiry": "2027-06-30T00:00:00.000Z", "location": "Shelf A", "stockStatus": "reserved", "remarks": null },
+    { "id": 790203, "medicationBrandId": 790101, "quantity": 10, "expiry": "2027-06-30T00:00:00.000Z", "location": "Shelf A", "stockStatus": "dispensed", "remarks": null },
+    { "id": 790204, "medicationBrandId": 790101, "quantity": 5, "expiry": "2025-01-31T00:00:00.000Z", "location": "Bin", "stockStatus": "discarded", "remarks": "Expired" }
+  ],
+  "broadcastsRouter.list": [
+    { "id": 790301, "title": "Import: water supply", "body": "Boil water before use", "severity": "warning", "createdBy": "1f0c6a52-4e0b-4f5c-9d61-2b9a8d1c0001", "createdAt": "2025-06-01T01:00:00.000Z", "publishedAt": "2025-06-01T01:00:01.000Z", "attempts": 0, "senderName": "Dr Alice" }
+  ],
+  "filesRouter.listByPatientId": {
+    "710001": [
+      { "id": 790401, "patientId": 710001, "s3Key": "patients/710001/0b6f3c1e-1111-4a2b-8c3d-123456789abc", "contentType": "application/pdf", "fileName": "referral.pdf", "description": "Referral letter", "isDeleted": false, "createdAt": "2025-06-01T05:00:00.000Z", "fileUrl": "{IMAGE_HOST}/s3/patients/710001/0b6f3c1e?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Signature=abc" }
+    ],
+    "710002": [],
+    "710003": []
+  }
+}

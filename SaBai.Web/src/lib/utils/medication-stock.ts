@@ -14,7 +14,24 @@ function areSplitsDistinct(splits: SplitPayload[]) {
   return new Set(splits.map(splitKey)).size == splits.length;
 }
 
-export function validateSplits(splits: SplitPayload[], parentQty: number) {
+/**
+ * Checks a split before it is sent. Only a batch's unreserved units can be
+ * split off (units reserved for pending orders stay in it), so `parentQty` is
+ * the batch's available quantity and `reservedQty` what stays behind.
+ */
+export function validateSplits(
+  splits: SplitPayload[],
+  parentQty: number,
+  reservedQty = 0,
+) {
+  if (parentQty <= 0) {
+    return {
+      success: false,
+      message:
+        "All of this stock is reserved for pending orders, so none of it can be split off.",
+    };
+  }
+
   if (splits.length === 0) {
     return {
       success: false,
@@ -45,7 +62,10 @@ export function validateSplits(splits: SplitPayload[], parentQty: number) {
   if (quantity !== parentQty) {
     return {
       success: false,
-      message: "Child stock quantity does not equal parent stock quantity!",
+      message:
+        reservedQty > 0
+          ? `Child stock quantity must equal the ${parentQty} unreserved units; ${reservedQty} are reserved for pending orders.`
+          : "Child stock quantity does not equal parent stock quantity!",
     };
   }
 

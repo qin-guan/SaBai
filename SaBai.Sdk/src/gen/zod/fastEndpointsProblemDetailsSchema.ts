@@ -6,8 +6,8 @@
 import * as z from 'zod'
 
 export const fastEndpointsProblemDetailsSchema = z.object({
-  type: z.string().nullish().default('https://www.rfc-editor.org/rfc/rfc7231#section-6.5.1'),
-  title: z.string().nullish().default('One or more validation errors occurred.'),
+  type: z.string().optional().default('https://www.rfc-editor.org/rfc/rfc7231#section-6.5.1'),
+  title: z.string().optional().default('One or more validation errors occurred.'),
   status: z.int32().optional().default(400),
   instance: z.string().optional().default('/api/route'),
   traceId: z.string().optional().default('0HMPNHL0JHL76:00000001'),

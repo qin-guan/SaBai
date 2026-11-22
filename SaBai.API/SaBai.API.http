@@ -54,3 +54,38 @@ GET {{SaBai.API_HostAddress}}/persons/alice/faces
 
 ### Delete a person
 DELETE {{SaBai.API_HostAddress}}/persons/alice
+
+### Orderable quantity per active ingredient (0 = out of stock; ordering it is refused)
+GET {{SaBai.API_HostAddress}}/medication-stock/by-ingredient
+
+### Place an order for an active ingredient (reserves stock, earliest expiry first; 409 if short)
+POST {{SaBai.API_HostAddress}}/orders
+Content-Type: application/json
+
+{
+  "consultId": "00000000-0000-0000-0000-000000000000",
+  "medicationActiveIngredientId": "00000000-0000-0000-0000-000000000000",
+  "quantity": 10,
+  "dosageInstructions": "1 tablet twice daily",
+  "remarks": "after food"
+}
+
+### Change a pending order (a new quantity or ingredient re-allocates the stock)
+PATCH {{SaBai.API_HostAddress}}/orders/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+{
+  "quantity": 14,
+  "dosageInstructions": "1 tablet twice daily for 7 days"
+}
+
+### Dispense a pending order (CANCELLED releases its stock instead)
+PATCH {{SaBai.API_HostAddress}}/orders/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+{
+  "status": "DISPENSED"
+}
+
+### Pending orders with the batches to take them from
+GET {{SaBai.API_HostAddress}}/pharmacy-orders

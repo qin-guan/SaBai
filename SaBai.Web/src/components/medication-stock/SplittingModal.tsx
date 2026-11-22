@@ -15,6 +15,7 @@ import { apiConfig } from "@/lib/api/config";
 import { getApiErrorMessage } from "@/lib/api/errors";
 import toast from "react-hot-toast";
 import { validateSplits } from "@/lib/utils/medication-stock";
+import ModalToast from "@/components/interactive/ModalToast";
 
 export default function SplittingModal({
   onClose,
@@ -40,7 +41,8 @@ export default function SplittingModal({
     onSuccess: () => {
       toast.success("Successfully split!");
       queryClient.invalidateQueries({
-        queryKey: saBaiAPIEndpointsMedicationStockWithBrandGetEndpointQueryKey(),
+        queryKey:
+          saBaiAPIEndpointsMedicationStockWithBrandGetEndpointQueryKey(),
       });
       onClose();
     },
@@ -48,6 +50,7 @@ export default function SplittingModal({
       console.error(err);
       toast.error(
         getApiErrorMessage(err, "An error occurred while splitting stock."),
+        { toasterId: "modal" },
       );
     },
   });
@@ -83,12 +86,13 @@ export default function SplittingModal({
       return;
     }
 
-    toast.error(validationResults.message);
+    toast.error(validationResults.message, { toasterId: "modal" });
   }
 
   return (
     <Modal onClose={onClose}>
       <h2 className="text-xl font-bold mb-4">Split Stock</h2>
+      <ModalToast />
       <h3 className="text-l font-bold mb-4">Parent stock details</h3>
       <table>
         <tbody>
@@ -97,11 +101,11 @@ export default function SplittingModal({
             <td>{stock.location}</td>
           </tr>
           <tr>
-            <td>Active Ingredient</td>
+            <td>Active Ingredient:</td>
             <td>{stock.ingredientName}</td>
           </tr>
           <tr>
-            <td>Brand Name</td>
+            <td>Brand Name:</td>
             <td>{stock.brandName}</td>
           </tr>
           <tr>
@@ -114,7 +118,13 @@ export default function SplittingModal({
           </tr>
           <tr>
             <td>Remarks:</td>
-            <td>{stock.remarks}</td>
+            <td>
+              {stock.remarks ? (
+                stock.remarks
+              ) : (
+                <span className="text-sm text-gray-500">No remarks added</span>
+              )}
+            </td>
           </tr>
         </tbody>
       </table>

@@ -394,8 +394,11 @@ describe("MedicationStockPage", () => {
 
     await user.click(screen.getByRole("button", { name: "Edit" }));
 
-    // Location and remarks field (free text)
-    expect(document.querySelectorAll("input").length).toBe(2);
+    // Location field (free text input) and remarks field (free text textarea)
+    expect(document.querySelectorAll("input").length).toBe(1);
+    expect(document.querySelectorAll('textarea[name="remarks"]').length).toBe(
+      1,
+    );
 
     // Dropdown field
     expect(
@@ -444,7 +447,7 @@ describe("MedicationStockPage", () => {
 
     await user.click(screen.getByRole("button", { name: "Edit" }));
 
-    const remarksInput = document.querySelector('input[name="remarks"]');
+    const remarksInput = document.querySelector('textarea[name="remarks"]');
 
     await user.type(remarksInput!, "valid remarks");
 
@@ -492,7 +495,7 @@ describe("MedicationStockPage", () => {
 
     await user.click(screen.getByRole("button", { name: "Edit" }));
 
-    const remarksInput = document.querySelector('input[name="remarks"]');
+    const remarksInput = document.querySelector('textarea[name="remarks"]');
 
     await user.type(remarksInput!, "valid remarks");
 
@@ -610,8 +613,8 @@ describe("MedicationStockPage", () => {
       // expect parent stock details to be in table format
       assertTableContents(parentStockTable, [
         ["Location:", MOCK_STOCK[0].location],
-        ["Active Ingredient", MOCK_STOCK[0].ingredientName],
-        ["Brand Name", MOCK_STOCK[0].brandName],
+        ["Active Ingredient:", MOCK_STOCK[0].ingredientName],
+        ["Brand Name:", MOCK_STOCK[0].brandName],
         ["Quantity", String(MOCK_STOCK[0].quantity)],
         ["Status:", MOCK_STOCK[0].stockStatus],
         ["Remarks", MOCK_STOCK[0].remarks],
@@ -624,6 +627,18 @@ describe("MedicationStockPage", () => {
         screen.getByRole("button", { name: "Confirm" }),
       ).toBeInTheDocument();
     });
+  });
+
+  it("shows 'No remarks added' in the 'Split Stock' modal when the parent stock has no remarks", async () => {
+    const user = userEvent.setup();
+    mocks.stock.data = [{ ...MOCK_STOCK[0], remarks: null }];
+
+    renderPage();
+
+    await user.click(await screen.findByRole("button", { name: "Split" }));
+
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByText("No remarks added")).toBeInTheDocument();
   });
 
   it("shows 'No splits added, add a split to begin' only when there are 0 child stocks added", async () => {

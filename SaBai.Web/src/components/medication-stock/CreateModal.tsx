@@ -17,6 +17,7 @@ import {
   CreateFormFields,
 } from "@/types/medication-stock";
 import { Button } from "@/components/interactive/Button/Button";
+import ModalToast from "@/components/interactive/ModalToast";
 
 export default function CreateModal({
   setModalIsOpen,
@@ -44,14 +45,17 @@ export default function CreateModal({
     onSuccess: () => {
       toast.success("Successfully created!");
       queryClient.invalidateQueries({
-        queryKey: saBaiAPIEndpointsMedicationStockWithBrandGetEndpointQueryKey(),
+        queryKey:
+          saBaiAPIEndpointsMedicationStockWithBrandGetEndpointQueryKey(),
       });
       form.reset();
       setModalIsOpen(false);
     },
     onError: (err) => {
       console.error(err);
-      toast.error(getApiErrorMessage(err, "An error has occurred."));
+      toast.error(getApiErrorMessage(err, "An error has occurred."), {
+        toasterId: "modal",
+      });
     },
   });
 
@@ -73,6 +77,7 @@ export default function CreateModal({
       <h2 className="text-xl font-bold tracking-tight text-slate-900 mb-4">
         Add New Stock
       </h2>
+      <ModalToast />
       <FormProvider {...form}>
         <form
           onSubmit={(e) => {

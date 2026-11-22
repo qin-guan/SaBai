@@ -9,6 +9,7 @@ import { apiConfig } from "@/lib/api/config";
 import { getApiErrorMessage } from "@/lib/api/errors";
 import { FormFields } from "@/types/village-codes";
 import { Button } from "@/components/interactive/Button/Button";
+import ModalToast from "@/components/interactive/ModalToast";
 
 export default function DeleteModal({
   activeForm,
@@ -33,7 +34,9 @@ export default function DeleteModal({
   };
 
   const deleteMutation = useMutation({
-    ...saBaiAPIEndpointsVillageCodesDeleteDeleteEndpointMutationOptions(apiConfig),
+    ...saBaiAPIEndpointsVillageCodesDeleteDeleteEndpointMutationOptions(
+      apiConfig,
+    ),
     onSuccess: () => {
       invalidateVillageCodes();
       toast.success("Village code deleted!");
@@ -46,6 +49,7 @@ export default function DeleteModal({
           err,
           "Unable to delete village code. Check that there are no visits with this village code before deleting.",
         ),
+        { toasterId: "modal" },
       );
     },
   });
@@ -55,6 +59,7 @@ export default function DeleteModal({
       <h2 className="text-xl font-bold tracking-tight text-slate-900">
         Confirm Deletion
       </h2>
+      <ModalToast />
       <p>Code: {activeForm?.code}</p>
       <p>Name: {activeForm?.name}</p>
 

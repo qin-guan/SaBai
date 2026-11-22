@@ -34,6 +34,13 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             return;
         }
 
+        if (StockStatusRules.IsLocked(stock.StockStatus))
+        {
+            throw new ConflictException(
+                "Cannot adjust a stock with reserved or dispensed status."
+            );
+        }
+
         var newQuantity = stock.Quantity + req.QuantityChange;
         if (newQuantity < 0)
         {

@@ -82,6 +82,9 @@ public sealed class MedicationStock : ITrackedEntity
     public string? Remarks { get; set; }
 
     public ICollection<StockChange> Changes { get; set; } = [];
+
+    /// <summary>Orders that reserved (or dispensed) this lot.</summary>
+    public ICollection<OrderItem> OrderItems { get; set; } = [];
 }
 
 public sealed class StockChange : ITrackedEntity
@@ -108,7 +111,6 @@ public sealed class StockChange : ITrackedEntity
 
     public DateTimeOffset CreatedAt { get; set; }
 
-    public ICollection<OrderItem> OrderItems { get; set; } = [];
 }
 
 public sealed class Order : ITrackedEntity
@@ -123,9 +125,15 @@ public sealed class Order : ITrackedEntity
 
     public Consult Consult { get; set; } = null!;
 
-    public Guid MedicationBrandId { get; set; }
+    /// <summary>What was ordered. The pharmacy picks brands and lots; see <see cref="Items"/>.</summary>
+    public Guid MedicationActiveIngredientId { get; set; }
 
-    public MedicationBrand MedicationBrand { get; set; } = null!;
+    public MedicationActiveIngredient MedicationActiveIngredient { get; set; } = null!;
+
+    /// <summary>Set only when the order asked for one specific brand; null lets any brand be used.</summary>
+    public Guid? MedicationBrandId { get; set; }
+
+    public MedicationBrand? MedicationBrand { get; set; }
 
     [PhiData]
     public required string DosageInstructions { get; set; }
@@ -148,13 +156,20 @@ public sealed class Order : ITrackedEntity
     public ICollection<OrderItem> Items { get; set; } = [];
 }
 
+/// <summary>
+/// A stock lot set aside for an order, with the amount taken from it. The lot is reserved when
+/// the order is placed, released if the order is cancelled, and dispensed when it is approved.
+/// </summary>
 public sealed class OrderItem
 {
     public Guid OrderId { get; set; }
 
     public Order Order { get; set; } = null!;
 
-    public Guid StockChangeId { get; set; }
+    public Guid StockId { get; set; }
 
-    public StockChange StockChange { get; set; } = null!;
+    public MedicationStock Stock { get; set; } = null!;
+
+    /// <summary>Quantity taken from <see cref="Stock"/> for this order.</summary>
+    public int Quantity { get; set; }
 }

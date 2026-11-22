@@ -282,14 +282,15 @@ public static class FhirMapper
 
     public static FhirMedicationRequest ToFhirMedicationRequest(Order o, Guid patientId, Guid visitId)
     {
+        var ingredient = o.MedicationActiveIngredient;
         var medConcept = new CodeableConcept
         {
-            Text = o.MedicationBrand?.Name ?? $"Brand #{o.MedicationBrandId}",
+            Text = o.MedicationBrand?.Name ?? ingredient?.Name ?? $"Ingredient #{o.MedicationActiveIngredientId}",
         };
-        if (o.MedicationBrand?.ActiveIngredient?.RxNormCode is { Length: > 0 } rx)
+        if (ingredient?.RxNormCode is { Length: > 0 } rx)
         {
             medConcept.Coding.Add(
-                new Coding("http://www.nlm.nih.gov/research/umls/rxnorm", rx, o.MedicationBrand.ActiveIngredient.Name)
+                new Coding("http://www.nlm.nih.gov/research/umls/rxnorm", rx, ingredient.Name)
             );
         }
 

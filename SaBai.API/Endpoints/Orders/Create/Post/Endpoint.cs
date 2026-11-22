@@ -12,7 +12,9 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
     {
         Post("/orders");
         Roles(StaffRoles.DoctorWork);
-        Summary(s => s.Summary = "Create a pending medication order");
+        Summary(s =>
+            s.Summary = "Place a medication order and reserve its stock (earliest expiry first)"
+        );
     }
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
@@ -22,53 +24,90 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, Response>
             "Consult was not found.",
             ct
         );
-        var brand = await db.MedicationBrands.FirstOrNotFoundAsync(
-            x => x.Id == req.MedicationBrandId,
-            "Medication brand was not found.",
+
+        var existing = await db.Orders.FindExistingAsync(
+            req.Id,
+            x => x.ConsultId == req.ConsultId,
             ct
         );
-
-        var order = await db
-            .Orders.Include(x => x.MedicationBrand)
-            .FindExistingAsync(req.Id, x => x.ConsultId == req.ConsultId, ct);
-        if (order is not null)
+        var orderId = existing?.Id;
+        if (orderId is null)
         {
-            // A resent create: answer with the order as it is now (it may have been approved).
-            brand = order.MedicationBrand;
+            orderId = await PlaceAsync(req, User.Id(), ct);
         }
-        else
+
+        var details = await db
+            .Orders.AsNoTracking()
+            .Where(x => x.Id == orderId)
+            .Select(OrderDetails.Projection)
+            .FirstAsync(ct);
+        await Send.CreatedAtAsync<Get.Endpoint>(
+            new { Id = orderId },
+            Response.From(details),
+            cancellation: ct
+        );
+    }
+
+    private async Task<Guid> PlaceAsync(Request req, Guid userId, CancellationToken ct)
+    {
+        var (ingredientId, brandId) = await ResolveAsync(req, ct);
+
+        var strategy = db.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync(async () =>
         {
-            order = new SaBai.API.Domain.Order
+            db.ChangeTracker.Clear();
+            await using var transaction = await db.Database.BeginTransactionAsync(ct);
+            var now = DateTimeOffset.UtcNow;
+            var order = new SaBai.API.Domain.Order
             {
                 Id = req.Id ?? Guid.CreateVersion7(),
                 ConsultId = req.ConsultId,
-                MedicationBrandId = brand.Id,
+                MedicationActiveIngredientId = ingredientId,
+                MedicationBrandId = brandId,
                 Quantity = req.Quantity,
                 DosageInstructions = req.DosageInstructions.Trim(),
                 Remarks = string.IsNullOrWhiteSpace(req.Remarks) ? null : req.Remarks.Trim(),
                 Status = OrderStatus.Pending,
-                CreatedAt = DateTimeOffset.UtcNow,
+                CreatedAt = now,
             };
             db.Orders.Add(order);
+            await OrderStock.ReserveAsync(db, order, userId, now, ct);
             await db.SaveChangesAsync(ct);
+            await transaction.CommitAsync(ct);
+            return order.Id;
+        });
+    }
+
+    private async Task<(Guid IngredientId, Guid? BrandId)> ResolveAsync(
+        Request req,
+        CancellationToken ct
+    )
+    {
+        if (req.MedicationBrandId is { } brandId && brandId != Guid.Empty)
+        {
+            var brand = await db
+                .MedicationBrands.AsNoTracking()
+                .FirstOrNotFoundAsync(x => x.Id == brandId, "Medication brand was not found.", ct);
+            if (
+                req.MedicationActiveIngredientId is { } given
+                && given != Guid.Empty
+                && given != brand.ActiveIngredientId
+            )
+            {
+                throw new BadRequestException(
+                    "The medication brand does not belong to that active ingredient."
+                );
+            }
+
+            return (brand.ActiveIngredientId, brand.Id);
         }
 
-        await Send.CreatedAtAsync<Get.Endpoint>(
-            new { order.Id },
-            new Response(
-                order.Id,
-                order.ConsultId,
-                order.MedicationBrandId,
-                brand.Name,
-                order.Quantity,
-                order.Status,
-                order.DosageInstructions,
-                order.Remarks,
-                order.ApprovedById,
-                order.ApprovedAt,
-                order.CreatedAt
-            ),
-            cancellation: ct
+        var ingredientId = req.MedicationActiveIngredientId!.Value;
+        await db.MedicationActiveIngredients.FirstOrNotFoundAsync(
+            x => x.Id == ingredientId,
+            "Medication ingredient was not found.",
+            ct
         );
+        return (ingredientId, null);
     }
 }

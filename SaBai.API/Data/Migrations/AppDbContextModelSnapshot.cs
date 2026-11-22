@@ -805,7 +805,10 @@ namespace SaBai.API.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid>("MedicationBrandId")
+                    b.Property<Guid>("MedicationActiveIngredientId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("MedicationBrandId")
                         .HasColumnType("uuid");
 
                     b.Property<int>("Quantity")
@@ -831,6 +834,8 @@ namespace SaBai.API.Migrations
 
                     b.HasIndex("ConsultId");
 
+                    b.HasIndex("MedicationActiveIngredientId");
+
                     b.HasIndex("MedicationBrandId");
 
                     b.HasIndex("Status");
@@ -846,12 +851,15 @@ namespace SaBai.API.Migrations
                     b.Property<Guid>("OrderId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("StockChangeId")
+                    b.Property<Guid>("StockId")
                         .HasColumnType("uuid");
 
-                    b.HasKey("OrderId", "StockChangeId");
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
 
-                    b.HasIndex("StockChangeId");
+                    b.HasKey("OrderId", "StockId");
+
+                    b.HasIndex("StockId");
 
                     b.ToTable("OrderItems");
                 });
@@ -991,7 +999,6 @@ namespace SaBai.API.Migrations
             modelBuilder.Entity("SaBai.API.Domain.PnLedgerEntry", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<int>("AmountRiels")
@@ -1810,15 +1817,22 @@ namespace SaBai.API.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("SaBai.API.Domain.MedicationActiveIngredient", "MedicationActiveIngredient")
+                        .WithMany()
+                        .HasForeignKey("MedicationActiveIngredientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("SaBai.API.Domain.MedicationBrand", "MedicationBrand")
                         .WithMany("Orders")
                         .HasForeignKey("MedicationBrandId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("ApprovedBy");
 
                     b.Navigation("Consult");
+
+                    b.Navigation("MedicationActiveIngredient");
 
                     b.Navigation("MedicationBrand");
                 });
@@ -1831,15 +1845,15 @@ namespace SaBai.API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SaBai.API.Domain.StockChange", "StockChange")
+                    b.HasOne("SaBai.API.Domain.MedicationStock", "Stock")
                         .WithMany("OrderItems")
-                        .HasForeignKey("StockChangeId")
+                        .HasForeignKey("StockId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Order");
 
-                    b.Navigation("StockChange");
+                    b.Navigation("Stock");
                 });
 
             modelBuilder.Entity("SaBai.API.Domain.Patient", b =>
@@ -2077,6 +2091,8 @@ namespace SaBai.API.Migrations
             modelBuilder.Entity("SaBai.API.Domain.MedicationStock", b =>
                 {
                     b.Navigation("Changes");
+
+                    b.Navigation("OrderItems");
                 });
 
             modelBuilder.Entity("SaBai.API.Domain.Order", b =>
@@ -2101,11 +2117,6 @@ namespace SaBai.API.Migrations
             modelBuilder.Entity("SaBai.API.Domain.StaffUser", b =>
                 {
                     b.Navigation("UserTags");
-                });
-
-            modelBuilder.Entity("SaBai.API.Domain.StockChange", b =>
-                {
-                    b.Navigation("OrderItems");
                 });
 
             modelBuilder.Entity("SaBai.API.Domain.Tag", b =>

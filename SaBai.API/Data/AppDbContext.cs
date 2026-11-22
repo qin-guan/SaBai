@@ -593,6 +593,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
                 .HasForeignKey(x => x.ConsultId)
                 .OnDelete(DeleteBehavior.Restrict);
             entity
+                .HasOne(x => x.MedicationActiveIngredient)
+                .WithMany()
+                .HasForeignKey(x => x.MedicationActiveIngredientId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity
                 .HasOne(x => x.MedicationBrand)
                 .WithMany(x => x.Orders)
                 .HasForeignKey(x => x.MedicationBrandId)
@@ -606,16 +611,16 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
         modelBuilder.Entity<OrderItem>(entity =>
         {
-            entity.HasKey(x => new { x.OrderId, x.StockChangeId });
+            entity.HasKey(x => new { x.OrderId, x.StockId });
             entity
                 .HasOne(x => x.Order)
                 .WithMany(x => x.Items)
                 .HasForeignKey(x => x.OrderId)
                 .OnDelete(DeleteBehavior.Cascade);
             entity
-                .HasOne(x => x.StockChange)
+                .HasOne(x => x.Stock)
                 .WithMany(x => x.OrderItems)
-                .HasForeignKey(x => x.StockChangeId)
+                .HasForeignKey(x => x.StockId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 

@@ -38,13 +38,20 @@ public sealed record DiagnosisInput
     public DiagnosisCategory? Category { get; init; }
 }
 
-/// <summary>Prescription inserted with a new consult. Status is always pending.</summary>
+/// <summary>
+/// Prescription inserted with a new consult. Status is always pending, and the stock is reserved
+/// right away like <c>POST /orders</c>: if any order can't be covered the whole consult is refused.
+/// </summary>
 public sealed record OrderInput
 {
     /// <summary>Id for the new order, chosen by the client; generated when omitted.</summary>
     public Guid? Id { get; init; }
 
-    public Guid MedicationBrandId { get; init; }
+    /// <summary>The active ingredient to order. Required unless <see cref="MedicationBrandId"/> is given.</summary>
+    public Guid? MedicationActiveIngredientId { get; init; }
+
+    /// <summary>Optional: restrict the order to one brand's stock (its ingredient is used when none is given).</summary>
+    public Guid? MedicationBrandId { get; init; }
 
     public int Quantity { get; init; }
 

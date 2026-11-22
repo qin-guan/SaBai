@@ -29,15 +29,16 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request, List<Response>
                 .SumAsync(x => (int?)x.Quantity, ct)
             ?? 0;
 
+        // What approved orders took from this brand's lots (an order can span several brands).
         var orders = await db
-            .Orders.AsNoTracking()
-            .Where(x => x.MedicationBrandId == brandId && x.Status == OrderStatus.Approved)
+            .OrderItems.AsNoTracking()
+            .Where(x => x.Stock.MedicationBrandId == brandId && x.Order.Status == OrderStatus.Approved)
             .Select(x => new
             {
-                Actor = x.ApprovedBy != null ? x.ApprovedBy.Nickname : null,
-                Patient = x.Consult.Visit.Patient.Name,
+                Actor = x.Order.ApprovedBy != null ? x.Order.ApprovedBy.Nickname : null,
+                Patient = x.Order.Consult.Visit.Patient.Name,
                 x.Quantity,
-                Date = x.ApprovedAt ?? x.CreatedAt,
+                Date = x.Order.ApprovedAt ?? x.Order.CreatedAt,
             })
             .ToListAsync(ct);
 

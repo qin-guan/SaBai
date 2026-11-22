@@ -152,7 +152,7 @@ public sealed class PharmacyTests(AppFixture fixture)
     }
 
     [Test]
-    public async Task Order_CreateApproveCancel_ChangesStockOnlyWhenApproved()
+    public async Task Order_ReservesStockUpFront_ThenDispensesOrReleasesIt()
     {
         // Arrange
         var client = fixture.CreateApiClient();
@@ -176,7 +176,7 @@ public sealed class PharmacyTests(AppFixture fixture)
             },
             ApiJson.Options
         );
-        var stock = await stockResponse.Content.ReadFromJsonAsync<StockDto>(ApiJson.Options);
+        stockResponse.EnsureSuccessStatusCode();
         var visit = await CreateVisitAsync(client, suffix);
         var consultResponse = await client.PostAsJsonAsync(
             "/consults",
@@ -199,66 +199,64 @@ public sealed class PharmacyTests(AppFixture fixture)
             new
             {
                 consultId,
-                medicationBrandId = brand.Id,
+                medicationActiveIngredientId = ingredient.Id,
                 quantity = 4,
                 dosageInstructions = "1 tablet daily",
                 remarks = "with food",
             },
             ApiJson.Options
         );
-        var order = await created.Content.ReadFromJsonAsync<OrderDto>(ApiJson.Options);
-        var quantityAfterCreate = await StockQuantityAsync(client, stock!.Id);
+        var order = await created.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options);
+        var orderId = ReadGuid(order, "id");
+        var orderableAfterCreate = await OrderableAsync(client, ingredient.Id);
         var queue = await client.GetAsync("/pharmacy-orders");
         var queueBody = await queue.Content.ReadAsStringAsync();
 
         var approved = await client.PatchAsJsonAsync(
-            $"/orders/{order!.Id}",
+            $"/orders/{orderId}",
             new { status = "APPROVED" },
             ApiJson.Options
         );
-        var quantityAfterApprove = await StockQuantityAsync(client, stock.Id);
+        var orderableAfterApprove = await OrderableAsync(client, ingredient.Id);
 
         var tooLarge = await client.PostAsJsonAsync(
             "/orders",
             new
             {
                 consultId,
-                medicationBrandId = brand.Id,
+                medicationActiveIngredientId = ingredient.Id,
                 quantity = 100,
                 dosageInstructions = "too much",
             },
             ApiJson.Options
         );
-        var tooLargeOrder = await tooLarge.Content.ReadFromJsonAsync<OrderDto>(ApiJson.Options);
-        var overApprove = await client.PatchAsJsonAsync(
-            $"/orders/{tooLargeOrder!.Id}",
-            new { status = "APPROVED" },
-            ApiJson.Options
-        );
-        var overBody = await overApprove.Content.ReadAsStringAsync();
-        var quantityAfterOver = await StockQuantityAsync(client, stock.Id);
+        var tooLargeBody = await tooLarge.Content.ReadAsStringAsync();
 
         var toCancel = await client.PostAsJsonAsync(
             "/orders",
             new
             {
                 consultId,
-                medicationBrandId = brand.Id,
+                medicationActiveIngredientId = ingredient.Id,
                 quantity = 2,
                 dosageInstructions = "cancel me",
             },
             ApiJson.Options
         );
-        var cancelOrder = await toCancel.Content.ReadFromJsonAsync<OrderDto>(ApiJson.Options);
+        var cancelId = ReadGuid(
+            await toCancel.Content.ReadFromJsonAsync<JsonElement>(ApiJson.Options),
+            "id"
+        );
+        var orderableWhileHeld = await OrderableAsync(client, ingredient.Id);
         var cancelled = await client.PatchAsJsonAsync(
-            $"/orders/{cancelOrder!.Id}",
+            $"/orders/{cancelId}",
             new { status = "CANCELLED" },
             ApiJson.Options
         );
-        var quantityAfterCancel = await StockQuantityAsync(client, stock.Id);
+        var orderableAfterCancel = await OrderableAsync(client, ingredient.Id);
 
         var secondApprove = await client.PatchAsJsonAsync(
-            $"/orders/{order.Id}",
+            $"/orders/{orderId}",
             new { status = "APPROVED" },
             ApiJson.Options
         );
@@ -266,19 +264,28 @@ public sealed class PharmacyTests(AppFixture fixture)
 
         // Assert
         await Assert.That(created.StatusCode).IsEqualTo(HttpStatusCode.Created);
-        await Assert.That(quantityAfterCreate).IsEqualTo(10);
+        await Assert.That(order.GetProperty("medicationBrandId").ValueKind).IsEqualTo(JsonValueKind.Null);
+        var allocations = order.GetProperty("allocations");
+        await Assert.That(allocations.GetArrayLength()).IsEqualTo(1);
+        await Assert.That(allocations[0].GetProperty("brandName").GetString()).IsEqualTo($"Order brand {suffix}");
+        await Assert.That(allocations[0].GetProperty("location").GetString()).IsEqualTo($"order-{suffix}");
+        await Assert.That(allocations[0].GetProperty("quantity").GetInt32()).IsEqualTo(4);
+        await Assert.That(orderableAfterCreate).IsEqualTo(6);
         await Assert.That(queue.StatusCode).IsEqualTo(HttpStatusCode.OK);
         await Assert.That(queueBody).Contains(visit.PatientName);
+        await Assert.That(queueBody).Contains($"Order ingredient {suffix}");
         await Assert.That(queueBody).Contains($"Order brand {suffix}");
+        await Assert.That(queueBody).Contains($"order-{suffix}");
         await Assert.That(queueBody).Contains("cough");
         await Assert.That(queueBody).Contains(visit.DisplayId);
         await Assert.That(approved.StatusCode).IsEqualTo(HttpStatusCode.OK);
-        await Assert.That(quantityAfterApprove).IsEqualTo(6);
-        await Assert.That(overApprove.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
-        await Assert.That(overBody).Contains("Medicine stock cannot be negative.");
-        await Assert.That(quantityAfterOver).IsEqualTo(6);
+        await Assert.That(orderableAfterApprove).IsEqualTo(6);
+        await Assert.That(tooLarge.StatusCode).IsEqualTo(HttpStatusCode.Conflict);
+        await Assert.That(tooLargeBody).Contains("Insufficient stock");
+        await Assert.That(toCancel.StatusCode).IsEqualTo(HttpStatusCode.Created);
+        await Assert.That(orderableWhileHeld).IsEqualTo(4);
         await Assert.That(cancelled.StatusCode).IsEqualTo(HttpStatusCode.OK);
-        await Assert.That(quantityAfterCancel).IsEqualTo(6);
+        await Assert.That(orderableAfterCancel).IsEqualTo(6);
         await Assert.That(secondApprove.StatusCode).IsEqualTo(HttpStatusCode.BadRequest);
         await Assert.That(secondBody).Contains("Order is already APPROVED.");
     }
@@ -338,13 +345,14 @@ public sealed class PharmacyTests(AppFixture fixture)
         return (await response.Content.ReadFromJsonAsync<BrandDto>(ApiJson.Options))!;
     }
 
-    private static async Task<int> StockQuantityAsync(HttpClient client, Guid stockId)
+    private static async Task<int> OrderableAsync(HttpClient client, Guid ingredientId)
     {
-        var stocks = await client.GetFromJsonAsync<List<StockDto>>(
-            "/medication-stock",
+        var rows = await client.GetFromJsonAsync<List<JsonElement>>(
+            "/medication-stock/by-ingredient",
             ApiJson.Options
         );
-        return stocks!.Single(x => x.Id == stockId).Quantity;
+        var row = rows!.SingleOrDefault(x => ReadGuid(x, "ingredientId") == ingredientId);
+        return row.ValueKind == JsonValueKind.Undefined ? 0 : row.GetProperty("availableQuantity").GetInt32();
     }
 
     private static async Task<VisitContext> CreateVisitAsync(HttpClient client, string suffix)

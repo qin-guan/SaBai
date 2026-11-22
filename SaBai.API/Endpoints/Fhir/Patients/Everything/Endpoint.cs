@@ -33,8 +33,10 @@ public sealed class Endpoint(AppDbContext db) : Endpoint<Request>
                 .ThenInclude(c => c.Referrals)
             .Include(x => x.Consults)
                 .ThenInclude(c => c.Orders)
+                    .ThenInclude(o => o.MedicationActiveIngredient)
+            .Include(x => x.Consults)
+                .ThenInclude(c => c.Orders)
                     .ThenInclude(o => o.MedicationBrand)
-                        .ThenInclude(b => b.ActiveIngredient)
             .Where(x => x.PatientId == req.Id)
             .OrderByDescending(x => x.Date)
             .ToListAsync(ct);

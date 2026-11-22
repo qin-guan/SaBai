@@ -1,4 +1,5 @@
 using SaBai.API.Domain;
+using SaBai.API.Endpoints.Orders;
 
 namespace SaBai.API.Endpoints.PharmacyOrders.Get;
 
@@ -16,13 +17,17 @@ public sealed record VisitBundle(
     IReadOnlyList<DiagnosisItem> Diagnoses
 );
 
-/// <summary>A pending medication order waiting to be dispensed.</summary>
+/// <summary>
+/// A pending medication order waiting to be dispensed. <c>MedicationName</c> is the active
+/// ingredient; <c>Allocations</c> lists the brand and lot (with its location) to take each part from.
+/// </summary>
 public sealed record PharmacyOrderItem(
     Guid OrderId,
     string MedicationName,
     int Quantity,
     bool IsLowStock,
-    string DosageInstructions
+    string DosageInstructions,
+    IReadOnlyList<OrderAllocation> Allocations
 );
 
 /// <summary>Diagnosis recorded on one of the visit's consults.</summary>

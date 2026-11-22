@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using SaBai.API.Auth;
 using SaBai.API.Data;
 using SaBai.API.Domain;
+using SaBai.API.Endpoints.Orders;
 
 namespace SaBai.API.Endpoints.PharmacyOrders.Get;
 
@@ -25,9 +26,21 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
                 x.Id,
                 x.Quantity,
                 x.DosageInstructions,
-                MedicationName = x.MedicationBrand.Name,
-                IngredientId = x.MedicationBrand.ActiveIngredientId,
-                FallBelow = x.MedicationBrand.ActiveIngredient.FallBelow,
+                MedicationName = x.MedicationActiveIngredient.Name,
+                IngredientId = x.MedicationActiveIngredientId,
+                FallBelow = x.MedicationActiveIngredient.FallBelow,
+                Allocations = x.Items
+                    .OrderBy(i => i.Stock.Expiry)
+                    .ThenBy(i => i.StockId)
+                    .Select(i => new OrderAllocation(
+                        i.StockId,
+                        i.Stock.MedicationBrandId,
+                        i.Stock.MedicationBrand.Name,
+                        i.Stock.Location,
+                        i.Stock.Expiry,
+                        i.Quantity
+                    ))
+                    .ToList(),
                 VisitId = (Guid?)x.Consult.Visit.Id,
                 VisitDate = (DateTimeOffset?)x.Consult.Visit.Date,
                 PatientId = (Guid?)x.Consult.Visit.Patient.Id,
@@ -101,7 +114,8 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
                                 x.MedicationName,
                                 x.Quantity,
                                 x.FallBelow > activeByIngredient.GetValueOrDefault(x.IngredientId),
-                                x.DosageInstructions
+                                x.DosageInstructions,
+                                x.Allocations
                             ))
                             .ToList();
                         var visitDiagnoses = diagnoses

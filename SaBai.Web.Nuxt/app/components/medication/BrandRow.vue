@@ -5,6 +5,7 @@ import { deleteMedicationBrand, updateMedicationBrand } from '~/offline/mutation
 import type { MedicationBrand, MedicationIngredient } from '~/offline/mutations/medication'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { TableCell, TableRow } from '@/components/ui/table'
 
@@ -145,8 +146,8 @@ function onKeydown(event: KeyboardEvent) {
       </template>
       <span v-else class="text-muted-foreground">No active batch</span>
     </TableCell>
-    <TableCell data-label="Remarks" class="max-w-72 min-w-36 whitespace-normal" :class="!isEditing && !brand.remarks && 'max-md:hidden!'">
-      <Input v-if="isEditing" v-model="form.remarks" aria-label="Remarks" />
+    <TableCell data-label="Remarks" class="max-w-72 min-w-36 whitespace-normal [overflow-wrap:anywhere]" :class="!isEditing && !brand.remarks && 'max-md:hidden!'">
+      <Textarea v-if="isEditing" v-model="form.remarks" rows="2" class="min-h-0" aria-label="Remarks" />
       <template v-else>
         {{ brand.remarks }}
       </template>

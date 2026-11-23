@@ -97,10 +97,11 @@ Last synced upstream commit: `841e3f4`
   allocations to pick from, dispense, change and cancel.
 - Reviewed through `841e3f4`. Later upstream merges are for the next run.
 - Nuxt gap pass (reviewed through upstream `a233797`): every upstream change since the sync began
-  was checked against `SaBai.Web.Nuxt`. Ported there: #367 (remarks wrap, multiline edit field in
-  stock, brand and ingredient rows and referral partners), #338 (empty remarks in the split dialog
-  read "No remarks added"), #262 (visit summary grouped as anthropometric, cardiovascular and
+  was checked against `SaBai.Web.Nuxt`. Ported there: #367 (remarks wrap; multiline edit field in
+  brand and ingredient rows; referral partners wrap; main's reworked stock rows already clamp
+  remarks), #262 (visit summary grouped as anthropometric, cardiovascular and
   metabolic with urinalysis and clinical remarks; diabetes "Yes" in red; summary stays in view
   beside the consult form). Left alone: #376 (patient photo standardisation; Nuxt's compact list
   thumbnails are deliberate, owner to decide) and #285 (toasts inside modals; unverified, Nuxt has
-  one global toaster). Everything else was already present.
+  one global toaster). #338 was dropped: the reworked split dialog no longer shows a remarks field for the parent.
+  Everything else was already present.

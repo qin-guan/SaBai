@@ -10,6 +10,8 @@ import {
   fetchOrders,
   fetchPharmacyOrders,
   fetchMedicationHistory,
+  fetchOrderAllocationOptions,
+  fetchStockChanges,
   createOrder,
   updateOrder,
   deleteOrder,
@@ -34,6 +36,9 @@ export {
   type CreateOrderVars,
   type UpdateOrderVars,
   type DeleteOrderVars,
+  type StockChange,
+  type OrderAllocationOptions,
+  type OrderBatchOption,
 } from '~/offline/mutations/medication'
 
 /**
@@ -58,10 +63,11 @@ export function useIngredientAvailability(options: { enabled?: MaybeRefOrGetter<
   })
 }
 
-export function useMedicationBrands() {
+export function useMedicationBrands(options: { enabled?: MaybeRefOrGetter<boolean> } = {}) {
   return useQuery({
     queryKey: queryKeys.medicationBrands(),
     queryFn: ({ signal }) => fetchMedicationBrands(signal),
+    enabled: () => toValue(options.enabled) ?? true,
   })
 }
 
@@ -102,6 +108,39 @@ export function useMedicationHistory(brandId: MaybeRefOrGetter<string | null | u
     queryKey: computed(() => queryKeys.medicationHistory(toValue(brandId) ?? '')),
     queryFn: ({ signal }) => fetchMedicationHistory(toValue(brandId)!, signal),
     enabled: () => !!toValue(brandId),
+  })
+}
+
+/**
+ * A batch's change log, newest first: only the dispensings (`dispensedOnly`)
+ * or every change. Always refetched when opened, so it is never an old copy.
+ */
+export function useStockChanges(
+  stockId: MaybeRefOrGetter<string | null | undefined>,
+  dispensedOnly: MaybeRefOrGetter<boolean>,
+) {
+  return useQuery({
+    queryKey: computed(() => queryKeys.stockChangesList(toValue(stockId) ?? '', toValue(dispensedOnly))),
+    queryFn: ({ signal }) => fetchStockChanges(toValue(stockId)!, toValue(dispensedOnly), signal),
+    enabled: () => !!toValue(stockId),
+    staleTime: 0,
+  })
+}
+
+/**
+ * The batches a pending order can be dispensed from. Not kept between
+ * openings (`gcTime: 0`) or saved for offline use: other orders move the
+ * numbers, so the dialog must start from what the server says now.
+ */
+export function useOrderAllocationOptions(orderId: MaybeRefOrGetter<string | null | undefined>) {
+  return useQuery({
+    queryKey: computed(() => queryKeys.orderAllocationOptions(toValue(orderId) ?? '')),
+    queryFn: ({ signal }) => fetchOrderAllocationOptions(toValue(orderId)!, signal),
+    enabled: () => !!toValue(orderId),
+    staleTime: 0,
+    gcTime: 0,
+    retry: false,
+    meta: { persist: false },
   })
 }
 

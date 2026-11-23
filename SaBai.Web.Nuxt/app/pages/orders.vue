@@ -1,30 +1,21 @@
 <script setup lang="ts">
-import {
-  PhCheck,
-  PhMagnifyingGlass,
-  PhPencilSimple,
-  PhTrash,
-  PhWarning,
-  PhX,
-} from '@phosphor-icons/vue'
+import { PhFunnel, PhMagnifyingGlass, PhX } from '@phosphor-icons/vue'
 import { toast } from 'vue-sonner'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { calculateAge } from '@/utils/patient'
-import { formatVisitDate } from '@/utils/visit'
-import type { MedicationOrder, PharmacyOrderItem } from '~/offline/mutations/medication'
-import type { OrderSnapshot } from '~/offline/mutations/medication'
+import type { MedicationOrder, OrderSnapshot, PharmacyOrderItem, PharmacyVisitBundle } from '~/offline/mutations/medication'
 
 useHead({ title: "Orders & Dispensing · Sa'Bai" })
 
 /**
- * The pharmacist's orders: the queue of pending orders by patient and visit,
- * each with the batches the server reserved for it (what to pick), to dispense,
- * change or cancel; and the log of every order. Dispensed and cancelled orders
- * are read-only.
+ * The pharmacist's orders. First the queue: pending orders by patient and
+ * visit, each with the batches it will be dispensed from (the system's, unless
+ * the pharmacist chose others with "Change batch"), to dispense, change or
+ * cancel. Then the history: dispensed, cancelled, or every order.
+ *
+ * The page owns the data and the writes; `OrderQueueCard` and
+ * `OrderHistoryTable` show them and report what was asked.
  */
 
 const route = useRoute()
@@ -34,153 +25,146 @@ const { villageCodes } = useVillageCode()
 
 const { data: pharmacyQueue, isPending: queuePending, isError: queueError, error: queueErr } = usePharmacyOrders()
 const { data: allOrders, isPending: ordersPending, isError: ordersError, error: ordersErr } = useOrders()
-const { data: availability } = useIngredientAvailability()
 const { data: patientsData } = usePatientsWithLatestVisit()
 
 const updateOrder = useUpdateOrder()
 const deleteOrder = useDeleteOrder()
 
-type Tab = 'queue' | 'ALL' | 'DISPENSED' | 'CANCELLED'
-const activeTab = ref<Tab>('queue')
+type View = 'queue' | 'dispensed' | 'cancelled' | 'all'
+const VIEWS: View[] = ['queue', 'dispensed', 'cancelled', 'all']
+/** The view lives in the URL (`?view=dispensed`), so a reload or a shared link keeps it. */
+const view = computed<View>({
+  get: () => (VIEWS.includes(route.query.view as View) ? (route.query.view as View) : 'queue'),
+  set: (value) => {
+    const { view: _view, ...query } = route.query
+    router.replace({ query: value === 'queue' ? query : { ...query, view: value } })
+  },
+})
+
 const search = ref('')
-const villageId = ref('')
+const villageCode = ref('')
 const lowStockOnly = ref(false)
 
-const changing = ref<{ order: MedicationOrder, visitId?: string, patientName?: string } | null>(null)
-const cancelling = ref<{ order: MedicationOrder, visitId?: string, patientName?: string } | null>(null)
+interface OrderContext { order: MedicationOrder, visitId?: string, patientName?: string }
+const changing = ref<OrderContext | null>(null)
+const cancelling = ref<OrderContext | null>(null)
+const rebatching = ref<{
+  order: { orderId: string, medicationName: string, quantity: number, unit?: string }
+  before: OrderSnapshot
+  visitId?: string
+  patientName?: string
+} | null>(null)
 const dispensing = ref(new Set<string>())
 
 // Deleting an order is for the doctor roles (the API's DoctorWork).
 const canDelete = computed(() => !!user.value?.roles.some(r => ['admin', 'member', 'doctor'].includes(r)))
 
-// Sync deep link query params (?patient= or ?visit=)
-const filterPatient = computed(() => route.query.patient ? String(route.query.patient) : null)
-const filterVisit = computed(() => route.query.visit ? String(route.query.visit) : null)
+// Deep link from a patient or visit (?patient= or ?visit=).
+const filterPatient = computed(() => (route.query.patient ? String(route.query.patient) : null))
+const filterVisit = computed(() => (route.query.visit ? String(route.query.visit) : null))
 
 // Lookups
 const ordersById = computed(() => new Map((allOrders.value ?? []).map(o => [o.id, o])))
-const unitByIngredient = computed(() => new Map((availability.value ?? []).map(a => [a.ingredientId, a.unitOfMeasurement])))
-const unitOfOrder = (orderId: string) => {
-  const order = ordersById.value.get(orderId)
-  return order ? unitByIngredient.value.get(order.medicationActiveIngredientId) : undefined
-}
 
 type PatientRow = NonNullable<typeof patientsData.value>['patients'][number]
-const patientsByDisplayIdOrName = computed(() => {
+const patientsByDisplayId = computed(() => {
   const map = new Map<string, PatientRow>()
   for (const p of patientsData.value?.patients ?? []) {
-    map.set(String(p.id), p)
-    if (p.displayId) map.set(String(p.displayId), p)
-    if (p.name) map.set(p.name.toLowerCase(), p)
+    if (p.displayId)
+      map.set(String(p.displayId), p)
   }
   return map
 })
+const patientOf = (displayId: string) => patientsByDisplayId.value.get(String(displayId)) ?? null
 
-function getPatientForGroup(group: { patient: { displayId: string, name: string } }) {
-  return patientsByDisplayIdOrName.value.get(String(group.patient.displayId))
-    ?? patientsByDisplayIdOrName.value.get(group.patient.name.toLowerCase())
-    ?? null
-}
-
-// Counts for status strip
-const queuePatientsCount = computed(() => (pharmacyQueue.value ?? []).length)
-const pendingOrdersCount = computed(() => (pharmacyQueue.value ?? []).reduce((n, g) => n + g.visits.reduce((m, v) => m + v.orders.length, 0), 0))
-const allOrdersCount = computed(() => (allOrders.value ?? []).length)
-const dispensedOrdersCount = computed(() => (allOrders.value ?? []).filter(o => o.status === 'DISPENSED').length)
-const cancelledOrdersCount = computed(() => (allOrders.value ?? []).filter(o => o.status === 'CANCELLED').length)
-
-// Filtered Pharmacy Queue
-const filteredPharmacyQueue = computed(() => {
-  let queue = pharmacyQueue.value ?? []
-
-  if (filterPatient.value) {
-    queue = queue.filter(g =>
-      String(g.patient.displayId) === filterPatient.value
-      || getPatientForGroup(g)?.id?.toString() === filterPatient.value
-      || g.patient.name.toLowerCase().includes(filterPatient.value!.toLowerCase()),
-    )
+/** Who each pending order is for (the order list itself does not say). */
+const patientNameByOrder = computed(() => {
+  const names = new Map<string, string>()
+  for (const group of pharmacyQueue.value ?? []) {
+    for (const visit of group.visits) {
+      for (const order of visit.orders) names.set(order.orderId, group.patient.name)
+    }
   }
-
-  if (filterVisit.value) {
-    queue = queue.map(g => ({
-      ...g,
-      visits: g.visits.filter(v => String(v.visitId) === filterVisit.value),
-    })).filter(g => g.visits.length > 0)
+  return names
+})
+const visitByOrder = computed(() => {
+  const visits = new Map<string, string>()
+  for (const group of pharmacyQueue.value ?? []) {
+    for (const visit of group.visits) {
+      for (const order of visit.orders) visits.set(order.orderId, visit.visitId)
+    }
   }
-
-  const query = search.value.trim().toLowerCase()
-  if (query) {
-    queue = queue.map((g) => {
-      const patientMatches = g.patient.name.toLowerCase().includes(query) || String(g.patient.displayId).toLowerCase().includes(query)
-      const visits = g.visits.map((v) => {
-        const diagnosesMatch = v.diagnoses.some(d => d.details.toLowerCase().includes(query) || (d.category && d.category.toLowerCase().includes(query)))
-        const orders = v.orders.filter(o =>
-          patientMatches
-          || diagnosesMatch
-          || o.medicationName.toLowerCase().includes(query)
-          || o.dosageInstructions.toLowerCase().includes(query)
-          || o.allocations.some(a => a.brandName.toLowerCase().includes(query) || a.location.toLowerCase().includes(query))
-          || (ordersById.value.get(o.orderId)?.remarks?.toLowerCase() ?? '').includes(query),
-        )
-        return { ...v, orders }
-      }).filter(v => v.orders.length > 0)
-      return { ...g, visits }
-    }).filter(g => g.visits.length > 0)
-  }
-
-  if (villageId.value) {
-    queue = queue.filter(g => g.patient.villageCode === villageId.value)
-  }
-
-  if (lowStockOnly.value) {
-    queue = queue.map(g => ({
-      ...g,
-      visits: g.visits.map(v => ({
-        ...v,
-        orders: v.orders.filter(o => o.isLowStock),
-      })).filter(v => v.orders.length > 0),
-    })).filter(g => g.visits.length > 0)
-  }
-
-  return queue
+  return visits
 })
 
-// Filtered Order Log
-const filteredOrderLog = computed(() => {
-  let orders = allOrders.value ?? []
+const queueCounts = computed(() => countPharmacyQueue(pharmacyQueue.value ?? []))
+const countByStatus = (status: string) => (allOrders.value ?? []).filter(o => o.status === status).length
 
-  if (activeTab.value === 'DISPENSED') orders = orders.filter(o => o.status === 'DISPENSED')
-  else if (activeTab.value === 'CANCELLED') orders = orders.filter(o => o.status === 'CANCELLED')
+const cells = computed<{ key: View, label: string, count: number | null, detail: string }[]>(() => [
+  {
+    key: 'queue',
+    label: 'To dispense',
+    count: pharmacyQueue.value ? queueCounts.value.orders : null,
+    detail: pharmacyQueue.value
+      ? `for ${queueCounts.value.patients} ${queueCounts.value.patients === 1 ? 'patient' : 'patients'}`
+      : 'pending orders',
+  },
+  { key: 'dispensed', label: 'Dispensed', count: allOrders.value ? countByStatus('DISPENSED') : null, detail: 'handed out' },
+  { key: 'cancelled', label: 'Cancelled', count: allOrders.value ? countByStatus('CANCELLED') : null, detail: 'not dispensed' },
+  { key: 'all', label: 'All orders', count: allOrders.value ? allOrders.value.length : null, detail: 'every status' },
+])
+
+const filteredQueue = computed(() => filterPharmacyQueue(pharmacyQueue.value ?? [], {
+  query: search.value,
+  villageCode: villageCode.value,
+  lowStockOnly: lowStockOnly.value,
+  visitId: filterVisit.value,
+  patient: filterPatient.value,
+}, {
+  remarksOf: id => ordersById.value.get(id)?.remarks,
+  patientIdOf: displayId => patientOf(displayId)?.id?.toString(),
+}))
+const shownQueue = computed(() => countPharmacyQueue(filteredQueue.value))
+
+const filteredHistory = computed(() => {
+  let orders = allOrders.value ?? []
+  if (view.value === 'dispensed') orders = orders.filter(o => o.status === 'DISPENSED')
+  else if (view.value === 'cancelled') orders = orders.filter(o => o.status === 'CANCELLED')
 
   const query = search.value.trim().toLowerCase()
   if (query) {
     orders = orders.filter(o =>
       o.activeIngredientName.toLowerCase().includes(query)
       || o.dosageInstructions.toLowerCase().includes(query)
-      || (o.remarks && o.remarks.toLowerCase().includes(query))
-      || o.allocations.some(a => a.brandName.toLowerCase().includes(query))
-      || o.id.toLowerCase().includes(query),
+      || (o.remarks ?? '').toLowerCase().includes(query)
+      || (patientNameByOrder.value.get(o.id) ?? '').toLowerCase().includes(query)
+      || o.allocations.some(a => a.brandName.toLowerCase().includes(query) || a.location.toLowerCase().includes(query)),
     )
   }
-
   return orders
 })
 
+const hasFilters = computed(() => !!search.value.trim() || (view.value === 'queue' && (!!villageCode.value || lowStockOnly.value)))
+const isDeepLinked = computed(() => !!filterPatient.value || !!filterVisit.value)
+
 function clearFilters() {
   search.value = ''
-  villageId.value = ''
+  villageCode.value = ''
   lowStockOnly.value = false
-  if (filterPatient.value || filterVisit.value) {
-    router.replace(paths.orders())
-  }
 }
+function clearDeepLink() {
+  router.replace(paths.orders())
+}
+
+const historyTitle = computed(() => ({ queue: '', dispensed: 'Dispensed orders', cancelled: 'Cancelled orders', all: 'All orders' })[view.value])
 
 /** What the optimistic edits need: the listed order, with the queue's (fresher) allocations. */
 function snapshotOf(item: PharmacyOrderItem): OrderSnapshot {
   const full = ordersById.value.get(item.orderId)
   return {
-    medicationActiveIngredientId: full?.medicationActiveIngredientId ?? '',
+    medicationActiveIngredientId: item.medicationActiveIngredientId || full?.medicationActiveIngredientId || '',
     ingredientName: item.medicationName,
+    unit: item.unitOfMeasurement || full?.unitOfMeasurement || undefined,
     quantity: item.quantity,
     allocations: [...item.allocations],
   }
@@ -201,11 +185,11 @@ async function dispense(orderId: string, before: OrderSnapshot, visitId?: string
       dispensedById: user.value?.id ?? null,
       dispensedAt: new Date().toISOString(),
     })
-    notifySaved(outcome, `Dispensed ${before.ingredientName} × ${before.quantity}${patientName ? ` for ${patientName}` : ''}.`)
+    notifySaved(outcome, `Dispensed ${formatQuantity(before.quantity, before.unit)} of ${before.ingredientName}${patientName ? ` for ${patientName}` : ''}.`)
     return true
   }
   catch (err) {
-    toast.error(getApiErrorMessage(err, `Failed to dispense ${before.ingredientName}.`))
+    toast.error(getApiErrorMessage(err, `${before.ingredientName} could not be dispensed.`))
     return false
   }
   finally {
@@ -213,20 +197,39 @@ async function dispense(orderId: string, before: OrderSnapshot, visitId?: string
   }
 }
 
-async function dispenseAll(visit: { visitId: string, orders: PharmacyOrderItem[] }, patientName: string) {
-  for (const item of [...visit.orders]) {
+async function dispenseAll(visit: PharmacyVisitBundle, patientName: string) {
+  for (const item of [...visit.orders])
     await dispense(item.orderId, snapshotOf(item), visit.visitId, patientName)
-  }
 }
 
 function startChange(orderId: string, visitId?: string, patientName?: string) {
   const order = ordersById.value.get(orderId)
-  if (order) changing.value = { order, visitId, patientName }
+  if (order)
+    changing.value = { order, visitId, patientName }
 }
 
 function startCancel(orderId: string, visitId?: string, patientName?: string) {
   const order = ordersById.value.get(orderId)
-  if (order) cancelling.value = { order, visitId, patientName }
+  if (order)
+    cancelling.value = { order, visitId, patientName }
+}
+
+function startRebatch(item: PharmacyOrderItem, visitId: string, patientName: string) {
+  rebatching.value = {
+    order: { orderId: item.orderId, medicationName: item.medicationName, quantity: item.quantity, unit: item.unitOfMeasurement || undefined },
+    before: snapshotOf(item),
+    visitId,
+    patientName,
+  }
+}
+
+function startRebatchFromHistory(order: MedicationOrder) {
+  rebatching.value = {
+    order: { orderId: order.id, medicationName: order.activeIngredientName, quantity: order.quantity, unit: order.unitOfMeasurement || undefined },
+    before: orderSnapshot(order),
+    visitId: visitByOrder.value.get(order.id),
+    patientName: patientNameByOrder.value.get(order.id),
+  }
 }
 
 async function handleDelete(order: MedicationOrder) {
@@ -238,401 +241,176 @@ async function handleDelete(order: MedicationOrder) {
     notifySaved(outcome, 'Order deleted.')
   }
   catch (err) {
-    toast.error(getApiErrorMessage(err, 'Failed to delete the order.'))
+    toast.error(getApiErrorMessage(err, 'The order could not be deleted.'))
   }
 }
 </script>
 
 <template>
-  <div class="flex flex-col gap-5 pb-12">
+  <div class="flex flex-col gap-3 pb-8">
     <PageHeader
-      title="Pharmacist Orders & Dispensing"
-      description="Pick each pending order from the batches reserved for it, then mark it dispensed."
+      title="Orders"
+      description="Pick each pending order from its batches, hand it over, then mark it dispensed."
       :breadcrumbs="[{ label: 'Home', to: '/' }, { label: 'Orders' }]"
+      class="mb-0!"
     />
 
-    <!-- Deep-link filter banner -->
-    <div v-if="filterPatient || filterVisit" class="flex items-center justify-between rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm">
-      <div class="flex items-center gap-2 font-medium text-primary">
-        <PhWarning class="size-5 shrink-0" />
-        <span>Filtered to specific patient/visit context.</span>
-      </div>
-      <Button variant="outline" size="sm" @click="clearFilters">
-        Show all orders
+    <!-- One cell per view: picks the list below and shows how many are in it. -->
+    <div role="group" aria-label="Order views" class="grid grid-cols-2 gap-px border border-border bg-border sm:grid-cols-4">
+      <button
+        v-for="cell in cells"
+        :key="cell.key"
+        type="button"
+        class="flex min-w-0 flex-col gap-0.5 bg-card px-3 py-1.5 text-left hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
+        :class="view === cell.key && 'bg-accent shadow-[inset_0_-3px_0_var(--color-primary)]'"
+        :aria-pressed="view === cell.key"
+        :data-orders-view="cell.key"
+        @click="view = cell.key"
+      >
+        <span class="flex items-baseline justify-between gap-2">
+          <span class="truncate text-xs font-bold text-chrome touch:text-sm">{{ cell.label }}</span>
+          <span class="text-lg leading-tight font-bold tabular-nums" :class="cell.count === 0 && 'text-muted-foreground'">
+            {{ cell.count ?? '–' }}
+          </span>
+        </span>
+        <span class="truncate text-xs text-muted-foreground touch:text-[0.8125rem]">{{ cell.detail }}</span>
+      </button>
+    </div>
+
+    <!-- Deep link from a patient or visit. -->
+    <div
+      v-if="isDeepLinked && view === 'queue'"
+      class="flex flex-wrap items-center justify-between gap-2 border border-primary/40 bg-accent px-3 py-1.5 text-xs touch:text-sm"
+      role="status"
+    >
+      <p class="flex items-center gap-1.5 font-semibold text-chrome">
+        <PhFunnel class="size-4 shrink-0" aria-hidden="true" />
+        Showing the orders of one {{ filterVisit ? 'visit' : 'patient' }} only.
+      </p>
+      <Button variant="outline" size="sm" @click="clearDeepLink">
+        Show the whole queue
       </Button>
     </div>
 
-    <!-- Status Strip / Tabs -->
-    <div role="group" aria-label="Order views" class="grid grid-cols-2 gap-px border border-border bg-border sm:grid-cols-4 rounded-lg overflow-hidden shadow-xs">
-      <button
-        type="button"
-        class="flex flex-col items-start bg-card p-3.5 text-left transition hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        :class="{ 'bg-muted ring-2 ring-primary inset-0 z-10': activeTab === 'queue' }"
-        :aria-pressed="activeTab === 'queue'"
-        @click="activeTab = 'queue'"
-      >
-        <span class="text-xs font-medium text-muted-foreground">Dispensing Queue</span>
-        <span class="mt-1 flex items-baseline gap-2">
-          <span class="text-xl font-bold tracking-tight">{{ pendingOrdersCount }}</span>
-          <span class="text-xs text-muted-foreground">pending for {{ queuePatientsCount }} {{ queuePatientsCount === 1 ? 'patient' : 'patients' }}</span>
-        </span>
-      </button>
-
-      <button
-        type="button"
-        class="flex flex-col items-start bg-card p-3.5 text-left transition hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        :class="{ 'bg-muted ring-2 ring-primary inset-0 z-10': activeTab === 'ALL' }"
-        :aria-pressed="activeTab === 'ALL'"
-        @click="activeTab = 'ALL'"
-      >
-        <span class="text-xs font-medium text-muted-foreground">All Orders</span>
-        <span class="mt-1 flex items-baseline gap-2">
-          <span class="text-xl font-bold tracking-tight">{{ allOrdersCount }}</span>
-          <span class="text-xs text-muted-foreground">all prescriptions</span>
-        </span>
-      </button>
-
-      <button
-        type="button"
-        class="flex flex-col items-start bg-card p-3.5 text-left transition hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        :class="{ 'bg-muted ring-2 ring-primary inset-0 z-10': activeTab === 'DISPENSED' }"
-        :aria-pressed="activeTab === 'DISPENSED'"
-        @click="activeTab = 'DISPENSED'"
-      >
-        <span class="text-xs font-medium text-muted-foreground">Dispensed</span>
-        <span class="mt-1 flex items-baseline gap-2">
-          <span class="text-xl font-bold tracking-tight">{{ dispensedOrdersCount }}</span>
-          <span class="text-xs text-muted-foreground">handed out</span>
-        </span>
-      </button>
-
-      <button
-        type="button"
-        class="flex flex-col items-start bg-card p-3.5 text-left transition hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        :class="{ 'bg-muted ring-2 ring-primary inset-0 z-10': activeTab === 'CANCELLED' }"
-        :aria-pressed="activeTab === 'CANCELLED'"
-        @click="activeTab = 'CANCELLED'"
-      >
-        <span class="text-xs font-medium text-muted-foreground">Cancelled</span>
-        <span class="mt-1 flex items-baseline gap-2">
-          <span class="text-xl font-bold tracking-tight">{{ cancelledOrdersCount }}</span>
-          <span class="text-xs text-muted-foreground">cancelled orders</span>
-        </span>
-      </button>
-    </div>
-
-    <!-- Search & Filters Bar -->
-    <div class="flex flex-wrap items-center gap-3 bg-card p-4 rounded-lg border border-border shadow-xs">
-      <div class="relative flex-1 min-w-[200px]">
-        <PhMagnifyingGlass class="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+    <!-- Search and filters -->
+    <div class="flex flex-col gap-2 border border-border bg-card p-2 sm:flex-row sm:flex-wrap sm:items-center">
+      <div class="relative sm:w-80">
+        <PhMagnifyingGlass class="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
         <Input
           v-model="search"
-          aria-label="Search orders"
-          placeholder="Search patient, ID, medication, brand or instructions..."
-          class="pl-9 pr-9"
+          type="search"
+          :aria-label="view === 'queue' ? 'Search the queue' : 'Search orders'"
+          :placeholder="view === 'queue' ? 'Patient, medication, brand or diagnosis' : 'Medication, brand, instructions or remarks'"
+          class="pr-8 pl-8"
         />
         <button
           v-if="search"
           type="button"
           aria-label="Clear search"
-          class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+          class="absolute top-1/2 right-1.5 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground"
           @click="search = ''"
         >
-          <PhX class="size-4" />
+          <PhX class="size-3.5" aria-hidden="true" />
         </button>
       </div>
-
-      <div class="w-48">
-        <NativeSelect v-model="villageId" aria-label="Village">
+      <template v-if="view === 'queue'">
+        <NativeSelect v-model="villageCode" aria-label="Village" class="sm:w-48">
           <NativeSelectOption value="">
-            All Villages
+            All villages
           </NativeSelectOption>
           <NativeSelectOption v-for="v in villageCodes" :key="v.code" :value="v.code">
             {{ v.name }} ({{ v.code }})
           </NativeSelectOption>
         </NativeSelect>
-      </div>
-
-      <label class="flex items-center gap-2 text-sm font-medium cursor-pointer select-none">
-        <input v-model="lowStockOnly" type="checkbox" class="rounded border-input text-primary focus:ring-ring size-4">
-        Low stock items only
-      </label>
-
-      <Button v-if="search || villageId || lowStockOnly" variant="ghost" size="sm" @click="clearFilters">
-        Reset filters
+        <label class="flex cursor-pointer items-center gap-2 text-xs font-semibold select-none touch:min-h-11 touch:text-sm">
+          <input v-model="lowStockOnly" type="checkbox" class="size-4 accent-primary touch:size-5">
+          Low stock only
+        </label>
+      </template>
+      <Button v-if="hasFilters" variant="ghost" size="sm" class="text-xs touch:h-10" @click="clearFilters">
+        Reset
       </Button>
+      <p class="text-xs text-muted-foreground sm:ml-auto touch:text-sm" role="status">
+        <template v-if="view === 'queue' && pharmacyQueue">
+          {{ shownQueue.orders }} {{ shownQueue.orders === 1 ? 'order' : 'orders' }} · {{ shownQueue.patients }} {{ shownQueue.patients === 1 ? 'patient' : 'patients' }}
+        </template>
+        <template v-else-if="view !== 'queue' && allOrders">
+          {{ filteredHistory.length }} {{ filteredHistory.length === 1 ? 'order' : 'orders' }}
+        </template>
+      </p>
     </div>
 
-    <!-- View 1: Dispensing Queue -->
-    <div v-if="activeTab === 'queue'" class="flex flex-col gap-6">
-      <StateMessage v-if="queuePending" kind="loading" message="Loading pharmacy dispensing queue..." />
-      <StateMessage v-else-if="queueError" kind="error" :message="describeLoadError(queueErr, 'Failed to load pharmacy orders.')" />
-      <StateMessage v-else-if="filteredPharmacyQueue.length === 0" message="No pending orders in the dispensing queue." />
-
-      <div v-for="group in filteredPharmacyQueue" :key="group.patient.displayId" class="rounded-xl border border-border bg-card overflow-hidden shadow-xs">
-        <!-- Patient Header -->
-        <div class="flex flex-wrap items-center justify-between gap-4 border-b border-border bg-muted/30 px-5 py-4">
-          <div class="flex items-center gap-3">
-            <span class="flex size-11 shrink-0 overflow-hidden rounded-full bg-background border border-border">
-              <PatientPhoto
-                v-if="getPatientForGroup(group)"
-                :patient-id="getPatientForGroup(group)!.id"
-                :has-photo="getPatientForGroup(group)!.hasPhoto"
-                :size="44"
-                alt=""
-              />
-            </span>
-            <div class="flex flex-col">
-              <div class="flex items-center gap-2">
-                <NuxtLink
-                  v-if="getPatientForGroup(group)"
-                  :to="paths.patientDetail(getPatientForGroup(group)!.id)"
-                  class="font-semibold text-foreground hover:underline text-base"
-                >
-                  {{ group.patient.name }}
-                </NuxtLink>
-                <span v-else class="font-semibold text-foreground text-base">{{ group.patient.name }}</span>
-
-                <PatientCode
-                  :id="group.patient.displayId"
-                  :village-code="group.patient.villageCode"
-                  :display-id="group.patient.displayId"
-                />
-              </div>
-
-              <div class="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
-                <span v-if="getPatientForGroup(group)?.dateOfBirth">
-                  {{ calculateAge(getPatientForGroup(group)!.dateOfBirth) }} yrs
-                  ({{ getPatientForGroup(group)!.gender === 'female' ? 'F' : 'M' }})
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Allergy Flag -->
-          <div>
-            <AllergyFlag :allergy="getPatientForGroup(group)?.drugAllergy" />
-          </div>
-        </div>
-
-        <!-- Visit Bundles -->
-        <div class="flex flex-col divide-y divide-border">
-          <div v-for="visit in group.visits" :key="visit.visitId" class="p-5 flex flex-col gap-4">
-            <!-- Visit Subheader -->
-            <div class="flex flex-wrap items-center justify-between gap-3 bg-muted/20 p-3 rounded-lg border border-border/50">
-              <div class="flex items-center gap-3">
-                <span class="text-sm font-semibold text-foreground">Visit: {{ formatVisitDate(visit.visitDate) }}</span>
-                <Button
-                  v-if="getPatientForGroup(group)"
-                  variant="link"
-                  size="sm"
-                  class="h-auto p-0 text-xs"
-                  as-child
-                >
-                  <NuxtLink :to="paths.consultsDetail(getPatientForGroup(group)!.id, visit.visitId)">
-                    View Consult →
-                  </NuxtLink>
-                </Button>
-              </div>
-
-              <Button
-                v-if="visit.orders.length >= 2"
-                variant="success"
-                size="sm"
-                @click="dispenseAll(visit, group.patient.name)"
-              >
-                <PhCheck class="mr-1.5 size-4" /> Dispense All ({{ visit.orders.length }})
-              </Button>
-            </div>
-
-            <!-- Diagnoses Strip -->
-            <div v-if="visit.diagnoses.length > 0" class="flex flex-wrap gap-2 items-center text-xs">
-              <span class="font-medium text-muted-foreground">Diagnoses:</span>
-              <span v-for="(diag, idx) in visit.diagnoses" :key="idx" class="inline-flex items-center gap-1 rounded bg-secondary px-2 py-1 text-secondary-foreground">
-                <span v-if="diag.category" class="font-semibold uppercase tracking-wider text-[10px] opacity-75">[{{ diag.category }}]</span>
-                <span>{{ diag.details }}</span>
-              </span>
-            </div>
-
-            <!-- Orders -->
-            <div class="rounded-lg border border-border overflow-hidden">
-              <Table class="grid-table stack-table">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Medication</TableHead>
-                    <TableHead class="text-right">
-                      Quantity
-                    </TableHead>
-                    <TableHead>Pick from</TableHead>
-                    <TableHead>Dosage Instructions & Remarks</TableHead>
-                    <TableHead class="text-right">
-                      Actions
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <TableRow v-for="order in visit.orders" :key="order.orderId" :data-order-id="order.orderId">
-                    <TableCell data-stack="title" class="font-medium">
-                      <div class="flex items-center gap-2">
-                        <span>{{ order.medicationName }}</span>
-                        <Badge v-if="order.isLowStock" variant="outline" class="border-warning/40 bg-warning-subtle text-warning text-[10px]">
-                          Low Stock
-                        </Badge>
-                      </div>
-                    </TableCell>
-
-                    <TableCell data-label="Quantity" class="text-right font-semibold tabular-nums">
-                      × {{ order.quantity }}{{ formatQuantityUnit(unitOfOrder(order.orderId)) }}
-                    </TableCell>
-
-                    <TableCell data-label="Pick from" class="min-w-56">
-                      <OrderAllocations :allocations="order.allocations" :unit="unitOfOrder(order.orderId)" pending />
-                    </TableCell>
-
-                    <TableCell data-label="Dosage">
-                      <div class="flex flex-col">
-                        <span class="text-sm text-foreground">{{ order.dosageInstructions }}</span>
-                        <span v-if="ordersById.get(order.orderId)?.remarks" class="text-xs text-muted-foreground italic">
-                          Remarks: {{ ordersById.get(order.orderId)?.remarks }}
-                        </span>
-                      </div>
-                    </TableCell>
-
-                    <TableCell data-stack="actions" class="text-right">
-                      <div class="flex flex-wrap items-center justify-end gap-1.5">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          :disabled="!ordersById.get(order.orderId)"
-                          :aria-label="`Change order ${order.medicationName} for ${group.patient.name}`"
-                          @click="startChange(order.orderId, visit.visitId, group.patient.name)"
-                        >
-                          <PhPencilSimple aria-hidden="true" /> Change
-                        </Button>
-
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          class="text-destructive hover:text-destructive"
-                          :disabled="!ordersById.get(order.orderId)"
-                          :aria-label="`Cancel order ${order.medicationName} for ${group.patient.name}`"
-                          @click="startCancel(order.orderId, visit.visitId, group.patient.name)"
-                        >
-                          <PhX aria-hidden="true" /> Cancel
-                        </Button>
-
-                        <Button
-                          variant="success"
-                          size="sm"
-                          :disabled="dispensing.has(order.orderId)"
-                          :aria-label="`Mark ${order.medicationName} dispensed for ${group.patient.name}`"
-                          @click="dispense(order.orderId, snapshotOf(order), visit.visitId, group.patient.name)"
-                        >
-                          <PhCheck aria-hidden="true" /> Mark dispensed
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </div>
-          </div>
-        </div>
+    <!-- The queue: pending orders by patient and visit. -->
+    <div v-if="view === 'queue'" class="flex flex-col gap-3" data-orders-queue>
+      <StateMessage v-if="queuePending && !pharmacyQueue" kind="loading" message="Loading the dispensing queue…" class="border border-border bg-card" />
+      <StateMessage v-else-if="queueError && !pharmacyQueue" kind="error" :message="describeLoadError(queueErr, 'The queue could not be loaded. Check the connection and reload.')" />
+      <div
+        v-else-if="filteredQueue.length === 0"
+        class="flex flex-col items-center gap-2 border border-border bg-card px-3 py-10 text-center"
+        role="status"
+      >
+        <template v-if="hasFilters || isDeepLinked">
+          <p class="text-xs text-muted-foreground touch:text-sm">
+            No pending orders match{{ isDeepLinked ? ' for this ' + (filterVisit ? 'visit' : 'patient') : ' these filters' }}.
+          </p>
+          <Button variant="outline" size="sm" @click="clearFilters(); isDeepLinked && clearDeepLink()">
+            Show the whole queue
+          </Button>
+        </template>
+        <template v-else>
+          <p class="font-semibold">
+            Nothing to dispense
+          </p>
+          <p class="text-xs text-muted-foreground touch:text-sm">
+            Orders appear here as soon as a doctor places them in a consult.
+          </p>
+          <Button variant="outline" size="sm" @click="view = 'dispensed'">
+            See dispensed orders
+          </Button>
+        </template>
       </div>
+      <OrderQueueCard
+        v-for="group in filteredQueue"
+        v-else
+        :key="group.patient.displayId"
+        :group="group"
+        :patient="patientOf(group.patient.displayId)"
+        :orders="ordersById"
+        :dispensing="dispensing"
+        @dispense="(order, visit) => dispense(order.orderId, snapshotOf(order), visit.visitId, group.patient.name)"
+        @dispense-all="visit => dispenseAll(visit, group.patient.name)"
+        @change="(order, visit) => startChange(order.orderId, visit.visitId, group.patient.name)"
+        @cancel="(order, visit) => startCancel(order.orderId, visit.visitId, group.patient.name)"
+        @change-batch="(order, visit) => startRebatch(order, visit.visitId, group.patient.name)"
+      />
     </div>
 
-    <!-- View 2: Order Log (ALL, DISPENSED, CANCELLED) -->
-    <div v-else class="flex flex-col gap-4">
-      <StateMessage v-if="ordersPending" kind="loading" message="Loading orders..." />
-      <StateMessage v-else-if="ordersError" kind="error" :message="describeLoadError(ordersErr, 'Failed to load orders log.')" />
-      <StateMessage v-else-if="filteredOrderLog.length === 0" message="No orders found." />
-
-      <AppPanel v-else flush>
-        <Table class="grid-table stack-table">
-          <TableHeader>
-            <TableRow>
-              <TableHead>Medication</TableHead>
-              <TableHead class="text-right">
-                Quantity
-              </TableHead>
-              <TableHead>Batches</TableHead>
-              <TableHead>Dosage Instructions</TableHead>
-              <TableHead>Remarks</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Date Created</TableHead>
-              <TableHead class="text-right">
-                Actions
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <TableRow v-for="order in filteredOrderLog" :key="order.id" :data-order-id="order.id">
-              <TableCell data-stack="title" class="font-medium">
-                {{ order.activeIngredientName }}
-              </TableCell>
-              <TableCell data-label="Quantity" class="text-right tabular-nums">
-                × {{ order.quantity }}{{ formatQuantityUnit(unitByIngredient.get(order.medicationActiveIngredientId)) }}
-              </TableCell>
-              <TableCell data-label="Batches" class="min-w-48">
-                <OrderAllocations :allocations="order.allocations" :unit="unitByIngredient.get(order.medicationActiveIngredientId)" :pending="order.status === 'PENDING'" />
-              </TableCell>
-              <TableCell data-label="Dosage" class="text-sm">
-                {{ order.dosageInstructions }}
-              </TableCell>
-              <TableCell data-label="Remarks" class="text-xs text-muted-foreground">
-                {{ order.remarks || '—' }}
-              </TableCell>
-              <TableCell data-label="Status">
-                <OrderStatusBadge :status="order.status" />
-                <p v-if="order.status === 'DISPENSED' && order.dispensedAt" class="mt-0.5 text-xs text-muted-foreground">
-                  {{ formatVisitDate(order.dispensedAt) }}
-                </p>
-              </TableCell>
-              <TableCell data-label="Created" class="text-xs text-muted-foreground">
-                {{ formatVisitDate(order.createdAt) }}
-              </TableCell>
-              <TableCell data-stack="actions" class="text-right">
-                <div class="flex flex-wrap items-center justify-end gap-1.5">
-                  <template v-if="order.status === 'PENDING'">
-                    <Button variant="ghost" size="sm" :aria-label="`Change order ${order.activeIngredientName}`" @click="startChange(order.id)">
-                      <PhPencilSimple aria-hidden="true" /> Change
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      class="text-destructive hover:text-destructive"
-                      :aria-label="`Cancel order ${order.activeIngredientName}`"
-                      @click="startCancel(order.id)"
-                    >
-                      <PhX aria-hidden="true" /> Cancel
-                    </Button>
-                    <Button
-                      variant="success"
-                      size="sm"
-                      :disabled="dispensing.has(order.id)"
-                      :aria-label="`Mark ${order.activeIngredientName} dispensed`"
-                      @click="dispense(order.id, orderSnapshot(order))"
-                    >
-                      <PhCheck aria-hidden="true" /> Mark dispensed
-                    </Button>
-                  </template>
-                  <Button
-                    v-else-if="order.status === 'CANCELLED' && canDelete"
-                    variant="ghost"
-                    size="icon"
-                    class="text-destructive hover:text-destructive"
-                    :aria-label="`Delete cancelled order ${order.activeIngredientName}`"
-                    @click="handleDelete(order)"
-                  >
-                    <PhTrash class="size-4" />
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-      </AppPanel>
-    </div>
+    <!-- History: dispensed, cancelled or every order. -->
+    <AppPanel v-else :title="historyTitle" flush data-orders-history>
+      <StateMessage v-if="ordersPending && !allOrders" kind="loading" message="Loading orders…" />
+      <StateMessage v-else-if="ordersError && !allOrders" kind="error" :message="describeLoadError(ordersErr, 'The orders could not be loaded. Check the connection and reload.')" />
+      <div v-else-if="filteredHistory.length === 0" class="flex flex-col items-center gap-2 px-3 py-10 text-center" role="status">
+        <p class="text-xs text-muted-foreground touch:text-sm">
+          {{ hasFilters ? 'No orders match this search.' : view === 'dispensed' ? 'No orders have been dispensed yet.' : view === 'cancelled' ? 'No orders have been cancelled.' : 'No orders yet.' }}
+        </p>
+        <Button v-if="hasFilters" variant="outline" size="sm" @click="clearFilters">
+          Clear search
+        </Button>
+      </div>
+      <OrderHistoryTable
+        v-else
+        :orders="filteredHistory"
+        :can-delete="canDelete"
+        :dispensing="dispensing"
+        :patient-names="patientNameByOrder"
+        :batches-label="view === 'dispensed' ? 'Dispensed from' : 'Batches'"
+        @dispense="order => dispense(order.id, orderSnapshot(order), visitByOrder.get(order.id), patientNameByOrder.get(order.id))"
+        @change="order => startChange(order.id, visitByOrder.get(order.id), patientNameByOrder.get(order.id))"
+        @cancel="order => startCancel(order.id, visitByOrder.get(order.id), patientNameByOrder.get(order.id))"
+        @change-batch="startRebatchFromHistory"
+        @delete="handleDelete"
+      />
+    </AppPanel>
 
     <OrderDialog
       v-if="changing"
@@ -644,10 +422,17 @@ async function handleDelete(order: MedicationOrder) {
     <CancelOrderDialog
       v-if="cancelling"
       :order="cancelling.order"
-      :unit="unitByIngredient.get(cancelling.order.medicationActiveIngredientId)"
       :visit-id="cancelling.visitId"
       :patient-name="cancelling.patientName"
       @close="cancelling = null"
+    />
+    <ChangeBatchDialog
+      v-if="rebatching"
+      :order="rebatching.order"
+      :before="rebatching.before"
+      :visit-id="rebatching.visitId"
+      :patient-name="rebatching.patientName"
+      @close="rebatching = null"
     />
   </div>
 </template>

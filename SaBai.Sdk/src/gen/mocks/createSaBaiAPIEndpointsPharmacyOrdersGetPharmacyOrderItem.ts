@@ -10,7 +10,9 @@ import { fakerEN as faker } from '@faker-js/faker'
 export function createSaBaiAPIEndpointsPharmacyOrdersGetPharmacyOrderItem<TData extends Partial<SaBaiAPIEndpointsPharmacyOrdersGetPharmacyOrderItem> = object>(data?: TData) {
   const defaultFakeData = {
     orderId: faker.string.uuid(),
+    medicationActiveIngredientId: faker.string.uuid(),
     medicationName: faker.string.alpha(),
+    unitOfMeasurement: faker.string.alpha(),
     quantity: faker.number.int(),
     isLowStock: faker.datatype.boolean(),
     dosageInstructions: faker.string.alpha(),

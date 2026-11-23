@@ -2,6 +2,7 @@ import {
   adjustAvailability,
   applyAllocations,
   applySplit,
+  applyStockAdjustment,
   hasPendingDelta,
   patchStock,
   upsertById,
@@ -184,6 +185,34 @@ describe("applyAllocations", () => {
     expect(applyAllocations(once, allocations, "c", "release")).toEqual(once);
     expect(once.map((r) => [r.quantity, r.reservedQuantity, r.availableQuantity])).toEqual([[10, 0, 10], [3, 0, 3]]);
     expect(applyAllocations(once, allocations, "c", null).map((r) => r.reservedQuantity)).toEqual([4, 3]);
+  });
+});
+
+describe("choosing other batches and adjusting", () => {
+  const rows = [
+    line({ id: "b1", quantity: 10, reservedQuantity: 4, availableQuantity: 6 }),
+    line({ id: "b2", quantity: 8, reservedQuantity: 0, availableQuantity: 8 }),
+  ];
+
+  it("reserving holds units of a batch without taking them off hand", () => {
+    const once = applyAllocations(rows, [{ stockId: "b2", quantity: 4 }], "r", "reserve");
+    expect(applyAllocations(once, [{ stockId: "b2", quantity: 4 }], "r", "reserve")).toEqual(once);
+    expect(once[1]).toMatchObject({ quantity: 8, reservedQuantity: 4, availableQuantity: 4 });
+  });
+
+  it("taking dispenses units that were not reserved", () => {
+    const once = applyAllocations(rows, [{ stockId: "b2", quantity: 8 }], "t", "take");
+    // The emptied batch leaves the list, as in the API's.
+    expect(once.map((r) => r.id)).toEqual(["b1"]);
+    const part = applyAllocations(rows, [{ stockId: "b2", quantity: 3 }], "t", "take");
+    expect(part[1]).toMatchObject({ quantity: 5, reservedQuantity: 0, availableQuantity: 5 });
+  });
+
+  it("an adjustment changes on-hand and available units once per key", () => {
+    const once = applyStockAdjustment(rows, "b1", "adj", -2);
+    expect(applyStockAdjustment(once, "b1", "adj", -2)).toEqual(once);
+    expect(once[0]).toMatchObject({ quantity: 8, reservedQuantity: 4, availableQuantity: 4 });
+    expect(applyStockAdjustment(rows, "b2", "adj2", 5)[1]).toMatchObject({ quantity: 13, availableQuantity: 13 });
   });
 });
 

@@ -21,7 +21,7 @@ export function enterMovesToNextField(event: KeyboardEvent) {
   const form = target.form
   if (!form)
     return
-  const fields = [...form.querySelectorAll<HTMLElement>('input, select, textarea, button[role="radio"], [data-slot="toggle-group-item"]')]
+  const fields = [...form.querySelectorAll<HTMLElement>('input, select, textarea, button[role="radio"], button[role="combobox"], [data-slot="toggle-group-item"]')]
     .filter(el => !el.hasAttribute('disabled') && el.offsetParent !== null && el.tabIndex >= 0)
   const next = fields[fields.indexOf(target) + (event.shiftKey ? -1 : 1)]
   next?.focus()

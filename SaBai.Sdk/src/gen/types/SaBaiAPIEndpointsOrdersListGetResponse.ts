@@ -26,6 +26,7 @@ export type SaBaiAPIEndpointsOrdersListGetResponse = {
    */
   medicationActiveIngredientId: string;
   activeIngredientName: string;
+  unitOfMeasurement: string;
   /**
    * @description
    * Format: `int32`

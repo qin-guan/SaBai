@@ -19,6 +19,7 @@ export function createSaBaiAPIEndpointsMedicationStockListGetResponse<TData exte
     stockStatus: createSaBaiAPIDomainStockStatus(),
     remarks: faker.string.alpha(),
     parentStockId: faker.string.uuid(),
+    unitOfMeasurement: faker.string.alpha(),
   }
   return {
     ...defaultFakeData,

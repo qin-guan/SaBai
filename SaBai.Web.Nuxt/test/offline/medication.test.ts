@@ -3,7 +3,9 @@ import { describe, expect, it } from 'vitest'
 import { getOfflineMutation } from '~/offline/defineOfflineMutation'
 import {
   createMedicationBrand,
+  adjustMedicationStock,
   createMedicationStock,
+  setOrderAllocations,
   splitMedicationStock,
   updateMedicationIngredient,
   createOrder,
@@ -262,6 +264,65 @@ describe('medication offline writes', () => {
     expect(orders(qc)[0]).toMatchObject({ status: 'DISPENSED', dispensedAt: '2026-11-15T01:00:00Z', allocations: placedOrder.allocations })
     expect(qc.getQueryData<MedicationOrder[]>(queryKeys.ordersList('PENDING'))).toHaveLength(0)
     expect(queue(qc)).toHaveLength(0)
+  })
+
+  it('choosing another batch moves the reservation and shows on the order and in the queue', () => {
+    const qc = withPlacedOrder()
+    const other = { ...stockLine, id: 'stock-2', location: 'Shelf B', quantity: 20, reservedQuantity: 0, availableQuantity: 20 }
+    qc.setQueryData(queryKeys.medicationStock(), [...stock(qc), other])
+    const chosen = [{ stockId: 'stock-2', medicationBrandId: 'brand-1', brandName: 'Brand', location: 'Shelf B', expiry: '2030-01-01', quantity: 3 }]
+    const vars = { id: 'ord-1', changeId: 'c1', allocations: chosen, before: orderSnapshot(placedOrder), patientName: 'Alice' }
+    applyTwice(setOrderAllocations.optimistic!, vars, qc)
+    const byId = Object.fromEntries(stock(qc).map(r => [r.id, r]))
+    expect(byId['stock-1']).toMatchObject({ quantity: 10, reservedQuantity: 0, availableQuantity: 10 })
+    expect(byId['stock-2']).toMatchObject({ quantity: 20, reservedQuantity: 3, availableQuantity: 17 })
+    expect(orders(qc)[0]).toMatchObject({ status: 'PENDING', allocations: chosen })
+    expect(queue(qc)[0]!.visits[0]!.orders[0]!.allocations).toEqual(chosen)
+    // The ingredient's availability is the same: the units only moved between its batches.
+    expect(available(qc)).toBe(7)
+    expect(setOrderAllocations.describe(vars)).toBe('Choose batches for Ingredient for Alice')
+  })
+
+  it('dispensing from chosen batches frees the reserved ones and takes the chosen units off the shelf', () => {
+    const qc = withPlacedOrder()
+    const other = { ...stockLine, id: 'stock-2', location: 'Shelf B', quantity: 20, reservedQuantity: 0, availableQuantity: 20 }
+    qc.setQueryData(queryKeys.medicationStock(), [...stock(qc), other])
+    const chosen = [{ stockId: 'stock-2', medicationBrandId: 'brand-1', brandName: 'Brand', location: 'Shelf B', expiry: '2030-01-01', quantity: 3 }]
+    const vars = { id: 'ord-1', changeId: 'c1', status: 'DISPENSED' as const, allocations: chosen, before: { ...orderSnapshot(placedOrder), unit: 'tablet' }, patientName: 'Alice' }
+    applyTwice(updateOrder.optimistic!, vars, qc)
+    const byId = Object.fromEntries(stock(qc).map(r => [r.id, r]))
+    expect(byId['stock-1']).toMatchObject({ quantity: 10, reservedQuantity: 0, availableQuantity: 10 })
+    expect(byId['stock-2']).toMatchObject({ quantity: 17, reservedQuantity: 0, availableQuantity: 17 })
+    expect(orders(qc)[0]).toMatchObject({ status: 'DISPENSED', allocations: chosen })
+    expect(queue(qc)).toHaveLength(0)
+    expect(updateOrder.describe(vars)).toBe('Dispense Ingredient: 3 tablets for Alice from chosen batches')
+  })
+
+  it('a quantity adjustment moves on-hand and available units once, and says so with the unit', () => {
+    const qc = withPlacedOrder()
+    const vars = { id: 'stock-1', adjustmentId: 'adj-1', quantityChange: -4, remarks: 'Stock count', brandName: 'Brand', location: 'Shelf A', unit: 'tablet' }
+    applyTwice(adjustMedicationStock.optimistic!, vars, qc)
+    expect(stock(qc)[0]).toMatchObject({ quantity: 6, reservedQuantity: 3, availableQuantity: 3, remarks: 'Stock count' })
+    expect(adjustMedicationStock.describe(vars)).toBe('Adjust Brand at Shelf A: −4 tablets')
+    expect(adjustMedicationStock.describe({ ...vars, quantityChange: 1 })).toBe('Adjust Brand at Shelf A: +1 tablet')
+  })
+
+  it('pending-change descriptions say quantities with their unit', () => {
+    expect(createOrder.describe({ ...createVars, unit: 'tablet' })).toBe('Order Ingredient: 3 tablets for Alice')
+    expect(createOrder.describe({ ...createVars, quantity: 1, unit: 'tablet' })).toBe('Order Ingredient: 1 tablet for Alice')
+    expect(updateOrder.describe({ id: 'ord-1', changeId: 'c', status: 'DISPENSED', before: { ...orderSnapshot(placedOrder), unit: 'mL' } })).toBe('Dispense Ingredient: 3 mL')
+    expect(createMedicationStock.describe({
+      id: 's', medicationBrandId: 'brand-1', brandName: 'Brand', ingredientId: 'ing-1', ingredientName: 'Ingredient', unitOfMeasurement: 'sachet', fallBelow: 5,
+      quantity: 40, expiry: '2030-01-01', location: 'Shelf C', stockStatus: 'active', remarks: null,
+    })).toBe('New stock Brand: 40 sachets at Shelf C')
+    expect(splitMedicationStock.describe({
+      stockId: 'stock-1',
+      parent: { ...stockLine, unitOfMeasurement: 'tablet' },
+      splits: [
+        { id: 'a', quantity: 6, location: 'A', stockStatus: 'active', remarks: null },
+        { id: 'b', quantity: 4, location: 'B', stockStatus: 'active', remarks: null },
+      ],
+    })).toBe('Split 10 tablets of Brand at Shelf A into 2 batches')
   })
 
   it('cancelling releases the reservation once and clears the allocations', () => {

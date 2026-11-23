@@ -17,4 +17,5 @@ export const saBaiAPIEndpointsMedicationStockListGetResponseSchema = z.object({
   stockStatus: saBaiAPIDomainStockStatusSchema,
   remarks: z.string().nullable(),
   parentStockId: z.uuid().nullable(),
+  unitOfMeasurement: z.string(),
 })

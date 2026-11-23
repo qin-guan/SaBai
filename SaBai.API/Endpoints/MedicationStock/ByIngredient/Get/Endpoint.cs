@@ -30,7 +30,18 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
                 x.UnitOfMeasurement,
                 x.Brands.SelectMany(b => b.Stocks)
                     .Where(s => s.StockStatus == StockStatus.Active && s.Expiry >= now)
-                    .Sum(s => s.Quantity - s.ReservedQuantity)
+                    .Sum(s => s.Quantity - s.ReservedQuantity),
+                x.Brands.Where(b =>
+                        b.Stocks.Any(s =>
+                            s.StockStatus == StockStatus.Active
+                            && s.Expiry >= now
+                            && s.Quantity > s.ReservedQuantity
+                        )
+                    )
+                    .OrderBy(b => b.Name)
+                    .Select(b => b.Name)
+                    .Distinct()
+                    .ToList()
             ))
             .ToListAsync(ct);
 

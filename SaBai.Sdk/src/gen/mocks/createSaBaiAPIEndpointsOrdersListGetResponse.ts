@@ -14,6 +14,7 @@ export function createSaBaiAPIEndpointsOrdersListGetResponse<TData extends Parti
     consultId: faker.string.uuid(),
     medicationActiveIngredientId: faker.string.uuid(),
     activeIngredientName: faker.string.alpha(),
+    unitOfMeasurement: faker.string.alpha(),
     quantity: faker.number.int(),
     status: createSaBaiAPIDomainOrderStatus(),
     dosageInstructions: faker.string.alpha(),

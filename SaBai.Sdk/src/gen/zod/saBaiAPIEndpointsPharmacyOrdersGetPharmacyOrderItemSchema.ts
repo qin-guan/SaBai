@@ -8,7 +8,9 @@ import { systemCollectionsGenericIReadOnlyListOfSaBaiAPIEndpointsOrdersAllocatio
 
 export const saBaiAPIEndpointsPharmacyOrdersGetPharmacyOrderItemSchema = z.object({
   orderId: z.uuid(),
+  medicationActiveIngredientId: z.uuid(),
   medicationName: z.string(),
+  unitOfMeasurement: z.string(),
   quantity: z.int32(),
   isLowStock: z.boolean(),
   dosageInstructions: z.string(),

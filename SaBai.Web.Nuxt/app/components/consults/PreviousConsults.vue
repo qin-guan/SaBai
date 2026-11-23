@@ -183,7 +183,7 @@ const trailing = [
             <div class="flex flex-wrap items-center justify-between gap-2">
               <div class="min-w-0">
                 <span class="font-semibold">{{ order.activeIngredientName }}</span>
-                × {{ order.quantity }}{{ formatQuantityUnit(unitOf(order.medicationActiveIngredientId)) }}
+                <span class="tabular-nums"> · {{ formatQuantity(order.quantity, unitOf(order.medicationActiveIngredientId)) }}</span>
               </div>
               <div class="flex items-center gap-1">
                 <OrderStatusBadge :status="order.status" />

@@ -8,7 +8,7 @@ import type { SaBaiAPIEndpointsOrdersUpdatePatchEndpointOptions, SaBaiAPIEndpoin
 import { client, withUnwrap } from '../.kubb/client'
 
 /**
- * @summary Change a pending order (dosage, remarks, quantity, ingredient), dispense it or cancel it
+ * @summary Change a pending order (dosage, remarks, quantity, ingredient, stock batches), dispense it or cancel it
  * {@link /orders/:id}
  */
 export function saBaiAPIEndpointsOrdersUpdatePatchEndpoint<ThrowOnError extends boolean = true>(options: Options<SaBaiAPIEndpointsOrdersUpdatePatchEndpointOptions, ThrowOnError>): Unwrappable<RequestResult<SaBaiAPIEndpointsOrdersUpdatePatchEndpointResponses, ThrowOnError>> {

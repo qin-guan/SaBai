@@ -20,12 +20,6 @@ import {
 
 const route = useRoute()
 
-const GROUPS = [
-  { label: 'Patients', items: NAV_ITEMS },
-  // Each station is the patient list filtered to who it is waiting for.
-  { label: 'Stations', items: STATION_NAV_ITEMS },
-  { label: 'Pharmacy & admin', items: ADMIN_NAV_ITEMS },
-]
 const { isMobile, setOpenMobile, state } = useSidebar()
 const { user, isAdmin } = useCurrentUser()
 
@@ -73,7 +67,7 @@ const signOut = useSignOut()
       </NuxtLink>
     </SidebarHeader>
     <SidebarContent>
-      <SidebarGroup v-for="group in GROUPS" :key="group.label">
+      <SidebarGroup v-for="group in NAV_GROUPS" :key="group.label">
         <SidebarGroupLabel>{{ group.label }}</SidebarGroupLabel>
         <SidebarGroupContent>
           <SidebarMenu>
@@ -81,21 +75,21 @@ const signOut = useSignOut()
               <SidebarMenuButton
                 as-child
                 :is-active="isParentActive(item)"
-                :tooltip="item.name"
+                :tooltip="navLabelOf(item)"
               >
                 <NuxtLink
                   :to="item.href"
                   :aria-current="isParentActive(item) ? 'page' : undefined"
                 >
                   <component :is="item.icon" aria-hidden="true" />
-                  <span class="flex-1">{{ item.name }}</span>
+                  <span class="flex-1">{{ navLabelOf(item) }}</span>
                 </NuxtLink>
               </SidebarMenuButton>
               <template v-if="childrenOf(item).length">
                 <SidebarMenuAction
                   :aria-expanded="openSections.has(item.href)"
                   :aria-controls="subMenuId(item)"
-                  :aria-label="`${openSections.has(item.href) ? 'Hide' : 'Show'} pages under ${item.name}`"
+                  :aria-label="`${openSections.has(item.href) ? 'Hide' : 'Show'} pages under ${navLabelOf(item)}`"
                   @click="toggleSection(item)"
                 >
                   <PhCaretRight
@@ -113,7 +107,7 @@ const signOut = useSignOut()
                         :aria-current="isNavItemActive(child, route) ? 'page' : undefined"
                       >
                         <component :is="child.icon" aria-hidden="true" />
-                        <span>{{ child.navLabel ?? child.name }}</span>
+                        <span>{{ navLabelOf(child) }}</span>
                       </NuxtLink>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>

@@ -30,7 +30,8 @@ public sealed class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<Resp
                 x.Location,
                 x.StockStatus,
                 x.Remarks,
-                x.ParentStockId
+                x.ParentStockId,
+                x.MedicationBrand.ActiveIngredient.UnitOfMeasurement
             ))
             .ToListAsync(ct);
 

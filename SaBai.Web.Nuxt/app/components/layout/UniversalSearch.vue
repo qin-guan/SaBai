@@ -34,7 +34,8 @@ const patientIndex = computed(() => buildPatientIndex(patients.value))
 
 const { isAdmin: userIsAdmin } = useCurrentUser()
 const pages = [...ALL_NAV_ITEMS, ...SUB_PAGES]
-const pageIndex = buildPageIndex(pages.map(p => ({ id: p.href, title: p.name, keywords: p.keywords })))
+// The sidebar's own label is searchable too ("Stock" for Medication Stock, "Patient list" for Patients).
+const pageIndex = buildPageIndex(pages.map(p => ({ id: p.href, title: p.name, keywords: `${p.keywords} ${p.navLabel ?? ''}` })))
 
 const { recentIds, remember } = useRecentPatients()
 

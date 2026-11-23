@@ -51,4 +51,5 @@ export type SaBaiAPIEndpointsMedicationStockListGetResponse = {
    * @type string
    */
   parentStockId: string | null;
+  unitOfMeasurement: string;
 };

@@ -4,6 +4,7 @@
 */
 
 import type { SaBaiAPIEndpointsMedicationStockByIngredientGetResponse } from '../types/SaBaiAPIEndpointsMedicationStockByIngredientGetResponse'
+import { createSystemCollectionsGenericIReadOnlyListOfSystemString } from './createSystemCollectionsGenericIReadOnlyListOfSystemString'
 import { fakerEN as faker } from '@faker-js/faker'
 
 export function createSaBaiAPIEndpointsMedicationStockByIngredientGetResponse<TData extends Partial<SaBaiAPIEndpointsMedicationStockByIngredientGetResponse> = object>(data?: TData) {
@@ -12,6 +13,7 @@ export function createSaBaiAPIEndpointsMedicationStockByIngredientGetResponse<TD
     ingredientName: faker.string.alpha(),
     unitOfMeasurement: faker.string.alpha(),
     availableQuantity: faker.number.int(),
+    brandNames: createSystemCollectionsGenericIReadOnlyListOfSystemString(),
   }
   return {
     ...defaultFakeData,

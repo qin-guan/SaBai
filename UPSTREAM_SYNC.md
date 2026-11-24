@@ -79,7 +79,7 @@ Last synced upstream commit: `841e3f4`
   under Realtime's payload limit) and `senderName` (needs the held `users` table, #342).
 - Upstream #368 (source-map-js) is a transitive lockfile bump for upstream's Next app: nothing to port.
 - Decisions (owner): upstream UI changes are ported into `SaBai.Web` (Next.js) one by one on request;
-  `SaBai.Web.Nuxt` is not touched by the sync (a gap report lists what it lacks). Ordering follows
+  `SaBai.Web.Nuxt` is not touched by the daily sync; on request a gap pass ports what it lacks (last one: below). Ordering follows
   upstream #312: orders are for an active ingredient (no brand), stock is reserved when the order is
   placed (earliest expiry first, across brands), cancelling or deleting releases it, the first order
   wins. Beyond upstream: a pending order's quantity and ingredient can be changed (re-allocated),
@@ -96,3 +96,12 @@ Last synced upstream commit: `841e3f4`
   change/cancel of pending orders in previous consults, and the pharmacist queue with each order's
   allocations to pick from, dispense, change and cancel.
 - Reviewed through `841e3f4`. Later upstream merges are for the next run.
+- Nuxt gap pass (reviewed through upstream `a233797`): every upstream change since the sync began
+  was checked against `SaBai.Web.Nuxt`. Ported there: #367 (remarks wrap; multiline edit field in
+  brand and ingredient rows; referral partners wrap; main's reworked stock rows already clamp
+  remarks), #262 (visit summary grouped as anthropometric, cardiovascular and
+  metabolic with urinalysis and clinical remarks; diabetes "Yes" in red; summary stays in view
+  beside the consult form). Left alone: #376 (patient photo standardisation; Nuxt's compact list
+  thumbnails are deliberate, owner to decide) and #285 (toasts inside modals; unverified, Nuxt has
+  one global toaster). #338 was dropped: the reworked split dialog no longer shows a remarks field for the parent.
+  Everything else was already present.

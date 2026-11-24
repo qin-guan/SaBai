@@ -5,6 +5,7 @@ import { deleteMedicationIngredient, updateMedicationIngredient } from '~/offlin
 import type { MedicationIngredient } from '~/offline/mutations/medication'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { TableCell, TableRow } from '@/components/ui/table'
 
 /** One active ingredient; inline edit (Esc cancels, Enter saves) and delete with confirmation. */
@@ -162,8 +163,8 @@ function onKeydown(event: KeyboardEvent) {
       </template>
       <span v-else class="text-muted-foreground">No brands yet</span>
     </TableCell>
-    <TableCell data-label="Remarks" class="max-w-64 min-w-32 whitespace-normal" :class="!isEditing && !ingredient.remarks && 'max-md:hidden!'">
-      <Input v-if="isEditing" v-model="form.remarks" aria-label="Remarks" />
+    <TableCell data-label="Remarks" class="max-w-64 min-w-32 whitespace-normal [overflow-wrap:anywhere]" :class="!isEditing && !ingredient.remarks && 'max-md:hidden!'">
+      <Textarea v-if="isEditing" v-model="form.remarks" rows="2" class="min-h-0" aria-label="Remarks" />
       <template v-else>
         {{ ingredient.remarks }}
       </template>

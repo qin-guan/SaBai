@@ -80,7 +80,7 @@ async function confirmDelete() {
             <TableCell data-label="Name" class="font-semibold">
               {{ partner.name }}
             </TableCell>
-            <TableCell data-label="Remarks" class="text-muted-foreground">
+            <TableCell data-label="Remarks" class="max-w-xs whitespace-normal text-muted-foreground [overflow-wrap:anywhere]">
               {{ partner.remarks || '—' }}
             </TableCell>
             <TableCell data-label="Status">

@@ -1,6 +1,8 @@
 services:
   compose-dashboard:
-    image: "mcr.microsoft.com/dotnet/nightly/aspire-dashboard:13.6"
+    image: "mcr.microsoft.com/aspire/nightly/dashboard:17.0"
+    environment:
+      ASPIRE_DASHBOARD_TELEMETRY_OPTOUT: "true"
     ports:
       - "18888:18888"
     expose:
@@ -10,7 +12,7 @@ services:
       - "aspire"
     restart: "always"
   qdrant:
-    image: "docker.io/qdrant/qdrant:v1.18.0"
+    image: "docker.io/qdrant/qdrant:v1.20.0"
     environment:
       QDRANT__SERVICE__API_KEY: "${QDRANT_KEY}"
       QDRANT__SERVICE__ENABLE_STATIC_CONTENT: "0"
@@ -28,7 +30,7 @@ services:
     networks:
       - "aspire"
   postgres:
-    image: "docker.io/library/postgres:18.3"
+    image: "docker.io/library/postgres:18.6"
     environment:
       POSTGRES_HOST_AUTH_METHOD: "scram-sha-256"
       POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
@@ -45,7 +47,7 @@ services:
     networks:
       - "aspire"
   pgadmin:
-    image: "docker.io/dpage/pgadmin4:9.15.0"
+    image: "docker.io/dpage/pgadmin4:9.19.0"
     environment:
       PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
       PGADMIN_CONFIG_SERVER_MODE: "False"
@@ -170,4 +172,4 @@ volumes:
     driver: "local"
 configs:
   pgadmin__pgadmin4_servers.json:
-    content: "{\n  \"Servers\": {\n    \"1\": {\n      \"Name\": \"postgres\",\n      \"Group\": \"Servers\",\n      \"Host\": \"postgres\",\n      \"Port\": 5432,\n      \"Username\": \"postgres\",\n      \"SSLMode\": \"prefer\",\n      \"MaintenanceDB\": \"postgres\",\n      \"PasswordExecCommand\": \"echo \\u0027${POSTGRES_PASSWORD}\\u0027\"\n    }\n  }\n}"
+    content: "{\n  \"Servers\": {\n    \"1\": {\n      \"Name\": \"postgres\",\n      \"Group\": \"Servers\",\n      \"Host\": \"postgres\",\n      \"Port\": 5432,\n      \"Username\": \"postgres\",\n      \"SSLMode\": \"prefer\",\n      \"MaintenanceDB\": \"postgres\",\n      \"PasswordExecCommand\": \"echo \\u0027_Gh6)rT(hZCb))M1Jzj_P)\\u0027\"\n    }\n  }\n}"

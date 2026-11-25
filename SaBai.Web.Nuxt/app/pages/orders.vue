@@ -158,45 +158,6 @@ function clearDeepLink() {
 
 const historyTitle = computed(() => ({ queue: '', dispensed: 'Dispensed orders', cancelled: 'Cancelled orders', all: 'All orders' })[view.value])
 
-const orderActionButtons = (root: ParentNode | null = document.querySelector('[data-orders-queue], [data-orders-history]')) =>
-  [...(root?.querySelectorAll<HTMLTableRowElement>('tr[data-order-id]') ?? [])]
-  .map(row => row.querySelector<HTMLButtonElement>('button:not(:disabled)'))
-  .filter((button): button is HTMLButtonElement => !!button)
-
-/** Search ↓ enters the worklist; arrows and Home/End move between order actions. */
-function onOrderSearchDown(event: KeyboardEvent) {
-  const first = orderActionButtons()[0]
-  if (!first)
-    return
-  event.preventDefault()
-  first.focus()
-}
-
-function onOrderListKeydown(event: KeyboardEvent) {
-  const target = event.target as HTMLElement
-  const row = target.closest<HTMLTableRowElement>('tr[data-order-id]')
-  if (!row || event.altKey || event.ctrlKey || event.metaKey)
-    return
-  const buttons = orderActionButtons(event.currentTarget as HTMLElement)
-  const index = buttons.findIndex(button => button.closest('tr[data-order-id]') === row)
-  if (index < 0)
-    return
-  let next: HTMLElement | undefined
-  if (event.key === 'ArrowDown')
-    next = buttons[index + 1]
-  else if (event.key === 'ArrowUp')
-    next = index === 0 ? document.querySelector<HTMLInputElement>('[data-orders-search] input') ?? undefined : buttons[index - 1]
-  else if (event.key === 'Home')
-    next = buttons[0]
-  else if (event.key === 'End')
-    next = buttons.at(-1)
-  else
-    return
-  event.preventDefault()
-  next?.focus()
-  next?.scrollIntoView({ block: 'nearest' })
-}
-
 /** What the optimistic edits need: the listed order, with the queue's (fresher) allocations. */
 function snapshotOf(item: PharmacyOrderItem): OrderSnapshot {
   const full = ordersById.value.get(item.orderId)
@@ -333,7 +294,7 @@ async function handleDelete(order: MedicationOrder) {
 
     <!-- Search and filters -->
     <div class="flex flex-col gap-2 border border-border bg-card p-2 sm:flex-row sm:flex-wrap sm:items-center">
-      <div class="relative sm:w-80" data-orders-search>
+      <div class="relative sm:w-80">
         <PhMagnifyingGlass class="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
         <Input
           v-model="search"
@@ -341,8 +302,6 @@ async function handleDelete(order: MedicationOrder) {
           :aria-label="view === 'queue' ? 'Search the queue' : 'Search orders'"
           :placeholder="view === 'queue' ? 'Patient, medication, brand or diagnosis' : 'Medication, brand, instructions or remarks'"
           class="pr-8 pl-8"
-          aria-keyshortcuts="ArrowDown"
-          @keydown.down="onOrderSearchDown"
         />
         <button
           v-if="search"
@@ -382,13 +341,7 @@ async function handleDelete(order: MedicationOrder) {
     </div>
 
     <!-- The queue: pending orders by patient and visit. -->
-    <div
-      v-if="view === 'queue'"
-      class="flex flex-col gap-3"
-      data-orders-queue
-      aria-keyshortcuts="ArrowDown ArrowUp Home End"
-      @keydown="onOrderListKeydown"
-    >
+    <div v-if="view === 'queue'" class="flex flex-col gap-3" data-orders-queue>
       <StateMessage v-if="queuePending && !pharmacyQueue" kind="loading" message="Loading the dispensing queue…" class="border border-border bg-card" />
       <StateMessage v-else-if="queueError && !pharmacyQueue" kind="error" :message="describeLoadError(queueErr, 'The queue could not be loaded. Check the connection and reload.')" />
       <div
@@ -433,14 +386,7 @@ async function handleDelete(order: MedicationOrder) {
     </div>
 
     <!-- History: dispensed, cancelled or every order. -->
-    <AppPanel
-      v-else
-      :title="historyTitle"
-      flush
-      data-orders-history
-      aria-keyshortcuts="ArrowDown ArrowUp Home End"
-      @keydown="onOrderListKeydown"
-    >
+    <AppPanel v-else :title="historyTitle" flush data-orders-history>
       <StateMessage v-if="ordersPending && !allOrders" kind="loading" message="Loading orders…" />
       <StateMessage v-else-if="ordersError && !allOrders" kind="error" :message="describeLoadError(ordersErr, 'The orders could not be loaded. Check the connection and reload.')" />
       <div v-else-if="filteredHistory.length === 0" class="flex flex-col items-center gap-2 px-3 py-10 text-center" role="status">

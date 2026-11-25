@@ -22,14 +22,6 @@ const groups = [
     ],
   },
   {
-    title: 'Patients / stations',
-    items: [
-      { keys: '↑ / ↓', label: 'Move between patient records in the list' },
-      { keys: 'Home / End', label: 'Focus the first / last patient in the list' },
-      { keys: 'Enter', label: 'Open the focused patient or station form' },
-    ],
-  },
-  {
     title: 'Scan Face',
     items: [
       { keys: 'T', label: 'Open the camera' },
@@ -52,11 +44,15 @@ const groups = [
   {
     title: 'Pharmacy orders',
     items: [
-      { keys: '↓', label: 'From the search box: focus the first order action' },
-      { keys: '↑ / ↓', label: 'Move between order actions; ↑ from the first returns to search' },
-      { keys: 'Home / End', label: 'Focus the first / last order action' },
       { keys: 'Ctrl+S', label: 'Save an open order form' },
-      { keys: 'Esc', label: 'Close a dialog or go back' },
+      { keys: 'Esc', label: 'Close an open order dialog' },
+    ],
+  },
+  {
+    title: 'Medication & stock',
+    items: [
+      { keys: 'Ctrl+S', label: 'Save an ingredient, brand or stock form' },
+      { keys: 'Esc', label: 'Close the open dialog or stock log' },
     ],
   },
   {

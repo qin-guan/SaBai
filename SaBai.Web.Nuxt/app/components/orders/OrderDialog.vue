@@ -170,6 +170,9 @@ useSaveShortcut(save)
       </FormField>
     </form>
     <template #footer>
+      <span class="mr-auto hidden text-xs text-muted-foreground kb:inline touch:text-sm">
+        <ShortcutHint keys="Ctrl+S" /> save · <ShortcutHint keys="Esc" /> close
+      </span>
       <Button variant="outline" @click="emit('close')">
         Close
       </Button>

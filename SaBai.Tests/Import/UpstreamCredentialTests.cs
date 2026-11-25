@@ -32,6 +32,28 @@ public sealed class UpstreamCredentialTests
     }
 
     [Test]
+    public async Task ReadsExpiryFromAccessTokenWhenSessionHasNoExpiresAt()
+    {
+        var expires = DateTimeOffset.UtcNow.AddHours(1).ToUnixTimeSeconds();
+        var payload = Convert.ToBase64String(Encoding.UTF8.GetBytes($$"""{"exp":{{expires}}}"""))
+            .TrimEnd('=')
+            .Replace('+', '-')
+            .Replace('/', '_');
+        var token = $"header.{payload}.signature";
+        var session = $$"""{"access_token":"{{token}}","refresh_token":"r"}""";
+        var encoded = "base64-" + Convert.ToBase64String(Encoding.UTF8.GetBytes(session))
+            .TrimEnd('=')
+            .Replace('+', '-')
+            .Replace('/', '_');
+        var cookie = $"sb-abc-auth-token={encoded}";
+
+        var credential = UpstreamCredential.FromValue(cookie, Minimum);
+
+        await Assert.That(credential.CookieHeaderForRequest()).IsEqualTo(cookie);
+        await Assert.That(credential.ExpiresAt.ToUnixTimeSeconds()).IsEqualTo(expires);
+    }
+
+    [Test]
     public async Task RefusesAnExpiringSessionWithoutSendingIt()
     {
         var transport = new ReadOnlyGuardTests.RecordingHandler();

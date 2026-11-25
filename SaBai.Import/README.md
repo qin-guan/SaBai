@@ -87,8 +87,9 @@ refreshes or signs out. The operator gives it a session they already have:
 **Why the expiry check.** Upstream's server refreshes a session whose access token expires within
 90 seconds (`@supabase/auth-js` `EXPIRY_MARGIN_MS`, used by both `src/proxy.ts` and
 `src/server/context.ts`). A refresh rotates the session on Supabase, which is a write. The tool
-therefore reads `expires_at` from the cookie and refuses to send any request once fewer than
-`--min-token-minutes` (default 5) remain; it also refuses a cookie whose expiry it cannot read.
+therefore reads `expires_at` from the cookie, or falls back to the access token's JWT `exp` claim
+(some browser cookies omit `expires_at`), and refuses to send any request once fewer than
+`--min-token-minutes` (default 5) remain. It refuses a cookie if neither expiry is readable.
 Supabase access tokens last 1 hour by default. If a run stops for this reason, reload the upstream
 app in the browser (the browser refreshes its own session), copy the cookie again and re-run, or
 paste it into the `--cookie-file` while the run is going.

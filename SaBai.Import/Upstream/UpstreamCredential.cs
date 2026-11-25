@@ -14,8 +14,9 @@ namespace SaBai.Import.Upstream;
 /// <c>auth.getUser()</c> on every request. When the session in the cookie expires within 90
 /// seconds (auth-js <c>EXPIRY_MARGIN_MS</c>), that call uses the refresh token, which rotates the
 /// session on Supabase: a write. To make sure that never happens, the tool reads
-/// <c>expires_at</c> from the cookie and refuses to send any request once the session is within
-/// <see cref="MinimumLifetime"/> of expiring. It never refreshes, signs in or signs out itself.
+/// <c>expires_at</c> from the cookie or the access token's JWT <c>exp</c> claim, and refuses to send
+/// any request once the session is within <see cref="MinimumLifetime"/> of expiring. It never
+/// refreshes, signs in or signs out itself.
 /// </remarks>
 public sealed partial class UpstreamCredential
 {
@@ -117,7 +118,7 @@ public sealed partial class UpstreamCredential
         _cookieHeader = raw;
     }
 
-    /// <summary>Reads <c>expires_at</c> from the Supabase session in a Cookie header.</summary>
+    /// <summary>Reads the Supabase session expiry from a Cookie header.</summary>
     internal static DateTimeOffset ReadExpiry(string cookieHeader, string source)
     {
         var chunks = new SortedDictionary<int, string>();
@@ -163,13 +164,25 @@ public sealed partial class UpstreamCredential
                 ? Encoding.UTF8.GetString(Base64UrlDecode(encoded[Base64Prefix.Length..]))
                 : Uri.UnescapeDataString(encoded);
             using var doc = JsonDocument.Parse(json);
-            if (
-                doc.RootElement.ValueKind == JsonValueKind.Object
-                && doc.RootElement.TryGetProperty("expires_at", out var expires)
-                && expires.TryGetInt64(out var seconds)
-            )
+            if (doc.RootElement.ValueKind == JsonValueKind.Object)
             {
-                return DateTimeOffset.FromUnixTimeSeconds(seconds);
+                if (
+                    doc.RootElement.TryGetProperty("expires_at", out var expires)
+                    && expires.TryGetInt64(out var seconds)
+                )
+                {
+                    return DateTimeOffset.FromUnixTimeSeconds(seconds);
+                }
+
+                if (
+                    doc.RootElement.TryGetProperty("access_token", out var accessToken)
+                    && accessToken.ValueKind == JsonValueKind.String
+                    && accessToken.GetString() is { } token
+                    && ReadJwtExpiry(token) is { } tokenExpiry
+                )
+                {
+                    return tokenExpiry;
+                }
             }
         }
         catch (Exception ex) when (ex is FormatException or JsonException or ArgumentException)
@@ -178,9 +191,25 @@ public sealed partial class UpstreamCredential
         }
 
         throw new UpstreamCredentialException(
-            $"Could not read the session expiry from the Supabase cookie in {source}. Without it the tool "
+            $"Could not read the session expiry from the Supabase cookie or its access token in {source}. Without it the tool "
                 + "cannot make sure the upstream server never refreshes the session, so it will not use it."
         );
+    }
+
+    private static DateTimeOffset? ReadJwtExpiry(string token)
+    {
+        var parts = token.Split('.');
+        if (parts.Length != 3)
+        {
+            return null;
+        }
+
+        using var payload = JsonDocument.Parse(Base64UrlDecode(parts[1]));
+        return payload.RootElement.ValueKind == JsonValueKind.Object
+            && payload.RootElement.TryGetProperty("exp", out var expires)
+            && expires.TryGetInt64(out var seconds)
+                ? DateTimeOffset.FromUnixTimeSeconds(seconds)
+                : null;
     }
 
     private static byte[] Base64UrlDecode(string value)

@@ -157,6 +157,9 @@ onMounted(() => {
     </div>
 
     <template #footer>
+      <span class="mr-auto hidden text-xs text-muted-foreground kb:inline touch:text-sm">
+        <ShortcutHint keys="Ctrl+S" /> split · <ShortcutHint keys="Esc" /> close
+      </span>
       <Button variant="outline" @click="emit('close')">
         Cancel
       </Button>

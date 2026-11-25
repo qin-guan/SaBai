@@ -260,6 +260,9 @@ useSaveShortcut(() => save(false))
     </div>
 
     <template #footer>
+      <span class="mr-auto hidden text-xs text-muted-foreground kb:inline touch:text-sm">
+        <ShortcutHint keys="Ctrl+S" /> save choice · <ShortcutHint keys="Esc" /> close
+      </span>
       <Button variant="outline" @click="emit('close')">
         Cancel
       </Button>

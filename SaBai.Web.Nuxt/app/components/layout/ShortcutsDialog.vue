@@ -42,9 +42,23 @@ const groups = [
     ],
   },
   {
+    title: 'Pharmacy orders',
+    items: [
+      { keys: 'Ctrl+S', label: 'Save an open order form' },
+      { keys: 'Esc', label: 'Close an open order dialog' },
+    ],
+  },
+  {
+    title: 'Medication & stock',
+    items: [
+      { keys: 'Ctrl+S', label: 'Save an ingredient, brand or stock form' },
+      { keys: 'Esc', label: 'Close the open dialog or stock log' },
+    ],
+  },
+  {
     title: 'Forms',
     items: [
-      { keys: 'Ctrl+S', label: 'Save the current form' },
+      { keys: 'Ctrl+S  or  Ctrl+Enter', label: 'Save the current form' },
       { keys: 'Enter', label: 'Next field (never submits by accident)' },
       { keys: 'Tab / Shift+Tab', label: 'Next / previous field' },
       { keys: '← / →', label: 'Change answer in a choice group' },

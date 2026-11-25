@@ -375,7 +375,13 @@ const gridCols = 'md:grid-cols-[2rem_minmax(9rem,1fr)_minmax(0,2fr)_5.5rem_11rem
           </Button>
         </div>
 
-        <ul v-else ref="list" class="divide-y divide-border" @keydown="onListKeydown">
+        <ul
+          v-else
+          ref="list"
+          class="divide-y divide-border"
+          aria-keyshortcuts="ArrowDown ArrowUp Home End"
+          @keydown="onListKeydown"
+        >
           <li v-for="r in rows" :key="r.id">
             <!-- The whole row opens the referral (the name's link stretches over it); the tags and status sit above and act on their own. -->
             <div

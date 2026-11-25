@@ -22,6 +22,14 @@ const groups = [
     ],
   },
   {
+    title: 'Patients / stations',
+    items: [
+      { keys: '↑ / ↓', label: 'Move between patient records in the list' },
+      { keys: 'Home / End', label: 'Focus the first / last patient in the list' },
+      { keys: 'Enter', label: 'Open the focused patient or station form' },
+    ],
+  },
+  {
     title: 'Scan Face',
     items: [
       { keys: 'T', label: 'Open the camera' },
@@ -42,9 +50,19 @@ const groups = [
     ],
   },
   {
+    title: 'Pharmacy orders',
+    items: [
+      { keys: '↓', label: 'From the search box: focus the first order action' },
+      { keys: '↑ / ↓', label: 'Move between order actions; ↑ from the first returns to search' },
+      { keys: 'Home / End', label: 'Focus the first / last order action' },
+      { keys: 'Ctrl+S', label: 'Save an open order form' },
+      { keys: 'Esc', label: 'Close a dialog or go back' },
+    ],
+  },
+  {
     title: 'Forms',
     items: [
-      { keys: 'Ctrl+S', label: 'Save the current form' },
+      { keys: 'Ctrl+S  or  Ctrl+Enter', label: 'Save the current form' },
       { keys: 'Enter', label: 'Next field (never submits by accident)' },
       { keys: 'Tab / Shift+Tab', label: 'Next / previous field' },
       { keys: '← / →', label: 'Change answer in a choice group' },

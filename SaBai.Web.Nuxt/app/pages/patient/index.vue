@@ -222,6 +222,31 @@ const rowLink = (p: Row) =>
     ? patientLinkFor(station.value, p.id, p.lastVisitId ?? undefined)
     : paths.patientDetail(p.id)
 
+const rowLinks = (root: ParentNode) => [...root.querySelectorAll<HTMLAnchorElement>('a.row-link')]
+
+/** Arrow keys move through the patient worklist; Home/End jump to its edges. */
+function onListKeydown(event: KeyboardEvent) {
+  const target = event.target as HTMLElement
+  if (!target.classList.contains('row-link') || event.altKey || event.ctrlKey || event.metaKey)
+    return
+  const links = rowLinks(event.currentTarget as HTMLElement)
+  const index = links.indexOf(target as HTMLAnchorElement)
+  let next: HTMLElement | undefined
+  if (event.key === 'ArrowDown')
+    next = links[index + 1]
+  else if (event.key === 'ArrowUp')
+    next = links[index - 1]
+  else if (event.key === 'Home')
+    next = links[0]
+  else if (event.key === 'End')
+    next = links.at(-1)
+  else
+    return
+  event.preventDefault()
+  next?.focus()
+  next?.scrollIntoView({ block: 'nearest' })
+}
+
 const timeOf = (date: string) => new Date(date).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
 const dateOf = (date: string) => (isRecentVisit(date, now.value) ? timeOf(date) : new Date(date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: '2-digit' }))
 
@@ -384,7 +409,12 @@ const gridCols = 'md:grid-cols-[2rem_minmax(0,1fr)_minmax(15rem,22rem)_1rem] lg:
           </div>
         </div>
 
-        <ul v-else class="divide-y divide-border">
+        <ul
+          v-else
+          class="divide-y divide-border"
+          aria-keyshortcuts="ArrowDown ArrowUp Home End"
+          @keydown="onListKeydown"
+        >
           <li v-for="patient in section.rows" :key="patient.id">
             <!--
               The whole row opens the patient (the name's link stretches over
